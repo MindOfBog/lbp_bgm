@@ -3,10 +3,10 @@ A 3D Renderer/Tool that runs on OpenGL, written in Java. It lets you construct b
 
 JRE 11 or up needed to run.
 
-# How to use:
+# How to use
 Load game files, click asset from the list, profit.
 
-# Controls:
+# Controls
 - WASD - move
 - Left shift - down
 - Space - up
