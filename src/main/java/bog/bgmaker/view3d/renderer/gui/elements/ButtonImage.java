@@ -8,6 +8,7 @@ import bog.bgmaker.view3d.managers.WindowMan;
 import org.joml.Vector2d;
 import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
+import org.lwjgl.opengl.GL11;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -32,7 +33,7 @@ public abstract class ButtonImage extends Element{
         this.loader = loader;
         this.window = window;
         try {
-            this.buttonImage = loader.loadTexture(ImageIO.read(Main.class.getResourceAsStream(imagePath)));
+            this.buttonImage = loader.loadTexture(ImageIO.read(Main.class.getResourceAsStream(imagePath)), GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR);
         } catch (Exception e) {e.printStackTrace();}
         this.buttonColor = new Color(0f, 0f, 0f, 0.5f);
         this.buttonColorHighlighted = new Color(0.10f, 0.10f, 0.10f, 0.5f);
@@ -48,7 +49,7 @@ public abstract class ButtonImage extends Element{
         this.loader = loader;
         this.window = window;
         try {
-            this.buttonImage = loader.loadTexture(ImageIO.read(Main.class.getResourceAsStream(imagePath)));
+            this.buttonImage = loader.loadTexture(ImageIO.read(Main.class.getResourceAsStream(imagePath)), GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR);
         } catch (Exception e) {e.printStackTrace();}
         this.buttonColor = buttonColor;
         this.buttonColorHighlighted = buttonColorHighlighted;

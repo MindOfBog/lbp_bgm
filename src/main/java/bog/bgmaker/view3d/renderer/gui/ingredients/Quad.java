@@ -5,6 +5,7 @@ import bog.bgmaker.view3d.core.Model;
 import bog.bgmaker.view3d.renderer.gui.GuiRenderer;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
+import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -17,7 +18,7 @@ public class Quad extends TriStrip {
     public Quad(ObjectLoader loader, String path, Vector2f pos, Vector2f scale, boolean staticVs) {
         this.loader = loader;
         try {
-            this.texture = loader.loadResourceTexture(path);
+            this.texture = loader.loadResourceTexture(path, GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR);
         } catch (Exception e) {e.printStackTrace();}
         this.pos = pos;
         this.scale = scale;
@@ -32,7 +33,7 @@ public class Quad extends TriStrip {
     public Quad(ObjectLoader loader, BufferedImage image, Vector2f pos, Vector2f scale, boolean staticVs) {
         this.loader = loader;
         try {
-            this.texture = loader.loadTexture(image);
+            this.texture = loader.loadTexture(image, GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR);
         } catch (Exception e) {e.printStackTrace();}
         this.pos = pos;
         this.scale = scale;

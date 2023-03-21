@@ -16,6 +16,7 @@ import cwlib.structs.things.parts.PShape;
 import cwlib.types.data.ResourceDescriptor;
 import org.joml.Math;
 import org.joml.*;
+import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
 
 import java.awt.*;
@@ -174,7 +175,7 @@ public class MaterialPrimitive extends Entity{
                             img.setRGB(x, y, new Color((float)(x / 255f), (float)(y / 255f), 0f, 0.5f).getRGB());
                 }
 
-                model.material = new bog.bgmaker.view3d.core.Material(new Texture(this.loader.loadTexture(img)));
+                model.material = new bog.bgmaker.view3d.core.Material(new Texture(this.loader.loadTexture(img, GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR)));
                 model.material.disableCulling = culling;
             } catch (Exception e) {
                 e.printStackTrace();

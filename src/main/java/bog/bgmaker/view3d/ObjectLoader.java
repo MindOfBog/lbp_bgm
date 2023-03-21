@@ -400,40 +400,7 @@ public class ObjectLoader {
         return id;
     }
 
-    public int loadTextureNearest(String filename) throws Exception
-    {
-        int width, height;
-        ByteBuffer buffer;
-
-        try(MemoryStack stack = MemoryStack.stackPush())
-        {
-            IntBuffer w = stack.mallocInt(1);
-            IntBuffer h = stack.mallocInt(1);
-            IntBuffer c = stack.mallocInt(1);
-
-            buffer = STBImage.stbi_load(filename, w, h, c, 4);
-
-            if(buffer == null)
-                throw new Exception("Image file " + filename + " not loaded.\n" + STBImage.stbi_failure_reason());
-
-            width = w.get();
-            height = h.get();
-        }
-
-        int id = GL11.glGenTextures();
-        textures.add(id);
-        GL11.glBindTexture(GL11.GL_TEXTURE_2D, id);
-        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
-        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
-        GL11.glPixelStorei(GL11.GL_UNPACK_ALIGNMENT, 1);
-        GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, width, height, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffer);
-        GL30.glGenerateMipmap(GL11.GL_TEXTURE_2D);
-        STBImage.stbi_image_free(buffer);
-
-        return id;
-    }
-
-    public int loadTexture(BufferedImage image) throws Exception
+    public int loadTexture(BufferedImage image, int minFilter, int magFilter) throws Exception
     {
         ByteBuffer buffer = ByteBuffer.allocateDirect(image.getWidth() * image.getHeight() * 4);
 
@@ -456,8 +423,8 @@ public class ObjectLoader {
         int id = GL11.glGenTextures();
         textures.add(id);
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, id);
-        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR_MIPMAP_LINEAR);
-        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, minFilter);
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, magFilter);
         GL11.glPixelStorei(GL11.GL_UNPACK_ALIGNMENT, 1);
         GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, image.getWidth(), image.getHeight(), 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffer);
         GL30.glGenerateMipmap(GL11.GL_TEXTURE_2D);
@@ -488,41 +455,9 @@ public class ObjectLoader {
         return buffer;
     }
 
-    public int loadTextureNearest(BufferedImage image) throws Exception
+    public int loadResourceTexture(String resourcePath, int minFilter, int magFilter) throws Exception
     {
-        ByteBuffer buffer = ByteBuffer.allocateDirect(image.getWidth() * image.getHeight() * 4);
-
-        int[] pixels = new int[image.getWidth() * image.getHeight()];
-        image.getRGB(0, 0, image.getWidth(), image.getHeight(), pixels, 0, image.getWidth());
-
-        for(int h = 0; h < image.getHeight(); h++) {
-            for(int w = 0; w < image.getWidth(); w++) {
-                int pixel = pixels[h * image.getWidth() + w];
-
-                buffer.put((byte) ((pixel >> 16) & 0xFF));
-                buffer.put((byte) ((pixel >> 8) & 0xFF));
-                buffer.put((byte) (pixel & 0xFF));
-                buffer.put((byte) ((pixel >> 24) & 0xFF));
-            }
-        }
-
-        buffer.flip();
-
-        int id = GL11.glGenTextures();
-        textures.add(id);
-        GL11.glBindTexture(GL11.GL_TEXTURE_2D, id);
-        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
-        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
-        GL11.glPixelStorei(GL11.GL_UNPACK_ALIGNMENT, 1);
-        GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, image.getWidth(), image.getHeight(), 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffer);
-        GL30.glGenerateMipmap(GL11.GL_TEXTURE_2D);
-
-        return id;
-    }
-
-    public int loadResourceTexture(String resourcePath) throws Exception
-    {
-        return loadTexture(ImageIO.read(Main.class.getResourceAsStream(resourcePath)));
+        return loadTexture(ImageIO.read(Main.class.getResourceAsStream(resourcePath)), minFilter, magFilter);
     }
     public int createVAO()
     {

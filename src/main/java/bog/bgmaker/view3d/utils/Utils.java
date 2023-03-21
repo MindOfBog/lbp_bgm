@@ -76,7 +76,7 @@ public class Utils {
     public static ArrayList<String> readAllLines(String fileName)
     {
         ArrayList<String> list = new ArrayList<>();
-        try(BufferedReader br = new BufferedReader(new InputStreamReader(Class.forName(Utils.class.getName()).getResourceAsStream(fileName))))
+        try(BufferedReader br = new BufferedReader(new InputStreamReader(Utils.class.getResourceAsStream(fileName))))
         {
             String line;
             while((line = br.readLine()) != null)

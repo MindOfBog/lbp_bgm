@@ -127,14 +127,14 @@ public class View3D implements ILogic {
             levelSettings.add(ls);
 
         initMillis = System.currentTimeMillis();
-        crosshair = loader.loadTexture(ImageIO.read(Main.class.getResourceAsStream("/textures/crosshair.png")));
-        sun = loader.loadTexture(ImageIO.read(Main.class.getResourceAsStream("/textures/sun.png")));
-        worldAudio = loader.loadTexture(ImageIO.read(Main.class.getResourceAsStream("/textures/world audio.png")));
-        logo = loader.loadTexture(ImageIO.read(Main.class.getResourceAsStream("/icon.png")));
-        modelIcon = loader.loadTexture(ImageIO.read(Main.class.getResourceAsStream("/textures/model.png")));
-        materialIcon = loader.loadTexture(ImageIO.read(Main.class.getResourceAsStream("/textures/material.png")));
-        lightIcon = loader.loadTexture(ImageIO.read(Main.class.getResourceAsStream("/textures/light.png")));
-        audioIcon = loader.loadTexture(ImageIO.read(Main.class.getResourceAsStream("/textures/audio.png")));
+        crosshair = loader.loadTexture(ImageIO.read(Main.class.getResourceAsStream("/textures/crosshair.png")), GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR);
+        sun = loader.loadTexture(ImageIO.read(Main.class.getResourceAsStream("/textures/sun.png")), GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR);
+        worldAudio = loader.loadTexture(ImageIO.read(Main.class.getResourceAsStream("/textures/world audio.png")), GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR);
+        logo = loader.loadTexture(ImageIO.read(Main.class.getResourceAsStream("/icon.png")), GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR);
+        modelIcon = loader.loadTexture(ImageIO.read(Main.class.getResourceAsStream("/textures/model.png")), GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR);
+        materialIcon = loader.loadTexture(ImageIO.read(Main.class.getResourceAsStream("/textures/material.png")), GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR);
+        lightIcon = loader.loadTexture(ImageIO.read(Main.class.getResourceAsStream("/textures/light.png")), GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR);
+        audioIcon = loader.loadTexture(ImageIO.read(Main.class.getResourceAsStream("/textures/audio.png")), GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR);
 
         createUI();
 
@@ -158,10 +158,10 @@ public class View3D implements ILogic {
             BORDERS.add(new Entity(borders3, new Vector3f(21219f, 1557f, -790f + -400f * layer), new Vector3f(0, 0, 0), new Vector3f(1f, 1f, 1f), loader));
 
         Model pod = loader.loadOBJModel("/models/pod.obj");
-        pod.material = new Material(new Texture(loader.loadTexture(Utils.colorFilter(ImageIO.read(Main.class.getResourceAsStream("/textures/pod.png")), new Color(154, 236, 93, 166)))));
+        pod.material = new Material(new Texture(loader.loadTexture(Utils.colorFilter(ImageIO.read(Main.class.getResourceAsStream("/textures/pod.png")), new Color(154, 236, 93, 166)), GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR)));
         POD_EARTH.add(new Entity(pod, new Vector3f(25.0f, 260.0f, 13490.0f), new Vector3f(-105.0f, 0.0f, 0.0f), new Vector3f(1f, 1f, 1f), loader));
         Model earth = loader.loadOBJModel("/models/earth.obj");
-        earth.material = new Material(new Texture(loader.loadTexture(Utils.colorFilter(ImageIO.read(Main.class.getResourceAsStream("/textures/earth.png")), new Color(236, 93, 154, 166)))));
+        earth.material = new Material(new Texture(loader.loadTexture(Utils.colorFilter(ImageIO.read(Main.class.getResourceAsStream("/textures/earth.png")), new Color(236, 93, 154, 166)), GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR)));
         POD_EARTH.add(new Entity(earth, new Vector3f(30.71f, 60.38f, 243.31f), new Vector3f(0, 0, 0), new Vector3f(1.5f, 1.5f, 1.5f), loader));
     }
 

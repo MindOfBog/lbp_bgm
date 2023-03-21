@@ -12,6 +12,7 @@ import org.joml.Vector2d;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
+import org.lwjgl.opengl.GL11;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -44,7 +45,7 @@ public class MaterialEditing extends GuiScreen {
 
         try
         {
-            cornerEdit = mainView.loader.loadTexture(ImageIO.read(Main.class.getResourceAsStream("/textures/corner edit.png")));
+            cornerEdit = mainView.loader.loadTexture(ImageIO.read(Main.class.getResourceAsStream("/textures/corner edit.png")), GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR);
         }catch (Exception e){e.printStackTrace();}
 
         this.guiElements.add(new Button("backButton", "Back", new Vector2f(mainView.window.width - 150, mainView.window.height - 20), new Vector2f(150, 50), 10, mainView.renderer, mainView.loader, mainView.window) {

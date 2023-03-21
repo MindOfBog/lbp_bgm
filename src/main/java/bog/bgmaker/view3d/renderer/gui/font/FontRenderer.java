@@ -5,6 +5,7 @@ import bog.bgmaker.view3d.managers.RenderMan;
 import bog.bgmaker.view3d.renderer.gui.ingredients.Quad;
 import bog.bgmaker.view3d.utils.Utils;
 import org.joml.Vector2f;
+import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
 import java.io.File;
@@ -24,7 +25,6 @@ public class FontRenderer {
     {
         Fonts = new ArrayList<>();
         loader = objectLoader;
-        File[] files = new File[0];
 
         try {
             for(String path : Utils.getFilenames("font"))
@@ -40,7 +40,7 @@ public class FontRenderer {
                 {
                     FNT font = FNT.readFNT("/font/" + name);
                     try {
-                        font.textureID = loader.loadTexture(font.map);
+                        font.textureID = loader.loadTexture(font.map, GL11.GL_NEAREST, GL11.GL_LINEAR);
                     } catch (Exception e) {e.printStackTrace();}
 
                     font.glyphs = new HashMap<>();
