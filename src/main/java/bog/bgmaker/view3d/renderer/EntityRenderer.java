@@ -277,6 +277,12 @@ public class EntityRenderer implements IRenderer{
                     if(entity.highlighted || entity.selected)
                         outline = true;
 
+                    if(model.material.overlayColor != null)
+                    {
+                        shader.setUniform("highlightMode", 1);
+                        shader.setUniform("highlightColor", model.material.overlayColor);
+                    }
+
                     // Main render
 
                     GL11.glDrawElements(GL11.GL_TRIANGLES, model.vertexCount, 5125, 0L);
@@ -358,13 +364,13 @@ public class EntityRenderer implements IRenderer{
 
             GL11.glViewport(0, 0, window.width, window.height);
 
-            drawOutline(vertSelectFB, vertSelectCT, shaderOutlineVertical, shader, true, window.height/2f, new Color(252, 173, 3));
+            drawOutline(vertSelectFB, vertSelectCT, shaderOutlineVertical, shader, true, window.height/2f, Const.OUTLINE_COLOR);
             GL30.glDeleteFramebuffers(vertSelectFB);
             GL11.glDeleteTextures(vertSelectCT);
 
             unbindFrameBuffer();
 
-            drawOutline(horSelectFB, horSelectCT, shaderOutlineHorizontal, shader, true, window.width/2f, new Color(252, 173, 3));
+            drawOutline(horSelectFB, horSelectCT, shaderOutlineHorizontal, shader, true, window.width/2f, Const.OUTLINE_COLOR);
             GL30.glDeleteFramebuffers(horSelectFB);
             GL11.glDeleteTextures(horSelectCT);
 

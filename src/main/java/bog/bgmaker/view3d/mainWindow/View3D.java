@@ -109,6 +109,8 @@ public class View3D implements ILogic {
 
     public long initMillis = 0;
 
+    public Model borders, borders1, borders2, borders3, pod, earth;
+
     @Override
     public void init() throws Exception {
         renderer.init(this.loader);
@@ -138,30 +140,32 @@ public class View3D implements ILogic {
 
         createUI();
 
-        Model borders = loader.loadOBJModel("/models/border.obj");
-        borders.material = new Material(new Vector4f(0.6117f, 0f, 0f, 0.65f), 0f).disableCulling(true);
+        borders = loader.loadOBJModel("/models/border.obj");
+        borders.material = new Material(Const.BORDER_COLOR_1, 0f).disableCulling(true);
         BORDERS.add(new Entity(borders, new Vector3f(21219f, 1557f, 10f), new Vector3f(0, 0, 0), new Vector3f(1f, 1f, 1f), loader));
         BORDERS.add(new Entity(borders, new Vector3f(21219f, 1557f, -390f), new Vector3f(0, 0, 0), new Vector3f(1f, 1f, 1f), loader));
 
-        Model borders1 = new Model(borders);
-        borders1.material = new Material(new Vector4f(0.9019f, 0f, 0f, 0.65f), 0f).disableCulling(true);
+        borders1 = new Model(borders);
+        borders1.material = new Material(Const.BORDER_COLOR_2, 0f).disableCulling(true);
         BORDERS.add(new Entity(borders1, new Vector3f(21219f, 1557f, -190f), new Vector3f(0, 0, 0), new Vector3f(1f, 1f, 1f), loader));
 
-        Model borders2 = new Model(borders);
-        borders2.material = new Material(new Vector4f(0.0039f, 0.16078f, 0.56078f, 0.65f), 0f).disableCulling(true);
+        borders2 = new Model(borders);
+        borders2.material = new Material(Const.BORDER_COLOR_3, 0f).disableCulling(true);
         for(int layer = 0; layer < 7; layer++)
             BORDERS.add(new Entity(borders2, new Vector3f(21219f, 1557f, -590f + -400f * layer), new Vector3f(0, 0, 0), new Vector3f(1f, 1f, 1f), loader));
 
-        Model borders3 = new Model(borders);
-        borders3.material = new Material(new Vector4f(0f, 0.24313f, 0.85882f, 0.65f), 0f).disableCulling(true);
+        borders3 = new Model(borders);
+        borders3.material = new Material(Const.BORDER_COLOR_4, 0f).disableCulling(true);
         for(int layer = 0; layer < 6; layer++)
             BORDERS.add(new Entity(borders3, new Vector3f(21219f, 1557f, -790f + -400f * layer), new Vector3f(0, 0, 0), new Vector3f(1f, 1f, 1f), loader));
 
-        Model pod = loader.loadOBJModel("/models/pod.obj");
-        pod.material = new Material(new Texture(loader.loadTexture(Utils.colorFilter(ImageIO.read(Main.class.getResourceAsStream("/textures/pod.png")), new Color(154, 236, 93, 166)), GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR)));
+        pod = loader.loadOBJModel("/models/pod.obj");
+        pod.material = new Material(new Texture(loader.loadTexture(ImageIO.read(Main.class.getResourceAsStream("/textures/pod.png")), GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR)));
+        pod.material.overlayColor = new Vector4f(Const.POD_COLOR.getRed() / 255f, Const.POD_COLOR.getGreen() / 255f, Const.POD_COLOR.getBlue() / 255f, Const.POD_COLOR.getAlpha() / 255f);
         POD_EARTH.add(new Entity(pod, new Vector3f(25.0f, 260.0f, 13490.0f), new Vector3f(-105.0f, 0.0f, 0.0f), new Vector3f(1f, 1f, 1f), loader));
-        Model earth = loader.loadOBJModel("/models/earth.obj");
-        earth.material = new Material(new Texture(loader.loadTexture(Utils.colorFilter(ImageIO.read(Main.class.getResourceAsStream("/textures/earth.png")), new Color(236, 93, 154, 166)), GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR)));
+        earth = loader.loadOBJModel("/models/earth.obj");
+        earth.material = new Material(new Texture(loader.loadTexture(ImageIO.read(Main.class.getResourceAsStream("/textures/earth.png")), GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR)));
+        earth.material.overlayColor = new Vector4f(Const.EARTH_COLOR.getRed() / 255f, Const.EARTH_COLOR.getGreen() / 255f, Const.EARTH_COLOR.getBlue() / 255f, Const.EARTH_COLOR.getAlpha() / 255f);
         POD_EARTH.add(new Entity(earth, new Vector3f(30.71f, 60.38f, 243.31f), new Vector3f(0, 0, 0), new Vector3f(1.5f, 1.5f, 1.5f), loader));
     }
 
@@ -264,9 +268,8 @@ public class View3D implements ILogic {
             }
         }
 
-        DropDownTab helpers = (DropDownTab) ElementEditing.getElementByID("helpers");
-        Checkbox level = (Checkbox) helpers.getElementByID("levelBorders");
-        Checkbox pod = (Checkbox) helpers.getElementByID("podHelper");
+        Checkbox level = (Checkbox) ((ElementEditing) ElementEditing).helpers.tabElements.get(0);
+        Checkbox pod = (Checkbox) ((ElementEditing) ElementEditing).helpers.tabElements.get(1);
 
         if(level.isChecked)
             for(Entity entity : BORDERS)
@@ -304,7 +307,7 @@ public class View3D implements ILogic {
 
                 try
                 {
-                    if(((Checkbox)((DropDownTab)ElementEditing.getElementByID("debug")).getElementByID("aabb")).isChecked)
+                    if(((Checkbox)((Settings)Settings).debug.tabElements.get(0)).isChecked)
                         for(Model model1 : entity.getModel())
                         {
                             Entity boundingBox = new Entity(model1.aabb.model, new Vector3f(0f, 0f, 0f), new Vector3f(0f, 0f, 0f), new Vector3f(1f, 1f, 1f), loader);
@@ -422,8 +425,12 @@ public class View3D implements ILogic {
         }
 
         if(key == GLFW.GLFW_KEY_A && action == GLFW.GLFW_PRESS && mods == GLFW.GLFW_MOD_CONTROL && !elementFocused && currentScreen == ElementEditing)
-            for(Entity entity : entities)
-                entity.selected = true;
+        {
+            for(Entity e : entities)
+                e.selected = false;
+            for(Object i : ((ElementEditing)ElementEditing).loadedEntities.indexes)
+                entities.get((int)i).selected = true;
+        }
     }
 
     @Override
@@ -432,11 +439,6 @@ public class View3D implements ILogic {
             return;
 
         currentScreen.onChar(codePoint, modifiers);
-
-        if(Const.Z_NEAR != getZNear())
-            Const.Z_NEAR = getZNear();
-        if(Const.Z_FAR != getZFar())
-            Const.Z_FAR = getZFar();
     }
 
     @Override
@@ -453,8 +455,8 @@ public class View3D implements ILogic {
                 Const.CAMERA_MOVE_SPEED = 1;
             Const.CAMERA_MOVE_SPEED = yOffset > 0 ? Const.CAMERA_MOVE_SPEED * 1.2f : Const.CAMERA_MOVE_SPEED * 0.8f;
             Const.CAMERA_MOVE_SPEED = yOffset > 0 ? Math.ceil(Const.CAMERA_MOVE_SPEED) : Math.floor(Const.CAMERA_MOVE_SPEED);
-            DropDownTab settings = (DropDownTab) Settings.getElementByID("rendererSettings");
-            Textbox speed = ((DropDownTab.LabeledTextbox) settings.getElementByID("moveSpeed")).textbox;
+            DropDownTab settings = ((Settings) Settings).rendererSettings;
+            Textbox speed = ((DropDownTab.LabeledTextbox) settings.tabElements.get(3)).textbox;
             speed.text(Float.toString(Const.CAMERA_MOVE_SPEED));
         }
     }
@@ -588,10 +590,10 @@ public class View3D implements ILogic {
 
         if(Main.debug)
         {
-            boolean vao = ((Checkbox) ((DropDownTab) Settings.getElementByID("debug")).getElementByID("vaoCount")).isChecked;
-            boolean vbo = ((Checkbox) ((DropDownTab) Settings.getElementByID("debug")).getElementByID("vboCount")).isChecked;
-            boolean tex = ((Checkbox) ((DropDownTab) Settings.getElementByID("debug")).getElementByID("textureCount")).isChecked;
-            boolean scissor = ((Checkbox) ((DropDownTab) Settings.getElementByID("debug")).getElementByID("glScissorTest")).isChecked;
+            boolean scissor = ((Checkbox) ((Settings) Settings).debug.tabElements.get(1)).isChecked;
+            boolean vao = ((Checkbox) ((Settings) Settings).debug.tabElements.get(2)).isChecked;
+            boolean vbo = ((Checkbox) ((Settings) Settings).debug.tabElements.get(3)).isChecked;
+            boolean tex = ((Checkbox) ((Settings) Settings).debug.tabElements.get(4)).isChecked;
 
             int l = 1;
 
@@ -780,86 +782,37 @@ public class View3D implements ILogic {
 
     public boolean noCulling()
     {
-        DropDownTab settings = (DropDownTab) Settings.getElementByID("rendererSettings");
-        Checkbox culling = (Checkbox) settings.getElementByID("culling");
-        return culling.isChecked;
+        return ((Checkbox)((Settings)Settings).rendererSettings.tabElements.get(0)).isChecked;
     }
 
     public float getFOV()
     {
-        DropDownTab settings = (DropDownTab) Settings.getElementByID("rendererSettings");
-        Slider fov = ((DropDownTab.LabeledSlider) settings.getElementByID("fov")).slider;
-        return fov.getCurrentValue();
+        return ((DropDownTab.LabeledSlider)((Settings)Settings).rendererSettings.tabElements.get(1)).slider.getCurrentValue();
     }
 
     public int getFPS()
     {
-        DropDownTab settings = (DropDownTab) Settings.getElementByID("rendererSettings");
-        Textbox fps = ((DropDownTab.LabeledTextbox) settings.getElementByID("fps")).textbox;
-        return (int)Float.parseFloat(fps.getText());
+        return (int)Float.parseFloat(((DropDownTab.LabeledTextbox)((Settings)Settings).rendererSettings.tabElements.get(2)).textbox.getText());
     }
 
     public float getMoveSpeed()
     {
-        DropDownTab settings = (DropDownTab) Settings.getElementByID("rendererSettings");
-        Textbox speed = ((DropDownTab.LabeledTextbox) settings.getElementByID("moveSpeed")).textbox;
-        return Float.parseFloat(speed.getText());
+        return Float.parseFloat(((DropDownTab.LabeledTextbox)((Settings)Settings).rendererSettings.tabElements.get(3)).textbox.getText());
     }
 
     public float getSensitivity()
     {
-        DropDownTab settings = (DropDownTab) Settings.getElementByID("rendererSettings");
-        Textbox speed = ((DropDownTab.LabeledTextbox) settings.getElementByID("sensitivity")).textbox;
-
         try
         {
-            return Float.parseFloat(speed.getText());
+            return Float.parseFloat(((DropDownTab.LabeledTextbox)((Settings)Settings).rendererSettings.tabElements.get(4)).textbox.getText());
         }catch (Exception e){}
 
         return 0;
     }
 
-    public float getZNear()
-    {
-        DropDownTab settings = (DropDownTab) Settings.getElementByID("rendererSettings");
-        Textbox speed = ((DropDownTab.LabeledTextbox) settings.getElementByID("zNear")).textbox;
-
-        try
-        {
-            return Float.parseFloat(speed.getText());
-        }catch (Exception e){}
-
-        return 1f;
-    }
-
-    public float getZFar()
-    {
-        DropDownTab settings = (DropDownTab) Settings.getElementByID("rendererSettings");
-        Textbox speed = ((DropDownTab.LabeledTextbox) settings.getElementByID("zFar")).textbox;
-
-        try
-        {
-            return Float.parseFloat(speed.getText());
-        }catch (Exception e){}
-
-        return 1000000f;
-    }
-
     public boolean legacyFileDialogue()
     {
-        DropDownTab fileLoading = (DropDownTab) ElementEditing.getElementByID("fileLoading");
-        Checkbox legacyFileLoading = (Checkbox) fileLoading.getElementByID("legacyFileLoading");
-        return legacyFileLoading.isChecked;
-    }
-
-    public String getEntitySearch()
-    {
-        try
-        {
-            Textbox speed = ((DropDownTab.LabeledTextbox) ElementEditing.getElementByID("loadedEntitiesSearch")).textbox;
-            return speed.getText();
-        }catch (Exception e){}
-        return "";
+        return ((Checkbox)((ElementEditing)ElementEditing).fileLoading.tabElements.get(0)).isChecked;
     }
 
     public void copySelected()

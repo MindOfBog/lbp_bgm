@@ -526,6 +526,9 @@ public class Utils {
     public static Color parseHexColor(String hex)
     {
         try {
+            if(hex.startsWith("#"))
+                hex = hex.substring(1);
+
             int r = Integer.parseInt(hex.substring(0, 2),16);
             int g = Integer.parseInt(hex.substring(2, 4),16);
             int b = Integer.parseInt(hex.substring(4, 6),16);
@@ -565,20 +568,6 @@ public class Utils {
     {
         String hex = Integer.toHexString(dec);
         return hex.length() == 1 ? "0" + hex : hex;
-    }
-
-    public static boolean pointInTriangle2D(Vector2f p, Vector2f a, Vector2f b, Vector2f c)
-    {
-        if (sameSide(p,a, b,c) && sameSide(p,b, a,c) && sameSide(p,c, a,b)) return true;
-        return false;
-    }
-
-    private static boolean sameSide(Vector2f p1, Vector2f p2, Vector2f a, Vector2f b)
-    {
-        Vector3f c1 = new Vector3f(b, 0).negate(new Vector3f(a, 0)).cross(new Vector3f(p1, 0).negate(new Vector3f(a, 0)));
-        Vector3f c2 = new Vector3f(b, 0).negate(new Vector3f(a, 0)).cross(new Vector3f(p2, 0).negate(new Vector3f(a, 0)));
-        if(new Vector2f(c1.x, c1.y).dot(new Vector2f(c2.x, c2.y)) >= 0) return true;
-        return false;
     }
 
 }

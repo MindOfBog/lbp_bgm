@@ -140,6 +140,41 @@ public class DropDownTab extends Element{
             tabElements.add(new Textbox(id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight(fontSize) + 4), fontSize, renderer, loader, window));
     }
 
+    public void addTextbox(String id, boolean numbers, boolean letters, boolean others)
+    {
+        if(!containsElementByID(id))
+        {
+            Textbox tb = new Textbox(id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight(fontSize) + 4), fontSize, renderer, loader, window);
+            tb.numbers = numbers;
+            tb.letters = letters;
+            tb.others = others;
+            tabElements.add(tb);
+        }
+    }
+
+    public void addTextbox(String id, String text)
+    {
+        if(!containsElementByID(id))
+        {
+            Textbox tb = new Textbox(id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight(fontSize) + 4), fontSize, renderer, loader, window);
+            tb.setText(text);
+            tabElements.add(tb);
+        }
+    }
+
+    public void addTextbox(String id, boolean numbers, boolean letters, boolean others, String text)
+    {
+        if(!containsElementByID(id))
+        {
+            Textbox tb = new Textbox(id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight(fontSize) + 4), fontSize, renderer, loader, window);
+            tb.numbers = numbers;
+            tb.letters = letters;
+            tb.others = others;
+            tb.setText(text);
+            tabElements.add(tb);
+        }
+    }
+
     public void addLabeledTextbox(String id, String label)
     {
         if(!containsElementByID(id))

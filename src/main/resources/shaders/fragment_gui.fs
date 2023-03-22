@@ -9,8 +9,8 @@ uniform int hasColor;
 uniform vec4 color;
 uniform bool smoothst;
 
-const float width = 0.4;
-const float edge = 0.225;
+const float width = 0.41;
+const float edge = 0.25;
 
 void main(void){
 

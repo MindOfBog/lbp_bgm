@@ -40,7 +40,7 @@ uniform sampler2D textureSampler;
 uniform vec3 ambientLight;
 uniform Material material;
 uniform int highlightMode;
-uniform vec3 highlightColor;
+uniform vec4 highlightColor;
 uniform float brightnessMul;
 uniform float specularPower;
 uniform DirectionalLight directionalLights[5];
@@ -123,7 +123,8 @@ void setupColors()
 
             if(highlightMode == 1)
             {
-                ambientC = vec4(mix(ambientC.xyz, highlightColor, 0.5).xyz, ambientC.w);
+                float mul = (ambientC.r + ambientC.g + ambientC.b) / 3.0;
+                ambientC = vec4(highlightColor.r * mul, highlightColor.g * mul, highlightColor.b * mul, ambientC.a * highlightColor.a);
             }
             else if(highlightMode == 2)
             {
@@ -143,7 +144,8 @@ void setupColors()
 
             if(highlightMode == 1)
             {
-                ambientC = vec4(mix(ambientC.xyz, highlightColor, 0.5).xyz, ambientC.w);
+                float mul = (ambientC.r + ambientC.g + ambientC.b) / 3.0;
+                ambientC = vec4(highlightColor.r * mul, highlightColor.g * mul, highlightColor.b * mul, ambientC.a * highlightColor.a);
             }
             else if(highlightMode == 2)
             {

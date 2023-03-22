@@ -52,7 +52,7 @@ public abstract class ButtonList<T> extends Element{
         updateSearch();
     }
 
-    ArrayList<Integer> indexes;
+    public ArrayList<Integer> indexes;
 
     public void updateSearch()
     {

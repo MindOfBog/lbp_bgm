@@ -53,23 +53,23 @@ public class ElementEditing extends GuiScreen {
         this.mainView = mainView;
         this.init();
     }
-    DropDownTab camPos;
-    DropDownTab currentSelection;
-    DropDownTab fileLoading;
-    DropDownTab helpers;
-    DropDownTab availableAssets;
-    ButtonList assetList;
-    Element loadedEntitiesHitbox;
-    ButtonList loadedEntities;
-    Button loadPlanElements;
-    DropDownTab.LabeledTextbox loadedEntitiesSearch;
-    Button clearAllEntites;
-    Button deleteSelectedEntities;
-    Button sortEntityList;
-    ButtonImage move;
-    ButtonImage rotate;
-    ButtonImage scale;
-    ButtonImage materialEdit;
+    public DropDownTab camPos;
+    public DropDownTab currentSelection;
+    public DropDownTab fileLoading;
+    public DropDownTab helpers;
+    public DropDownTab availableAssets;
+    public ButtonList assetList;
+    public Element loadedEntitiesHitbox;
+    public ButtonList loadedEntities;
+    public Button loadPlanElements;
+    public DropDownTab.LabeledTextbox loadedEntitiesSearch;
+    public Button clearAllEntites;
+    public Button deleteSelectedEntities;
+    public Button sortEntityList;
+    public ButtonImage move;
+    public ButtonImage rotate;
+    public ButtonImage scale;
+    public ButtonImage materialEdit;
 
     public void init() {
         elementTool = new Transformation3D.Tool(mainView.loader);
@@ -78,13 +78,13 @@ public class ElementEditing extends GuiScreen {
             @Override
             public void draw(MouseInput mouseInput, boolean overOther) {
 
-                Vector2f camX = setTextboxValueFloat(((DropDownTab.LabeledTextbox) this.getElementByID("x")).textbox, mainView.camera.pos.x);
+                Vector2f camX = setTextboxValueFloat(((DropDownTab.LabeledTextbox) this.tabElements.get(0)).textbox, mainView.camera.pos.x);
                 if (camX.y == 1)
                     mainView.camera.pos.x = camX.x;
-                Vector2f camY = setTextboxValueFloat(((DropDownTab.LabeledTextbox) this.getElementByID("y")).textbox, mainView.camera.pos.y);
+                Vector2f camY = setTextboxValueFloat(((DropDownTab.LabeledTextbox) this.tabElements.get(1)).textbox, mainView.camera.pos.y);
                 if (camY.y == 1)
                     mainView.camera.pos.y = camY.x;
-                Vector2f camZ = setTextboxValueFloat(((DropDownTab.LabeledTextbox) this.getElementByID("z")).textbox, mainView.camera.pos.z);
+                Vector2f camZ = setTextboxValueFloat(((DropDownTab.LabeledTextbox) this.tabElements.get(2)).textbox, mainView.camera.pos.z);
                 if (camZ.y == 1)
                     mainView.camera.pos.z = camZ.x;
 
@@ -124,7 +124,7 @@ public class ElementEditing extends GuiScreen {
                     }
 
                 try {
-                    String name = setTextboxValueString(((Textbox) this.getElementByID("name")), mainView.getSelectedName());
+                    String name = setTextboxValueString(((Textbox) this.tabElements.get(1)), mainView.getSelectedName());
                     if (name != null && selected.size() >= 1)
                         for (int i : selected)
                             mainView.entities.get(i).entityName = name;
@@ -135,7 +135,7 @@ public class ElementEditing extends GuiScreen {
                     this.addString("meshDescrLabel", "Mesh descriptor:");
                     this.addTextbox("meshDescriptor");
 
-                    String mesh = setTextboxValueString(((Textbox) this.getElementByID("meshDescriptor")), mainView.getSelectedMeshDescriptor());
+                    String mesh = setTextboxValueString(((Textbox) this.tabElements.get(7)), mainView.getSelectedMeshDescriptor());
                     if (mesh != null && selected.size() >= 1)
                         for (int i : selected) {
                             Entity entity = mainView.entities.get(i);
@@ -173,11 +173,11 @@ public class ElementEditing extends GuiScreen {
                     this.addString("materialBevelSizeLabel", "Bevel size:");
                     this.addTextbox("materialBevelSize");
 
-                    String gmat = setTextboxValueString(((Textbox) this.getElementByID("materialGfxMatDescriptor")), mainView.getSelectedGfxMaterialDescriptor());
-                    String mat = setTextboxValueString(((Textbox) this.getElementByID("materialMaterialDescriptor")), mainView.getSelectedMaterialDescriptor());
-                    String bev = setTextboxValueString(((Textbox) this.getElementByID("materialBevelDescriptor")), mainView.getSelectedBevelDescriptor());
-                    Vector2f thickness = setTextboxValueFloat(((Textbox) this.getElementByID("materialThickness")), mainView.getSelectedMaterialThickness());
-                    Vector2f bevelSize = setTextboxValueFloat(((Textbox) this.getElementByID("materialBevelSize")), mainView.getSelectedBevelSize());
+                    String gmat = setTextboxValueString(((Textbox) this.tabElements.get(7)), mainView.getSelectedGfxMaterialDescriptor());
+                    String mat = setTextboxValueString(((Textbox) this.tabElements.get(9)), mainView.getSelectedMaterialDescriptor());
+                    String bev = setTextboxValueString(((Textbox) this.tabElements.get(11)), mainView.getSelectedBevelDescriptor());
+                    Vector2f thickness = setTextboxValueFloat(((Textbox) this.tabElements.get(13)), mainView.getSelectedMaterialThickness());
+                    Vector2f bevelSize = setTextboxValueFloat(((Textbox) this.tabElements.get(15)), mainView.getSelectedBevelSize());
 
                     if (selected.size() >= 1)
                         for (int i : selected) {
@@ -253,12 +253,12 @@ public class ElementEditing extends GuiScreen {
                     this.addString("audioPitchLabel", "Pitch:");
                     this.addSlider("audioPitch", 0, -1, 1);
 
-                    String soundName = setTextboxValueString(((Textbox) this.getElementByID("audio")), mainView.getSelectedSoundName());
+                    String soundName = setTextboxValueString(((Textbox) this.tabElements.get(7)), mainView.getSelectedSoundName());
 
-                    StringElement audioVolumeLabel = (StringElement) this.getElementByID("audioVolumeLabel");
-                    StringElement audioPitchLabel = (StringElement) this.getElementByID("audioPitchLabel");
-                    Slider audioVolume = (Slider) this.getElementByID("audioVolume");
-                    Slider audioPitch = (Slider) this.getElementByID("audioPitch");
+                    StringElement audioVolumeLabel = (StringElement) this.tabElements.get(8);
+                    StringElement audioPitchLabel = (StringElement) this.tabElements.get(10);
+                    Slider audioVolume = (Slider) this.tabElements.get(9);
+                    Slider audioPitch = (Slider) this.tabElements.get(11);
 
                     audioVolumeLabel.string = "Volume: " + Utils.round(audioVolume.getCurrentValue(), 2);
                     audioPitchLabel.string = "Pitch: " + Utils.round(audioPitch.getCurrentValue(), 2);
@@ -292,9 +292,9 @@ public class ElementEditing extends GuiScreen {
                 }
 
                 Vector3f selectedPos = mainView.getSelectedPosition();
-                Vector2f posX = setTextboxValueFloat(((DropDownTab.LabeledTextbox) this.getElementByID("posX")).textbox, selectedPos.x);
-                Vector2f posY = setTextboxValueFloat(((DropDownTab.LabeledTextbox) this.getElementByID("posY")).textbox, selectedPos.y);
-                Vector2f posZ = setTextboxValueFloat(((DropDownTab.LabeledTextbox) this.getElementByID("posZ")).textbox, selectedPos.z);
+                Vector2f posX = setTextboxValueFloat(((DropDownTab.LabeledTextbox) this.tabElements.get(3)).textbox, selectedPos.x);
+                Vector2f posY = setTextboxValueFloat(((DropDownTab.LabeledTextbox) this.tabElements.get(4)).textbox, selectedPos.y);
+                Vector2f posZ = setTextboxValueFloat(((DropDownTab.LabeledTextbox) this.tabElements.get(5)).textbox, selectedPos.z);
                 if (posX.y == 1 || posY.y == 1 || posZ.y == 1)
                     mainView.setSelectedPosition(new Vector3f(posX.y == 1 ? posX.x : selectedPos.x, posY.y == 1 ? posY.x : selectedPos.y, posZ.y == 1 ? posZ.x : selectedPos.z));
 
@@ -502,7 +502,7 @@ public class ElementEditing extends GuiScreen {
 
                 try {
                     if (searchTextbox == null)
-                        searchTextbox = ((DropDownTab.LabeledTextbox) availableAssets.getElementByID("availableEntitiesSearch")).textbox;
+                        searchTextbox = ((DropDownTab.LabeledTextbox) availableAssets.tabElements.get(0)).textbox;
 
                     if (entry.getPath().endsWith("mol") || entry.getPath().endsWith("gmat") || entry.getPath().endsWith("gmt")) {
                         String text = searchTextbox.getText();
@@ -516,7 +516,7 @@ public class ElementEditing extends GuiScreen {
                             descriptor = ((FileDBRow)entry).getGUID().toString();
 
                         for (String search : text.split(" "))
-                            if (!(entry.getName().contains(search) || descriptor.contains(search)))
+                            if (!(entry.getName().toLowerCase().contains(search.toLowerCase()) || descriptor.toLowerCase().contains(search.toLowerCase())))
                                 return false;
 
                         return true;
@@ -651,7 +651,7 @@ public class ElementEditing extends GuiScreen {
 
                     String descriptor = ((Mesh) object).meshDescriptor.isGUID() ? ((Mesh) object).meshDescriptor.getGUID().toString() : "h" + ((Mesh) object).meshDescriptor.getSHA1().toString();
                     for (String search : text.split(" "))
-                        if (!(((Entity) object).entityName.contains(search) || descriptor.contains(search)))
+                        if (!(((Entity) object).entityName.toLowerCase().contains(search.toLowerCase()) || descriptor.toLowerCase().contains(search.toLowerCase())))
                             return false;
 
                     return true;
