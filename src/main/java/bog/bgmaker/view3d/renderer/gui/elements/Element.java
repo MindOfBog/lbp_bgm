@@ -43,7 +43,8 @@ public class Element {
 
     public boolean isMouseOverElement(Vector2f mousePos)
     {
-        return mousePos.x > pos.x && mousePos.y > pos.y && mousePos.x < pos.x + size.x && mousePos.y < pos.y + size.y;
+        try{return mousePos.x > pos.x && mousePos.y > pos.y && mousePos.x < pos.x + size.x && mousePos.y < pos.y + size.y;}catch (Exception e){}
+        return false;
     }
 
     public boolean isMouseOverElement(Vector2d mousePos)

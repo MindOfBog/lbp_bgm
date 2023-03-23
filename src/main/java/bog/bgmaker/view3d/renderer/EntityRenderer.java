@@ -298,9 +298,13 @@ public class EntityRenderer implements IRenderer{
         if(outline)
         {
             int vertSelectFB = initFrameBuffer();
-            int vertSelectCT = initColorTex();
 
-            GL11.glViewport(0, 0, window.width, window.height);
+            int vertWidth = Math.round(window.width * Const.OUTLINE_DISTANCE);
+            int vertHeight = Math.round(window.height * Const.OUTLINE_DISTANCE);
+
+            int vertSelectCT = initColorTex(vertWidth, vertHeight);
+
+            GL11.glViewport(0, 0, vertWidth, vertHeight);
 
             for (Entity entity : entities)
             {
@@ -360,17 +364,21 @@ public class EntityRenderer implements IRenderer{
             GL11.glStencilOp(GL11.GL_KEEP, GL11.GL_KEEP, GL11.GL_KEEP);
 
             int horSelectFB = initFrameBuffer();
-            int horSelectCT = initColorTex();
 
-            GL11.glViewport(0, 0, window.width, window.height);
+            int horWidth = Math.round(vertWidth * Const.OUTLINE_DISTANCE);
+            int horHeight = Math.round(vertHeight * Const.OUTLINE_DISTANCE);
 
-            drawOutline(vertSelectFB, vertSelectCT, shaderOutlineVertical, shader, true, window.height/2f, Const.OUTLINE_COLOR);
+            int horSelectCT = initColorTex(horWidth, horHeight);
+
+            GL11.glViewport(0, 0, horWidth, horHeight);
+
+            drawOutline(vertSelectFB, vertSelectCT, shaderOutlineVertical, shader, false, horHeight * Const.OUTLINE_DISTANCE, Const.OUTLINE_COLOR);
             GL30.glDeleteFramebuffers(vertSelectFB);
             GL11.glDeleteTextures(vertSelectCT);
 
             unbindFrameBuffer();
 
-            drawOutline(horSelectFB, horSelectCT, shaderOutlineHorizontal, shader, true, window.width/2f, Const.OUTLINE_COLOR);
+            drawOutline(horSelectFB, horSelectCT, shaderOutlineHorizontal, shader, Const.STIPPLE_OUTLINE, horWidth * Const.OUTLINE_DISTANCE, Const.OUTLINE_COLOR);
             GL30.glDeleteFramebuffers(horSelectFB);
             GL11.glDeleteTextures(horSelectCT);
 
@@ -423,7 +431,7 @@ public class EntityRenderer implements IRenderer{
         GL20.glEnableVertexAttribArray(1);
         GL20.glEnableVertexAttribArray(2);
 
-        if(model.material.disableCulling || Main.view.noCulling())
+        if(model.material.disableCulling || Const.NO_CULLING)
             RenderMan.disableCulling();
         else
             RenderMan.enableCulling();
@@ -571,11 +579,11 @@ public class EntityRenderer implements IRenderer{
         return frameBuffer;
     }
 
-    private int initColorTex()
+    private int initColorTex(int width, int height)
     {
         int colorTexture = GL11.glGenTextures();
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, colorTexture);
-        GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA8, window.width, window.height, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, (ByteBuffer) null);
+        GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA8, width, height, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, (ByteBuffer) null);
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);

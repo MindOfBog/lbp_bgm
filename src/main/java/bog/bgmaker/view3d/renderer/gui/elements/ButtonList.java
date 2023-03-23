@@ -4,6 +4,7 @@ import bog.bgmaker.view3d.ObjectLoader;
 import bog.bgmaker.view3d.managers.MouseInput;
 import bog.bgmaker.view3d.managers.RenderMan;
 import bog.bgmaker.view3d.managers.WindowMan;
+import cwlib.types.databases.FileEntry;
 import org.joml.Vector2d;
 import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
@@ -144,8 +145,6 @@ public abstract class ButtonList<T> extends Element{
                     updateSearch();
                 }
 
-                int ind = 0;
-
                 for(int i : indexes)
                 {
                     T object = null;
@@ -157,19 +156,12 @@ public abstract class ButtonList<T> extends Element{
                         continue;
                     }
 
-                    double posY = (yScroll) + this.pos.y + 2d + (getFontHeight(fontSize) + 2d) * ind;
-                    ind++;
-
-                    if(posY <= this.pos.y + size.y &&
-                            posY + getFontHeight(fontSize) >= this.pos.y)
+                    if(isHighlighted(object, i))
                     {
                         double posX = this.pos.x + 2d;
                         double width = size.x - 4d - size.x * 0.05d;
                         double height = getFontHeight(fontSize);
-
-                        if(pos.x >= posX && pos.x <= posX + width &&
-                                pos.y >= posY && pos.y <= posY + height)
-                            clickedButton(object, i, button, action, mods);
+                        clickedButton(object, i, button, action, mods);
                     }
                 }
             }
@@ -213,7 +205,7 @@ public abstract class ButtonList<T> extends Element{
     {
         startScissor((int)pos.x + 2, posY, (int)(size.x - 4f - size.x * 0.05f), (int) height);
         drawRect((int)pos.x + 2, posY, (int)(size.x - 4f - size.x * 0.05f), (int) height, !(isHighlighted(object, i) || isSelected(object, i)) ? buttonColor(object, i) : (isSelected(object, i) ? buttonColorSelected(object, i) : buttonColorHighlighted(object, i)));
-        drawString(buttonText(object, i), textColor(object, i), (int)(pos.x + (size.x - size.x * 0.05f) / 2f - getStringWidth(buttonText(object, i), fontSize) / 2), posY, fontSize);
+        drawString(buttonText(object, i), textColor(object, i), (int)(pos.x + (size.x - size.x * 0.05f) / 2f - getStringWidth(buttonText(object, i), fontSize) / 2), posY + height / 2 - getFontHeight(fontSize) / 2, fontSize);
         endScissor();
     }
 

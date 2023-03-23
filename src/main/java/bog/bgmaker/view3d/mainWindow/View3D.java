@@ -129,14 +129,18 @@ public class View3D implements ILogic {
             levelSettings.add(ls);
 
         initMillis = System.currentTimeMillis();
-        crosshair = loader.loadTexture(ImageIO.read(Main.class.getResourceAsStream("/textures/crosshair.png")), GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR);
-        sun = loader.loadTexture(ImageIO.read(Main.class.getResourceAsStream("/textures/sun.png")), GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR);
-        worldAudio = loader.loadTexture(ImageIO.read(Main.class.getResourceAsStream("/textures/world audio.png")), GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR);
-        logo = loader.loadTexture(ImageIO.read(Main.class.getResourceAsStream("/icon.png")), GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR);
-        modelIcon = loader.loadTexture(ImageIO.read(Main.class.getResourceAsStream("/textures/model.png")), GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR);
-        materialIcon = loader.loadTexture(ImageIO.read(Main.class.getResourceAsStream("/textures/material.png")), GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR);
-        lightIcon = loader.loadTexture(ImageIO.read(Main.class.getResourceAsStream("/textures/light.png")), GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR);
-        audioIcon = loader.loadTexture(ImageIO.read(Main.class.getResourceAsStream("/textures/audio.png")), GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR);
+
+        int minF = GL11.GL_LINEAR_MIPMAP_NEAREST;
+        int magF = GL11.GL_LINEAR;
+
+        crosshair = loader.loadTexture(ImageIO.read(Main.class.getResourceAsStream("/textures/crosshair.png")), minF, magF);
+        sun = loader.loadTexture(ImageIO.read(Main.class.getResourceAsStream("/textures/sun.png")), GL11.GL_NEAREST, magF);
+        worldAudio = loader.loadTexture(ImageIO.read(Main.class.getResourceAsStream("/textures/world audio.png")), GL11.GL_NEAREST, magF);
+        logo = loader.loadTexture(ImageIO.read(Main.class.getResourceAsStream("/icon.png")), minF, magF);
+        modelIcon = loader.loadTexture(ImageIO.read(Main.class.getResourceAsStream("/textures/model.png")), minF, magF);
+        materialIcon = loader.loadTexture(ImageIO.read(Main.class.getResourceAsStream("/textures/material.png")), minF, magF);
+        lightIcon = loader.loadTexture(ImageIO.read(Main.class.getResourceAsStream("/textures/light.png")), minF, magF);
+        audioIcon = loader.loadTexture(ImageIO.read(Main.class.getResourceAsStream("/textures/audio.png")), minF, magF);
 
         createUI();
 
@@ -173,16 +177,16 @@ public class View3D implements ILogic {
     {
         entities.add(e);
     }
+    
     private int[] prevSelection = new int[0];
-
     public MousePicker mousePicker;
     public MousePicker centerPicker;
-    MouseInput mouseInput;
+    public MouseInput mouseInput;
 
     @Override
     public void update(MouseInput mouseInput, MousePicker mousePicker) {
-        boolean elementFocused = currentScreen.elementFocused();
-        boolean overElement = currentScreen.isMouseOverElement(mouseInput);
+        boolean elementFocused = currentScreen == null ? false : currentScreen.elementFocused();
+        boolean overElement = currentScreen == null ? false : currentScreen.isMouseOverElement(mouseInput);
 
         if(!elementFocused && !overElement)
             camera.movePos((cameraInc.x * Const.CAMERA_MOVE_SPEED) / (EngineMan.fps == 0 ? 60 : EngineMan.fps), (cameraInc.y * Const.CAMERA_MOVE_SPEED) / (EngineMan.fps == 0 ? 60 : EngineMan.fps), (cameraInc.z * Const.CAMERA_MOVE_SPEED) / (EngineMan.fps == 0 ? 60 : EngineMan.fps));
@@ -219,9 +223,6 @@ public class View3D implements ILogic {
 
         if(mouseInput.middleButtonPress && !overElement && introPlayed)
         {
-            if(Const.MOUSE_SENS != getSensitivity())
-                Const.MOUSE_SENS = getSensitivity();
-
             if(camera.getWrappedRotation().x > -90 && camera.getWrappedRotation().x < 90)
                 camera.moveRot(mouseInput.displayVec.x * Const.MOUSE_SENS, mouseInput.displayVec.y * Const.MOUSE_SENS, 0);
 
@@ -232,41 +233,6 @@ public class View3D implements ILogic {
             camera.moveRot(0.01f, 0, 0);
         while(camera.getWrappedRotation().x >= 90)
             camera.moveRot(-0.01f, 0, 0);
-
-        if(Const.FOV != Math.toRadians(getFOV()))
-            Const.FOV = Math.toRadians(getFOV());
-
-        try {
-            if (Const.CAMERA_MOVE_SPEED != getMoveSpeed())
-                Const.CAMERA_MOVE_SPEED = getMoveSpeed();
-        }catch (Exception e)
-        {
-            if (Const.CAMERA_MOVE_SPEED != 800)
-                Const.CAMERA_MOVE_SPEED = 800;
-        }
-
-        try {
-            if (Const.FRAMERATE != getFPS())
-            {
-                if(getFPS() != 0)
-                {
-                    Const.FRAMERATE = getFPS();
-                    Main.engine.frameTime = 1f / Const.FRAMERATE;
-                }
-                else
-                {
-                    Const.FRAMERATE = 60;
-                    Main.engine.frameTime = 1f / Const.FRAMERATE;
-                }
-            }
-        }catch (Exception e)
-        {
-            if (Const.FRAMERATE != 60)
-            {
-                Const.FRAMERATE = 60;
-                Main.engine.frameTime = 1f / Const.FRAMERATE;
-            }
-        }
 
         Checkbox level = (Checkbox) ((ElementEditing) ElementEditing).helpers.tabElements.get(0);
         Checkbox pod = (Checkbox) ((ElementEditing) ElementEditing).helpers.tabElements.get(1);
@@ -333,9 +299,8 @@ public class View3D implements ILogic {
 
     public void secondaryThread()
     {
-        if(currentScreen != null && currentScreen.guiElements != null)
-            for(int i = 0; i < currentScreen.guiElements.size(); i++)
-                currentScreen.guiElements.get(i).secondThread();
+        if(currentScreen != null)
+            currentScreen.secondaryThread();
     }
 
     @Override
@@ -416,7 +381,7 @@ public class View3D implements ILogic {
             cameraInc.z = 0;
         }
 
-        if(action == 1 && mods == GLFW.GLFW_MOD_CONTROL)
+        if(action == 1 && mods == GLFW.GLFW_MOD_CONTROL && !elementFocused)
         {
             if(key == GLFW.GLFW_KEY_C)
                 copySelected();
@@ -643,7 +608,8 @@ public class View3D implements ILogic {
         Vector2d prev = mouseInput.currentPos;
         if(!introPlayed)
             mouseInput.currentPos = new Vector2d();
-        currentScreen.draw(mouseInput);
+        if(currentScreen != null)
+            currentScreen.draw(mouseInput);
 
         if(!introPlayed)
         {
@@ -778,36 +744,6 @@ public class View3D implements ILogic {
     private int getFontHeight(int size)
     {
         return (int)FontRenderer.getFontHeight(size);
-    }
-
-    public boolean noCulling()
-    {
-        return ((Checkbox)((Settings)Settings).rendererSettings.tabElements.get(0)).isChecked;
-    }
-
-    public float getFOV()
-    {
-        return ((DropDownTab.LabeledSlider)((Settings)Settings).rendererSettings.tabElements.get(1)).slider.getCurrentValue();
-    }
-
-    public int getFPS()
-    {
-        return (int)Float.parseFloat(((DropDownTab.LabeledTextbox)((Settings)Settings).rendererSettings.tabElements.get(2)).textbox.getText());
-    }
-
-    public float getMoveSpeed()
-    {
-        return Float.parseFloat(((DropDownTab.LabeledTextbox)((Settings)Settings).rendererSettings.tabElements.get(3)).textbox.getText());
-    }
-
-    public float getSensitivity()
-    {
-        try
-        {
-            return Float.parseFloat(((DropDownTab.LabeledTextbox)((Settings)Settings).rendererSettings.tabElements.get(4)).textbox.getText());
-        }catch (Exception e){}
-
-        return 0;
     }
 
     public boolean legacyFileDialogue()

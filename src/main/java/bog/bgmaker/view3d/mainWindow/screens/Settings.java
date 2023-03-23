@@ -5,9 +5,7 @@ import bog.bgmaker.view3d.mainWindow.View3D;
 import bog.bgmaker.view3d.managers.MouseInput;
 import bog.bgmaker.view3d.renderer.gui.GuiKeybind;
 import bog.bgmaker.view3d.renderer.gui.GuiScreen;
-import bog.bgmaker.view3d.renderer.gui.elements.Button;
-import bog.bgmaker.view3d.renderer.gui.elements.DropDownTab;
-import bog.bgmaker.view3d.renderer.gui.elements.Textbox;
+import bog.bgmaker.view3d.renderer.gui.elements.*;
 import bog.bgmaker.view3d.utils.Const;
 import bog.bgmaker.view3d.utils.Utils;
 import org.joml.Vector2f;
@@ -34,13 +32,16 @@ public class Settings extends GuiScreen{
     public void init()
     {
         rendererSettings = new DropDownTab("rendererSettings", "Renderer Settings", new Vector2f(7, 19 + getFontHeight(10)), new Vector2f(200, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window).closed();
-        rendererSettings.addCheckbox("culling", "No culling");
-        rendererSettings.addLabeledSlider("fov", "FOV:  ", 63, 20, 175);
-        rendererSettings.addLabeledTextbox("fps", "FPS:  ", true, false, false, "120");
-        rendererSettings.addLabeledTextbox("moveSpeed", "Move speed:  ", true, false, false, "1500");
-        rendererSettings.addLabeledTextbox("sensitivity", "Sensitivity:  ", true, false, false, "0.2");
+        rendererSettings.addCheckbox("culling", "No culling", Const.NO_CULLING);
+        rendererSettings.addLabeledSlider("fov", "FOV:  ", (float) Math.toDegrees(Const.FOV), 20, 175);
+        rendererSettings.addLabeledTextbox("fps", "FPS:  ", true, false, false, Float.toString(Const.FRAMERATE));
+        rendererSettings.addLabeledTextbox("moveSpeed", "Move speed:  ", true, false, false, Float.toString(Const.CAMERA_MOVE_SPEED));
+        rendererSettings.addLabeledTextbox("sensitivity", "Sensitivity:  ", true, false, false, Float.toString(Const.MOUSE_SENS));
         rendererSettings.addLabeledTextbox("zNear", "Z Near:  ", true, false, false);
         rendererSettings.addLabeledTextbox("zFar", "Z Far:  ", true, false, false);
+        rendererSettings.addCheckbox("stippleOutline", "Stipple Outline", Const.STIPPLE_OUTLINE);
+        rendererSettings.addString("outlineDistLabel", "Outline Distance:");
+        rendererSettings.addSlider("outlineDistance", Const.OUTLINE_DISTANCE, 0f, 0.5f);
         rendererSettings.addString("outlineColorLabel", "Outline Color:");
         rendererSettings.addLabeledTextbox("outlineColor", "# ");
         rendererSettings.addString("borderColor1Label", "Border Color 1:");
@@ -217,8 +218,26 @@ public class Settings extends GuiScreen{
     }
 
     @Override
-    public void draw(MouseInput mouseInput) {
-        super.draw(mouseInput);
+    public void secondaryThread() {
+        super.secondaryThread();
+
+        Const.NO_CULLING = ((Checkbox)rendererSettings.tabElements.get(0)).isChecked;
+
+        Vector2f fovSlider = setSliderValue(((DropDownTab.LabeledSlider)rendererSettings.tabElements.get(1)).slider, (float) Math.toDegrees(Const.FOV));
+        if(fovSlider.y == 1)
+            Const.FOV = (float) Math.toRadians(fovSlider.x);
+
+        String fps = setTextboxValueString(((DropDownTab.LabeledTextbox) rendererSettings.tabElements.get(2)).textbox, Float.toString(Const.FRAMERATE));
+        if(fps != null)
+            try{Const.FRAMERATE = Float.parseFloat(fps);}catch (Exception e){Const.FRAMERATE = 60;}
+
+        String moveSpeed = setTextboxValueString(((DropDownTab.LabeledTextbox) rendererSettings.tabElements.get(3)).textbox, Float.toString(Const.CAMERA_MOVE_SPEED));
+        if(moveSpeed != null)
+            try{Const.CAMERA_MOVE_SPEED = Float.parseFloat(moveSpeed);}catch (Exception e){}
+
+        String sens = setTextboxValueString(((DropDownTab.LabeledTextbox) rendererSettings.tabElements.get(4)).textbox, Float.toString(Const.MOUSE_SENS));
+        if(sens != null)
+            try{Const.MOUSE_SENS = Float.parseFloat(sens);}catch (Exception e){}
 
         String zNear = setTextboxValueString(((DropDownTab.LabeledTextbox) rendererSettings.tabElements.get(5)).textbox, Float.toString(Const.Z_NEAR));
         if(zNear != null)
@@ -228,48 +247,53 @@ public class Settings extends GuiScreen{
         if(zFar != null)
             try{Const.Z_FAR = Float.parseFloat(zFar);}catch (Exception e){}
 
-        Textbox outlC = ((DropDownTab.LabeledTextbox) rendererSettings.tabElements.get(8)).textbox;
+        Const.STIPPLE_OUTLINE = ((Checkbox)rendererSettings.tabElements.get(7)).isChecked;
+
+        Vector2f outlineDistSlider = setSliderValue(((Slider)rendererSettings.tabElements.get(9)), 1 - Const.OUTLINE_DISTANCE);
+        if(outlineDistSlider.y == 1)
+            Const.OUTLINE_DISTANCE = 1 - outlineDistSlider.x;
+
+        Textbox outlC = ((DropDownTab.LabeledTextbox) rendererSettings.tabElements.get(11)).textbox;
         String outlineColor = setTextboxValueString(outlC, Utils.toHexColor(Const.OUTLINE_COLOR));
         if(outlineColor != null)
             try{Const.OUTLINE_COLOR = Utils.parseHexColor(outlineColor);}catch (Exception e){}
         outlC.textColor = Const.OUTLINE_COLOR;
 
-        Textbox borderCol1 = ((DropDownTab.LabeledTextbox) rendererSettings.tabElements.get(10)).textbox;
+        Textbox borderCol1 = ((DropDownTab.LabeledTextbox) rendererSettings.tabElements.get(13)).textbox;
         String borderColor1 = setTextboxValueString(borderCol1, Utils.toHexColor(Const.BORDER_COLOR_1));
         if(borderColor1 != null)
             try{Const.BORDER_COLOR_1 = Utils.parseHexColor(borderColor1); mainView.borders.material.setColor(Const.BORDER_COLOR_1);}catch (Exception e){}
         borderCol1.textColor = Const.BORDER_COLOR_1;
 
-        Textbox borderCol2 = ((DropDownTab.LabeledTextbox) rendererSettings.tabElements.get(12)).textbox;
+        Textbox borderCol2 = ((DropDownTab.LabeledTextbox) rendererSettings.tabElements.get(15)).textbox;
         String borderColor2 = setTextboxValueString(borderCol2, Utils.toHexColor(Const.BORDER_COLOR_2));
         if(borderColor2 != null)
             try{Const.BORDER_COLOR_2 = Utils.parseHexColor(borderColor2); mainView.borders1.material.setColor(Const.BORDER_COLOR_2);}catch (Exception e){}
         borderCol2.textColor = Const.BORDER_COLOR_2;
 
-        Textbox borderCol3 = ((DropDownTab.LabeledTextbox) rendererSettings.tabElements.get(14)).textbox;
+        Textbox borderCol3 = ((DropDownTab.LabeledTextbox) rendererSettings.tabElements.get(17)).textbox;
         String borderColor3 = setTextboxValueString(borderCol3, Utils.toHexColor(Const.BORDER_COLOR_3));
         if(borderColor3 != null)
             try{Const.BORDER_COLOR_3 = Utils.parseHexColor(borderColor3); mainView.borders2.material.setColor(Const.BORDER_COLOR_3);}catch (Exception e){}
         borderCol3.textColor = Const.BORDER_COLOR_3;
 
-        Textbox borderCol4 = ((DropDownTab.LabeledTextbox) rendererSettings.tabElements.get(16)).textbox;
+        Textbox borderCol4 = ((DropDownTab.LabeledTextbox) rendererSettings.tabElements.get(19)).textbox;
         String borderColor4 = setTextboxValueString(borderCol4, Utils.toHexColor(Const.BORDER_COLOR_4));
         if(borderColor4 != null)
             try{Const.BORDER_COLOR_4 = Utils.parseHexColor(borderColor4); mainView.borders3.material.setColor(Const.BORDER_COLOR_4);}catch (Exception e){}
         borderCol4.textColor = Const.BORDER_COLOR_4;
 
-        Textbox earthCol = ((DropDownTab.LabeledTextbox) rendererSettings.tabElements.get(18)).textbox;
+        Textbox earthCol = ((DropDownTab.LabeledTextbox) rendererSettings.tabElements.get(21)).textbox;
         String earthColor = setTextboxValueString(earthCol, Utils.toHexColor(Const.EARTH_COLOR));
         if(earthColor != null)
             try{Const.EARTH_COLOR = Utils.parseHexColor(earthColor); mainView.earth.material.setOverlayColor(Const.EARTH_COLOR);}catch (Exception e){}
         earthCol.textColor = Const.EARTH_COLOR;
 
-        Textbox podCol = ((DropDownTab.LabeledTextbox) rendererSettings.tabElements.get(20)).textbox;
+        Textbox podCol = ((DropDownTab.LabeledTextbox) rendererSettings.tabElements.get(23)).textbox;
         String podColor = setTextboxValueString(podCol, Utils.toHexColor(Const.POD_COLOR));
         if(podColor != null)
             try{Const.POD_COLOR = Utils.parseHexColor(podColor); mainView.pod.material.setOverlayColor(Const.POD_COLOR);}catch (Exception e){}
         podCol.textColor = Const.POD_COLOR;
-
     }
 
 }

@@ -15,7 +15,7 @@ const mat4 thresholdMatrix = mat4(
     4, 12, 2, 10,
     16, 8, 14, 6);
 
-void main(void){
+void main(){
 
 	out_Color = vec4(0.0);
 	out_Color += texture(originalTexture, blurTextureCoords[0]) * 0.0093;

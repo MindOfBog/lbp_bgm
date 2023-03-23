@@ -76,7 +76,8 @@ public class ElementEditing extends GuiScreen {
 
         camPos = new DropDownTab("camPosition", "Camera position", new Vector2f(7, 19 + getFontHeight(10)), new Vector2f(200, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window) {
             @Override
-            public void draw(MouseInput mouseInput, boolean overOther) {
+            public void secondThread() {
+                super.secondThread();
 
                 Vector2f camX = setTextboxValueFloat(((DropDownTab.LabeledTextbox) this.tabElements.get(0)).textbox, mainView.camera.pos.x);
                 if (camX.y == 1)
@@ -87,8 +88,6 @@ public class ElementEditing extends GuiScreen {
                 Vector2f camZ = setTextboxValueFloat(((DropDownTab.LabeledTextbox) this.tabElements.get(2)).textbox, mainView.camera.pos.z);
                 if (camZ.y == 1)
                     mainView.camera.pos.z = camZ.x;
-
-                super.draw(mouseInput, overOther);
             }
         };
         camPos.addLabeledTextbox("x", "X:  ", true, false, false);
@@ -97,7 +96,8 @@ public class ElementEditing extends GuiScreen {
 
         currentSelection = new DropDownTab("currentSelection", "Current Selection", new Vector2f(521, 7), new Vector2f(200, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window) {
             @Override
-            public void draw(MouseInput mouseInput, boolean overOther) {
+            public void secondThread() {
+                super.secondThread();
 
                 boolean hasSelection = false;
                 ArrayList<Integer> selected = new ArrayList<>();
@@ -297,8 +297,6 @@ public class ElementEditing extends GuiScreen {
                 Vector2f posZ = setTextboxValueFloat(((DropDownTab.LabeledTextbox) this.tabElements.get(5)).textbox, selectedPos.z);
                 if (posX.y == 1 || posY.y == 1 || posZ.y == 1)
                     mainView.setSelectedPosition(new Vector3f(posX.y == 1 ? posX.x : selectedPos.x, posY.y == 1 ? posY.x : selectedPos.y, posZ.y == 1 ? posZ.x : selectedPos.z));
-
-                super.draw(mouseInput, overOther);
             }
         };
         currentSelection.addString("", "Name:");
@@ -327,9 +325,8 @@ public class ElementEditing extends GuiScreen {
                     try {
                         File map = FileChooser.openFile(null, "map", false, false)[0];
                         mainView.MAP = new FileDB(map);
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                    }
+                    } catch (Exception ex) {ex.printStackTrace();}
+
                     mainView.setupList();
                 }
             }
@@ -342,19 +339,19 @@ public class ElementEditing extends GuiScreen {
                     File[] farcs = FileChooser.openFiles("farc");
                     if (farcs != null) {
                         if (farcs.length != 0)
-                            for (File farc : farcs) {
+                            for (File farc : farcs)
+                            {
                                 FileArchive archive = null;
 
                                 try {
                                     archive = new FileArchive(farc);
-                                } catch (SerializationException ex) {
-                                    ex.printStackTrace();
-                                }
+                                } catch (SerializationException ex) {ex.printStackTrace();}
 
                                 if (archive != null)
                                     mainView.FARCs.add(archive);
                             }
                     } else return;
+
                     mainView.setupList();
                 }
             }
@@ -367,9 +364,8 @@ public class ElementEditing extends GuiScreen {
                     try {
                         File fart = FileChooser.openFile(null, null, false, false)[0];
                         mainView.BIGFART = new BigSave(fart);
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                    }
+                    } catch (Exception ex) {ex.printStackTrace();}
+
                     mainView.setupList();
                 }
             }
@@ -465,9 +461,14 @@ public class ElementEditing extends GuiScreen {
             int clicked = -1;
 
             @Override
+            public void draw(MouseInput mouseInput, boolean overElement) {
+                hovering = -1;
+                super.draw(mouseInput, overElement);
+            }
+
+            @Override
             public boolean isHighlighted(Object object, int index) {
                 if (hovering == index) {
-                    hovering = -1;
                     return true;
                 }
                 if (clicked == index)
@@ -535,18 +536,22 @@ public class ElementEditing extends GuiScreen {
             public Color buttonColorSelected(Object object, int index) {
                 return new Color(0.38f, 0.38f, 0.38f, 0.5f);
             }
+
+            @Override
+            public int buttonHeight() {
+                return getFontHeight(fontSize) + 8;
+            }
         };
 
         availableAssets.addList("availableModelsList", assetList, 500);
 
         loadedEntitiesHitbox = new Element() {
             @Override
-            public void draw(MouseInput mouseInput, boolean overElement) {
+            public void secondThread() {
+                super.secondThread();
 
                 this.pos = new Vector2f(mainView.window.width - 305, 0);
                 this.size = new Vector2f(305, mainView.window.height);
-
-                super.draw(mouseInput, overElement);
             }
         };
         loadedEntitiesHitbox.pos = new Vector2f(mainView.window.width - 305, 0);
@@ -661,12 +666,11 @@ public class ElementEditing extends GuiScreen {
             }
 
             @Override
-            public void draw(MouseInput mouseInput, boolean overElement) {
+            public void secondThread() {
+                super.secondThread();
 
-                this.pos = new Vector2f(mainView.window.width - (301 - getFontHeight(10)), 2 + Math.floor(getFontHeight(10) * 1.25f + 2) * 2);
-                this.size = new Vector2f(301 - getFontHeight(10), mainView.window.height - (2 + Math.floor(getFontHeight(10) * 1.25f + 2) * 2 + (Math.floor(getFontHeight(10) * 1.25f) + 4)));
-
-                super.draw(mouseInput, overElement);
+                this.pos = new Vector2f(mainView.window.width - (302 - getFontHeight(10) - 8), 2 + Math.floor(getFontHeight(10) * 1.25f + 2) * 2);
+                this.size = new Vector2f(302 - getFontHeight(10) - 8, mainView.window.height - (2 + Math.floor(getFontHeight(10) * 1.25f + 2) * 2 + (Math.floor(getFontHeight(10) * 1.25f) + 4)));
             }
 
             @Override
@@ -682,6 +686,11 @@ public class ElementEditing extends GuiScreen {
             @Override
             public Color backdropColor() {
                 return new Color(0f, 0f, 0f, 0f);
+            }
+
+            @Override
+            public int buttonHeight() {
+                return getFontHeight(fontSize) + 8;
             }
         };
         loadPlanElements = new Button("loadPlanElements", "Load elements from .PLAN/.BIN", new Vector2f(mainView.window.width - 303, 2), new Vector2f(301, getFontHeight(10) * 1.25f), 10, mainView.renderer, mainView.loader, mainView.window) {
@@ -733,18 +742,18 @@ public class ElementEditing extends GuiScreen {
             }
 
             @Override
-            public void draw(MouseInput mouseInput, boolean overOther) {
+            public void secondThread() {
+                super.secondThread();
+
                 this.pos.x = mainView.window.width - 303;
-                super.draw(mouseInput, overOther);
             }
         };
         loadedEntitiesSearch = new DropDownTab.LabeledTextbox("Search:  ", "loadedEntitiesSearch", new Vector2f(mainView.window.width - 303, (2 + getFontHeight(10) * 1.25f) + 2), new Vector2f(301, getFontHeight(10) * 1.25f), 10, mainView.renderer, mainView.loader, mainView.window) {
             @Override
-            public void draw(MouseInput mouseInput, boolean overElement) {
+            public void secondThread() {
+                super.secondThread();
 
                 this.pos.x = mainView.window.width - 303;
-
-                super.draw(mouseInput, overElement);
             }
         };
         clearAllEntites = new Button("clearAllEntities", "Clear all", new Vector2f(), new Vector2f(99f, getFontHeight(10) * 1.25f), 10, mainView.renderer, mainView.loader, mainView.window) {
@@ -760,11 +769,10 @@ public class ElementEditing extends GuiScreen {
             }
 
             @Override
-            public void draw(MouseInput mouseInput, boolean overOther) {
+            public void secondThread() {
+                super.secondThread();
 
                 this.pos = new Vector2f(mainView.window.width - 303, Math.ceil(mainView.window.height - getFontHeight(10) * 1.25f) - 2);
-
-                super.draw(mouseInput, overOther);
             }
         };
         deleteSelectedEntities = new Button("deleteSelectedEntities", "Delete", new Vector2f(), new Vector2f(99f, getFontHeight(10) * 1.25f), 10, mainView.renderer, mainView.loader, mainView.window) {
@@ -780,11 +788,10 @@ public class ElementEditing extends GuiScreen {
             }
 
             @Override
-            public void draw(MouseInput mouseInput, boolean overOther) {
+            public void secondThread() {
+                super.secondThread();
 
                 this.pos = new Vector2f(mainView.window.width - 303 + 99f + 2, Math.ceil(mainView.window.height - getFontHeight(10) * 1.25f) - 2);
-
-                super.draw(mouseInput, overOther);
             }
         };
         sortEntityList = new Button("sortEntityList", "Sort list", new Vector2f(), new Vector2f(99f, getFontHeight(10) * 1.25f), 10, mainView.renderer, mainView.loader, mainView.window) {
@@ -808,11 +815,10 @@ public class ElementEditing extends GuiScreen {
             }
 
             @Override
-            public void draw(MouseInput mouseInput, boolean overOther) {
+            public void secondThread() {
+                super.secondThread();
 
                 this.pos = new Vector2f(mainView.window.width - 303 + (99f + 2) * 2, Math.ceil(mainView.window.height - getFontHeight(10) * 1.25f) - 2);
-
-                super.draw(mouseInput, overOther);
             }
         };
         move = (new ButtonImage("move", "/textures/move.png", new Vector2f(mainView.window.width - 342, 7), new Vector2f(30, 30), mainView.renderer, mainView.loader, mainView.window) {
@@ -834,11 +840,10 @@ public class ElementEditing extends GuiScreen {
             }
 
             @Override
-            public void draw(MouseInput mouseInput, boolean overOther) {
+            public void secondThread() {
+                super.secondThread();
 
                 this.pos.x = mainView.window.width - 342;
-
-                super.draw(mouseInput, overOther);
             }
         }).clicked();
         rotate = new ButtonImage("rotate", "/textures/rotate.png", new Vector2f(mainView.window.width - 342, 44), new Vector2f(30, 30), mainView.renderer, mainView.loader, mainView.window) {
@@ -860,11 +865,10 @@ public class ElementEditing extends GuiScreen {
             }
 
             @Override
-            public void draw(MouseInput mouseInput, boolean overOther) {
+            public void secondThread() {
+                super.secondThread();
 
                 this.pos.x = mainView.window.width - 342;
-
-                super.draw(mouseInput, overOther);
             }
         };
         scale = new ButtonImage("scale", "/textures/scale.png", new Vector2f(mainView.window.width - 342, 81), new Vector2f(30, 30), mainView.renderer, mainView.loader, mainView.window) {
@@ -886,11 +890,10 @@ public class ElementEditing extends GuiScreen {
             }
 
             @Override
-            public void draw(MouseInput mouseInput, boolean overOther) {
+            public void secondThread() {
+                super.secondThread();
 
                 this.pos.x = mainView.window.width - 342;
-
-                super.draw(mouseInput, overOther);
             }
         };
         materialEdit = new ButtonImage("materialEdit", "/textures/material edit.png", new Vector2f(mainView.window.width - 342, 118), new Vector2f(30, 30), mainView.renderer, mainView.loader, mainView.window) {
@@ -980,7 +983,7 @@ public class ElementEditing extends GuiScreen {
             for (int i = 0; i < mainView.entities.size(); i++)
                 if(mainView.entities.get(i).getType() == 0 || mainView.entities.get(i).getType() == 1)
                     for(Model model : mainView.entities.get(i).getModel())
-                        mainView.entities.get(i).testForMouse = model.aabb.doesRayIntersectBB(mainView.mousePicker.currentRay, mainView.camera.pos);
+                        mainView.entities.get(i).testForMouse = true;
         }
 
         if(!mouseInput.inWindow || overElement)

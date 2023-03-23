@@ -53,6 +53,13 @@ public class GuiScreen {
         }
     }
 
+    public void secondaryThread()
+    {
+        if(this.guiElements != null)
+            for(Element e : this.guiElements)
+                e.secondThread();
+    }
+
     public void removeElementByID(String id)
     {
         for(int i = 0; i < guiElements.size(); i++)
