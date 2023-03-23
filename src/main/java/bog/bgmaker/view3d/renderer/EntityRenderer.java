@@ -21,6 +21,7 @@ import org.joml.Vector4f;
 import org.lwjgl.opengl.*;
 
 import java.awt.*;
+import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
@@ -101,6 +102,7 @@ public class EntityRenderer implements IRenderer{
         shaderOutlineVertical.createUniform("transformationMatrix");
         shaderOutlineVertical.createUniform("originalTexture");
         shaderOutlineVertical.createUniform("target");
+        shaderOutlineVertical.createUniform("radius");
         shaderOutlineVertical.createUniform("color");
         shaderOutlineVertical.createUniform("stipple");
         shaderOutlineVertical.createUniform("hasColor");
@@ -111,6 +113,7 @@ public class EntityRenderer implements IRenderer{
         shaderOutlineHorizontal.createUniform("transformationMatrix");
         shaderOutlineHorizontal.createUniform("originalTexture");
         shaderOutlineHorizontal.createUniform("target");
+        shaderOutlineHorizontal.createUniform("radius");
         shaderOutlineHorizontal.createUniform("color");
         shaderOutlineHorizontal.createUniform("stipple");
         shaderOutlineHorizontal.createUniform("hasColor");
@@ -238,6 +241,8 @@ public class EntityRenderer implements IRenderer{
 
         boolean outline = false;
 
+        ArrayList<Entity> outlineEntities = new ArrayList<>();
+
         for (Entity entity : entities)
         {
             ArrayList<Model> models = entity.getModel();
@@ -274,8 +279,11 @@ public class EntityRenderer implements IRenderer{
                             RenderMan.disableCulling();
                     }
 
-                    if(entity.highlighted || entity.selected)
+                    if(entity.selected)
+                    {
                         outline = true;
+                        outlineEntities.add(entity);
+                    }
 
                     if(model.material.overlayColor != null)
                     {
@@ -299,18 +307,18 @@ public class EntityRenderer implements IRenderer{
         {
             int vertSelectFB = initFrameBuffer();
 
-            int vertWidth = Math.round(window.width * Const.OUTLINE_DISTANCE);
-            int vertHeight = Math.round(window.height * Const.OUTLINE_DISTANCE);
+            int vertWidth = Math.round(window.width * (1 - Const.OUTLINE_DISTANCE + 0.5f));
+            int vertHeight = Math.round(window.height * (1 - Const.OUTLINE_DISTANCE + 0.5f));
 
             int vertSelectCT = initColorTex(vertWidth, vertHeight);
 
             GL11.glViewport(0, 0, vertWidth, vertHeight);
 
-            for (Entity entity : entities)
+            for (Entity entity : outlineEntities)
             {
                 ArrayList<Model> models = entity.getModel();
 
-                if(models != null && !models.isEmpty() && entity.selected)
+                if(models != null && !models.isEmpty())
                     for(Model model : models)
                         if(!model.noRender)
                         {
@@ -335,11 +343,11 @@ public class EntityRenderer implements IRenderer{
             GL11.glStencilMask(0xff);
             GL11.glColorMask(false, false, false, false);
 
-            for (Entity entity : entities)
+            for (Entity entity : outlineEntities)
             {
                 ArrayList<Model> models = entity.getModel();
 
-                if(models != null && !models.isEmpty() && entity.selected)
+                if(models != null && !models.isEmpty())
                     for(Model model : models)
                         if(!model.noRender)
                         {
@@ -365,20 +373,22 @@ public class EntityRenderer implements IRenderer{
 
             int horSelectFB = initFrameBuffer();
 
-            int horWidth = Math.round(vertWidth * Const.OUTLINE_DISTANCE);
-            int horHeight = Math.round(vertHeight * Const.OUTLINE_DISTANCE);
+            int horWidth = Math.round(vertWidth * (1 - Const.OUTLINE_DISTANCE + 0.5f));
+            int horHeight = Math.round(vertHeight * (1 - Const.OUTLINE_DISTANCE + 0.5f));
 
             int horSelectCT = initColorTex(horWidth, horHeight);
 
             GL11.glViewport(0, 0, horWidth, horHeight);
 
-            drawOutline(vertSelectFB, vertSelectCT, shaderOutlineVertical, shader, false, horHeight * Const.OUTLINE_DISTANCE, Const.OUTLINE_COLOR);
+            int radius = Math.round((Const.OUTLINE_DISTANCE * 2 - 1) * 10);
+
+            drawOutline(vertSelectFB, vertSelectCT, shaderOutlineVertical, shader, false, horHeight, radius, Const.OUTLINE_COLOR);
             GL30.glDeleteFramebuffers(vertSelectFB);
             GL11.glDeleteTextures(vertSelectCT);
 
             unbindFrameBuffer();
 
-            drawOutline(horSelectFB, horSelectCT, shaderOutlineHorizontal, shader, Const.STIPPLE_OUTLINE, horWidth * Const.OUTLINE_DISTANCE, Const.OUTLINE_COLOR);
+            drawOutline(horSelectFB, horSelectCT, shaderOutlineHorizontal, shader, false, horWidth, radius, Const.OUTLINE_COLOR);
             GL30.glDeleteFramebuffers(horSelectFB);
             GL11.glDeleteTextures(horSelectCT);
 
@@ -506,7 +516,7 @@ public class EntityRenderer implements IRenderer{
         shader.cleanup();
     }
 
-    private void drawOutline(int frameBuffer, int colorTexture, ShaderMan outlineShader, ShaderMan prevShader, boolean stipple, float target, Color color)
+    private void drawOutline(int frameBuffer, int colorTexture, ShaderMan outlineShader, ShaderMan prevShader, boolean stipple, float target, int radius, Color color)
     {
         prevShader.unbind();
         outlineShader.bind();
@@ -534,6 +544,7 @@ public class EntityRenderer implements IRenderer{
 
         outlineShader.setUniform("originalTexture", 0);
         outlineShader.setUniform("target", target);
+        outlineShader.setUniform("radius", radius);
         outlineShader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(
                 new Vector2f(outlineFBO.pos.x / (window.width/2f) - 1 + outlineFBO.scale.x / window.width, outlineFBO.pos.y / (window.height/2f) - 1 + outlineFBO.scale.y / window.height),
                 new Vector2f(outlineFBO.scale.x / window.width, outlineFBO.scale.y / window.height)));

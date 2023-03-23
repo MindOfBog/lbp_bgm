@@ -39,9 +39,8 @@ public class Settings extends GuiScreen{
         rendererSettings.addLabeledTextbox("sensitivity", "Sensitivity:  ", true, false, false, Float.toString(Const.MOUSE_SENS));
         rendererSettings.addLabeledTextbox("zNear", "Z Near:  ", true, false, false);
         rendererSettings.addLabeledTextbox("zFar", "Z Far:  ", true, false, false);
-        rendererSettings.addCheckbox("stippleOutline", "Stipple Outline", Const.STIPPLE_OUTLINE);
-        rendererSettings.addString("outlineDistLabel", "Outline Distance:");
-        rendererSettings.addSlider("outlineDistance", Const.OUTLINE_DISTANCE, 0f, 0.5f);
+        rendererSettings.addString("outlineSizeLabel", "Outline Size:");
+        rendererSettings.addSlider("outlineSize", Const.OUTLINE_DISTANCE, 0.51f, 0.73f);
         rendererSettings.addString("outlineColorLabel", "Outline Color:");
         rendererSettings.addLabeledTextbox("outlineColor", "# ");
         rendererSettings.addString("borderColor1Label", "Border Color 1:");
@@ -247,49 +246,47 @@ public class Settings extends GuiScreen{
         if(zFar != null)
             try{Const.Z_FAR = Float.parseFloat(zFar);}catch (Exception e){}
 
-        Const.STIPPLE_OUTLINE = ((Checkbox)rendererSettings.tabElements.get(7)).isChecked;
-
-        Vector2f outlineDistSlider = setSliderValue(((Slider)rendererSettings.tabElements.get(9)), 1 - Const.OUTLINE_DISTANCE);
+        Vector2f outlineDistSlider = setSliderValue(((Slider)rendererSettings.tabElements.get(8)), Const.OUTLINE_DISTANCE);
         if(outlineDistSlider.y == 1)
-            Const.OUTLINE_DISTANCE = 1 - outlineDistSlider.x;
+            Const.OUTLINE_DISTANCE = outlineDistSlider.x;
 
-        Textbox outlC = ((DropDownTab.LabeledTextbox) rendererSettings.tabElements.get(11)).textbox;
+        Textbox outlC = ((DropDownTab.LabeledTextbox) rendererSettings.tabElements.get(10)).textbox;
         String outlineColor = setTextboxValueString(outlC, Utils.toHexColor(Const.OUTLINE_COLOR));
         if(outlineColor != null)
             try{Const.OUTLINE_COLOR = Utils.parseHexColor(outlineColor);}catch (Exception e){}
         outlC.textColor = Const.OUTLINE_COLOR;
 
-        Textbox borderCol1 = ((DropDownTab.LabeledTextbox) rendererSettings.tabElements.get(13)).textbox;
+        Textbox borderCol1 = ((DropDownTab.LabeledTextbox) rendererSettings.tabElements.get(12)).textbox;
         String borderColor1 = setTextboxValueString(borderCol1, Utils.toHexColor(Const.BORDER_COLOR_1));
         if(borderColor1 != null)
             try{Const.BORDER_COLOR_1 = Utils.parseHexColor(borderColor1); mainView.borders.material.setColor(Const.BORDER_COLOR_1);}catch (Exception e){}
         borderCol1.textColor = Const.BORDER_COLOR_1;
 
-        Textbox borderCol2 = ((DropDownTab.LabeledTextbox) rendererSettings.tabElements.get(15)).textbox;
+        Textbox borderCol2 = ((DropDownTab.LabeledTextbox) rendererSettings.tabElements.get(14)).textbox;
         String borderColor2 = setTextboxValueString(borderCol2, Utils.toHexColor(Const.BORDER_COLOR_2));
         if(borderColor2 != null)
             try{Const.BORDER_COLOR_2 = Utils.parseHexColor(borderColor2); mainView.borders1.material.setColor(Const.BORDER_COLOR_2);}catch (Exception e){}
         borderCol2.textColor = Const.BORDER_COLOR_2;
 
-        Textbox borderCol3 = ((DropDownTab.LabeledTextbox) rendererSettings.tabElements.get(17)).textbox;
+        Textbox borderCol3 = ((DropDownTab.LabeledTextbox) rendererSettings.tabElements.get(16)).textbox;
         String borderColor3 = setTextboxValueString(borderCol3, Utils.toHexColor(Const.BORDER_COLOR_3));
         if(borderColor3 != null)
             try{Const.BORDER_COLOR_3 = Utils.parseHexColor(borderColor3); mainView.borders2.material.setColor(Const.BORDER_COLOR_3);}catch (Exception e){}
         borderCol3.textColor = Const.BORDER_COLOR_3;
 
-        Textbox borderCol4 = ((DropDownTab.LabeledTextbox) rendererSettings.tabElements.get(19)).textbox;
+        Textbox borderCol4 = ((DropDownTab.LabeledTextbox) rendererSettings.tabElements.get(18)).textbox;
         String borderColor4 = setTextboxValueString(borderCol4, Utils.toHexColor(Const.BORDER_COLOR_4));
         if(borderColor4 != null)
             try{Const.BORDER_COLOR_4 = Utils.parseHexColor(borderColor4); mainView.borders3.material.setColor(Const.BORDER_COLOR_4);}catch (Exception e){}
         borderCol4.textColor = Const.BORDER_COLOR_4;
 
-        Textbox earthCol = ((DropDownTab.LabeledTextbox) rendererSettings.tabElements.get(21)).textbox;
+        Textbox earthCol = ((DropDownTab.LabeledTextbox) rendererSettings.tabElements.get(20)).textbox;
         String earthColor = setTextboxValueString(earthCol, Utils.toHexColor(Const.EARTH_COLOR));
         if(earthColor != null)
             try{Const.EARTH_COLOR = Utils.parseHexColor(earthColor); mainView.earth.material.setOverlayColor(Const.EARTH_COLOR);}catch (Exception e){}
         earthCol.textColor = Const.EARTH_COLOR;
 
-        Textbox podCol = ((DropDownTab.LabeledTextbox) rendererSettings.tabElements.get(23)).textbox;
+        Textbox podCol = ((DropDownTab.LabeledTextbox) rendererSettings.tabElements.get(22)).textbox;
         String podColor = setTextboxValueString(podCol, Utils.toHexColor(Const.POD_COLOR));
         if(podColor != null)
             try{Const.POD_COLOR = Utils.parseHexColor(podColor); mainView.pod.material.setOverlayColor(Const.POD_COLOR);}catch (Exception e){}

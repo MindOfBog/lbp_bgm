@@ -92,11 +92,14 @@ public class Textbox extends Element{
 
         for(int i = 0; i < text.length(); i++)
         {
-            if((int)(pos.x + xScroll + this.size.y / 2 - getFontHeight(fontSize) / 2) + getStringWidth(text.substring(0, i), fontSize) < pos.x)
-                begin = i;
+            try
+            {
+                if((int)(pos.x + xScroll + this.size.y / 2 - getFontHeight(fontSize) / 2) + getStringWidth(text.substring(0, i), fontSize) < pos.x)
+                    begin = i;
 
-            if((int)(pos.x + xScroll + this.size.y / 2 - getFontHeight(fontSize) / 2) + getStringWidth(text.substring(0, i + 1), fontSize) < pos.x + size.x)
-                end = i + 1;
+                if((int)(pos.x + xScroll + this.size.y / 2 - getFontHeight(fontSize) / 2) + getStringWidth(text.substring(0, i + 1), fontSize) < pos.x + size.x)
+                    end = i + 1;
+            }catch (Exception e){}
         }
 
         drawString(text, textColor, (int)(pos.x + xScroll + this.size.y / 2 - getFontHeight(fontSize) / 2), (int)(pos.y + this.size.y / 2 - getFontHeight(fontSize) / 2), fontSize, begin, end);

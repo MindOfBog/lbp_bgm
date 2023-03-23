@@ -24,8 +24,7 @@ public class Const {
     public static float FRAMERATE = 120;
     public static float NaNf = Float.intBitsToFloat(0x7fc00000);
     public static double NaNd = Double.longBitsToDouble(0x7ff8000000000000L);
-    public static boolean STIPPLE_OUTLINE = false;
-    public static float OUTLINE_DISTANCE = 0.9f;
+    public static float OUTLINE_DISTANCE = 0.6f;
     public static Color OUTLINE_COLOR = new Color(252, 173, 3);
     public static Color BORDER_COLOR_1 = new Color(156, 0, 0, 166);
     public static Color BORDER_COLOR_2 = new Color(230, 0, 0, 166);
