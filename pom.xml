@@ -221,6 +221,11 @@
    </dependencyManagement>
    <dependencies>
       <dependency>
+         <groupId>io.github.earcut4j</groupId>
+         <artifactId>earcut4j</artifactId>
+         <version>2.2.2</version>
+      </dependency>
+      <dependency>
          <groupId>com.jgoodies</groupId>
          <artifactId>jgoodies-forms</artifactId>
          <version>1.9.0</version>
@@ -476,12 +481,6 @@
          <groupId>org.lwjgl</groupId>
          <artifactId>lwjgl-opus</artifactId>
          <classifier>${lwjgl.natives}</classifier>
-      </dependency>
-      <dependency>
-         <groupId>org.lwjgl</groupId>
-         <artifactId>lwjgl-ovr</artifactId>
-         <classifier>${lwjgl.natives}</classifier>
-         <version>${lwjgl.version}</version>
       </dependency>
       <dependency>
          <groupId>org.lwjgl</groupId>
