@@ -58,7 +58,7 @@ public class Mesh extends Entity{
     }
 
     @Override
-    public Model getModel() {
+    public ArrayList<Model> getModel() {
         if (this.model == null || reloadModel) {
             reloadModel = false;
 
@@ -74,7 +74,7 @@ public class Mesh extends Entity{
                     skeleton = SkeletonUtils.buildSkeleton(mesh.getBones(), boneThings);
                     boneThings = null;
                 }
-                this.model = new Model(LoadedData.loadedModels.get(this.meshDescriptor));
+                this.model = LoadedData.loadedModels.get(this.meshDescriptor);
             }
             else
             {
@@ -86,15 +86,9 @@ public class Mesh extends Entity{
                     skeleton = SkeletonUtils.buildSkeleton(mesh.getBones(), boneThings);
                     boneThings = null;
                 }
-                this.model = this.loader.loadRMesh(mesh);
-
                 try {
-                    ResourceDescriptor matDescriptor = mesh.getSubmeshes()[0][0].getMaterial();
-                    model.material = LoadedData.getMaterial(matDescriptor, loader);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-
+                    this.model = this.loader.loadRMeshArr(mesh);
+                }catch (Exception e){}
                 LoadedData.loadedModels.put(this.meshDescriptor, this.model);
             }
         }

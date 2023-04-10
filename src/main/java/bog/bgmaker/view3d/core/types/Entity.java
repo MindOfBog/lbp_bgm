@@ -13,9 +13,10 @@ import org.joml.*;
 import org.lwjgl.opengl.GL30;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Entity {
-    public Model model;
+    public ArrayList<Model> model;
     public Matrix4f transformation;
     public boolean testForMouse = false;
     public boolean highlighted = false;
@@ -24,13 +25,13 @@ public class Entity {
     ObjectLoader loader;
 
     public Entity(Model model, Matrix4f transformation, ObjectLoader loader) {
-        this.model = model;
+        this.model = new ArrayList<Model>(Arrays.asList(new Model[]{model}));
         this.transformation = transformation;
         this.loader = loader;
     }
 
     public Entity(Model model, Vector3f pos, Vector3f rotation, Vector3f scale, ObjectLoader loader) {
-        this.model = model;
+        this.model = new ArrayList<Model>(Arrays.asList(new Model[]{model}));
         this.transformation = new Matrix4f().identity()
                 .translate(pos)
                 .rotateX(Math.toRadians(rotation.x))
@@ -57,8 +58,12 @@ public class Entity {
     {
         reloadModel = true;
     }
-    public void setModel(Model model) {
+    public void setModel(ArrayList<Model> model) {
         this.model = model;
+    }
+
+    public void setModel(Model model) {
+        this.model = new ArrayList<Model>(Arrays.asList(new Model[]{model}));
     }
 
 //    public Vector3f rayIntersectModel(Vector3f ray, Vector3f origin) {
@@ -92,5 +97,5 @@ public class Entity {
 //    }
 
     public int getType(){return 0;}
-    public Model getModel(){return model;}
+    public ArrayList<Model> getModel(){return model;}
 }

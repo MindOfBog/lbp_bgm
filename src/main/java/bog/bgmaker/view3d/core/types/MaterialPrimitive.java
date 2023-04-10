@@ -25,6 +25,7 @@ import org.lwjgl.opengl.GL30;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * @author Bog
@@ -63,7 +64,7 @@ public class MaterialPrimitive extends Entity{
     }
 
     @Override
-    public Model getModel() {
+    public ArrayList<Model> getModel() {
 
         if (this.model == null || reloadModel) {
             reloadModel = false;
@@ -127,11 +128,11 @@ public class MaterialPrimitive extends Entity{
                 norms[i * 3 + 2] = normals[i].z;
             }
 
-            this.model = loader.loadModel(verts, texCoords, norms, triangles);
+            this.model = new ArrayList<Model>(Arrays.asList(new Model[]{loader.loadModel(verts, texCoords, norms, triangles)}));
 
             try {
                 ResourceDescriptor matDescriptor = gmat;
-                model.material = LoadedData.getMaterial(matDescriptor, loader);
+                model.get(0).material = LoadedData.getMaterial(matDescriptor, loader);
             } catch (Exception e) {
                 e.printStackTrace();
             }

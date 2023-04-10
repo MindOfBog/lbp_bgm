@@ -18,7 +18,7 @@ public interface IRenderer<T> {
 
     public void unbind();
 
-    public void prepare(T t, Camera camera, ShaderMan shader);
+    public void prepare(T t, Camera camera, ShaderMan shader, Model model);
 
     public void cleanup();
 

@@ -4,6 +4,7 @@ import bog.bgmaker.Main;
 import bog.bgmaker.view3d.core.Bone;
 import bog.bgmaker.view3d.core.Model;
 import bog.bgmaker.view3d.core.Triangle;
+import bog.bgmaker.view3d.mainWindow.LoadedData;
 import bog.bgmaker.view3d.utils.CWLibUtils.SkeletonUtils;
 import bog.bgmaker.view3d.utils.Utils;
 import cwlib.enums.BoxType;
@@ -180,118 +181,112 @@ public class ObjectLoader {
         }
     }
 
-//    public Model loadSubmesh(RMesh mastermesh, Primitive submesh, Matrix4f transMat, Vector3f pos) {
-//        try {
-//            ArrayList<Vector3f> vertices = new ArrayList<>();
-//            ArrayList<Vector3f> normals = new ArrayList<>();
-//            ArrayList<Vector2f> textures = new ArrayList<>();
-//            ArrayList<Vector3i> faces = new ArrayList<>();
-//            for (Vector3f vertex : mastermesh.getVertices()) {
-//                Vector3f verticesVec = new Vector3f(vertex.x, vertex.y, vertex.z);
-//                vertices.add(verticesVec);
+    public ArrayList<Model> loadRMeshArr(RMesh mesh) throws Exception {
+        ArrayList<Model> models = new ArrayList<>();
+        for (Primitive[] primitives : mesh.getSubmeshes())
+            for (Primitive primitiveSubmesh : primitives) {
+                Model model = loadSubmesh(mesh, primitiveSubmesh);
+                model.material = LoadedData.getMaterial(primitiveSubmesh.getMaterial(), this);
+                models.add(model);
+            }
+        return models;
+    }
+
+    public Model loadSubmesh(RMesh mastermesh, Primitive submesh) {
+        try {
+            ArrayList<Vector3f> vertices = new ArrayList<>();
+            ArrayList<Vector3f> normals = new ArrayList<>();
+            ArrayList<Vector2f> textures = new ArrayList<>();
+            ArrayList<Vector3i> faces = new ArrayList<>();
+            for (Vector3f vertex : mastermesh.getVertices()) {
+                Vector3f verticesVec = new Vector3f(vertex.x, vertex.y, vertex.z);
+                vertices.add(verticesVec);
+            }
+            for (Vector3f normal : mastermesh.getNormals()) {
+                Vector3f normalsVec = new Vector3f(normal.x, normal.y, normal.z);
+                normals.add(normalsVec);
+            }
+
+            int channel = 0;
+            RGfxMaterial material = LoadedData.loadGfxMaterial(submesh.getMaterial());
+
+            if (material != null)
+                for (int k = 0; k < material.boxes.size(); k++) {
+                    MaterialBox box = material.boxes.get(k);
+                    MaterialWire wire = material.findWireFrom(k);
+                    int outputBox = material.getOutputBox();
+                    if (box.type == 1) {
+                        while (wire.boxTo != outputBox)
+                            wire = material.findWireFrom(wire.boxTo);
+                        if (wire.portTo == 0) {
+                            channel = box.getParameters()[4];
+                        }
+                    }
+                }
+
+//            if (material != null) {
+//                int output = material.getOutputBox();
+//                MaterialBox outBox = material.getBoxConnectedToPort(output, 0);
+//                if(outBox.isTexture())
+//                    channel = outBox.getParameters()[4];
 //            }
-//            for (Vector3f normal : mastermesh.getNormals()) {
-//                Vector3f normalsVec = new Vector3f(normal.x, normal.y, normal.z);
-//                normals.add(normalsVec);
-//            }
-//
-//            int channel = 0;
-//            RGfxMaterial material = Main.view.loadGfxMaterial(submesh.getMaterial());
-//
-//            if(material != null)
-//                for (int i = 0; i < material.boxes.size(); ++i)
-//                {
-//                    MaterialBox box = material.boxes.get(i);
-//                    MaterialWire wire = material.findWireFrom(i);
-//                    int outputBox = material.getOutputBox();
-//
-//                    if (box.type == BoxType.TEXTURE_SAMPLE)
-//                    {
-//                        while (wire.boxTo != outputBox)
-//                            wire = material.findWireFrom(wire.boxTo);
-//
-//                        if(wire.portTo == 0)
-//                        {
-//                            channel = box.getParameters()[4];
-//                            break;
-//                        }
-//                    }
-//                }
-//
-//            for (Vector2f texture : mastermesh.getUVs(channel)) {
-//                Vector2f texturesVec = new Vector2f(texture.x, 1.0F - texture.y);
-//                textures.add(texturesVec);
-//            }
-//            int[] indices1 = mastermesh.getTriangles(submesh);
-//
-//            for (int i = 0; i < indices1.length; i += 3)
-//            {
-//                faces.add(new Vector3i(indices1[i], indices1[i], indices1[i]));
-//                faces.add(new Vector3i(indices1[i + 1], indices1[i + 1], indices1[i + 1]));
-//                faces.add(new Vector3i(indices1[i + 2], indices1[i + 2], indices1[i + 2]));
-//            }
-//
-//            ArrayList<Integer> indices = new ArrayList<>();
-//            float[] verticesArr = new float[vertices.size() * 3];
-//            int j = 0;
-//            for (Vector3f posV : vertices) {
-//                verticesArr[j * 3] = posV.x;
-//                verticesArr[j * 3 + 1] = posV.y;
-//                verticesArr[j * 3 + 2] = posV.z;
-//                j++;
-//            }
-//            float[] texCoordArr = new float[vertices.size() * 2];
-//            float[] normalsArr = new float[vertices.size() * 3];
-//            for (Vector3i face : faces)
-//                processVertex(face.x, face.y, face.z, textures, normals, indices, texCoordArr, normalsArr);
-//            int[] indicesArr = indices.stream().mapToInt(v -> v.intValue()).toArray();
-//            return loadModel(verticesArr, texCoordArr, normalsArr, indicesArr, vertices);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return null;
-//        }
-//    }
-//    public AABB generateAABB(Model model, Matrix4f transMat, Vector3f pos)
-//    {
-//        AABB aabb = new AABB();
-//
-//        ArrayList<Vector3f> vertices = model.vertices;
-//
-//        for(Vector3f verticesVec : vertices)
-//        {
-//            Vector3f vertex = new Vector3f(verticesVec.mulProject(transMat, new Vector3f()));
-//
-//            if(vertex.x < aabb.min.x)
-//                aabb.min.x = vertex.x;
-//            if(vertex.y < aabb.min.y)
-//                aabb.min.y = vertex.y;
-//            if(vertex.z < aabb.min.z)
-//                aabb.min.z = vertex.z;
-//
-//            if(vertex.x > aabb.max.x)
-//                aabb.max.x = vertex.x;
-//            if(vertex.y > aabb.max.y)
-//                aabb.max.y = vertex.y;
-//            if(vertex.z > aabb.max.z)
-//                aabb.max.z = vertex.z;
-//
-//            if(aabb.min.x == 0)
-//                aabb.min.x = pos.x;
-//            if(aabb.min.y == 0)
-//                aabb.min.y = pos.y;
-//            if(aabb.min.z == 0)
-//                aabb.min.z = pos.z;
-//
-//            if(aabb.max.x == 0)
-//                aabb.max.x = pos.x;
-//            if(aabb.max.y == 0)
-//                aabb.max.y = pos.y;
-//            if(aabb.max.z == 0)
-//                aabb.max.z = pos.z;
-//        }
-//
-//        return aabb;
-//    }
+
+            for (Vector2f texture : mastermesh.getUVs(channel)) {
+                Vector2f texturesVec = new Vector2f(texture.x, 1.0F - texture.y);
+                textures.add(texturesVec);
+            }
+            int[] indices1 = mastermesh.getTriangles(submesh);
+
+            for (int i = 0; i < indices1.length; i += 3)
+            {
+                faces.add(new Vector3i(indices1[i], indices1[i], indices1[i]));
+                faces.add(new Vector3i(indices1[i + 1], indices1[i + 1], indices1[i + 1]));
+                faces.add(new Vector3i(indices1[i + 2], indices1[i + 2], indices1[i + 2]));
+            }
+
+            ArrayList<Integer> indices = new ArrayList<>();
+            float[] verticesArr = new float[vertices.size() * 3];
+            int j = 0;
+            for (Vector3f posV : vertices) {
+                verticesArr[j * 3] = posV.x;
+                verticesArr[j * 3 + 1] = posV.y;
+                verticesArr[j * 3 + 2] = posV.z;
+                j++;
+            }
+            float[] texCoordArr = new float[vertices.size() * 2];
+            float[] normalsArr = new float[vertices.size() * 3];
+            for (Vector3i face : faces)
+                processVertex(face.x, face.y, face.z, textures, normals, indices, texCoordArr, normalsArr);
+            int[] indicesArr = indices.stream().mapToInt(v -> v.intValue()).toArray();
+
+            byte[][] js = mastermesh.getJoints();
+            int[] joints = new int[js.length * 4];
+
+            for(int i = 0; i < js.length; i++)
+            {
+                joints[i * 4] = js[i][0];
+                joints[i * 4 + 1] = js[i][1];
+                joints[i * 4 + 2] = js[i][2];
+                joints[i * 4 + 3] = js[i][3];
+            }
+
+            Vector4f[] ws = mastermesh.getWeights();
+            float[] weights = new float[ws.length * 4];
+
+            for(int i = 0; i < ws.length; i++)
+            {
+                weights[i * 4] = ws[i].x;
+                weights[i * 4 + 1] = ws[i].y;
+                weights[i * 4 + 2] = ws[i].z;
+                weights[i * 4 + 3] = ws[i].w;
+            }
+
+            return loadModel(verticesArr, texCoordArr, normalsArr, indicesArr, joints, weights);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 
     public static void processVertex(int pos, int texCoord, int normal,
                                      ArrayList<Vector2f> texCoordList, ArrayList<Vector3f> normalList, ArrayList<Integer> indicesList,

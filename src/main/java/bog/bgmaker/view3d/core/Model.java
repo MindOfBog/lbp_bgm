@@ -12,8 +12,6 @@ public class Model {
     public Material material;
     public int[] indicesArr;
 
-    public boolean noRender = false;
-
     public Model(int vao, int[] vbos, int vertexCount)
     {
         this.vao = vao;

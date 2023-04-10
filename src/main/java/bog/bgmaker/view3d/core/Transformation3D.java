@@ -158,10 +158,7 @@ public class Transformation3D{
                     posPicker.update(camera);
                     Vector3f pos = new Vector3f(posPicker.getPointOnRay(posPicker.currentRay, 4000));
                     entity.transformation = entity.transformation.setTranslation(pos);
-                    entity.model.noRender = false;
                 }
-                else
-                    entity.model.noRender = true;
             }
         }
 

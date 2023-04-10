@@ -185,4 +185,8 @@ void main()
     }
 
     fragmentColor = ambientC * vec4(ambientLight, 1) + diffuseSpecularComp;
+    fragmentColor.r = min(fragmentColor.r, 1.0);
+    fragmentColor.g = min(fragmentColor.g, 1.0);
+    fragmentColor.b = min(fragmentColor.b, 1.0);
+    fragmentColor.a = min(fragmentColor.a, 1.0);
 }

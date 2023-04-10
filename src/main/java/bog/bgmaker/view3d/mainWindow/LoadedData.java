@@ -37,7 +37,7 @@ public class LoadedData {
     public static ArrayList<FileArchive> FARCs;
     public static BigSave BIGFART = null;
 
-    public static HashMap<ResourceDescriptor, Model> loadedModels;
+    public static HashMap<ResourceDescriptor, ArrayList<Model>> loadedModels;
     public static HashMap<ResourceDescriptor, Material> loadedGfxMaterials;
     public static HashMap<ResourceDescriptor, Texture> loadedTextures;
 
@@ -172,6 +172,31 @@ public class LoadedData {
             else
             {
                 generatedMat = new Material();
+
+                generatedShader.createFragmentShader(Utils.loadResource("/shaders/fragment.glsl").replaceAll("//%&AMBIENTC", shaderColor));
+                generatedShader.link();
+                generatedShader.createListUniform("textureSampler", 25);
+                generatedShader.createUniform("samplerCount");
+                generatedShader.createUniform("ambientLight");
+                generatedShader.createMaterialUniform("material");
+                generatedShader.createUniform("highlightMode");
+                generatedShader.createUniform("highlightColor");
+                generatedShader.createUniform("brightnessMul");
+                generatedShader.createUniform("specularPower");
+                generatedShader.createDirectionalLightListUniform("directionalLights", 5);
+                generatedShader.createUniform("directionalLightsSize");
+                generatedShader.createPointLightListUniform("pointLights", 50);
+                generatedShader.createUniform("pointLightsSize");
+                generatedShader.createSpotLightListUniform("spotLights", 50);
+                generatedShader.createUniform("spotLightsSize");
+
+                generatedShader.createUniform("transformationMatrix");
+                generatedShader.createUniform("projectionMatrix");
+                generatedShader.createUniform("viewMatrix");
+                generatedShader.createListUniform("bones", 100);
+                generatedShader.createUniform("hasBones");
+                generatedShader.createUniform("triangleOffset");
+
                 generatedMat.customShader = generatedShader;
 
                 generatedMat.textures = new Texture[textures.size()];
@@ -192,30 +217,6 @@ public class LoadedData {
             }
 
             generatedMat.disableCulling = culling;
-
-            generatedShader.createFragmentShader(Utils.loadResource("/shaders/fragment.glsl").replaceAll("//%&AMBIENTC", shaderColor));
-            generatedShader.link();
-            generatedShader.createListUniform("textureSampler", 25);
-            generatedShader.createUniform("samplerCount");
-            generatedShader.createUniform("ambientLight");
-            generatedShader.createMaterialUniform("material");
-            generatedShader.createUniform("highlightMode");
-            generatedShader.createUniform("highlightColor");
-            generatedShader.createUniform("brightnessMul");
-            generatedShader.createUniform("specularPower");
-            generatedShader.createDirectionalLightListUniform("directionalLights", 5);
-            generatedShader.createUniform("directionalLightsSize");
-            generatedShader.createPointLightListUniform("pointLights", 50);
-            generatedShader.createUniform("pointLightsSize");
-            generatedShader.createSpotLightListUniform("spotLights", 50);
-            generatedShader.createUniform("spotLightsSize");
-
-            generatedShader.createUniform("transformationMatrix");
-            generatedShader.createUniform("projectionMatrix");
-            generatedShader.createUniform("viewMatrix");
-            generatedShader.createListUniform("bones", 100);
-            generatedShader.createUniform("hasBones");
-            generatedShader.createUniform("triangleOffset");
 
             LoadedData.loadedGfxMaterials.put(matDescriptor, generatedMat);
             return generatedMat;
@@ -249,7 +250,8 @@ public class LoadedData {
                 return "(" + in1 + " + " + in2 + ")";
             }
             case BoxType.MULTIPLY_ADD:
-                System.out.println("MULTIPLY_ADD");
+                MaterialBox[] connectedBoxes = material.getBoxesConnected(box);
+                System.out.println("MULTIPLY_ADD" + connectedBoxes.length);
                 break;
             case BoxType.MIX:
                 System.out.println("MIX");

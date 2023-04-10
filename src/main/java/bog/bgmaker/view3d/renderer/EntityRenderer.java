@@ -185,35 +185,35 @@ public class EntityRenderer implements IRenderer{
         {
             Entity entity = entities.get(i);
             shaderMousePick.setUniform("arrayIndex", new Vector2i(i + 1, 1));
-            Model model = entity.getModel();
-            if(model != null)
-                if(entity.testForMouse)
-                {
-                    GL30.glBindVertexArray(model.vao);
-                    GL20.glEnableVertexAttribArray(0);
-                    GL20.glEnableVertexAttribArray(1);
-                    GL20.glEnableVertexAttribArray(2);
-
-                    if(entity instanceof Mesh ? ((Mesh)entity).skeleton != null : false)
+            for(Model model : entity.getModel())
+                if(model != null)
+                    if(entity.testForMouse)
                     {
-                        GL20.glEnableVertexAttribArray(3);
-                        GL20.glEnableVertexAttribArray(4);
+                        GL30.glBindVertexArray(model.vao);
+                        GL20.glEnableVertexAttribArray(0);
+                        GL20.glEnableVertexAttribArray(1);
+                        GL20.glEnableVertexAttribArray(2);
+
+                        if(entity instanceof Mesh ? ((Mesh)entity).skeleton != null : false)
+                        {
+                            GL20.glEnableVertexAttribArray(3);
+                            GL20.glEnableVertexAttribArray(4);
+                        }
+
+                        RenderMan.disableCulling();
+
+                        prepareMousePick(entity, camera);
+
+                        shaderMousePick.setUniform("bones", entity instanceof Mesh ? ((Mesh)entity).skeleton : null);
+                        shaderMousePick.setUniform("hasBones", entity instanceof Mesh ? ((Mesh)entity).skeleton != null : false);
+
+                        // Mouse picker render to FBO
+
+                        GL11.glDrawElements(GL11.GL_TRIANGLES, model.vertexCount, 5125, 0L);
+                        hasMousePick = true;
+
+                        unbind();
                     }
-
-                    RenderMan.disableCulling();
-
-                    prepareMousePick(entity, camera);
-
-                    shaderMousePick.setUniform("bones", entity instanceof Mesh ? ((Mesh)entity).skeleton : null);
-                    shaderMousePick.setUniform("hasBones", entity instanceof Mesh ? ((Mesh)entity).skeleton != null : false);
-
-                    // Mouse picker render to FBO
-
-                    GL11.glDrawElements(GL11.GL_TRIANGLES, model.vertexCount, 5125, 0L);
-                    hasMousePick = true;
-
-                    unbind();
-                }
         }
 
         GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
@@ -222,34 +222,34 @@ public class EntityRenderer implements IRenderer{
         for (int i = 0; i < throughWallEntities.size(); i++)
         {
             Entity entity = throughWallEntities.get(i);
-            Model model = entity.getModel();
             shaderMousePick.setUniform("arrayIndex", new Vector2i(i + 1, 2));
-            if(model != null)
-                if(entity.testForMouse)
-                {
-                    GL30.glBindVertexArray(model.vao);
-                    GL20.glEnableVertexAttribArray(0);
-                    GL20.glEnableVertexAttribArray(1);
-                    GL20.glEnableVertexAttribArray(2);
-
-                    if(entity instanceof Mesh ? ((Mesh)entity).skeleton != null : false)
+            for(Model model : entity.getModel())
+                if(model != null)
+                    if(entity.testForMouse)
                     {
-                        GL20.glEnableVertexAttribArray(3);
-                        GL20.glEnableVertexAttribArray(4);
+                        GL30.glBindVertexArray(model.vao);
+                        GL20.glEnableVertexAttribArray(0);
+                        GL20.glEnableVertexAttribArray(1);
+                        GL20.glEnableVertexAttribArray(2);
+
+                        if(entity instanceof Mesh ? ((Mesh)entity).skeleton != null : false)
+                        {
+                            GL20.glEnableVertexAttribArray(3);
+                            GL20.glEnableVertexAttribArray(4);
+                        }
+
+                        prepareMousePick(entity, camera);
+
+                        shaderMousePick.setUniform("bones", entity instanceof Mesh ? ((Mesh)entity).skeleton : null);
+                        shaderMousePick.setUniform("hasBones", entity instanceof Mesh ? ((Mesh)entity).skeleton != null : false);
+
+                        // Mouse picker render to FBO
+
+                        GL11.glDrawElements(GL11.GL_TRIANGLES, model.vertexCount, 5125, 0L);
+                        hasMousePick = true;
+
+                        unbind();
                     }
-
-                    prepareMousePick(entity, camera);
-
-                    shaderMousePick.setUniform("bones", entity instanceof Mesh ? ((Mesh)entity).skeleton : null);
-                    shaderMousePick.setUniform("hasBones", entity instanceof Mesh ? ((Mesh)entity).skeleton != null : false);
-
-                    // Mouse picker render to FBO
-
-                    GL11.glDrawElements(GL11.GL_TRIANGLES, model.vertexCount, 5125, 0L);
-                    hasMousePick = true;
-
-                    unbind();
-                }
         }
 
         unbindFrameBuffer();
@@ -302,82 +302,72 @@ public class EntityRenderer implements IRenderer{
 
         for (Entity entity : entities)
         {
-            Model model = entity.getModel();
+            for(Model model : entity.getModel()) {
+                if (model != null) {
+                    if (model.material == null || model.material.customShader == null) {
+                        if (!lastShader.equals(shader)) {
+                            lastShader.unbind();
+                            shader.bind();
+                            lastShader = shader;
+                        }
+                    } else {
+                        if (!lastShader.equals(model.material.customShader)) {
+                            lastShader.unbind();
+                            model.material.customShader.bind();
+                            lastShader = model.material.customShader;
+                        }
 
-            if(model.material.customShader == null)
-            {
-                if(!lastShader.equals(shader))
-                {
-                    lastShader.unbind();
-                    shader.bind();
-                    lastShader = shader;
-                }
-            }
-            else
-            {
-                if(!lastShader.equals(model.material.customShader))
-                {
-                    lastShader.unbind();
-                    model.material.customShader.bind();
-                    lastShader = model.material.customShader;
-                }
+                        model.material.setupUniforms(projection, directionalLights, pointLights, spotLights);
+                    }
 
-                model.material.setupUniforms(projection, directionalLights, pointLights, spotLights);
-            }
+                    boolean hasBones = entity instanceof Mesh ? ((Mesh) entity).skeleton != null : false;
+                    bind(model, hasBones, lastShader);
+                    prepare(entity, camera, lastShader, model);
 
-            if(model != null)
-            {
-                boolean hasBones = entity instanceof Mesh ? ((Mesh)entity).skeleton != null : false;
-                bind(model, hasBones, lastShader);
-                prepare(entity, camera, lastShader);
+                    float[] elements = entity.transformation.get(new float[16]);
 
-                float[] elements = entity.transformation.get(new float[16]);
+                    Vector3f col0 = new Vector3f(elements[0], elements[1], elements[2]);
+                    Vector3f col1 = new Vector3f(elements[4], elements[5], elements[6]);
+                    Vector3f col2 = new Vector3f(elements[8], elements[9], elements[10]);
 
-                Vector3f col0 = new Vector3f(elements[0], elements[1], elements[2]);
-                Vector3f col1 = new Vector3f(elements[4], elements[5], elements[6]);
-                Vector3f col2 = new Vector3f(elements[8], elements[9], elements[10]);
+                    boolean canDecompose = true;
+                    if (col0.dot(col1) != 0.0f) canDecompose = false;
+                    if (col1.dot(col2) != 0.0f) canDecompose = false;
+                    if (col0.dot(col2) != 0.0f) canDecompose = false;
 
-                boolean canDecompose = true;
-                if (col0.dot(col1) != 0.0f) canDecompose = false;
-                if (col1.dot(col2) != 0.0f) canDecompose = false;
-                if (col0.dot(col2) != 0.0f) canDecompose = false;
-
-                if(!canDecompose)
-                {
-                    RenderMan.disableCulling();
-                }
-                else{
-                    Vector3f scale = new Vector3f(col0.length(), col1.length(), col2.length());
-
-                    col0 = col0.div(scale.x);
-                    col1 = col1.div(scale.y);
-                    col2 = col2.div(scale.z);
-
-                    if (col0.cross(col1, new Vector3f()).dot(col2) < 0.0f)
+                    if (canDecompose) {
                         RenderMan.disableCulling();
+                    } else {
+                        Vector3f scale = new Vector3f(col0.length(), col1.length(), col2.length());
+
+                        col0 = col0.div(scale.x);
+                        col1 = col1.div(scale.y);
+                        col2 = col2.div(scale.z);
+
+                        if (col0.cross(col1, new Vector3f()).dot(col2) < 0.0f)
+                            RenderMan.disableCulling();
+                    }
+
+                    if (entity.selected) {
+                        outline = true;
+                        outlineEntities.add(entity);
+                    }
+
+                    if (model.material.overlayColor != null) {
+                        lastShader.setUniform("highlightMode", 1);
+                        lastShader.setUniform("highlightColor", model.material.overlayColor);
+                    }
+
+                    lastShader.setUniform("bones", entity instanceof Mesh ? ((Mesh) entity).skeleton : null);
+                    lastShader.setUniform("hasBones", hasBones);
+
+                    // Main render
+
+                    GL11.glDrawElements(GL11.GL_TRIANGLES, model.vertexCount, 5125, 0L);
+
+                    lastShader.setUniform("highlightMode", 0);
+                    unbind();
                 }
-
-                if(entity.selected)
-                {
-                    outline = true;
-                    outlineEntities.add(entity);
-                }
-
-                if(model.material.overlayColor != null)
-                {
-                    lastShader.setUniform("highlightMode", 1);
-                    lastShader.setUniform("highlightColor", model.material.overlayColor);
-                }
-
-                lastShader.setUniform("bones", entity instanceof Mesh ? ((Mesh)entity).skeleton : null);
-                lastShader.setUniform("hasBones", hasBones);
-
-                // Main render
-
-                GL11.glDrawElements(GL11.GL_TRIANGLES, model.vertexCount, 5125, 0L);
-
-                lastShader.setUniform("highlightMode", 0);
-                unbind();
             }
         }
 
@@ -397,14 +387,12 @@ public class EntityRenderer implements IRenderer{
 
             for (Entity entity : outlineEntities)
             {
-                Model model = entity.getModel();
-
-                if(model != null)
-                    if(!model.noRender)
+                for(Model model : entity.getModel())
+                    if(model != null)
                     {
                         boolean hasBones = entity instanceof Mesh ? ((Mesh)entity).skeleton != null : false;
                         bindNoCullColor(model, new Vector4f(252f / 255f, 173f / 255f, 3f / 255f, 1f), hasBones);
-                        prepare(entity, camera, shader);
+                        prepare(entity, camera, shader, model);
 
                         shader.setUniform("highlightMode", 0);
 
@@ -429,14 +417,12 @@ public class EntityRenderer implements IRenderer{
 
             for (Entity entity : outlineEntities)
             {
-                Model model = entity.getModel();
-
-                if(model != null)
-                    if(!model.noRender)
+                for(Model model : entity.getModel())
+                    if(model != null)
                     {
                         boolean hasBones = entity instanceof Mesh ? ((Mesh)entity).skeleton != null : false;
                         bindNoCullColor(model, new Vector4f(0f, 0f, 0f, 1f), hasBones);
-                        prepare(entity, camera, shader);
+                        prepare(entity, camera, shader, model);
 
                         shader.setUniform("highlightMode", 0);
 
@@ -496,43 +482,34 @@ public class EntityRenderer implements IRenderer{
 
         for(Entity entity : throughWallEntities)
         {
-            Model model = entity.getModel();
+            for(Model model : entity.getModel()) {
+                if (model != null) {
+                    if (model.material == null || model.material.customShader == null) {
+                        if (lastShader != shader) {
+                            lastShader.unbind();
+                            shader.bind();
+                            lastShader = shader;
+                        }
+                    } else {
+                        if (lastShader != model.material.customShader) {
+                            lastShader.unbind();
+                            model.material.customShader.bind();
+                            lastShader = model.material.customShader;
+                        }
 
-            if(model.material.customShader == null)
-            {
-                if(lastShader != shader)
-                {
-                    lastShader.unbind();
-                    shader.bind();
-                    lastShader = shader;
-                }
-            }
-            else
-            {
-                if(lastShader != model.material.customShader)
-                {
-                    lastShader.unbind();
-                    model.material.customShader.bind();
-                    lastShader = model.material.customShader;
-                }
+                        model.material.setupUniforms(projection, directionalLights, pointLights, spotLights);
+                    }
 
-                model.material.setupUniforms(projection, directionalLights, pointLights, spotLights);
-            }
-
-            if(model != null)
-                if(!model.noRender)
-                {
-                    boolean hasBones = entity instanceof Mesh ? ((Mesh)entity).skeleton != null : false;
+                    boolean hasBones = entity instanceof Mesh ? ((Mesh) entity).skeleton != null : false;
                     bindThroughWalls(model, hasBones, lastShader);
-                    prepare(entity, camera, lastShader);
+                    prepare(entity, camera, lastShader, model);
 
-                    if(entity.highlighted)
-                    {
+                    if (entity.highlighted) {
                         lastShader.setUniform("highlightMode", 2);
                         lastShader.setUniform("brightnessMul", 0.5f);
                     }
 
-                    lastShader.setUniform("bones", entity instanceof Mesh ? ((Mesh)entity).skeleton : null);
+                    lastShader.setUniform("bones", entity instanceof Mesh ? ((Mesh) entity).skeleton : null);
                     lastShader.setUniform("hasBones", hasBones);
 
                     //Through wall
@@ -542,6 +519,7 @@ public class EntityRenderer implements IRenderer{
 
                     unbind();
                 }
+            }
         }
 
         throughWallEntities.clear();
@@ -642,8 +620,8 @@ public class EntityRenderer implements IRenderer{
     }
 
     @Override
-    public void prepare(Object entity, Camera camera, ShaderMan shader) {
-        Texture[] tex = ((Entity) entity).getModel().material.textures;
+    public void prepare(Object entity, Camera camera, ShaderMan shader, Model model) {
+        Texture[] tex = model.material.textures;
         if(tex != null)
         {
             for (int i = 0; i < tex.length; i++)
