@@ -20,4 +20,8 @@ public class TriStrip extends Drawable{
     public Color color = null;
     public boolean smoothstep = false;
 
+    @Override
+    public int getType() {
+        return 0;
+    }
 }

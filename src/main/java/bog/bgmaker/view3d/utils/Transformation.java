@@ -25,11 +25,11 @@ public class Transformation {
     {
         Matrix4f matrix = new Matrix4f(entity.transformation);
 
-        if (entity instanceof Mesh && ((Mesh)entity).mesh != null) {
-            Bone root = ((Mesh)entity).mesh.getBones()[0];
-            if (root != null)
-                matrix.mul(root.invSkinPoseMatrix);
-        }
+//       TODO if (entity instanceof Mesh && ((Mesh)entity).mesh != null) {
+//            Bone root = ((Mesh)entity).mesh.getBones()[0];
+//            if (root != null)
+//                matrix.mul(root.invSkinPoseMatrix);
+//        }
 
         return matrix;
     }

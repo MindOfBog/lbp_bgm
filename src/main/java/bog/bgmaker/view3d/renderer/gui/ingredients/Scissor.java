@@ -30,4 +30,8 @@ public class Scissor extends Drawable {
         return scissor;
     }
 
+    @Override
+    public int getType() {
+        return 4;
+    }
 }

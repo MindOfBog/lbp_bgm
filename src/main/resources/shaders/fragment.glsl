@@ -8,9 +8,9 @@ out vec4 fragmentColor;
 
 struct Material
 {
-    vec4 ambient;
-    vec4 diffuse;
-    vec4 specular;
+    vec4 ambient[25];
+    vec4 diffuse[25];
+    vec4 specular[25];
     int hasTexture;
     float reflectance;
 };
@@ -36,7 +36,8 @@ struct SpotLight
     float cutoff;
 };
 
-uniform sampler2D textureSampler;
+uniform sampler2D textureSampler[25];
+uniform int samplerCount;
 uniform vec3 ambientLight;
 uniform Material material;
 uniform int highlightMode;
@@ -45,9 +46,9 @@ uniform float brightnessMul;
 uniform float specularPower;
 uniform DirectionalLight directionalLights[5];
 uniform int directionalLightsSize;
-uniform PointLight pointLights[70];
+uniform PointLight pointLights[50];
 uniform int pointLightsSize;
-uniform SpotLight spotLights[70];
+uniform SpotLight spotLights[50];
 uniform int spotLightsSize;
 
 const mat4 thresholdMatrix = mat4(
@@ -117,73 +118,42 @@ vec4 calcDirectionalLight(DirectionalLight light, vec3 position, vec3 normal)
 
 void setupColors()
 {
-    if(material.hasTexture == 1)
-        {
-            ambientC = texture(textureSampler, fragTextureCoord);
+    //%&AMBIENTC
 
-            if(highlightMode == 1)
-            {
-                float mul = (ambientC.r + ambientC.g + ambientC.b) / 3.0;
-                ambientC = vec4(highlightColor.r * mul, highlightColor.g * mul, highlightColor.b * mul, ambientC.a * highlightColor.a);
-            }
-            else if(highlightMode == 2)
-            {
-                ambientC.r = ambientC.r * brightnessMul;
-                ambientC.g = ambientC.g * brightnessMul;
-                ambientC.b = ambientC.b * brightnessMul;
-            }
+    ambientC.r = min(ambientC.r, 1.0);
+    ambientC.g = min(ambientC.g, 1.0);
+    ambientC.b = min(ambientC.b, 1.0);
+    ambientC.a = min(ambientC.a, 1.0);
 
-            diffuseC = ambientC;
-            specularC = ambientC;
-        }
-        else
-        {
-            ambientC = material.ambient;
-            diffuseC = material.diffuse;
-            specularC = material.specular;
+    if(ambientC.a < 0.4)
+    {
+        ambientC.a = 0.4;
+        ambientC.r = 0;
+        ambientC.g = 0;
+        ambientC.b = 0;
+    }
+    if(diffuseC.a < 0.4)
+    {
+        diffuseC.a = 0.4;
+        diffuseC.r = 0;
+        diffuseC.g = 0;
+        diffuseC.b = 0;
+    }
+    if(specularC.a < 0.4)
+    {
+        specularC.a = 0.4;
+        specularC.r = 0;
+        specularC.g = 0;
+        specularC.b = 0;
+    }
 
-            if(highlightMode == 1)
-            {
-                float mul = (ambientC.r + ambientC.g + ambientC.b) / 3.0;
-                ambientC = vec4(highlightColor.r * mul, highlightColor.g * mul, highlightColor.b * mul, ambientC.a * highlightColor.a);
-            }
-            else if(highlightMode == 2)
-            {
-                ambientC.r = ambientC.r * brightnessMul;
-                ambientC.g = ambientC.g * brightnessMul;
-                ambientC.b = ambientC.b * brightnessMul;
-            }
-        }
+    ivec2 coord = ivec2(gl_FragCoord.xy);
+    float threshold = thresholdMatrix[coord.x % 4][coord.y % 4] / 17.0;
 
-        if(ambientC.a < 0.4)
-        {
-            ambientC.a = 0.4;
-            ambientC.r = 0;
-            ambientC.g = 0;
-            ambientC.b = 0;
-        }
-        if(diffuseC.a < 0.4)
-        {
-            diffuseC.a = 0.4;
-            diffuseC.r = 0;
-            diffuseC.g = 0;
-            diffuseC.b = 0;
-        }
-        if(specularC.a < 0.4)
-        {
-            specularC.a = 0.4;
-            specularC.r = 0;
-            specularC.g = 0;
-            specularC.b = 0;
-        }
-
-        ivec2 coord = ivec2(gl_FragCoord.xy);
-        float threshold = thresholdMatrix[coord.x % 4][coord.y % 4] / 17.0;
-
-        if(threshold > ambientC.a || threshold > diffuseC.a || threshold > specularC.a)
-        {
-            discard;
-        }
+    if(threshold > ambientC.a || threshold > diffuseC.a || threshold > specularC.a)
+    {
+        discard;
+    }
 }
 
 void main()

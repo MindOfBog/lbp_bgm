@@ -56,8 +56,8 @@ public class GuiScreen {
     public void secondaryThread()
     {
         if(this.guiElements != null)
-            for(Element e : this.guiElements)
-                e.secondThread();
+            for(int i = 0; i < this.guiElements.size(); i++)
+                this.guiElements.get(i).secondThread();
     }
 
     public void removeElementByID(String id)
@@ -187,14 +187,14 @@ public class GuiScreen {
     }
 
 
-    public void drawLine(Vector2i pos1, Vector2i pos2)
+    public void drawLine(Vector2i pos1, Vector2i pos2, boolean smooth)
     {
-        renderer.processGuiElement(new Line(pos1, pos2, loader, window, false));
+        renderer.processGuiElement(new Line(pos1, pos2, loader, window, smooth, false));
     }
 
-    public void drawLine(Vector2i pos1, Vector2i pos2, Color color)
+    public void drawLine(Vector2i pos1, Vector2i pos2, Color color, boolean smooth)
     {
-        renderer.processGuiElement(new Line(pos1, pos2, color, loader, window, false));
+        renderer.processGuiElement(new Line(pos1, pos2, color, loader, window, smooth, false));
     }
 
     public void drawImage(String path, float x, float y, float width, float height)

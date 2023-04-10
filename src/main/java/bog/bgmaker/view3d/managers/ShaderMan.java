@@ -1,9 +1,6 @@
 package bog.bgmaker.view3d.managers;
 
-import bog.bgmaker.view3d.core.DirectionalLight;
-import bog.bgmaker.view3d.core.Material;
-import bog.bgmaker.view3d.core.PointLight;
-import bog.bgmaker.view3d.core.SpotLight;
+import bog.bgmaker.view3d.core.*;
 import org.joml.*;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL32;
@@ -89,20 +86,31 @@ public class ShaderMan {
         }
     }
 
+    public void createListUniform(String uniformName, int size) throws Exception
+    {
+        for(int i = 0; i < size; i++)
+        {
+            createUniform(uniformName + "[" + i + "]");
+        }
+    }
+
     public void createMaterialUniform(String uniformName) throws Exception
     {
-        createUniform(uniformName + ".ambient");
-        createUniform(uniformName + ".diffuse");
-        createUniform(uniformName + ".specular");
+        createListUniform(uniformName + ".ambient", 25);
+        createListUniform(uniformName + ".diffuse", 25);
+        createListUniform(uniformName + ".specular", 25);
         createUniform(uniformName + ".hasTexture");
         createUniform(uniformName + ".reflectance");
     }
 
     public void setUniform(String uniformName, Material material)
     {
-        setUniform(uniformName + ".ambient", material.ambientColor);
-        setUniform(uniformName + ".diffuse", material.diffuseColor);
-        setUniform(uniformName + ".specular", material.specularColor);
+        for(int i = 0; i < material.ambientColor.length; i++)
+            setUniform(uniformName + ".ambient[" + i + "]", material.ambientColor[i]);
+        for(int i = 0; i < material.diffuseColor.length; i++)
+            setUniform(uniformName + ".diffuse[" + i + "]", material.diffuseColor[i]);
+        for(int i = 0; i < material.specularColor.length; i++)
+            setUniform(uniformName + ".specular[" + i + "]", material.specularColor[i]);
         setUniform(uniformName + ".hasTexture", material.hasTexture() ? 1 : 0);
         setUniform(uniformName + ".reflectance", material.reflectance);
     }
@@ -113,6 +121,43 @@ public class ShaderMan {
         {
             GL20.glUniformMatrix4fv(uniforms.get(uniformName), false, value.get(stack.mallocFloat(16)));
         }
+    }
+
+    public void setUniform(String uniformName, Matrix4f[] matrices)
+    {
+        int num = matrices != null ? matrices.length : 0;
+        for(int i = 0; i < num; i++)
+        {
+            setUniform(uniformName, matrices[i], i);
+        }
+    }
+
+    public void setUniform(String uniformName, Bone[] bones)
+    {
+        int num = bones != null ? bones.length : 0;
+        for(int i = 0; i < num; i++)
+        {
+            setUniform(uniformName, new Matrix4f(bones[0].invSkinPoseMatrix).mul(new Matrix4f(bones[i].offset)), i);
+        }
+    }
+
+    public void setUniform(String uniformName, int[] value)
+    {
+        int num = value != null ? value.length : 0;
+        for(int i = 0; i < num; i++)
+        {
+            setUniform(uniformName, value[i], i);
+        }
+    }
+
+    public void setUniform(String uniformName, Matrix4f value, int index)
+    {
+        setUniform(uniformName + "[" + index + "]", value);
+    }
+
+    public void setUniform(String uniformName, int value, int index)
+    {
+        setUniform(uniformName + "[" + index + "]", value);
     }
 
     public void setUniform(String uniformName, Matrix4d value)

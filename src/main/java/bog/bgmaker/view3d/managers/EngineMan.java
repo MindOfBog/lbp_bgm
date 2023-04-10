@@ -16,7 +16,7 @@ public class EngineMan {
     public static int fps = 0;
     public static int avgFPS = 60;
     public static double ms = 0;
-    public static float frameTime = 1f / Const.FRAMERATE;
+    public static float frameTime = 1f / Math.max(Const.FRAMERATE, 5);
 
     public boolean isRunning;
     public WindowMan window;
@@ -64,6 +64,7 @@ public class EngineMan {
             lastTime = startTime;
 
             unprocessedTime += passedTime / (double)Const.NANOSECOND;
+            frameTime = 1f / Math.max(Const.FRAMERATE, 1f);
 
             while(unprocessedTime > frameTime)
             {
@@ -76,23 +77,22 @@ public class EngineMan {
 
             if(render)
             {
-                update();
-                render();
-
                 ms = currentTime - previousTime;
                 fps = (int)(1d / ms);
                 previousTime = currentTime;
 
                 fpsBuffer.add(fps);
-                if(fpsBuffer.size() > avgFPS)
+                while(fpsBuffer.size() > Math.max(fps, 1))
                     fpsBuffer.remove(0);
 
                 int fps = 0;
                 for(int f : fpsBuffer)
                     fps += f;
                 fps /= fpsBuffer.size();
+                avgFPS = fps;
 
-                avgFPS = Math.max(fps, 4);
+                update();
+                render();
             }
         }
         cleanup();

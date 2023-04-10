@@ -39,8 +39,8 @@ public class GuiRenderer {
     Model line;
 
     public void init() throws Exception {
-        shader.createFragmentShader(Utils.loadResource("/shaders/fragment_gui.fs"));
-        shader.createVertexShader(Utils.loadResource("/shaders/vertex_gui.vs"));
+        shader.createFragmentShader(Utils.loadResource("/shaders/fragment_gui.glsl"));
+        shader.createVertexShader(Utils.loadResource("/shaders/vertex_gui.glsl"));
         shader.link();
         shader.createUniform("transformationMatrix");
         shader.createUniform("guiTexture");
@@ -67,176 +67,210 @@ public class GuiRenderer {
         ArrayList<int[]> prevScissors = new ArrayList();
 
         for(Drawable drawable : elements)
-        {
-            if(drawable instanceof TriStrip)
+            switch (drawable.getType())
             {
-                TriStrip element = (TriStrip) drawable;
-                GL30.glBindVertexArray(element.model.vao);
-                GL20.glEnableVertexAttribArray(0);
-
-                if(element.hasTexCoords)
-                    GL20.glEnableVertexAttribArray(1);
-
-                GL13.glActiveTexture(GL13.GL_TEXTURE0);
-                GL11.glBindTexture(GL11.GL_TEXTURE_2D, element.texture);
-
-                shader.setUniform("hasCoords", element.hasTexCoords);
-                shader.setUniform("guiTexture", 0);
-                shader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(
-                        new Vector2f(element.pos.x / (window.width/2f) - 1 + element.scale.x / window.width, (-element.pos.y) / (window.height/2f) + 1 - element.scale.y / window.height),
-                        new Vector2f(element.scale.x / window.width, element.scale.y / window.height)));
-
-                if(element.color != null)
-                    shader.setUniform("color", new Vector4f(element.color.getRed() / 255f, element.color.getGreen() / 255f, element.color.getBlue() / 255f, element.color.getAlpha() / 255f));
-
-                shader.setUniform("hasColor", element.color == null ? 0 : element.texture != -1 ? 1 : 2);
-                shader.setUniform("smoothst", element.smoothstep);
-
-                GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, element.model.vertexCount);
-
-                if(!element.staticTexture)
-                {
-                    if(loader.textures.contains(element.texture))
-                        for(int i = 0; i < loader.textures.size(); i++)
-                            if(loader.textures.get(i) == element.texture)
-                                loader.textures.remove(i);
-
-                    GL11.glDeleteTextures(element.texture);
-                }
-
-                clearElement(element);
-            }
-            else if(drawable instanceof TriFan)
-            {
-                TriFan element = (TriFan) drawable;
-                GL30.glBindVertexArray(element.model.vao);
-                GL20.glEnableVertexAttribArray(0);
-
-                if(element.hasTexCoords)
-                    GL20.glEnableVertexAttribArray(1);
-
-                GL13.glActiveTexture(GL13.GL_TEXTURE0);
-                GL11.glBindTexture(GL11.GL_TEXTURE_2D, element.texture);
-
-                shader.setUniform("hasCoords", element.hasTexCoords);
-                shader.setUniform("guiTexture", 0);
-                shader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(
-                        new Vector2f(element.pos.x / (window.width/2f) - 1 + element.scale.x / window.width, (-element.pos.y) / (window.height/2f) + 1 - element.scale.y / window.height),
-                        new Vector2f(element.scale.x / window.width, element.scale.y / window.height)));
-
-                if(element.color != null)
-                    shader.setUniform("color", new Vector4f(element.color.getRed() / 255f, element.color.getGreen() / 255f, element.color.getBlue() / 255f, element.color.getAlpha() / 255f));
-
-                shader.setUniform("hasColor", element.color == null ? 0 : element.texture != -1 ? 1 : 2);
-                shader.setUniform("smoothst", element.smoothstep);
-
-                GL11.glDrawArrays(GL11.GL_TRIANGLE_FAN, 0, element.model.vertexCount);
-
-                if(!element.staticTexture)
-                {
-                    if(loader.textures.contains(element.texture))
-                        for(int i = 0; i < loader.textures.size(); i++)
-                            if(loader.textures.get(i) == element.texture)
-                                loader.textures.remove(i);
-
-                    GL11.glDeleteTextures(element.texture);
-                }
-
-                clearElement(element);
-            }
-            else if(drawable instanceof Line)
-            {
-                Line element = (Line) drawable;
-                if(element.model == null)
-                    continue;
-                GL30.glBindVertexArray(element.model.vao);
-                GL20.glEnableVertexAttribArray(0);
-
-                GL13.glActiveTexture(GL13.GL_TEXTURE0);
-
-                shader.setUniform("color", element.color);
-                shader.setUniform("hasCoords", false);
-                shader.setUniform("guiTexture", 0);
-                shader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(new Vector2f(0, 0), new Vector2f(1, 1)));
-                shader.setUniform("hasColor", 2);
-
-                GL11.glDrawArrays(GL11.GL_LINES, 0, element.model.vertexCount);
-
-                clearElement(element);
-            }
-            else if(drawable instanceof Scissor)
-            {
-                Scissor scissor = (Scissor) drawable;
-
-                if(scissor.start)
-                {
-                    boolean isScissorOn = GL11.glIsEnabled(GL11.GL_SCISSOR_TEST);
-
-                    int minX = scissor.pos.x;
-                    int minY = window.height - scissor.pos.y - scissor.size.y;
-                    int maxX = scissor.pos.x + scissor.size.x;
-                    int maxY = window.height - scissor.pos.y;
-
-                    int temp;
-
-                    if (minY > maxY) {
-                        temp = maxY;
-                        maxY = minY;
-                        minY = temp;
-                    }
-                    if (minX > maxX) {
-                        temp = maxX;
-                        maxX = minX;
-                        minX = temp;
-                    }
-
-                    if (isScissorOn)
+                case 0: //TRI STRIP
                     {
-                        int[] box = new int[4];
-                        GL11.glGetIntegerv(GL11.GL_SCISSOR_BOX, box);
-                        prevScissors.add(box);
+                        TriStrip element = (TriStrip) drawable;
+                        GL30.glBindVertexArray(element.model.vao);
+                        GL20.glEnableVertexAttribArray(0);
+
+                        if(element.hasTexCoords)
+                            GL20.glEnableVertexAttribArray(1);
+
+                        GL13.glActiveTexture(GL13.GL_TEXTURE0);
+                        GL11.glBindTexture(GL11.GL_TEXTURE_2D, element.texture);
+
+                        shader.setUniform("hasCoords", element.hasTexCoords);
+                        shader.setUniform("guiTexture", 0);
+                        shader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(
+                                new Vector2f(element.pos.x / (window.width/2f) - 1 + element.scale.x / window.width, (-element.pos.y) / (window.height/2f) + 1 - element.scale.y / window.height),
+                                new Vector2f(element.scale.x / window.width, element.scale.y / window.height)));
+
+                        if(element.color != null)
+                            shader.setUniform("color", new Vector4f(element.color.getRed() / 255f, element.color.getGreen() / 255f, element.color.getBlue() / 255f, element.color.getAlpha() / 255f));
+
+                        shader.setUniform("hasColor", element.color == null ? 0 : element.texture != -1 ? 1 : 2);
+                        shader.setUniform("smoothst", element.smoothstep);
+
+                        GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, element.model.vertexCount);
+
+                        if(!element.staticTexture)
+                        {
+                            if(loader.textures.contains(element.texture))
+                                for(int i = 0; i < loader.textures.size(); i++)
+                                    if(loader.textures.get(i) == element.texture)
+                                        loader.textures.remove(i);
+
+                            GL11.glDeleteTextures(element.texture);
+                        }
+
+                        clearElement(element);
                     }
-                    else
-                        GL11.glEnable(GL11.GL_SCISSOR_TEST);
+                    break;
+                case 1: //TRI FAN
+                    {
+                        TriFan element = (TriFan) drawable;
+                        GL30.glBindVertexArray(element.model.vao);
+                        GL20.glEnableVertexAttribArray(0);
 
-                    if (prevScissors.size() > 0) {
-                        int[] s = prevScissors.get(prevScissors.size() - 1);
+                        if(element.hasTexCoords)
+                            GL20.glEnableVertexAttribArray(1);
 
-                        if (minX < s[0])
-                            minX = s[0];
-                        if (minX > s[0] + s[2])
-                            minX = s[0] + s[2];
+                        GL13.glActiveTexture(GL13.GL_TEXTURE0);
+                        GL11.glBindTexture(GL11.GL_TEXTURE_2D, element.texture);
 
-                        if (minY < s[1])
-                            minY = s[1];
-                        if (minY > s[1] + s[3])
-                            minY = s[1] + s[3];
+                        shader.setUniform("hasCoords", element.hasTexCoords);
+                        shader.setUniform("guiTexture", 0);
+                        shader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(
+                                new Vector2f(element.pos.x / (window.width/2f) - 1 + element.scale.x / window.width, (-element.pos.y) / (window.height/2f) + 1 - element.scale.y / window.height),
+                                new Vector2f(element.scale.x / window.width, element.scale.y / window.height)));
 
-                        if (maxX < s[0])
-                            maxX = s[0];
-                        if (maxX > s[0] + s[2])
-                            maxX = s[0] + s[2];
+                        if(element.color != null)
+                            shader.setUniform("color", new Vector4f(element.color.getRed() / 255f, element.color.getGreen() / 255f, element.color.getBlue() / 255f, element.color.getAlpha() / 255f));
 
-                        if (maxY < s[1])
-                            maxY = s[1];
-                        if (maxY > s[1] + s[3])
-                            maxY = s[1] + s[3];
+                        shader.setUniform("hasColor", element.color == null ? 0 : element.texture != -1 ? 1 : 2);
+                        shader.setUniform("smoothst", element.smoothstep);
+
+                        GL11.glDrawArrays(GL11.GL_TRIANGLE_FAN, 0, element.model.vertexCount);
+
+                        if(!element.staticTexture)
+                        {
+                            if(loader.textures.contains(element.texture))
+                                for(int i = 0; i < loader.textures.size(); i++)
+                                    if(loader.textures.get(i) == element.texture)
+                                        loader.textures.remove(i);
+
+                            GL11.glDeleteTextures(element.texture);
+                        }
+
+                        clearElement(element);
                     }
+                    break;
+                case 2: //LINE
+                    {
+                        Line element = (Line) drawable;
+                        if(element.model == null)
+                            continue;
+                        GL30.glBindVertexArray(element.model.vao);
+                        GL20.glEnableVertexAttribArray(0);
 
-                    GL11.glScissor(minX, minY, maxX - minX, maxY - minY);
-                }
-                else
-                {
-                    if (prevScissors.size() == 0) {
-                        GL11.glDisable(GL11.GL_SCISSOR_TEST);
-                    } else {
-                        int[] prevScissor = prevScissors.get(prevScissors.size() - 1);
-                        GL11.glScissor(prevScissor[0], prevScissor[1], prevScissor[2], prevScissor[3]);
-                        prevScissors.remove(prevScissors.size() - 1);
+                        shader.setUniform("color", element.color);
+                        shader.setUniform("hasCoords", false);
+                        shader.setUniform("guiTexture", 0);
+                        shader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(new Vector2f(0, 0), new Vector2f(1, 1)));
+                        shader.setUniform("hasColor", 2);
+
+                        if(!element.smooth)
+                            GL11.glDisable(GL11.GL_LINE_SMOOTH);
+
+                        GL11.glDrawArrays(GL11.GL_LINES, 0, element.model.vertexCount);
+
+                        if(!element.smooth)
+                            GL11.glEnable(GL11.GL_LINE_SMOOTH);
+
+                        clearElement(element);
                     }
-                }
+                    break;
+                case 3: //LINE STRIP
+                    {
+                        LineStrip element = (LineStrip) drawable;
+                        if(element.model == null)
+                            continue;
+                        GL30.glBindVertexArray(element.model.vao);
+                        GL20.glEnableVertexAttribArray(0);
+
+                        shader.setUniform("color", element.color);
+                        shader.setUniform("hasCoords", false);
+                        shader.setUniform("guiTexture", 0);
+                        shader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(new Vector2f(0, 0), new Vector2f(1, 1)));
+                        shader.setUniform("hasColor", 2);
+
+                        if(!element.smooth)
+                            GL11.glDisable(GL11.GL_LINE_SMOOTH);
+
+                        GL11.glDrawArrays(GL11.GL_LINE_STRIP, 0, element.model.vertexCount);
+
+                        if(!element.smooth)
+                            GL11.glEnable(GL11.GL_LINE_SMOOTH);
+
+                        clearElement(element);
+                    }
+                    break;
+                case 4: //SCISSOR
+                    {
+                        Scissor scissor = (Scissor) drawable;
+
+                        if(scissor.start)
+                        {
+                            boolean isScissorOn = GL11.glIsEnabled(GL11.GL_SCISSOR_TEST);
+
+                            int minX = scissor.pos.x;
+                            int minY = window.height - scissor.pos.y - scissor.size.y;
+                            int maxX = scissor.pos.x + scissor.size.x;
+                            int maxY = window.height - scissor.pos.y;
+
+                            int temp;
+
+                            if (minY > maxY) {
+                                temp = maxY;
+                                maxY = minY;
+                                minY = temp;
+                            }
+                            if (minX > maxX) {
+                                temp = maxX;
+                                maxX = minX;
+                                minX = temp;
+                            }
+
+                            if (isScissorOn)
+                            {
+                                int[] box = new int[4];
+                                GL11.glGetIntegerv(GL11.GL_SCISSOR_BOX, box);
+                                prevScissors.add(box);
+                            }
+                            else
+                                GL11.glEnable(GL11.GL_SCISSOR_TEST);
+
+                            if (prevScissors.size() > 0) {
+                                int[] s = prevScissors.get(prevScissors.size() - 1);
+
+                                if (minX < s[0])
+                                    minX = s[0];
+                                if (minX > s[0] + s[2])
+                                    minX = s[0] + s[2];
+
+                                if (minY < s[1])
+                                    minY = s[1];
+                                if (minY > s[1] + s[3])
+                                    minY = s[1] + s[3];
+
+                                if (maxX < s[0])
+                                    maxX = s[0];
+                                if (maxX > s[0] + s[2])
+                                    maxX = s[0] + s[2];
+
+                                if (maxY < s[1])
+                                    maxY = s[1];
+                                if (maxY > s[1] + s[3])
+                                    maxY = s[1] + s[3];
+                            }
+
+                            GL11.glScissor(minX, minY, maxX - minX, maxY - minY);
+                        }
+                        else
+                        {
+                            if (prevScissors.size() == 0) {
+                                GL11.glDisable(GL11.GL_SCISSOR_TEST);
+                            } else {
+                                int[] prevScissor = prevScissors.get(prevScissors.size() - 1);
+                                GL11.glScissor(prevScissor[0], prevScissor[1], prevScissor[2], prevScissor[3]);
+                                prevScissors.remove(prevScissors.size() - 1);
+                            }
+                        }
+                    }
+                    break;
             }
-        }
 
         GL11.glEnable(GL11.GL_DEPTH_TEST);
         GL11.glDisable(GL11.GL_BLEND);
@@ -257,13 +291,13 @@ public class GuiRenderer {
     {
         if(!element.staticVAO)
         {
-            int vao = element instanceof TriStrip ? ((TriStrip)element).model.vao : element instanceof TriFan ? ((TriFan)element).model.vao : ((Line)element).model.vao;
+            int vao = element instanceof TriStrip ? ((TriStrip)element).model.vao : element instanceof TriFan ? ((TriFan)element).model.vao : element instanceof Line ? ((Line)element).model.vao : ((LineStrip)element).model.vao;
             GL30.glDeleteVertexArrays(vao);
             loader.vaos.remove((Object)vao);
         }
         if(!element.staticVBO)
         {
-            int[] vbos = element instanceof TriStrip ? ((TriStrip)element).model.vbos : element instanceof TriFan ? ((TriFan)element).model.vbos : ((Line)element).model.vbos;
+            int[] vbos = element instanceof TriStrip ? ((TriStrip)element).model.vbos : element instanceof TriFan ? ((TriFan)element).model.vbos : element instanceof Line ? ((Line)element).model.vbos : ((LineStrip)element).model.vbos;
             for(int vbo : vbos)
             {
                 GL30.glDeleteBuffers(vbo);

@@ -169,6 +169,7 @@ public class Textarea extends Element{
             }
             currentLength += line.length() + 1;
         }
+        drawRectOutline((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, isMouseOverElement(mouseInput) && !overOther || this.isFocused() ? textFieldColorHighlighted : textFieldColor, false);
         endScissor();
 
     }

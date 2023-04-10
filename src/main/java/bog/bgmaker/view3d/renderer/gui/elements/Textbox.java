@@ -142,6 +142,7 @@ public class Textbox extends Element{
                 drawRect((int) (xScroll + pos.x + getStringWidth(text.substring(0, currentSelection), fontSize) + this.size.y/2 - getFontHeight(fontSize)/2), (int) (pos.y + this.size.y/2 - getFontHeight(fontSize)/2 - 1), 1, (int) (getFontHeight(fontSize)), textColor);
             }catch (Exception e){}
         }
+        drawRectOutline((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, isMouseOverElement(mouseInput) && !overOther || this.isFocused() ? textFieldColorHighlighted : textFieldColor, false);
         endScissor();
 
     }

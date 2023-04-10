@@ -31,14 +31,8 @@ public class WorldAudio extends Entity{
         return 3;
     }
 
-    @Override
-    public void updateModel() {}
 
     @Override
     public void setModel(Model model) {}
 
-    @Override
-    public Vector3f rayIntersectModel(Vector3f ray, Vector3f origin) {
-        return new Vector3f();
-    }
 }

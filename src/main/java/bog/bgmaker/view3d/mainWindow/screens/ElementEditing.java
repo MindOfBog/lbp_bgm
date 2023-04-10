@@ -6,6 +6,7 @@ import bog.bgmaker.view3d.core.types.Entity;
 import bog.bgmaker.view3d.core.types.MaterialPrimitive;
 import bog.bgmaker.view3d.core.types.Mesh;
 import bog.bgmaker.view3d.core.types.WorldAudio;
+import bog.bgmaker.view3d.mainWindow.LoadedData;
 import bog.bgmaker.view3d.mainWindow.View3D;
 import bog.bgmaker.view3d.managers.MouseInput;
 import bog.bgmaker.view3d.renderer.gui.GuiScreen;
@@ -146,9 +147,7 @@ public class ElementEditing extends GuiScreen {
                                 try
                                 {
                                     ResourceDescriptor desc = new ResourceDescriptor(mesh, ResourceType.MESH);
-                                    RMesh rmesh = mainView.loadMesh(desc);
-                                    if (rmesh != null && !(desc.isGUID() ? desc.getGUID().toString() : desc.getSHA1().toString()).equalsIgnoreCase(((Mesh)entity).meshDescriptor.isGUID() ? ((Mesh)entity).meshDescriptor.getGUID().toString() : ((Mesh)entity).meshDescriptor.getSHA1().toString())) {
-                                        ((Mesh)entity).mesh = rmesh;
+                                    if (!(desc.isGUID() ? desc.getGUID().toString() : desc.getSHA1().toString()).equalsIgnoreCase(((Mesh)entity).meshDescriptor.isGUID() ? ((Mesh)entity).meshDescriptor.getGUID().toString() : ((Mesh)entity).meshDescriptor.getSHA1().toString())) {
                                         ((Mesh)entity).meshDescriptor = desc;
                                         entity.reloadModel();
                                     }
@@ -321,10 +320,10 @@ public class ElementEditing extends GuiScreen {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if (button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS) {
-                    mainView.MAP = null;
+                    LoadedData.MAP = null;
                     try {
                         File map = FileChooser.openFile(null, "map", false, false)[0];
-                        mainView.MAP = new FileDB(map);
+                        LoadedData.MAP = new FileDB(map);
                     } catch (Exception ex) {ex.printStackTrace();}
 
                     mainView.setupList();
@@ -335,7 +334,7 @@ public class ElementEditing extends GuiScreen {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if (button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS) {
-                    mainView.FARCs.clear();
+                    LoadedData.FARCs.clear();
                     File[] farcs = FileChooser.openFiles("farc");
                     if (farcs != null) {
                         if (farcs.length != 0)
@@ -348,7 +347,7 @@ public class ElementEditing extends GuiScreen {
                                 } catch (SerializationException ex) {ex.printStackTrace();}
 
                                 if (archive != null)
-                                    mainView.FARCs.add(archive);
+                                    LoadedData.FARCs.add(archive);
                             }
                     } else return;
 
@@ -360,10 +359,10 @@ public class ElementEditing extends GuiScreen {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if (button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS) {
-                    mainView.BIGFART = null;
+                    LoadedData.BIGFART = null;
                     try {
                         File fart = FileChooser.openFile(null, null, false, false)[0];
-                        mainView.BIGFART = new BigSave(fart);
+                        LoadedData.BIGFART = new BigSave(fart);
                     } catch (Exception ex) {ex.printStackTrace();}
 
                     mainView.setupList();
@@ -681,6 +680,7 @@ public class ElementEditing extends GuiScreen {
                 Entity entity = (Entity) object;
                 drawRect((int)pos.x - height, posY, height, height, buttonColor(object, i));
                 drawImageStatic(entity.getType() == 0 ? mainView.modelIcon : entity.getType() == 1 ? mainView.materialIcon : entity.getType() == 2 ? mainView.lightIcon : mainView.audioIcon, (int)pos.x - height, posY, height, height);
+                drawRectOutline((int)pos.x - height, posY, height, height, buttonColor(object, i), false);
             }
 
             @Override
@@ -761,10 +761,6 @@ public class ElementEditing extends GuiScreen {
             public void clickedButton(int button, int action, int mods) {
                 if (button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS) {
                     mainView.entities.clear();
-
-                    mainView.MESH_INSTANCES.clear();
-                    mainView.TEXTURE_INSTANCES.clear();
-                    mainView.GFX_INSTANCES.clear();
                 }
             }
 
@@ -782,8 +778,6 @@ public class ElementEditing extends GuiScreen {
                     for (int i = mainView.entities.size() - 1; i >= 0; i--)
                         if (mainView.entities.get(i).selected)
                             mainView.entities.remove(i);
-
-                    mainView.cleanupResources();
                 }
             }
 
@@ -982,8 +976,7 @@ public class ElementEditing extends GuiScreen {
 
             for (int i = 0; i < mainView.entities.size(); i++)
                 if(mainView.entities.get(i).getType() == 0 || mainView.entities.get(i).getType() == 1)
-                    for(Model model : mainView.entities.get(i).getModel())
-                        mainView.entities.get(i).testForMouse = true;
+                    mainView.entities.get(i).testForMouse = true;
         }
 
         if(!mouseInput.inWindow || overElement)

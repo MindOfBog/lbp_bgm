@@ -79,6 +79,7 @@ public abstract class ButtonImage extends Element{
 
         drawRect((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, c);
         drawImageStatic(buttonImage, (int)pos.x, (int)pos.y, (int)size.x, (int)size.y);
+        drawRectOutline((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, c, false);
     }
 
     public void setClicked(boolean clicked) {

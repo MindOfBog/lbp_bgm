@@ -90,7 +90,9 @@ public abstract class ButtonList<T> extends Element{
             yScroll = 0;
 
         drawRect((int) pos.x, (int) pos.y, (int) size.x, (int) size.y, backdropColor());
+        drawRectOutline((int) pos.x, (int) pos.y, (int) size.x, (int) size.y, backdropColor(), false);
         drawRect((int) scrollX, (int) scrollY, 3, (int) scrollHeight, buttonColor(null, -1));
+        drawRectOutline((int) scrollX, (int) scrollY, 3, (int) scrollHeight, buttonColor(null, -1), false);
         drawRect((int) scrollX, (int) (scrollY + ((Math.abs(yScroll) / maxScroll) * (scrollHeight - frac))), 3, (int) frac, textColor(null, -1));
 
         startScissor((int) pos.x, (int) pos.y, (int) size.x, (int) size.y);
@@ -206,6 +208,7 @@ public abstract class ButtonList<T> extends Element{
         startScissor((int)pos.x + 2, posY, (int)(size.x - 4f - size.x * 0.05f), (int) height);
         drawRect((int)pos.x + 2, posY, (int)(size.x - 4f - size.x * 0.05f), (int) height, !(isHighlighted(object, i) || isSelected(object, i)) ? buttonColor(object, i) : (isSelected(object, i) ? buttonColorSelected(object, i) : buttonColorHighlighted(object, i)));
         drawString(buttonText(object, i), textColor(object, i), (int)(pos.x + (size.x - size.x * 0.05f) / 2f - getStringWidth(buttonText(object, i), fontSize) / 2), posY + height / 2 - getFontHeight(fontSize) / 2, fontSize);
+        drawRectOutline((int)pos.x + 2, posY, (int)(size.x - 4f - size.x * 0.05f), (int) height, !(isHighlighted(object, i) || isSelected(object, i)) ? buttonColor(object, i) : (isSelected(object, i) ? buttonColorSelected(object, i) : buttonColorHighlighted(object, i)), false);
         endScissor();
     }
 
