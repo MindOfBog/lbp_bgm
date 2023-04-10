@@ -40,7 +40,7 @@ public class Settings extends GuiScreen{
         rendererSettings.addLabeledTextbox("zNear", "Z Near:  ", true, false, false);
         rendererSettings.addLabeledTextbox("zFar", "Z Far:  ", true, false, false);
         rendererSettings.addString("outlineSizeLabel", "Outline Size:");
-        rendererSettings.addSlider("outlineSize", Const.OUTLINE_DISTANCE, 0.51f, 0.73f);
+        rendererSettings.addSlider("outlineSize", Const.OUTLINE_DISTANCE, 0.525f, 1.1f);
         rendererSettings.addString("outlineColorLabel", "Outline Color:");
         rendererSettings.addLabeledTextbox("outlineColor", "# ");
         rendererSettings.addString("borderColor1Label", "Border Color 1:");
@@ -228,7 +228,7 @@ public class Settings extends GuiScreen{
 
         String fps = setTextboxValueString(((DropDownTab.LabeledTextbox) rendererSettings.tabElements.get(2)).textbox, Float.toString(Const.FRAMERATE));
         if(fps != null)
-            try{Const.FRAMERATE = Float.parseFloat(fps);}catch (Exception e){Const.FRAMERATE = 60;}
+            try{Const.FRAMERATE = Float.parseFloat(fps);}catch (Exception e){}
 
         String moveSpeed = setTextboxValueString(((DropDownTab.LabeledTextbox) rendererSettings.tabElements.get(3)).textbox, Float.toString(Const.CAMERA_MOVE_SPEED));
         if(moveSpeed != null)

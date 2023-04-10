@@ -310,7 +310,9 @@ public class DropDownTab extends Element{
         }
 
         drawRect((int) pos.x, (int) pos.y, (int) size.x, (int) size.y, isMouseOverTab(mouseInput) && !overOther ? (dragging || mouseInput.rightButtonPress ? tabColorClicked : tabColorHighlighted) : tabColor);
+        drawRectOutline((int) pos.x, (int) pos.y, (int) size.x, (int) size.y, isMouseOverTab(mouseInput) && !overOther ? (dragging || mouseInput.rightButtonPress ? tabColorClicked : tabColorHighlighted) : tabColor, false);
         drawRect((int) pos.x, (int) pos.y, (int) size.x, (int) (size.y + (extended ? 2f + yOffset : 0)), new Color(0f, 0f, 0f, 0.5f));
+        drawRectOutline((int) pos.x, (int) pos.y, (int) size.x, (int) (size.y + (extended ? 2f + yOffset : 0)), new Color(0f, 0f, 0f, 0.5f), false);
 
         if(extended && (resizeX || resizeY))
         {
@@ -590,8 +592,8 @@ public class DropDownTab extends Element{
             super.draw(mouseInput, overElement);
 
             drawString(label, textColor, (int) (pos.x + size.y / 2 - getFontHeight(fontSize) / 2), (int) (pos.y + size.y / 2 - getFontHeight(fontSize) / 2), fontSize);
-            button.pos = new Vector2f(pos.x + 5*(Math.round((getStringWidth(label, fontSize))/5)), pos.y);
-            button.size = new Vector2f(size.x - 5*(Math.round((getStringWidth(label, fontSize))/5)), size.y);
+            button.pos = new Vector2f(pos.x + 5 * (Math.round((getStringWidth(label, fontSize))/5)), pos.y);
+            button.size = new Vector2f(size.x - 5 * (Math.round((getStringWidth(label, fontSize))/5)), size.y);
             button.draw(mouseInput, overElement);
         }
 
@@ -750,6 +752,7 @@ public class DropDownTab extends Element{
             super.draw(mouseInput, overElement);
 
             drawRect((int) pos.x, (int) pos.y, (int) size.x, (int) size.y, separatorColor);
+            drawRectOutline((int) pos.x, (int) pos.y, (int) size.x, (int) size.y, separatorColor, false);
         }
     }
 }

@@ -49,6 +49,7 @@ public class Checkbox extends Element{
         super.draw(mouseInput, overElement);
 
         drawRect((int) Math.floor(pos.x + (size.y * 0.10f)/2), (int) Math.floor(pos.y + (size.y * 0.10f)/2), (int) Math.floor(size.y * 0.90f), (int) Math.floor(size.y * 0.90f), isMouseOverElement(mouseInput) ? boxColorHighlighted : boxColor);
+        drawRectOutline((int) Math.floor(pos.x + (size.y * 0.10f)/2), (int) Math.floor(pos.y + (size.y * 0.10f)/2), (int) Math.floor(size.y * 0.90f), (int) Math.floor(size.y * 0.90f), isMouseOverElement(mouseInput) ? boxColorHighlighted : boxColor, false);
 
         if(isChecked)
             drawRect((int) Math.floor(pos.x + (size.y * 0.90f * 0.275f)), (int) Math.floor(pos.y + (size.y * 0.90f * 0.275f)), (int) Math.floor(size.y * 0.90f * 0.45f), (int) Math.floor(size.y * 0.90f * 0.45f), textColor);

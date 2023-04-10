@@ -57,7 +57,7 @@ public class ResourceSystem {
         CACHE[index] = node;   
     }
 
-    public static boolean DISABLE_LOGS = false;
+    public static boolean DISABLE_LOGS = true;
     public static boolean GUI_MODE = false;
     public static int LOG_LEVEL = 0;
 

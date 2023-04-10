@@ -1,9 +1,5 @@
 package bog.bgmaker.view3d.core;
 
-import org.joml.Vector3f;
-
-import java.util.ArrayList;
-
 /**
  * @author Bog
  */
@@ -12,14 +8,9 @@ public class Model {
     public int vao;
     public int[] vbos;
     public int vertexCount;
+
     public Material material;
-    public AABB aabb;
-    public ArrayList<Triangle> triangles;
-
-    public ArrayList<Vector3f> vertices;
     public int[] indicesArr;
-
-    public boolean noRender = false;
 
     public Model(int vao, int[] vbos, int vertexCount)
     {
@@ -29,29 +20,16 @@ public class Model {
         this.material = new Material();
     }
 
-    public Model(int vao, int[] vbos, int vertexCount, ArrayList<Vector3f> vertices, int[] indicesArr)
+    public Model(int vao, int[] vbos, int vertexCount, int[] indicesArr)
     {
         this.vao = vao;
         this.vbos = vbos;
         this.vertexCount = vertexCount;
         this.material = new Material();
-        this.vertices = vertices;
         this.indicesArr = indicesArr;
     }
 
-    public Model(int vao, int[] vbos, int vertexCount, AABB aabb, ArrayList<Triangle> triangles, ArrayList<Vector3f> vertices, int[] indicesArr)
-    {
-        this.vao = vao;
-        this.vbos = vbos;
-        this.vertexCount = vertexCount;
-        this.material = new Material();
-        this.aabb = aabb;
-        this.triangles = triangles;
-        this.vertices = vertices;
-        this.indicesArr = indicesArr;
-    }
-
-    public Model(int vao, int[] vbos, int vertexCount, Texture texture)
+    public Model(int vao, int[] vbos, int vertexCount, Texture[] texture)
     {
         this.vao = vao;
         this.vbos = vbos;
@@ -59,13 +37,13 @@ public class Model {
         this.material = new Material(texture);
     }
 
-    public Model(Model model, Texture texture)
+    public Model(Model model, Texture[] texture)
     {
         this.vao = model.vao;
         this.vbos = model.vbos;
         this.vertexCount = model.vertexCount;
         this.material = model.material;
-        this.material.texture = texture;
+        this.material.textures = texture;
     }
 
     public Model(Model model)
@@ -74,37 +52,34 @@ public class Model {
         this.vbos = model.vbos;
         vertexCount = model.vertexCount;
         material = model.material;
-        aabb = model.aabb;
-        triangles = model.triangles;
-        vertices = model.vertices;
         indicesArr = model.indicesArr;
     }
 
-    public Vector3f rayIntersectModel(Vector3f ray, Vector3f origin)
-    {
-        for(Triangle triangle : triangles)
-        {
-            Vector3f v0v1 = triangle.p2.sub(triangle.p1, new Vector3f());
-            Vector3f v0v2 = triangle.p3.sub(triangle.p1, new Vector3f());
-            Vector3f N = v0v1.cross(v0v2, new Vector3f());
-            float area2 = N.length();
-
-            triangle = new Triangle(triangle);
-
-            float D = -(N.x * triangle.p1.x + N.y * triangle.p1.y + N.z * triangle.p1.z);
-            float t = (-(N.dot(origin) + D)) / N.dot(ray);
-            Vector3f P = origin.add(ray.mul(t, new Vector3f()), new Vector3f());
-
-            Vector3f edge0 = triangle.p2.sub(triangle.p1, new Vector3f());
-            Vector3f edge1 = triangle.p3.sub(triangle.p2, new Vector3f());
-            Vector3f edge2 = triangle.p1.sub(triangle.p3, new Vector3f());
-            Vector3f C0 = P.sub(triangle.p1, new Vector3f());
-            Vector3f C1 = P.sub(triangle.p2, new Vector3f());
-            Vector3f C2 = P.sub(triangle.p3, new Vector3f());
-            if (N.dot(edge0.cross(C0, new Vector3f())) > 0 &&
-                    N.dot(edge1.cross(C1, new Vector3f())) > 0 &&
-                    N.dot(edge2.cross(C2, new Vector3f())) > 0) return P;
-        }
-        return null;
-    }
+//    public Vector3f rayIntersectModel(Vector3f ray, Vector3f origin)
+//    {
+//        for(Triangle triangle : triangles)
+//        {
+//            Vector3f v0v1 = triangle.p2.sub(triangle.p1, new Vector3f());
+//            Vector3f v0v2 = triangle.p3.sub(triangle.p1, new Vector3f());
+//            Vector3f N = v0v1.cross(v0v2, new Vector3f());
+//            float area2 = N.length();
+//
+//            triangle = new Triangle(triangle);
+//
+//            float D = -(N.x * triangle.p1.x + N.y * triangle.p1.y + N.z * triangle.p1.z);
+//            float t = (-(N.dot(origin) + D)) / N.dot(ray);
+//            Vector3f P = origin.add(ray.mul(t, new Vector3f()), new Vector3f());
+//
+//            Vector3f edge0 = triangle.p2.sub(triangle.p1, new Vector3f());
+//            Vector3f edge1 = triangle.p3.sub(triangle.p2, new Vector3f());
+//            Vector3f edge2 = triangle.p1.sub(triangle.p3, new Vector3f());
+//            Vector3f C0 = P.sub(triangle.p1, new Vector3f());
+//            Vector3f C1 = P.sub(triangle.p2, new Vector3f());
+//            Vector3f C2 = P.sub(triangle.p3, new Vector3f());
+//            if (N.dot(edge0.cross(C0, new Vector3f())) > 0 &&
+//                    N.dot(edge1.cross(C1, new Vector3f())) > 0 &&
+//                    N.dot(edge2.cross(C2, new Vector3f())) > 0) return P;
+//        }
+//        return null;
+//    }
 }

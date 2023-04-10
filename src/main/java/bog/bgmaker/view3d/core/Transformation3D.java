@@ -85,8 +85,7 @@ public class Transformation3D{
                 entity.highlighted = false;
 
             for(int i = 0; i < tools.size(); i++)
-                for(Model model : tools.get(i).getModel())
-                    tools.get(i).testForMouse = hasSelection;
+                tools.get(i).testForMouse = hasSelection;
 
             hit = -1;
 
@@ -105,7 +104,7 @@ public class Transformation3D{
                 Vector2i point = new Vector2i((int) screenPos.x, (int) screenPos.y);
                 Vector2i mouse = new Vector2i((int) mouseInput.currentPos.x, (int) mouseInput.currentPos.y);
 
-                renderer.processGuiElement(new Line(mouse, point, Color.black, loader, window, false));
+                renderer.processGuiElement(new Line(mouse, point, Color.black, loader, window, true, false));
                 renderer.processGuiElement(new Quad(loader, crosshair, new Vector2f((int)(screenPos.x - 7.5f), (int)(screenPos.y - 7.5f)), new Vector2f(15, 15), false).staticTexture());
             }
 
@@ -159,14 +158,7 @@ public class Transformation3D{
                     posPicker.update(camera);
                     Vector3f pos = new Vector3f(posPicker.getPointOnRay(posPicker.currentRay, 4000));
                     entity.transformation = entity.transformation.setTranslation(pos);
-                    for(Model model : entity.getModel())
-                        model.noRender = false;
                 }
-                else
-                    for(Model model : entity.getModel())
-                        model.noRender = true;
-
-                entity.updateModel();
             }
         }
 

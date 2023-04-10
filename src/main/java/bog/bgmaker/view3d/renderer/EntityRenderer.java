@@ -5,6 +5,7 @@ import bog.bgmaker.view3d.Camera;
 import bog.bgmaker.view3d.ObjectLoader;
 import bog.bgmaker.view3d.core.*;
 import bog.bgmaker.view3d.core.types.Entity;
+import bog.bgmaker.view3d.core.types.Mesh;
 import bog.bgmaker.view3d.managers.MouseInput;
 import bog.bgmaker.view3d.managers.RenderMan;
 import bog.bgmaker.view3d.managers.ShaderMan;
@@ -14,14 +15,12 @@ import bog.bgmaker.view3d.renderer.gui.ingredients.TriStrip;
 import bog.bgmaker.view3d.utils.Const;
 import bog.bgmaker.view3d.utils.Transformation;
 import bog.bgmaker.view3d.utils.Utils;
-import org.joml.Vector2f;
-import org.joml.Vector2i;
-import org.joml.Vector3f;
-import org.joml.Vector4f;
+import editor.gl.objects.Shader;
+import org.joml.*;
 import org.lwjgl.opengl.*;
 
 import java.awt.*;
-import java.lang.reflect.Array;
+import java.lang.Math;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
@@ -60,44 +59,83 @@ public class EntityRenderer implements IRenderer{
     @Override
     public void init() throws Exception
     {
-        shader.createVertexShader(Utils.loadResource("/shaders/vertex.vs"));
-        shader.createGeometryShader(Utils.loadResource("/shaders/geometry.gs"));
-        shader.createFragmentShader(Utils.loadResource("/shaders/fragment.fs"));
+        shader.createVertexShader(Utils.loadResource("/shaders/vertex.glsl"));
+        String shaderCode = Utils.loadResource("/shaders/fragment.glsl").replaceAll("//%&AMBIENTC",
+                "if(material.hasTexture == 1)" +
+                        "    {" +
+                        "        for(int i = 0; i < samplerCount; i++)" +
+                        "        {" +
+                        "           ambientC = texture(textureSampler[i], fragTextureCoord);" +
+                        "        }" +
+                        "        if(highlightMode == 1)" +
+                        "        {" +
+                        "            float mul = (ambientC.r + ambientC.g + ambientC.b) / 3.0;" +
+                        "            ambientC = vec4(highlightColor.r * mul, highlightColor.g * mul, highlightColor.b * mul, ambientC.a * highlightColor.a);" +
+                        "        }" +
+                        "        else if(highlightMode == 2)" +
+                        "        {" +
+                        "            ambientC.r = ambientC.r * brightnessMul;" +
+                        "            ambientC.g = ambientC.g * brightnessMul;" +
+                        "            ambientC.b = ambientC.b * brightnessMul;" +
+                        "        }" +
+                        "        diffuseC = ambientC;" +
+                        "        specularC = ambientC;" +
+                        "    }" +
+                        "    else" +
+                        "    {" +
+                        "        ambientC = material.ambient[0];" +
+                        "        diffuseC = material.diffuse[0];" +
+                        "        specularC = material.specular[0];" +
+                        "        if(highlightMode == 1)" +
+                        "        {" +
+                        "            float mul = (ambientC.r + ambientC.g + ambientC.b) / 3.0;" +
+                        "            ambientC = vec4(highlightColor.r * mul, highlightColor.g * mul, highlightColor.b * mul, ambientC.a * highlightColor.a);" +
+                        "        }" +
+                        "        else if(highlightMode == 2)" +
+                        "        {" +
+                        "            ambientC.r = ambientC.r * brightnessMul;" +
+                        "            ambientC.g = ambientC.g * brightnessMul;" +
+                        "            ambientC.b = ambientC.b * brightnessMul;" +
+                        "        }" +
+                        "    }");
+
+        shader.createFragmentShader(shaderCode);
         shader.link();
-        shader.createUniform("textureSampler");
-        shader.createUniform("transformationMatrix");
-        shader.createUniform("projectionMatrix");
-        shader.createUniform("viewMatrix");
-        shader.createUniform("triangleOffset");
-        shader.createUniform("extrusion");
-        shader.createUniform("camPos");
+        shader.createListUniform("textureSampler", 25);
+        shader.createUniform("samplerCount");
         shader.createUniform("ambientLight");
+        shader.createMaterialUniform("material");
         shader.createUniform("highlightMode");
         shader.createUniform("highlightColor");
         shader.createUniform("brightnessMul");
-        shader.createMaterialUniform("material");
         shader.createUniform("specularPower");
         shader.createDirectionalLightListUniform("directionalLights", 5);
         shader.createUniform("directionalLightsSize");
-        shader.createPointLightListUniform("pointLights", 70);
+        shader.createPointLightListUniform("pointLights", 50);
         shader.createUniform("pointLightsSize");
-        shader.createSpotLightListUniform("spotLights", 70);
+        shader.createSpotLightListUniform("spotLights", 50);
         shader.createUniform("spotLightsSize");
 
-        shaderMousePick.createVertexShader(Utils.loadResource("/shaders/vertex.vs"));
-        shaderMousePick.createGeometryShader(Utils.loadResource("/shaders/geometry.gs"));
-        shaderMousePick.createFragmentShader(Utils.loadResource("/shaders/fragment_mouse.fs"));
+        shader.createUniform("transformationMatrix");
+        shader.createUniform("projectionMatrix");
+        shader.createUniform("viewMatrix");
+        shader.createListUniform("bones", 100);
+        shader.createUniform("hasBones");
+        shader.createUniform("triangleOffset");
+
+        shaderMousePick.createVertexShader(Utils.loadResource("/shaders/vertex.glsl"));
+        shaderMousePick.createFragmentShader(Utils.loadResource("/shaders/fragment_mouse.glsl"));
         shaderMousePick.link();
         shaderMousePick.createUniform("transformationMatrix");
         shaderMousePick.createUniform("projectionMatrix");
         shaderMousePick.createUniform("viewMatrix");
+        shaderMousePick.createListUniform("bones", 100);
+        shaderMousePick.createUniform("hasBones");
         shaderMousePick.createUniform("triangleOffset");
-        shaderMousePick.createUniform("extrusion");
-        shaderMousePick.createUniform("camPos");
         shaderMousePick.createUniform("arrayIndex");
 
-        shaderOutlineVertical.createFragmentShader(Utils.loadResource("/shaders/fragment_blur.fs"));
-        shaderOutlineVertical.createVertexShader(Utils.loadResource("/shaders/vertex_blur_vert.vs"));
+        shaderOutlineVertical.createFragmentShader(Utils.loadResource("/shaders/fragment_blur.glsl"));
+        shaderOutlineVertical.createVertexShader(Utils.loadResource("/shaders/vertex_blur_vert.glsl"));
         shaderOutlineVertical.link();
         shaderOutlineVertical.createUniform("transformationMatrix");
         shaderOutlineVertical.createUniform("originalTexture");
@@ -107,8 +145,8 @@ public class EntityRenderer implements IRenderer{
         shaderOutlineVertical.createUniform("stipple");
         shaderOutlineVertical.createUniform("hasColor");
 
-        shaderOutlineHorizontal.createFragmentShader(Utils.loadResource("/shaders/fragment_blur.fs"));
-        shaderOutlineHorizontal.createVertexShader(Utils.loadResource("/shaders/vertex_blur_hor.vs"));
+        shaderOutlineHorizontal.createFragmentShader(Utils.loadResource("/shaders/fragment_blur.glsl"));
+        shaderOutlineHorizontal.createVertexShader(Utils.loadResource("/shaders/vertex_blur_hor.glsl"));
         shaderOutlineHorizontal.link();
         shaderOutlineHorizontal.createUniform("transformationMatrix");
         shaderOutlineHorizontal.createUniform("originalTexture");
@@ -146,10 +184,9 @@ public class EntityRenderer implements IRenderer{
         for (int i = 0; i < entities.size(); i++)
         {
             Entity entity = entities.get(i);
-            ArrayList<Model> models = entity.getModel();
             shaderMousePick.setUniform("arrayIndex", new Vector2i(i + 1, 1));
-            if(models != null && !models.isEmpty())
-                for(Model model : models)
+            for(Model model : entity.getModel())
+                if(model != null)
                     if(entity.testForMouse)
                     {
                         GL30.glBindVertexArray(model.vao);
@@ -157,9 +194,18 @@ public class EntityRenderer implements IRenderer{
                         GL20.glEnableVertexAttribArray(1);
                         GL20.glEnableVertexAttribArray(2);
 
+                        if(entity instanceof Mesh ? ((Mesh)entity).skeleton != null : false)
+                        {
+                            GL20.glEnableVertexAttribArray(3);
+                            GL20.glEnableVertexAttribArray(4);
+                        }
+
                         RenderMan.disableCulling();
 
                         prepareMousePick(entity, camera);
+
+                        shaderMousePick.setUniform("bones", entity instanceof Mesh ? ((Mesh)entity).skeleton : null);
+                        shaderMousePick.setUniform("hasBones", entity instanceof Mesh ? ((Mesh)entity).skeleton != null : false);
 
                         // Mouse picker render to FBO
 
@@ -176,10 +222,9 @@ public class EntityRenderer implements IRenderer{
         for (int i = 0; i < throughWallEntities.size(); i++)
         {
             Entity entity = throughWallEntities.get(i);
-            ArrayList<Model> models = entity.getModel();
             shaderMousePick.setUniform("arrayIndex", new Vector2i(i + 1, 2));
-            if(models != null && !models.isEmpty())
-                for(Model model : models)
+            for(Model model : entity.getModel())
+                if(model != null)
                     if(entity.testForMouse)
                     {
                         GL30.glBindVertexArray(model.vao);
@@ -187,7 +232,16 @@ public class EntityRenderer implements IRenderer{
                         GL20.glEnableVertexAttribArray(1);
                         GL20.glEnableVertexAttribArray(2);
 
+                        if(entity instanceof Mesh ? ((Mesh)entity).skeleton != null : false)
+                        {
+                            GL20.glEnableVertexAttribArray(3);
+                            GL20.glEnableVertexAttribArray(4);
+                        }
+
                         prepareMousePick(entity, camera);
+
+                        shaderMousePick.setUniform("bones", entity instanceof Mesh ? ((Mesh)entity).skeleton : null);
+                        shaderMousePick.setUniform("hasBones", entity instanceof Mesh ? ((Mesh)entity).skeleton != null : false);
 
                         // Mouse picker render to FBO
 
@@ -227,8 +281,10 @@ public class EntityRenderer implements IRenderer{
 
         shaderMousePick.unbind();
 
+        Matrix4f projection = window.updateProjectionMatrix();
+
         shader.bind();
-        shader.setUniform("projectionMatrix", Main.window.updateProjectionMatrix());
+        shader.setUniform("projectionMatrix", projection);
         shader.setUniform("ambientLight", Const.AMBIENT_LIGHT);
         shader.setUniform("specularPower", Const.SPECULAR_POWER);
         shader.setUniform("directionalLights", directionalLights.toArray(DirectionalLight[]::new));
@@ -237,21 +293,36 @@ public class EntityRenderer implements IRenderer{
         shader.setUniform("pointLightsSize", pointLights.size());
         shader.setUniform("spotLights", spotLights.toArray(SpotLight[]::new));
         shader.setUniform("spotLightsSize", spotLights.size());
-        shader.setUniform("camPos", camera.pos);
 
         boolean outline = false;
 
         ArrayList<Entity> outlineEntities = new ArrayList<>();
 
+        ShaderMan lastShader = shader;
+
         for (Entity entity : entities)
         {
-            ArrayList<Model> models = entity.getModel();
+            for(Model model : entity.getModel()) {
+                if (model != null) {
+                    if (model.material == null || model.material.customShader == null) {
+                        if (!lastShader.equals(shader)) {
+                            lastShader.unbind();
+                            shader.bind();
+                            lastShader = shader;
+                        }
+                    } else {
+                        if (!lastShader.equals(model.material.customShader)) {
+                            lastShader.unbind();
+                            model.material.customShader.bind();
+                            lastShader = model.material.customShader;
+                        }
 
-            if(models != null && !models.isEmpty())
-                for(Model model : models)
-                {
-                    bind(model);
-                    prepare(entity, camera);
+                        model.material.setupUniforms(projection, directionalLights, pointLights, spotLights);
+                    }
+
+                    boolean hasBones = entity instanceof Mesh ? ((Mesh) entity).skeleton != null : false;
+                    bind(model, hasBones, lastShader);
+                    prepare(entity, camera, lastShader, model);
 
                     float[] elements = entity.transformation.get(new float[16]);
 
@@ -264,11 +335,9 @@ public class EntityRenderer implements IRenderer{
                     if (col1.dot(col2) != 0.0f) canDecompose = false;
                     if (col0.dot(col2) != 0.0f) canDecompose = false;
 
-                    if(canDecompose)
-                    {
+                    if (canDecompose) {
                         RenderMan.disableCulling();
-                    }
-                    else{
+                    } else {
                         Vector3f scale = new Vector3f(col0.length(), col1.length(), col2.length());
 
                         col0 = col0.div(scale.x);
@@ -279,25 +348,27 @@ public class EntityRenderer implements IRenderer{
                             RenderMan.disableCulling();
                     }
 
-                    if(entity.selected)
-                    {
+                    if (entity.selected) {
                         outline = true;
                         outlineEntities.add(entity);
                     }
 
-                    if(model.material.overlayColor != null)
-                    {
-                        shader.setUniform("highlightMode", 1);
-                        shader.setUniform("highlightColor", model.material.overlayColor);
+                    if (model.material.overlayColor != null) {
+                        lastShader.setUniform("highlightMode", 1);
+                        lastShader.setUniform("highlightColor", model.material.overlayColor);
                     }
+
+                    lastShader.setUniform("bones", entity instanceof Mesh ? ((Mesh) entity).skeleton : null);
+                    lastShader.setUniform("hasBones", hasBones);
 
                     // Main render
 
                     GL11.glDrawElements(GL11.GL_TRIANGLES, model.vertexCount, 5125, 0L);
 
-                    shader.setUniform("highlightMode", 0);
+                    lastShader.setUniform("highlightMode", 0);
                     unbind();
                 }
+            }
         }
 
         GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
@@ -307,8 +378,8 @@ public class EntityRenderer implements IRenderer{
         {
             int vertSelectFB = initFrameBuffer();
 
-            int vertWidth = Math.round(window.width * (1 - Const.OUTLINE_DISTANCE + 0.5f));
-            int vertHeight = Math.round(window.height * (1 - Const.OUTLINE_DISTANCE + 0.5f));
+            int vertWidth = Math.round(window.width);
+            int vertHeight = Math.round(window.height);
 
             int vertSelectCT = initColorTex(vertWidth, vertHeight);
 
@@ -316,23 +387,24 @@ public class EntityRenderer implements IRenderer{
 
             for (Entity entity : outlineEntities)
             {
-                ArrayList<Model> models = entity.getModel();
+                for(Model model : entity.getModel())
+                    if(model != null)
+                    {
+                        boolean hasBones = entity instanceof Mesh ? ((Mesh)entity).skeleton != null : false;
+                        bindNoCullColor(model, new Vector4f(252f / 255f, 173f / 255f, 3f / 255f, 1f), hasBones);
+                        prepare(entity, camera, shader, model);
 
-                if(models != null && !models.isEmpty())
-                    for(Model model : models)
-                        if(!model.noRender)
-                        {
-                            bindNoCullColor(model, new Vector4f(252f / 255f, 173f / 255f, 3f / 255f, 1f));
-                            prepare(entity, camera);
+                        shader.setUniform("highlightMode", 0);
 
-                            shader.setUniform("highlightMode", 0);
+                        shader.setUniform("bones", entity instanceof Mesh ? ((Mesh)entity).skeleton : null);
+                        shader.setUniform("hasBones", hasBones);
 
-                            // Outline render to FBO
+                        // Outline render to FBO
 
-                            GL11.glDrawElements(GL11.GL_TRIANGLES, model.vertexCount, 5125, 0L);
+                        GL11.glDrawElements(GL11.GL_TRIANGLES, model.vertexCount, 5125, 0L);
 
-                            unbind();
-                        }
+                        unbind();
+                    }
             }
 
             unbindFrameBuffer();
@@ -345,23 +417,24 @@ public class EntityRenderer implements IRenderer{
 
             for (Entity entity : outlineEntities)
             {
-                ArrayList<Model> models = entity.getModel();
+                for(Model model : entity.getModel())
+                    if(model != null)
+                    {
+                        boolean hasBones = entity instanceof Mesh ? ((Mesh)entity).skeleton != null : false;
+                        bindNoCullColor(model, new Vector4f(0f, 0f, 0f, 1f), hasBones);
+                        prepare(entity, camera, shader, model);
 
-                if(models != null && !models.isEmpty())
-                    for(Model model : models)
-                        if(!model.noRender)
-                        {
-                            bindNoCullColor(model, new Vector4f(0f, 0f, 0f, 1f));
-                            prepare(entity, camera);
+                        shader.setUniform("highlightMode", 0);
 
-                            shader.setUniform("highlightMode", 0);
+                        shader.setUniform("bones", entity instanceof Mesh ? ((Mesh)entity).skeleton : null);
+                        shader.setUniform("hasBones", hasBones);
 
-                            // Stencil render for outline
+                        // Stencil render for outline
 
-                            GL11.glDrawElements(GL11.GL_TRIANGLES, model.vertexCount, 5125, 0L);
+                        GL11.glDrawElements(GL11.GL_TRIANGLES, model.vertexCount, 5125, 0L);
 
-                            unbind();
-                        }
+                        unbind();
+                    }
             }
 
             GL11.glColorMask(true, true, true, true);
@@ -373,14 +446,14 @@ public class EntityRenderer implements IRenderer{
 
             int horSelectFB = initFrameBuffer();
 
-            int horWidth = Math.round(vertWidth * (1 - Const.OUTLINE_DISTANCE + 0.5f));
-            int horHeight = Math.round(vertHeight * (1 - Const.OUTLINE_DISTANCE + 0.5f));
+            int horWidth = Math.round(vertWidth);
+            int horHeight = Math.round(vertHeight);
 
             int horSelectCT = initColorTex(horWidth, horHeight);
 
             GL11.glViewport(0, 0, horWidth, horHeight);
 
-            int radius = Math.round((Const.OUTLINE_DISTANCE * 2 - 1) * 10);
+            int radius = Math.round((Const.OUTLINE_DISTANCE * 2f - 1f) * 10f);
 
             drawOutline(vertSelectFB, vertSelectCT, shaderOutlineVertical, shader, false, horHeight, radius, Const.OUTLINE_COLOR);
             GL30.glDeleteFramebuffers(vertSelectFB);
@@ -408,38 +481,64 @@ public class EntityRenderer implements IRenderer{
         shader.setUniform("ambientLight", new Vector3f(1f, 1f, 1f));
 
         for(Entity entity : throughWallEntities)
-            if(entity.getModel() != null && !entity.getModel().isEmpty())
-                for (Model model : entity.getModel())
-                    if(!model.noRender)
-                    {
-                        bindThroughWalls(model);
-                        prepare(entity, camera);
-
-                        if(entity.highlighted)
-                        {
-                            shader.setUniform("highlightMode", 2);
-                            shader.setUniform("brightnessMul", 0.5f);
+        {
+            for(Model model : entity.getModel()) {
+                if (model != null) {
+                    if (model.material == null || model.material.customShader == null) {
+                        if (lastShader != shader) {
+                            lastShader.unbind();
+                            shader.bind();
+                            lastShader = shader;
+                        }
+                    } else {
+                        if (lastShader != model.material.customShader) {
+                            lastShader.unbind();
+                            model.material.customShader.bind();
+                            lastShader = model.material.customShader;
                         }
 
-                        //Through wall
-
-                        GL11.glDrawElements(GL11.GL_TRIANGLES, model.vertexCount, GL11.GL_UNSIGNED_INT, 0L);
-                        shader.setUniform("highlightMode", 0);
-
-                        unbind();
+                        model.material.setupUniforms(projection, directionalLights, pointLights, spotLights);
                     }
+
+                    boolean hasBones = entity instanceof Mesh ? ((Mesh) entity).skeleton != null : false;
+                    bindThroughWalls(model, hasBones, lastShader);
+                    prepare(entity, camera, lastShader, model);
+
+                    if (entity.highlighted) {
+                        lastShader.setUniform("highlightMode", 2);
+                        lastShader.setUniform("brightnessMul", 0.5f);
+                    }
+
+                    lastShader.setUniform("bones", entity instanceof Mesh ? ((Mesh) entity).skeleton : null);
+                    lastShader.setUniform("hasBones", hasBones);
+
+                    //Through wall
+
+                    GL11.glDrawElements(GL11.GL_TRIANGLES, model.vertexCount, GL11.GL_UNSIGNED_INT, 0L);
+                    lastShader.setUniform("highlightMode", 0);
+
+                    unbind();
+                }
+            }
+        }
 
         throughWallEntities.clear();
         shader.unbind();
     }
 
     @Override
-    public void bind(Model model)
+    public void bind(Model model, boolean hasBones, ShaderMan shader)
     {
         GL30.glBindVertexArray(model.vao);
         GL20.glEnableVertexAttribArray(0);
         GL20.glEnableVertexAttribArray(1);
         GL20.glEnableVertexAttribArray(2);
+
+        if(hasBones)
+        {
+            GL20.glEnableVertexAttribArray(3);
+            GL20.glEnableVertexAttribArray(4);
+        }
 
         if(model.material.disableCulling || Const.NO_CULLING)
             RenderMan.disableCulling();
@@ -448,32 +547,48 @@ public class EntityRenderer implements IRenderer{
 
         shader.setUniform("material", model.material);
 
-        if(model.material.texture != null)
+        if(model.material.textures != null)
         {
-            GL13.glActiveTexture(GL13.GL_TEXTURE0);
-            GL11.glBindTexture(GL11.GL_TEXTURE_2D, model.material.texture.id);
+            for(int i = 0; i < model.material.textures.length; i++)
+            {
+                GL13.glActiveTexture(GL13.GL_TEXTURE0 + i);
+                GL11.glBindTexture(GL11.GL_TEXTURE_2D, model.material.textures[i].id);
+            }
         }
 
     }
 
-    public void bindNoCullColor(Model model, Vector4f color)
+    public void bindNoCullColor(Model model, Vector4f color, boolean hasBones)
     {
         GL30.glBindVertexArray(model.vao);
         GL20.glEnableVertexAttribArray(0);
         GL20.glEnableVertexAttribArray(1);
         GL20.glEnableVertexAttribArray(2);
+
+        if(hasBones)
+        {
+            GL20.glEnableVertexAttribArray(3);
+            GL20.glEnableVertexAttribArray(4);
+        }
+
 
         RenderMan.disableCulling();
 
         shader.setUniform("material", new Material(color, 0f));
     }
 
-    public void bindThroughWalls(Model model)
+    public void bindThroughWalls(Model model, boolean hasBones, ShaderMan shader)
     {
         GL30.glBindVertexArray(model.vao);
         GL20.glEnableVertexAttribArray(0);
         GL20.glEnableVertexAttribArray(1);
         GL20.glEnableVertexAttribArray(2);
+
+        if(hasBones)
+        {
+            GL20.glEnableVertexAttribArray(3);
+            GL20.glEnableVertexAttribArray(4);
+        }
 
         if(model.material.disableCulling)
             RenderMan.disableCulling();
@@ -482,10 +597,13 @@ public class EntityRenderer implements IRenderer{
 
         shader.setUniform("material", model.material);
 
-        if(model.material.texture != null)
+        if(model.material.textures != null)
         {
-            GL13.glActiveTexture(GL13.GL_TEXTURE0);
-            GL11.glBindTexture(GL11.GL_TEXTURE_2D, model.material.texture.id);
+            for(int i = 0; i < model.material.textures.length; i++)
+            {
+                GL13.glActiveTexture(GL13.GL_TEXTURE0 + i);
+                GL11.glBindTexture(GL11.GL_TEXTURE_2D, model.material.textures[i].id);
+            }
         }
 
     }
@@ -496,12 +614,25 @@ public class EntityRenderer implements IRenderer{
         GL20.glDisableVertexAttribArray(0);
         GL20.glDisableVertexAttribArray(1);
         GL20.glDisableVertexAttribArray(2);
+        GL20.glDisableVertexAttribArray(3);
+        GL20.glDisableVertexAttribArray(4);
         GL30.glBindVertexArray(0);
     }
 
     @Override
-    public void prepare(Object entity, Camera camera) {
-        shader.setUniform("textureSampler", 0);
+    public void prepare(Object entity, Camera camera, ShaderMan shader, Model model) {
+        Texture[] tex = model.material.textures;
+        if(tex != null)
+        {
+            for (int i = 0; i < tex.length; i++)
+                shader.setUniform("textureSampler", i, i);
+            shader.setUniform("samplerCount", tex.length);
+        }
+        else
+        {
+            shader.setUniform("textureSampler", 0, 0);
+            shader.setUniform("samplerCount", 1);
+        }
         shader.setUniform("transformationMatrix", Transformation.createTransformationMatrix((Entity) entity));
         shader.setUniform("viewMatrix", Transformation.getViewMatrix(camera));
     }

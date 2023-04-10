@@ -1,9 +1,11 @@
 package bog.bgmaker.view3d;
 
 import bog.bgmaker.Main;
-import bog.bgmaker.view3d.core.AABB;
+import bog.bgmaker.view3d.core.Bone;
 import bog.bgmaker.view3d.core.Model;
 import bog.bgmaker.view3d.core.Triangle;
+import bog.bgmaker.view3d.mainWindow.LoadedData;
+import bog.bgmaker.view3d.utils.CWLibUtils.SkeletonUtils;
 import bog.bgmaker.view3d.utils.Utils;
 import cwlib.enums.BoxType;
 import cwlib.resources.RGfxMaterial;
@@ -12,19 +14,14 @@ import cwlib.structs.gmat.MaterialBox;
 import cwlib.structs.gmat.MaterialWire;
 import cwlib.structs.mesh.Primitive;
 import cwlib.types.data.ResourceDescriptor;
-import org.joml.Matrix4f;
-import org.joml.Vector2f;
-import org.joml.Vector3f;
-import org.joml.Vector3i;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL15;
-import org.lwjgl.opengl.GL20;
-import org.lwjgl.opengl.GL30;
+import org.joml.*;
+import org.lwjgl.opengl.*;
 import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.MemoryStack;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -35,8 +32,6 @@ import java.util.HashMap;
  * @author Bog
  */
 public class ObjectLoader {
-
-    public static HashMap<ResourceDescriptor, ArrayList<Model>> loadedModels;
 
     public ArrayList<Integer> vaos = new ArrayList<>();
     public ArrayList<Integer> vbos = new ArrayList<>();
@@ -114,9 +109,9 @@ public class ObjectLoader {
 
         int[] indicesArr = indices.stream().mapToInt((Integer v) -> v).toArray();
 
-        return loadModel(verticesArr, texCoordArr, normalsArr, indicesArr, vertices);
+        return loadModel(verticesArr, texCoordArr, normalsArr, indicesArr);
     }
-    public Model loadRMesh(RMesh mesh, Matrix4f transMat, Vector3f pos) {
+    public Model loadRMesh(RMesh mesh) {
         try {
             ArrayList<Vector3f> vertices = new ArrayList<>();
             ArrayList<Vector3f> normals = new ArrayList<>();
@@ -156,14 +151,48 @@ public class ObjectLoader {
             for (Vector3i face : faces)
                 processVertex(face.x, face.y, face.z, textures, normals, indices, texCoordArr, normalsArr);
             int[] indicesArr = indices.stream().mapToInt(v -> v.intValue()).toArray();
-            return loadModel(verticesArr, texCoordArr, normalsArr, indicesArr, vertices);
+
+            byte[][] js = mesh.getJoints();
+            int[] joints = new int[js.length * 4];
+
+            for(int i = 0; i < js.length; i++)
+            {
+                joints[i * 4] = js[i][0];
+                joints[i * 4 + 1] = js[i][1];
+                joints[i * 4 + 2] = js[i][2];
+                joints[i * 4 + 3] = js[i][3];
+            }
+
+            Vector4f[] ws = mesh.getWeights();
+            float[] weights = new float[ws.length * 4];
+
+            for(int i = 0; i < ws.length; i++)
+            {
+                weights[i * 4] = ws[i].x;
+                weights[i * 4 + 1] = ws[i].y;
+                weights[i * 4 + 2] = ws[i].z;
+                weights[i * 4 + 3] = ws[i].w;
+            }
+
+            return loadModel(verticesArr, texCoordArr, normalsArr, indicesArr, joints, weights);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
     }
 
-    public Model loadSubmesh(RMesh mastermesh, Primitive submesh, Matrix4f transMat, Vector3f pos) {
+    public ArrayList<Model> loadRMeshArr(RMesh mesh) throws Exception {
+        ArrayList<Model> models = new ArrayList<>();
+        for (Primitive[] primitives : mesh.getSubmeshes())
+            for (Primitive primitiveSubmesh : primitives) {
+                Model model = loadSubmesh(mesh, primitiveSubmesh);
+                model.material = LoadedData.getMaterial(primitiveSubmesh.getMaterial(), this);
+                models.add(model);
+            }
+        return models;
+    }
+
+    public Model loadSubmesh(RMesh mastermesh, Primitive submesh) {
         try {
             ArrayList<Vector3f> vertices = new ArrayList<>();
             ArrayList<Vector3f> normals = new ArrayList<>();
@@ -179,27 +208,28 @@ public class ObjectLoader {
             }
 
             int channel = 0;
-            RGfxMaterial material = Main.view.loadGfxMaterial(submesh.getMaterial());
+            RGfxMaterial material = LoadedData.loadGfxMaterial(submesh.getMaterial());
 
-            if(material != null)
-                for (int i = 0; i < material.boxes.size(); ++i)
-                {
-                    MaterialBox box = material.boxes.get(i);
-                    MaterialWire wire = material.findWireFrom(i);
+            if (material != null)
+                for (int k = 0; k < material.boxes.size(); k++) {
+                    MaterialBox box = material.boxes.get(k);
+                    MaterialWire wire = material.findWireFrom(k);
                     int outputBox = material.getOutputBox();
-
-                    if (box.type == BoxType.TEXTURE_SAMPLE)
-                    {
+                    if (box.type == 1) {
                         while (wire.boxTo != outputBox)
                             wire = material.findWireFrom(wire.boxTo);
-
-                        if(wire.portTo == 0)
-                        {
+                        if (wire.portTo == 0) {
                             channel = box.getParameters()[4];
-                            break;
                         }
                     }
                 }
+
+//            if (material != null) {
+//                int output = material.getOutputBox();
+//                MaterialBox outBox = material.getBoxConnectedToPort(output, 0);
+//                if(outBox.isTexture())
+//                    channel = outBox.getParameters()[4];
+//            }
 
             for (Vector2f texture : mastermesh.getUVs(channel)) {
                 Vector2f texturesVec = new Vector2f(texture.x, 1.0F - texture.y);
@@ -228,72 +258,34 @@ public class ObjectLoader {
             for (Vector3i face : faces)
                 processVertex(face.x, face.y, face.z, textures, normals, indices, texCoordArr, normalsArr);
             int[] indicesArr = indices.stream().mapToInt(v -> v.intValue()).toArray();
-            return loadModel(verticesArr, texCoordArr, normalsArr, indicesArr, vertices);
+
+            byte[][] js = mastermesh.getJoints();
+            int[] joints = new int[js.length * 4];
+
+            for(int i = 0; i < js.length; i++)
+            {
+                joints[i * 4] = js[i][0];
+                joints[i * 4 + 1] = js[i][1];
+                joints[i * 4 + 2] = js[i][2];
+                joints[i * 4 + 3] = js[i][3];
+            }
+
+            Vector4f[] ws = mastermesh.getWeights();
+            float[] weights = new float[ws.length * 4];
+
+            for(int i = 0; i < ws.length; i++)
+            {
+                weights[i * 4] = ws[i].x;
+                weights[i * 4 + 1] = ws[i].y;
+                weights[i * 4 + 2] = ws[i].z;
+                weights[i * 4 + 3] = ws[i].w;
+            }
+
+            return loadModel(verticesArr, texCoordArr, normalsArr, indicesArr, joints, weights);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
-    }
-    public AABB generateAABB(Model model, Matrix4f transMat, Vector3f pos)
-    {
-        AABB aabb = new AABB();
-
-        ArrayList<Vector3f> vertices = model.vertices;
-
-        for(Vector3f verticesVec : vertices)
-        {
-            Vector3f vertex = new Vector3f(verticesVec.mulProject(transMat, new Vector3f()));
-
-            if(vertex.x < aabb.min.x)
-                aabb.min.x = vertex.x;
-            if(vertex.y < aabb.min.y)
-                aabb.min.y = vertex.y;
-            if(vertex.z < aabb.min.z)
-                aabb.min.z = vertex.z;
-
-            if(vertex.x > aabb.max.x)
-                aabb.max.x = vertex.x;
-            if(vertex.y > aabb.max.y)
-                aabb.max.y = vertex.y;
-            if(vertex.z > aabb.max.z)
-                aabb.max.z = vertex.z;
-
-            if(aabb.min.x == 0)
-                aabb.min.x = pos.x;
-            if(aabb.min.y == 0)
-                aabb.min.y = pos.y;
-            if(aabb.min.z == 0)
-                aabb.min.z = pos.z;
-
-            if(aabb.max.x == 0)
-                aabb.max.x = pos.x;
-            if(aabb.max.y == 0)
-                aabb.max.y = pos.y;
-            if(aabb.max.z == 0)
-                aabb.max.z = pos.z;
-        }
-
-        return aabb;
-    }
-    public ArrayList<Triangle> generateTriangles(Model model, Matrix4f transMat)
-    {
-        try {
-            ArrayList<Vector3f> vertices = model.vertices;
-            ArrayList<Triangle> triangles = new ArrayList<>();
-
-            int[] indices = model.indicesArr;
-
-            for (int i = 0; i < indices.length; i += 3) {
-                Vector3f p1 = new Vector3f(vertices.get(indices[i])).mulProject(transMat);
-                Vector3f p2 = new Vector3f(vertices.get(indices[i + 1])).mulProject(transMat);
-                Vector3f p3 = new Vector3f(vertices.get(indices[i + 2])).mulProject(transMat);
-
-                triangles.add(new Triangle(p1, p2, p3));
-            }
-
-            return triangles;
-        }catch (Exception e){e.printStackTrace();}
-        return null;
     }
 
     public static void processVertex(int pos, int texCoord, int normal,
@@ -337,7 +329,7 @@ public class ObjectLoader {
         faces.add(facesVec);
     }
 
-    public Model loadModel(float[] vertices, float[] textureCoords, float[] normals, int[] indices, ArrayList<Vector3f> vertices1)
+    public Model loadModel(float[] vertices, float[] textureCoords, float[] normals, int[] indices)
     {
         int vao = createVAO();
         int[] vbos = new int[]{
@@ -346,7 +338,21 @@ public class ObjectLoader {
         storeDataInAttribList(1, 2, textureCoords),
         storeDataInAttribList(2, 3, normals)};
         unbind();
-        return new Model(vao, vbos, indices.length, vertices1, indices);
+        return new Model(vao, vbos, indices.length, indices);
+    }
+
+    public Model loadModel(float[] vertices, float[] textureCoords, float[] normals, int[] indices, int[] joints, float[] weights)
+    {
+        int vao = createVAO();
+        int[] vbos = new int[]{
+                storeIndicesBuffer(indices),
+                storeDataInAttribList(0, 3, vertices),
+                storeDataInAttribList(1, 2, textureCoords),
+                storeDataInAttribList(2, 3, normals),
+                storeDataInAttribList(3, 4, joints),
+                storeDataInAttribList(4, 4, weights)};
+        unbind();
+        return new Model(vao, vbos, indices.length, indices);
     }
 
     public Model loadModel(float[] vertices)
@@ -483,6 +489,18 @@ public class ObjectLoader {
         vbos.add(vbo);
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo);
         FloatBuffer buffer = Utils.storeDataInFloatBuffer(data);
+        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, buffer, GL15.GL_STATIC_DRAW);
+        GL20.glVertexAttribPointer(attribNo, vertexCount, GL11.GL_FLOAT, false, 0, 0);
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+        return vbo;
+    }
+
+    public int storeDataInAttribList(int attribNo, int vertexCount, int[] data)
+    {
+        int vbo = GL15.glGenBuffers();
+        vbos.add(vbo);
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo);
+        IntBuffer buffer = Utils.storeDataInIntBuffer(data);
         GL15.glBufferData(GL15.GL_ARRAY_BUFFER, buffer, GL15.GL_STATIC_DRAW);
         GL20.glVertexAttribPointer(attribNo, vertexCount, GL11.GL_FLOAT, false, 0, 0);
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);

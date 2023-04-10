@@ -5,10 +5,7 @@ import bog.bgmaker.view3d.managers.MouseInput;
 import bog.bgmaker.view3d.managers.RenderMan;
 import bog.bgmaker.view3d.managers.WindowMan;
 import bog.bgmaker.view3d.renderer.gui.font.FontRenderer;
-import bog.bgmaker.view3d.renderer.gui.ingredients.Circle;
-import bog.bgmaker.view3d.renderer.gui.ingredients.Quad;
-import bog.bgmaker.view3d.renderer.gui.ingredients.Scissor;
-import bog.bgmaker.view3d.renderer.gui.ingredients.Triangle;
+import bog.bgmaker.view3d.renderer.gui.ingredients.*;
 import org.joml.Vector2d;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
@@ -79,6 +76,11 @@ public class Element {
 
     protected void drawRect(int x, int y, int width, int height, Color color) {
         renderer.processGuiElement(new Quad(loader, color, new Vector2f(x, y), new Vector2f(width, height), false).staticTexture());
+    }
+
+    protected void drawRectOutline(int x, int y, int width, int height, Color color, boolean smooth)
+    {
+        renderer.processGuiElement(LineStrip.lineRectangle(new Vector2f(x, y), new Vector2f(width, height), color, loader, window, smooth, false));
     }
 
     protected void drawTriangle(Vector2f p1, Vector2f p2, Vector2f p3, Color color)

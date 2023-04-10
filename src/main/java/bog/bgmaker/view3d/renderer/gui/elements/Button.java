@@ -71,8 +71,10 @@ public abstract class Button extends Element{
             isClicked = false;
 
         startScissor((int)pos.x, (int)pos.y, (int)size.x, (int)size.y);
-        drawRect((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, !isMouseOverElement(mouseInput) || overOther ? buttonColor : (isClicked ? buttonColorClicked : buttonColorHighlighted));
+        Color c = !isMouseOverElement(mouseInput) || overOther ? buttonColor : (isClicked ? buttonColorClicked : buttonColorHighlighted);
+        drawRect((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, c);
         drawString(buttonText, textColor, (int)(pos.x + size.x / 2 - getStringWidth(buttonText, fontSize) / 2), (int)(pos.y + size.y / 2 - getFontHeight(fontSize) / 2), fontSize);
+        drawRectOutline((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, c, false);
         endScissor();
     }
 

@@ -4,10 +4,7 @@ import bog.bgmaker.Main;
 import bog.bgmaker.view3d.Camera;
 import bog.bgmaker.view3d.ILogic;
 import bog.bgmaker.view3d.ObjectLoader;
-import bog.bgmaker.view3d.core.Material;
-import bog.bgmaker.view3d.core.Model;
-import bog.bgmaker.view3d.core.Texture;
-import bog.bgmaker.view3d.core.Transformation3D;
+import bog.bgmaker.view3d.core.*;
 import bog.bgmaker.view3d.core.types.Entity;
 import bog.bgmaker.view3d.core.types.MaterialPrimitive;
 import bog.bgmaker.view3d.core.types.Mesh;
@@ -23,32 +20,28 @@ import bog.bgmaker.view3d.renderer.gui.elements.Checkbox;
 import bog.bgmaker.view3d.renderer.gui.elements.*;
 import bog.bgmaker.view3d.renderer.gui.font.FontRenderer;
 import bog.bgmaker.view3d.renderer.gui.ingredients.*;
+import bog.bgmaker.view3d.renderer.gui.ingredients.Triangle;
 import bog.bgmaker.view3d.utils.CWLibUtils.LevelSettingsUtils;
 import bog.bgmaker.view3d.utils.CWLibUtils.SkeletonUtils;
 import bog.bgmaker.view3d.utils.Const;
 import bog.bgmaker.view3d.utils.MousePicker;
 import bog.bgmaker.view3d.utils.Utils;
 import cwlib.enums.*;
-import cwlib.resources.RGfxMaterial;
 import cwlib.resources.RMesh;
 import cwlib.resources.RPlan;
-import cwlib.resources.RTexture;
 import cwlib.structs.inventory.CreationHistory;
 import cwlib.structs.inventory.InventoryItemDetails;
 import cwlib.structs.inventory.UserCreatedDetails;
 import cwlib.structs.things.Thing;
 import cwlib.structs.things.components.LevelSettings;
 import cwlib.structs.things.parts.*;
-import cwlib.types.Resource;
 import cwlib.types.archives.FileArchive;
 import cwlib.types.data.NetworkPlayerID;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 import cwlib.types.data.SHA1;
-import cwlib.types.databases.FileDB;
 import cwlib.types.databases.FileDBRow;
 import cwlib.types.databases.FileEntry;
-import cwlib.types.save.BigSave;
 import cwlib.types.save.SaveEntry;
 import org.joml.Math;
 import org.joml.*;
@@ -87,16 +80,9 @@ public class View3D implements ILogic {
     public int lightIcon;
     public int audioIcon;
 
-    public HashMap<ResourceDescriptor, RMesh> MESH_INSTANCES = new HashMap<>();
-    public HashMap<ResourceDescriptor, RGfxMaterial> GFX_INSTANCES = new HashMap<>();
-    public HashMap<ResourceDescriptor, BufferedImage> TEXTURE_INSTANCES = new HashMap<>();
     public ArrayList<FileEntry> entries;
-    public FileDB MAP = null;
-    public ArrayList<FileArchive> FARCs;
-    public BigSave BIGFART = null;
 
     GuiScreen currentScreen;
-
     public View3D(WindowMan window)
     {
         this.window = window;
@@ -109,13 +95,14 @@ public class View3D implements ILogic {
 
     public long initMillis = 0;
 
-    public Model borders, borders1, borders2, borders3, pod, earth;
+    public Model borders, borders1, borders2, borders3, pod, earth, bone;
 
     @Override
     public void init() throws Exception {
         renderer.init(this.loader);
         FontRenderer.init(this.loader);
-        Transformation3D.init(loader);
+        Transformation3D.init(this.loader);
+        LoadedData.init(this.loader);
         this.window.setIcon("/icon32.png");
 
         entities = new ArrayList<>();
@@ -123,7 +110,6 @@ public class View3D implements ILogic {
         BORDERS = new ArrayList<>();
         POD_EARTH = new ArrayList<>();
         entries = new ArrayList<>();
-        FARCs = new ArrayList<>();
 
         for(LevelSettings ls : LevelSettingsUtils.getBlank1Preset())
             levelSettings.add(ls);
@@ -163,12 +149,15 @@ public class View3D implements ILogic {
         for(int layer = 0; layer < 6; layer++)
             BORDERS.add(new Entity(borders3, new Vector3f(21219f, 1557f, -790f + -400f * layer), new Vector3f(0, 0, 0), new Vector3f(1f, 1f, 1f), loader));
 
+        bone = loader.loadOBJModel("/models/bone.obj");
+        bone.material = new Material(Color.blue, 0f);
+
         pod = loader.loadOBJModel("/models/pod.obj");
-        pod.material = new Material(new Texture(loader.loadTexture(ImageIO.read(Main.class.getResourceAsStream("/textures/pod.png")), GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR)));
+        pod.material = new Material(new Texture[]{new Texture(loader.loadTexture(ImageIO.read(Main.class.getResourceAsStream("/textures/pod.png")), GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR))});
         pod.material.overlayColor = new Vector4f(Const.POD_COLOR.getRed() / 255f, Const.POD_COLOR.getGreen() / 255f, Const.POD_COLOR.getBlue() / 255f, Const.POD_COLOR.getAlpha() / 255f);
         POD_EARTH.add(new Entity(pod, new Vector3f(25.0f, 260.0f, 13490.0f), new Vector3f(-105.0f, 0.0f, 0.0f), new Vector3f(1f, 1f, 1f), loader));
         earth = loader.loadOBJModel("/models/earth.obj");
-        earth.material = new Material(new Texture(loader.loadTexture(ImageIO.read(Main.class.getResourceAsStream("/textures/earth.png")), GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR)));
+        earth.material = new Material(new Texture[]{new Texture(loader.loadTexture(ImageIO.read(Main.class.getResourceAsStream("/textures/earth.png")), GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR))});
         earth.material.overlayColor = new Vector4f(Const.EARTH_COLOR.getRed() / 255f, Const.EARTH_COLOR.getGreen() / 255f, Const.EARTH_COLOR.getBlue() / 255f, Const.EARTH_COLOR.getAlpha() / 255f);
         POD_EARTH.add(new Entity(earth, new Vector3f(30.71f, 60.38f, 243.31f), new Vector3f(0, 0, 0), new Vector3f(1.5f, 1.5f, 1.5f), loader));
     }
@@ -215,9 +204,6 @@ public class View3D implements ILogic {
         if(this.centerPicker == null)
             this.centerPicker = new MousePicker(null, window);
         this.centerPicker.update(camera, window.width / 2, window.height / 2);
-
-        for(int i = 0; i < entities.size(); i++)
-            entities.get(i).updateModel();
 
         Vector3f screenPos = camera.worldToScreenPointF(getSelectedPosition(), window);
 
@@ -270,18 +256,16 @@ public class View3D implements ILogic {
             if(entity.getType() == 0 || entity.getType() == 1)
             {
                 renderer.processEntity(entity);
-
-                try
-                {
-                    if(((Checkbox)((Settings)Settings).debug.tabElements.get(0)).isChecked)
-                        for(Model model1 : entity.getModel())
-                        {
-                            Entity boundingBox = new Entity(model1.aabb.model, new Vector3f(0f, 0f, 0f), new Vector3f(0f, 0f, 0f), new Vector3f(1f, 1f, 1f), loader);
-
-                            if(entity.highlighted)
-                                renderer.processEntity(boundingBox);
-                        }
-                }catch (Exception e){}
+//               TODO if(entity.getType() == 0)
+//                {
+//                    Bone[] skeleton = ((Mesh)entity).skeleton;
+//                    if(skeleton != null)
+//                        for(Bone bone : skeleton)
+//                        {
+//                            Matrix4f transform = new Matrix4f().identity().translate(new Matrix4f(entity.transformation).mul(skeleton[0].invSkinPoseMatrix).mul(bone.skinPoseMatrix).mul(bone.offset).getTranslation(new Vector3f()));
+//                            this.renderer.processThroughWallEntity(new Entity(this.bone, transform, loader));
+//                        }
+//                }
             }
             else if(entity.getType() == 2)
             {
@@ -348,8 +332,6 @@ public class View3D implements ILogic {
                     for (int i = entities.size() - 1; i >= 0; i--)
                         if (entities.get(i).selected)
                             entities.remove(i);
-
-                    cleanupResources();
                 }
             }
             else if (action == 0)
@@ -551,6 +533,7 @@ public class View3D implements ILogic {
     private void drawUI(MouseInput mouseInput) {
 
         drawRect(10 - 3, 10 - 3, getStringWidth("FPS: " + EngineMan.avgFPS, 10) + 6, (getFontHeight(10) + 2) + 3, new Color(0f, 0f, 0f, 0.5f));
+        drawRectOutline(10 - 3, 10 - 3, getStringWidth("FPS: " + EngineMan.avgFPS, 10) + 6, (getFontHeight(10) + 2) + 3, new Color(0f, 0f, 0f, 1f), false);
         drawString("FPS: " + EngineMan.avgFPS, Color.white, 10, 10, 10);
 
         if(Main.debug)
@@ -671,14 +654,14 @@ public class View3D implements ILogic {
         return null;
     }
 
-    private void drawLine(Vector2i pos1, Vector2i pos2)
+    private void drawLine(Vector2i pos1, Vector2i pos2, boolean smooth)
     {
-        renderer.processGuiElement(new Line(pos1, pos2, loader, window, false));
+        renderer.processGuiElement(new Line(pos1, pos2, loader, window, smooth, false));
     }
 
-    private void drawLine(Vector2i pos1, Vector2i pos2, Color color)
+    private void drawLine(Vector2i pos1, Vector2i pos2, boolean smooth, Color color)
     {
-        renderer.processGuiElement(new Line(pos1, pos2, color, loader, window, false));
+        renderer.processGuiElement(new Line(pos1, pos2, color, loader, window, smooth,false));
     }
 
     private void drawImage(String path, float x, float y, float width, float height)
@@ -704,6 +687,11 @@ public class View3D implements ILogic {
     private void drawRect(int x, int y, int width, int height, Color color)
     {
         renderer.processGuiElement(new Quad(loader, color, new Vector2f(x, y), new Vector2f(width, height), false));
+    }
+
+    private void drawRectOutline(int x, int y, int width, int height, Color color, boolean smooth)
+    {
+        renderer.processGuiElement(LineStrip.lineRectangle(new Vector2f(x, y), new Vector2f(width, height), color, loader, window, smooth, false));
     }
 
     private void drawTriangle(Vector2f p1, Vector2f p2, Vector2f p3, Color color)
@@ -884,11 +872,15 @@ public class View3D implements ILogic {
     }
 
     public void addMesh(String name, ResourceDescriptor descriptor, Matrix4f transformation) {
-        RMesh rmesh = loadMesh(descriptor);
+        Mesh mesh = new Mesh(descriptor, transformation, name, loader);
+        mesh.selected = true;
 
-        if (rmesh == null) return;
+        addEntity(mesh);
+    }
 
-        Mesh mesh = new Mesh(rmesh, descriptor, transformation, name, loader);
+    public void addMeshBoned(String name, ResourceDescriptor descriptor, Thing[] boneThings, Matrix4f transformation) {
+        Mesh mesh = new Mesh(descriptor, transformation, name, loader);
+        mesh.boneThings = boneThings;
         mesh.selected = true;
 
         addEntity(mesh);
@@ -901,125 +893,24 @@ public class View3D implements ILogic {
         addEntity(material);
     }
 
-    public RMesh loadMesh(ResourceDescriptor descriptor) {
-        if (descriptor == null) return null;
-
-        if (MESH_INSTANCES.containsKey(descriptor))
-            return MESH_INSTANCES.get(descriptor);
-
-        byte[] data = extract(descriptor);
-        if (data == null) return null;
-        RMesh mesh = null;
-        try { mesh = new Resource(data).loadResource(RMesh.class); }
-        catch (Exception ex) { return null; }
-
-        MESH_INSTANCES.put(descriptor, mesh);
-
-        return mesh;
-    }
-
-    public RGfxMaterial loadGfxMaterial(ResourceDescriptor descriptor) {
-        if (descriptor == null) return null;
-
-        if (GFX_INSTANCES.containsKey(descriptor))
-            return GFX_INSTANCES.get(descriptor);
-
-        byte[] data = this.extract(descriptor);
-        if (data == null) return null;
-        RGfxMaterial material = null;
-        try { material = new Resource(data).loadResource(RGfxMaterial.class); }
-        catch (Exception ex) { return null; }
-
-        GFX_INSTANCES.put(descriptor, material);
-
-        return material;
-    }
-
-    public BufferedImage loadTexture(ResourceDescriptor descriptor) {
-        if (descriptor == null) return null;
-
-        if (TEXTURE_INSTANCES.containsKey(descriptor))
-            return TEXTURE_INSTANCES.get(descriptor);
-
-        byte[] data = this.extract(descriptor);
-        if (data == null) return null;
-        BufferedImage texture = null;
-        try {
-            RTexture resource = new RTexture(new Resource(data));
-            texture = resource.getImage();
-        }
-        catch (Exception ex) { return null; }
-
-        TEXTURE_INSTANCES.put(descriptor, texture);
-
-        return texture;
-    }
-
-    public void cleanupResources() {
-        // Cleanup any unused meshes
-        for (int i = 0; i < MESH_INSTANCES.keySet().size(); i++) {
-            ResourceDescriptor descriptor = (ResourceDescriptor)MESH_INSTANCES.keySet().stream().toArray()[i];
-            boolean contained = false;
-            for (Entity entity : entities) {
-                if (entity instanceof Mesh && descriptor.equals(((Mesh)entity).mesh)) {
-                    contained = true;
-                    break;
-                }
-            }
-            if (!contained)
-                MESH_INSTANCES.remove(descriptor);
-        }
-
-        // Cleanup any unused textures
-        ArrayList<ResourceDescriptor> USED_TEXTURES = new ArrayList<>();
-        for (RGfxMaterial material : GFX_INSTANCES.values()) {
-            for (int i = 0; i < 8; ++i)
-                if (material.textures[i] != null)
-                    USED_TEXTURES.add(material.textures[i]);
-        }
-
-        for (ResourceDescriptor texture : TEXTURE_INSTANCES.keySet()) {
-            if (!USED_TEXTURES.contains(texture))
-                TEXTURE_INSTANCES.remove(texture);
-        }
-    }
-
-    public byte[] extract(ResourceDescriptor descriptor) {
-        if (descriptor == null) return null;
-
-        SHA1 sha1;
-        if (descriptor.isGUID()) {
-            FileDBRow row = this.MAP.get(descriptor.getGUID());
-            if (row == null) return null;
-            sha1 = row.getSHA1();
-        } else sha1 = descriptor.getSHA1();
-
-        for (FileArchive archive : this.FARCs) {
-            if (archive.exists(sha1))
-                return archive.extract(sha1);
-        }
-
-        return this.BIGFART.extract(sha1);
-    }
-
     public void setupList()
     {
         entries.clear();
 
-        if(MAP != null && !FARCs.isEmpty())
-            for(FileArchive farc : FARCs)
-                for(FileDBRow entry : MAP.entries)
+        if(LoadedData.MAP != null && !LoadedData.FARCs.isEmpty())
+            for(FileArchive farc : LoadedData.FARCs)
+                for(FileDBRow entry : LoadedData.MAP.entries)
                     if (farc.exists(entry.getSHA1()))
                         entries.add(entry);
 
-        if(BIGFART != null)
-            for(SaveEntry ent : BIGFART.entries)
+        if(LoadedData.BIGFART != null)
+            for(SaveEntry ent : LoadedData.BIGFART.entries)
                 entries.add(ent);
     }
 
     public FileEntry getSourceEntry(ResourceDescriptor descriptor) {
         if (descriptor == null) return null;
-        if (descriptor.isGUID()) return this.MAP.get(descriptor.getGUID());
+        if (descriptor.isGUID()) return LoadedData.MAP.get(descriptor.getGUID());
         SHA1 sha1 = descriptor.getSHA1();
         for (FileEntry entry : this.entries)
             if (entry.getSHA1().equals(sha1))
@@ -1535,9 +1426,10 @@ public class View3D implements ILogic {
             {
                 case 0:
                 {
-                    Thing[] boneThings = new Thing[((Mesh)entity).mesh.getBones().length];
+                    Mesh mesh = (Mesh)entity;
+                    Thing[] boneThings = new Thing[mesh.skeleton.length];
 
-                    for(int i = 0; i < ((Mesh)entity).mesh.getBones().length; i++)
+                    for(int i = 0; i < mesh.skeleton.length; i++)
                     {
                         Thing boneThing = new Thing(UID);
                         boneThing.parent = lighting;
@@ -1546,9 +1438,9 @@ public class View3D implements ILogic {
                         UID++;
                     }
 
-                    boneThings = SkeletonUtils.computeBoneThings(boneThings, thing, new Matrix4f(((PPos)thing.getPart(Part.POS)).worldPosition), ((Mesh)entity).mesh.getBones());
+                    boneThings = SkeletonUtils.computeBoneThings(boneThings, thing, new Matrix4f(((PPos)thing.getPart(Part.POS)).worldPosition), mesh.skeleton);
 
-                    PRenderMesh renderMesh = new PRenderMesh(((Mesh)entity).meshDescriptor);
+                    PRenderMesh renderMesh = new PRenderMesh(mesh.meshDescriptor);
                     renderMesh.boneThings = boneThings;
                     renderMesh.castShadows = ShadowType.ALWAYS;
                     thing.setPart(Part.RENDER_MESH, renderMesh);
@@ -1575,7 +1467,7 @@ public class View3D implements ILogic {
                 case 3:
                 {
                     ResourceDescriptor soundObjectMeshDescriptor = new ResourceDescriptor(95344l, ResourceType.MESH);
-                    RMesh soundObjectMesh = loadMesh(soundObjectMeshDescriptor);
+                    RMesh soundObjectMesh = LoadedData.loadMesh(soundObjectMeshDescriptor);
                     Thing[] boneThings = new Thing[soundObjectMesh.getBones().length];
 
                     for(int i = 0; i < soundObjectMesh.getBones().length; i++)
@@ -1692,9 +1584,10 @@ public class View3D implements ILogic {
                 if(renderMesh.mesh.isHash())
                     name = name.substring(name.length() - 12);
 
-                addMesh(
+                addMeshBoned(
                         name.substring(0, name.lastIndexOf(".")),
                         renderMesh.mesh,
+                        renderMesh.boneThings,
                         ppos.worldPosition
                 );
             }
