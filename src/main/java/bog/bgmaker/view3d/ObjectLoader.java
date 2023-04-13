@@ -186,7 +186,8 @@ public class ObjectLoader {
         for (Primitive[] primitives : mesh.getSubmeshes())
             for (Primitive primitiveSubmesh : primitives) {
                 Model model = loadSubmesh(mesh, primitiveSubmesh);
-                model.material = LoadedData.getMaterial(primitiveSubmesh.getMaterial(), this);
+                ResourceDescriptor mat = primitiveSubmesh.getMaterial();
+                model.material = LoadedData.getMaterial(mat, this);
                 models.add(model);
             }
         return models;
@@ -208,28 +209,35 @@ public class ObjectLoader {
             }
 
             int channel = 0;
-            RGfxMaterial material = LoadedData.loadGfxMaterial(submesh.getMaterial());
 
-            if (material != null)
-                for (int k = 0; k < material.boxes.size(); k++) {
-                    MaterialBox box = material.boxes.get(k);
-                    MaterialWire wire = material.findWireFrom(k);
+            ResourceDescriptor mat = submesh.getMaterial();
+
+            if(mat != null) {
+                RGfxMaterial material = LoadedData.loadGfxMaterial(mat);
+
+                if (material != null)
+                {
                     int outputBox = material.getOutputBox();
-                    if (box.type == 1) {
-                        while (wire.boxTo != outputBox)
-                            wire = material.findWireFrom(wire.boxTo);
-                        if (wire.portTo == 0) {
-                            channel = box.getParameters()[4];
+                    for (int k = 0; k < material.boxes.size(); k++) {
+                        MaterialBox box = material.boxes.get(k);
+                        MaterialWire wire = material.findWireFrom(k);
+                        if (box.type == 1) {
+                            while (wire.boxTo != outputBox)
+                                wire = material.findWireFrom(wire.boxTo);
+                            if (wire.portTo == 0) {
+                                channel = box.getParameters()[4];
+                            }
                         }
                     }
                 }
 
-//            if (material != null) {
-//                int output = material.getOutputBox();
-//                MaterialBox outBox = material.getBoxConnectedToPort(output, 0);
-//                if(outBox.isTexture())
-//                    channel = outBox.getParameters()[4];
-//            }
+//                if (material != null) {
+//                    int output = material.getOutputBox();
+//                    MaterialBox outBox = material.getBoxConnectedToPort(output, 0);
+//                    if(outBox.isTexture())
+//                        channel = outBox.getParameters()[4];
+//                }
+            }
 
             for (Vector2f texture : mastermesh.getUVs(channel)) {
                 Vector2f texturesVec = new Vector2f(texture.x, 1.0F - texture.y);

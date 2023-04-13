@@ -822,7 +822,7 @@ public class View3D implements ILogic {
                                     matrix[4], matrix[5], matrix[6], matrix[7],
                                     matrix[8], matrix[9], matrix[10], matrix[11],
                                     matrix[12], matrix[13], matrix[14], matrix[15]));
-                }catch (Exception e){e.printStackTrace();return;}
+                }catch (Exception e){e.printStackTrace();}
             }
             else if (parts[0].equalsIgnoreCase("1"))
             {
@@ -866,7 +866,7 @@ public class View3D implements ILogic {
                             matrix[4], matrix[5], matrix[6], matrix[7],
                             matrix[8], matrix[9], matrix[10], matrix[11],
                             matrix[12], matrix[13], matrix[14], matrix[15]));
-                }catch (Exception e){e.printStackTrace();return;}
+                }catch (Exception e){e.printStackTrace();}
             }
         }
     }

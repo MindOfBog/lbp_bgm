@@ -973,10 +973,6 @@ public class ElementEditing extends GuiScreen {
                     move.isClicked,
                     rotate.isClicked,
                     scale.isClicked);
-
-            for (int i = 0; i < mainView.entities.size(); i++)
-                if(mainView.entities.get(i).getType() == 0 || mainView.entities.get(i).getType() == 1)
-                    mainView.entities.get(i).testForMouse = true;
         }
 
         if(!mouseInput.inWindow || overElement)
@@ -1255,6 +1251,10 @@ public class ElementEditing extends GuiScreen {
     @Override
     public boolean onClick(Vector2d pos, int button, int action, int mods) {
         boolean onclick = super.onClick(pos, button, action, mods);
+
+        for (int i = 0; i < mainView.entities.size(); i++)
+            if(mainView.entities.get(i).getType() == 0 || mainView.entities.get(i).getType() == 1)
+                mainView.entities.get(i).testForMouse = true;
 
         boolean overElement = false;
         boolean hasSelection = false;

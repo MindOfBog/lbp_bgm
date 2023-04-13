@@ -88,8 +88,10 @@ public class Mesh extends Entity{
                 }
                 try {
                     this.model = this.loader.loadRMeshArr(mesh);
-                }catch (Exception e){}
-                LoadedData.loadedModels.put(this.meshDescriptor, this.model);
+                }catch (Exception e){e.printStackTrace();}
+
+                if(this.model != null)
+                    LoadedData.loadedModels.put(this.meshDescriptor, this.model);
             }
         }
         return this.model;

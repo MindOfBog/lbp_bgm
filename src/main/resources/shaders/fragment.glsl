@@ -120,10 +120,15 @@ void setupColors()
 {
     //%&AMBIENTC
 
-    ambientC.r = min(ambientC.r, 1.0);
-    ambientC.g = min(ambientC.g, 1.0);
-    ambientC.b = min(ambientC.b, 1.0);
-    ambientC.a = min(ambientC.a, 1.0);
+    vec4 cT = texture2D(textureSampler[0], fragTextureCoord);
+
+    if(cT.x != -5)
+    {
+        ambientC.r = min(ambientC.r, 1.0);
+        ambientC.g = min(ambientC.g, 1.0);
+        ambientC.b = min(ambientC.b, 1.0);
+        ambientC.a = min(ambientC.a, 1.0);
+    }
 
     if(ambientC.a < 0.4)
     {
