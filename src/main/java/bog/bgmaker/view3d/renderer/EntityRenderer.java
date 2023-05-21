@@ -12,7 +12,7 @@ import bog.bgmaker.view3d.managers.ShaderMan;
 import bog.bgmaker.view3d.managers.WindowMan;
 import bog.bgmaker.view3d.renderer.gui.ingredients.Quad;
 import bog.bgmaker.view3d.renderer.gui.ingredients.TriStrip;
-import bog.bgmaker.view3d.utils.Const;
+import bog.bgmaker.view3d.utils.Config;
 import bog.bgmaker.view3d.utils.Transformation;
 import bog.bgmaker.view3d.utils.Utils;
 import org.joml.*;
@@ -327,8 +327,8 @@ public class EntityRenderer implements IRenderer{
 
         shader.bind();
         shader.setUniform("projectionMatrix", projection);
-        shader.setUniform("ambientLight", Const.AMBIENT_LIGHT);
-        shader.setUniform("specularPower", Const.SPECULAR_POWER);
+        shader.setUniform("ambientLight", Config.AMBIENT_LIGHT);
+        shader.setUniform("specularPower", Config.SPECULAR_POWER);
         shader.setUniform("directionalLights", directionalLights.toArray(DirectionalLight[]::new));
         shader.setUniform("directionalLightsSize", directionalLights.size());
         shader.setUniform("pointLights", pointLights);
@@ -444,7 +444,7 @@ public class EntityRenderer implements IRenderer{
             GL11.glColorMask(false, false, false, false);
 
             //render FBO for stencil
-            drawOutline(outlineFB, outlineCT, shaderOutlineVertical, shader, true, 1, 0, Const.OUTLINE_COLOR);
+            drawOutline(outlineFB, outlineCT, shaderOutlineVertical, shader, true, 1, 0, Config.OUTLINE_COLOR);
 
             GL11.glColorMask(true, true, true, true);
 
@@ -453,12 +453,12 @@ public class EntityRenderer implements IRenderer{
             GL11.glDisable(GL11.GL_DEPTH_TEST);
             GL11.glStencilOp(GL11.GL_KEEP, GL11.GL_KEEP, GL11.GL_KEEP);
 
-            int radius = Math.round((Const.OUTLINE_DISTANCE * 2f - 1f) * 10f);
+            int radius = Math.round((Config.OUTLINE_DISTANCE * 2f - 1f) * 10f);
 
             bindFrameBuffer(outlineFB);
-            drawOutline(outlineFB, outlineCT, shaderOutlineVertical, shader, false, window.height, radius, Const.OUTLINE_COLOR);
+            drawOutline(outlineFB, outlineCT, shaderOutlineVertical, shader, false, window.height, radius, Config.OUTLINE_COLOR);
             unbindFrameBuffer();
-            drawOutline(outlineFB, outlineCT, shaderOutlineHorizontal, shader, false, window.width, radius, Const.OUTLINE_COLOR);
+            drawOutline(outlineFB, outlineCT, shaderOutlineHorizontal, shader, false, window.width, radius, Config.OUTLINE_COLOR);
 
             bindFrameBuffer(outlineFB);
             bindColorTex(outlineCT);
@@ -553,7 +553,7 @@ public class EntityRenderer implements IRenderer{
             GL20.glEnableVertexAttribArray(4);
         }
 
-        if(model.material.disableCulling || Const.NO_CULLING)
+        if(model.material.disableCulling || Config.NO_CULLING)
             RenderMan.disableCulling();
         else
             RenderMan.enableCulling();

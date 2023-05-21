@@ -2,7 +2,7 @@ package bog.bgmaker.view3d.managers;
 
 import bog.bgmaker.Main;
 import bog.bgmaker.view3d.ObjectLoader;
-import bog.bgmaker.view3d.utils.Const;
+import bog.bgmaker.view3d.utils.Config;
 import org.joml.Matrix4f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -164,13 +164,13 @@ public class WindowMan {
     public Matrix4f updateProjectionMatrix()
     {
         float aspectRatio = ((width == 0 ? 1f : (float) width) / (height == 0 ? 1f : (float) height));
-        return projectionMatrix.setPerspective(Const.FOV, aspectRatio, Const.Z_NEAR, Const.Z_FAR);
+        return projectionMatrix.setPerspective(Config.FOV, aspectRatio, Config.Z_NEAR, Config.Z_FAR);
     }
 
     public Matrix4f updateProjectionMatrix(Matrix4f matrix, int width, int height)
     {
         float aspectRatio = ((width == 0 ? 1f : (float) width) / (height == 0 ? 1f : (float) height));
-        return matrix.setPerspective(Const.FOV, aspectRatio, Const.Z_NEAR, Const.Z_FAR);
+        return matrix.setPerspective(Config.FOV, aspectRatio, Config.Z_NEAR, Config.Z_FAR);
     }
 
     public void setTitle(String title) {

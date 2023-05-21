@@ -1,11 +1,10 @@
 package bog.bgmaker;
 
-import bog.bgmaker.view3d.ObjectLoader;
 import bog.bgmaker.view3d.mainWindow.LoadedData;
 import bog.bgmaker.view3d.mainWindow.View3D;
 import bog.bgmaker.view3d.managers.EngineMan;
 import bog.bgmaker.view3d.managers.WindowMan;
-import bog.bgmaker.view3d.utils.Const;
+import bog.bgmaker.view3d.utils.Config;
 import com.github.weisj.darklaf.LafManager;
 import com.github.weisj.darklaf.theme.DarculaTheme;
 
@@ -26,8 +25,10 @@ public class Main {
 
     public static void main(String args[]) {
 
+        Config.init();
+
         LafManager.install(new DarculaTheme());
-        window = new WindowMan(Const.TITLE, 1280, 720);
+        window = new WindowMan(Config.TITLE, 1280, 720);
         view = new View3D(window);
         engine = new EngineMan();
         debug = args.length > 0 && args[0].equalsIgnoreCase("debug");

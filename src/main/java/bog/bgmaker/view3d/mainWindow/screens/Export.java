@@ -5,7 +5,7 @@ import bog.bgmaker.view3d.managers.MouseInput;
 import bog.bgmaker.view3d.renderer.gui.GuiScreen;
 import bog.bgmaker.view3d.renderer.gui.elements.Button;
 import bog.bgmaker.view3d.renderer.gui.elements.*;
-import bog.bgmaker.view3d.utils.Const;
+import bog.bgmaker.view3d.utils.Config;
 import common.FileChooser;
 import cwlib.types.Resource;
 import cwlib.types.data.GUID;
@@ -14,7 +14,6 @@ import org.joml.Vector2d;
 import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
 
-import java.awt.*;
 import java.io.File;
 import java.nio.file.Files;
 
@@ -191,13 +190,13 @@ public class Export extends GuiScreen {
 
     @Override
     public void draw(MouseInput mouseInput) {
-        drawRect(mainView.window.width / 2 - 200, mainView.window.height / 2 - 112, 400, 223, Const.PRIMARY_COLOR);
-        drawRectOutline(mainView.window.width / 2 - 200, mainView.window.height / 2 - 112, 400, 223, Const.SECONDARY_COLOR, false);
-        drawString("Title:", Const.FONT_COLOR, mainView.window.width / 2 - 193, mainView.window.height / 2 - 107 + (getFontHeight(10) + 4) / 2 - getFontHeight(10) / 2, 10);
-        drawString("Description:", Const.FONT_COLOR, mainView.window.width / 2 - 193, mainView.window.height / 2 - 102 + getFontHeight(10) + (getFontHeight(10) * 4 + 4) / 2 - getFontHeight(10) / 2, 10);
-        drawString("Creator:", Const.FONT_COLOR, mainView.window.width / 2 - 193, mainView.window.height / 2 - 89 + getFontHeight(10) * 5 + (getFontHeight(10) + 4) / 2 - getFontHeight(10) / 2, 10);
-        drawString("Icon:", Const.FONT_COLOR, mainView.window.width / 2 - 193, mainView.window.height / 2 - 81 + getFontHeight(10) * 6 + (getFontHeight(10) + 4) / 2 - getFontHeight(10) / 2, 10);
-        drawString("Restriction:", Const.FONT_COLOR, mainView.window.width / 2 - 193, mainView.window.height / 2 - 73 + getFontHeight(10) * 7 + (getFontHeight(10) + 4) / 2 - getFontHeight(10) / 2, 10);
+        drawRect(mainView.window.width / 2 - 200, mainView.window.height / 2 - 112, 400, 223, Config.PRIMARY_COLOR);
+        drawRectOutline(mainView.window.width / 2 - 200, mainView.window.height / 2 - 112, 400, 223, Config.SECONDARY_COLOR, false);
+        drawString("Title:", Config.FONT_COLOR, mainView.window.width / 2 - 193, mainView.window.height / 2 - 107 + (getFontHeight(10) + 4) / 2 - getFontHeight(10) / 2, 10);
+        drawString("Description:", Config.FONT_COLOR, mainView.window.width / 2 - 193, mainView.window.height / 2 - 102 + getFontHeight(10) + (getFontHeight(10) * 4 + 4) / 2 - getFontHeight(10) / 2, 10);
+        drawString("Creator:", Config.FONT_COLOR, mainView.window.width / 2 - 193, mainView.window.height / 2 - 89 + getFontHeight(10) * 5 + (getFontHeight(10) + 4) / 2 - getFontHeight(10) / 2, 10);
+        drawString("Icon:", Config.FONT_COLOR, mainView.window.width / 2 - 193, mainView.window.height / 2 - 81 + getFontHeight(10) * 6 + (getFontHeight(10) + 4) / 2 - getFontHeight(10) / 2, 10);
+        drawString("Restriction:", Config.FONT_COLOR, mainView.window.width / 2 - 193, mainView.window.height / 2 - 73 + getFontHeight(10) * 7 + (getFontHeight(10) + 4) / 2 - getFontHeight(10) / 2, 10);
         super.draw(mouseInput);
     }
 }

@@ -1,7 +1,7 @@
 package bog.bgmaker.view3d.core;
 
 import bog.bgmaker.view3d.managers.ShaderMan;
-import bog.bgmaker.view3d.utils.Const;
+import bog.bgmaker.view3d.utils.Config;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -24,9 +24,9 @@ public class Material {
 
     public Material()
     {
-        this.ambientColor = new Vector4f[]{Const.DEFAULT_COLOR};
-        this.diffuseColor = new Vector4f[]{Const.DEFAULT_COLOR};
-        this.specularColor = new Vector4f[]{Const.DEFAULT_COLOR};
+        this.ambientColor = new Vector4f[]{Config.DEFAULT_COLOR};
+        this.diffuseColor = new Vector4f[]{Config.DEFAULT_COLOR};
+        this.specularColor = new Vector4f[]{Config.DEFAULT_COLOR};
         this.textures = null;
         this.disableCulling = false;
         this.reflectance = 0f;
@@ -54,7 +54,7 @@ public class Material {
 
     public Material(Texture[] textures)
     {
-        this(Const.DEFAULT_COLOR, Const.DEFAULT_COLOR, Const.DEFAULT_COLOR, 0f, textures);
+        this(Config.DEFAULT_COLOR, Config.DEFAULT_COLOR, Config.DEFAULT_COLOR, 0f, textures);
     }
 
     public Material(Vector4f ambientColor, Vector4f diffuseColor, Vector4f specularColor, float reflectance, Texture[] textures)
@@ -96,8 +96,8 @@ public class Material {
 
     public void setupUniforms(Matrix4f projection, ArrayList<DirectionalLight> directionalLights, ArrayList<PointLight> pointLights, ArrayList<SpotLight> spotLights) {
         customShader.setUniform("projectionMatrix", projection);
-        customShader.setUniform("ambientLight", Const.AMBIENT_LIGHT);
-        customShader.setUniform("specularPower", Const.SPECULAR_POWER);
+        customShader.setUniform("ambientLight", Config.AMBIENT_LIGHT);
+        customShader.setUniform("specularPower", Config.SPECULAR_POWER);
         customShader.setUniform("directionalLights", directionalLights.toArray(DirectionalLight[]::new));
         customShader.setUniform("directionalLightsSize", directionalLights.size());
         customShader.setUniform("pointLights", pointLights);

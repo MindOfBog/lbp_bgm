@@ -4,7 +4,7 @@ import bog.bgmaker.view3d.ObjectLoader;
 import bog.bgmaker.view3d.managers.MouseInput;
 import bog.bgmaker.view3d.managers.RenderMan;
 import bog.bgmaker.view3d.managers.WindowMan;
-import bog.bgmaker.view3d.utils.Const;
+import bog.bgmaker.view3d.utils.Config;
 import org.joml.Vector2d;
 import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
@@ -63,7 +63,7 @@ public class Textbox extends Element{
         super.draw(mouseInput, overOther);
 
         startScissor((int)pos.x, (int)pos.y, (int)size.x, (int)size.y);
-        drawRect((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, isMouseOverElement(mouseInput) && !overOther || this.isFocused() ? Const.INTERFACE_SECONDARY_COLOR : Const.INTERFACE_PRIMARY_COLOR);
+        drawRect((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, isMouseOverElement(mouseInput) && !overOther || this.isFocused() ? Config.INTERFACE_SECONDARY_COLOR : Config.INTERFACE_PRIMARY_COLOR);
 
         float xScroll = 0;
         if(!this.isFocused())
@@ -137,7 +137,7 @@ public class Textbox extends Element{
                 drawRect((int) (xScroll + pos.x + getStringWidth(text.substring(0, currentSelection), fontSize) + this.size.y/2 - getFontHeight(fontSize)/2), (int) (pos.y + this.size.y/2 - getFontHeight(fontSize)/2 - 1), 1, (int) (getFontHeight(fontSize)), textColor());
             }catch (Exception e){}
         }
-        drawRectOutline((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, isMouseOverElement(mouseInput) && !overOther || this.isFocused() ? Const.INTERFACE_SECONDARY_COLOR2 : Const.INTERFACE_PRIMARY_COLOR2, false);
+        drawRectOutline((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, isMouseOverElement(mouseInput) && !overOther || this.isFocused() ? Config.INTERFACE_SECONDARY_COLOR2 : Config.INTERFACE_PRIMARY_COLOR2, false);
         endScissor();
     }
 
@@ -508,7 +508,7 @@ public class Textbox extends Element{
 
     public Color textColor()
     {
-        return Const.FONT_COLOR;
+        return Config.FONT_COLOR;
     }
 
     public void setText(String text)

@@ -4,12 +4,10 @@ import bog.bgmaker.view3d.ObjectLoader;
 import bog.bgmaker.view3d.managers.MouseInput;
 import bog.bgmaker.view3d.managers.RenderMan;
 import bog.bgmaker.view3d.managers.WindowMan;
-import bog.bgmaker.view3d.utils.Const;
+import bog.bgmaker.view3d.utils.Config;
 import org.joml.Vector2d;
 import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
-
-import java.awt.*;
 
 /**
  * @author Bog
@@ -43,13 +41,13 @@ public class Checkbox extends Element{
     public void draw(MouseInput mouseInput, boolean overElement) {
         super.draw(mouseInput, overElement);
 
-        drawRect((int) Math.floor(pos.x + (size.y * 0.10f)/2), (int) Math.floor(pos.y + (size.y * 0.10f)/2), (int) Math.floor(size.y * 0.90f), (int) Math.floor(size.y * 0.90f), isMouseOverElement(mouseInput) ? Const.INTERFACE_SECONDARY_COLOR : Const.INTERFACE_PRIMARY_COLOR);
-        drawRectOutline((int) Math.floor(pos.x + (size.y * 0.10f)/2), (int) Math.floor(pos.y + (size.y * 0.10f)/2), (int) Math.floor(size.y * 0.90f), (int) Math.floor(size.y * 0.90f), isMouseOverElement(mouseInput) ? Const.INTERFACE_SECONDARY_COLOR2 : Const.INTERFACE_PRIMARY_COLOR2, false);
+        drawRect((int) Math.floor(pos.x + (size.y * 0.10f)/2), (int) Math.floor(pos.y + (size.y * 0.10f)/2), (int) Math.floor(size.y * 0.90f), (int) Math.floor(size.y * 0.90f), isMouseOverElement(mouseInput) ? Config.INTERFACE_SECONDARY_COLOR : Config.INTERFACE_PRIMARY_COLOR);
+        drawRectOutline((int) Math.floor(pos.x + (size.y * 0.10f)/2), (int) Math.floor(pos.y + (size.y * 0.10f)/2), (int) Math.floor(size.y * 0.90f), (int) Math.floor(size.y * 0.90f), isMouseOverElement(mouseInput) ? Config.INTERFACE_SECONDARY_COLOR2 : Config.INTERFACE_PRIMARY_COLOR2, false);
 
         if(isChecked)
-            drawRect((int) Math.floor(pos.x + (size.y * 0.90f * 0.275f)), (int) Math.floor(pos.y + (size.y * 0.90f * 0.275f)), (int) Math.floor(size.y * 0.90f * 0.45f), (int) Math.floor(size.y * 0.90f * 0.45f), Const.FONT_COLOR);
+            drawRect((int) Math.floor(pos.x + (size.y * 0.90f * 0.275f)), (int) Math.floor(pos.y + (size.y * 0.90f * 0.275f)), (int) Math.floor(size.y * 0.90f * 0.45f), (int) Math.floor(size.y * 0.90f * 0.45f), Config.FONT_COLOR);
 
-        drawString(text, Const.FONT_COLOR, (int) (pos.x + (size.y * 0.90f) * 1.25f), (int) (pos.y + size.y / 2 - getFontHeight(fontSize) / 2), fontSize);
+        drawString(text, Config.FONT_COLOR, (int) (pos.x + (size.y * 0.90f) * 1.25f), (int) (pos.y + size.y / 2 - getFontHeight(fontSize) / 2), fontSize);
 
     }
 

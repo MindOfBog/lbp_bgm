@@ -4,7 +4,7 @@ import bog.bgmaker.view3d.ObjectLoader;
 import bog.bgmaker.view3d.managers.MouseInput;
 import bog.bgmaker.view3d.managers.RenderMan;
 import bog.bgmaker.view3d.managers.WindowMan;
-import bog.bgmaker.view3d.utils.Const;
+import bog.bgmaker.view3d.utils.Config;
 import org.joml.Vector2d;
 import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
@@ -44,7 +44,7 @@ public class Textarea extends Element{
         super.draw(mouseInput, overOther);
 
         startScissor((int)pos.x, (int)pos.y, (int)size.x, (int)size.y);
-        drawRect((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, isMouseOverElement(mouseInput) && !overOther || this.isFocused() ? Const.INTERFACE_SECONDARY_COLOR : Const.INTERFACE_PRIMARY_COLOR);
+        drawRect((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, isMouseOverElement(mouseInput) && !overOther || this.isFocused() ? Config.INTERFACE_SECONDARY_COLOR : Config.INTERFACE_PRIMARY_COLOR);
 
         float xScroll = 0;
         float yScroll = 0;
@@ -103,7 +103,7 @@ public class Textarea extends Element{
 
             if((int)(pos.y + getFontHeight(fontSize) / 2 + (getFontHeight(fontSize) + 2) * o - yScroll) > pos.y - getFontHeight(fontSize) &&
                     (int)(pos.y + getFontHeight(fontSize) / 2 + (getFontHeight(fontSize) + 2) * o - yScroll) + getFontHeight(fontSize) < pos.y + size.y + getFontHeight(fontSize))
-                drawString(line, Const.FONT_COLOR, (int)(pos.x + xScroll + getFontHeight(fontSize) / 2), (int)(pos.y + getFontHeight(fontSize) / 2 + (getFontHeight(fontSize) + 2) * o - yScroll), fontSize, begin, end);
+                drawString(line, Config.FONT_COLOR, (int)(pos.x + xScroll + getFontHeight(fontSize) / 2), (int)(pos.y + getFontHeight(fontSize) / 2 + (getFontHeight(fontSize) + 2) * o - yScroll), fontSize, begin, end);
 
             try {
                 int curSel = currentSelection - currentLength;
@@ -152,9 +152,9 @@ public class Textarea extends Element{
 
                 if(350 > System.currentTimeMillis() % 500 && isFocused())
                     if(currentSelection - currentLength == line.length())
-                        drawString("_", Const.FONT_COLOR, (int) (pos.x + xScroll + getStringWidth(line, fontSize) + 1 + getFontHeight(fontSize)/2), (int) (pos.y + getFontHeight(fontSize)/2 + (getFontHeight(fontSize) + 2) * o - yScroll), fontSize);
+                        drawString("_", Config.FONT_COLOR, (int) (pos.x + xScroll + getStringWidth(line, fontSize) + 1 + getFontHeight(fontSize)/2), (int) (pos.y + getFontHeight(fontSize)/2 + (getFontHeight(fontSize) + 2) * o - yScroll), fontSize);
                     else if(currentSelection - currentLength >= 0 && currentSelection - currentLength <= line.length())
-                        drawRect((int) (xScroll + pos.x + getStringWidth(line.substring(0, curSel), fontSize) + getFontHeight(fontSize)/2), (int) (pos.y + getFontHeight(fontSize)/2 - 1 + (getFontHeight(fontSize) + 2) * o - yScroll), 1, (int) (getFontHeight(fontSize)), Const.FONT_COLOR);
+                        drawRect((int) (xScroll + pos.x + getStringWidth(line.substring(0, curSel), fontSize) + getFontHeight(fontSize)/2), (int) (pos.y + getFontHeight(fontSize)/2 - 1 + (getFontHeight(fontSize) + 2) * o - yScroll), 1, (int) (getFontHeight(fontSize)), Config.FONT_COLOR);
 
             }catch(Exception e)
             {
@@ -164,7 +164,7 @@ public class Textarea extends Element{
             }
             currentLength += line.length() + 1;
         }
-        drawRectOutline((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, isMouseOverElement(mouseInput) && !overOther || this.isFocused() ? Const.INTERFACE_SECONDARY_COLOR2 : Const.INTERFACE_PRIMARY_COLOR2, false);
+        drawRectOutline((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, isMouseOverElement(mouseInput) && !overOther || this.isFocused() ? Config.INTERFACE_SECONDARY_COLOR2 : Config.INTERFACE_PRIMARY_COLOR2, false);
         endScissor();
 
     }

@@ -5,7 +5,7 @@ import bog.bgmaker.view3d.ObjectLoader;
 import bog.bgmaker.view3d.managers.MouseInput;
 import bog.bgmaker.view3d.managers.RenderMan;
 import bog.bgmaker.view3d.managers.WindowMan;
-import bog.bgmaker.view3d.utils.Const;
+import bog.bgmaker.view3d.utils.Config;
 import org.joml.Vector2d;
 import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
@@ -48,19 +48,19 @@ public abstract class ButtonImage extends Element{
         if(!isMouseOverElement(mouseInput) || overOther)
             setClicked(false);
 
-        Color c = Const.INTERFACE_PRIMARY_COLOR;
-        Color c2 = Const.INTERFACE_PRIMARY_COLOR2;
+        Color c = Config.INTERFACE_PRIMARY_COLOR;
+        Color c2 = Config.INTERFACE_PRIMARY_COLOR2;
 
         if(isMouseOverElement(mouseInput) && !overOther)
         {
-            c = Const.INTERFACE_SECONDARY_COLOR;
-            c2 = Const.INTERFACE_SECONDARY_COLOR2;
+            c = Config.INTERFACE_SECONDARY_COLOR;
+            c2 = Config.INTERFACE_SECONDARY_COLOR2;
         }
 
         if(isClicked)
         {
-            c = Const.INTERFACE_TERTIARY_COLOR;
-            c2 = Const.INTERFACE_TERTIARY_COLOR2;
+            c = Config.INTERFACE_TERTIARY_COLOR;
+            c2 = Config.INTERFACE_TERTIARY_COLOR2;
         }
 
         drawRect((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, c);

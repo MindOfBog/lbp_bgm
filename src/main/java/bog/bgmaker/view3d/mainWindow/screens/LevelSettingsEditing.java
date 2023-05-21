@@ -1,14 +1,13 @@
 package bog.bgmaker.view3d.mainWindow.screens;
 
 import bog.bgmaker.view3d.core.Transformation3D;
-import bog.bgmaker.view3d.core.types.Entity;
 import bog.bgmaker.view3d.mainWindow.View3D;
 import bog.bgmaker.view3d.managers.MouseInput;
 import bog.bgmaker.view3d.renderer.gui.GuiScreen;
 import bog.bgmaker.view3d.renderer.gui.elements.Button;
 import bog.bgmaker.view3d.renderer.gui.elements.*;
 import bog.bgmaker.view3d.utils.CWLibUtils.LevelSettingsUtils;
-import bog.bgmaker.view3d.utils.Const;
+import bog.bgmaker.view3d.utils.Config;
 import bog.bgmaker.view3d.utils.Utils;
 import common.FileChooser;
 import cwlib.enums.Part;
@@ -1041,40 +1040,40 @@ public class LevelSettingsEditing extends GuiScreen {
     @Override
     public void draw(MouseInput mouseInput) {
 
-        drawRect(mainView.window.width - 305, 0, 305, mainView.window.height, Const.PRIMARY_COLOR);
-        drawLine(new Vector2i(mainView.window.width - 304, 0), new Vector2i(mainView.window.width - 304, mainView.window.height), Const.SECONDARY_COLOR, false);
-        drawString("Sun Position:", Const.FONT_COLOR, mainView.window.width - 302, 3, 10);
-        drawString("Scale:", Const.FONT_COLOR, mainView.window.width - sunFields - getStringWidth("Scale:", 10), 3 + (getFontHeight(10) + 3) * 1, 10);
-        drawString("X:", Const.FONT_COLOR, mainView.window.width - sunFields - getStringWidth("X:", 10), 3 + (getFontHeight(10) + 3) * 2, 10);
-        drawString("Y:", Const.FONT_COLOR, mainView.window.width - sunFields - getStringWidth("Y:", 10), 3 + (getFontHeight(10) + 3) * 3, 10);
-        drawString("Z:", Const.FONT_COLOR, mainView.window.width - sunFields - getStringWidth("Z:", 10), 3 + (getFontHeight(10) + 3) * 4, 10);
-        drawString("Sun Color:", Const.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 5, 10);
-        drawString("#", Const.FONT_COLOR, mainView.window.width - 108 - getStringWidth("#", 10), 3 + (getFontHeight(10) + 3) * 5, 10);
-        drawString("Sun Multiplier:", Const.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 6, 10);
-        drawString("Ambient Color:", Const.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 7, 10);
-        drawString("#", Const.FONT_COLOR, mainView.window.width - 108 - getStringWidth("#", 10), 3 + (getFontHeight(10) + 3) * 7, 10);
-        drawString("Exposure:", Const.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 8, 10);
-        drawString("Fog Color:", Const.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 9, 10);
-        drawString("#", Const.FONT_COLOR, mainView.window.width - 108 - getStringWidth("#", 10), 3 + (getFontHeight(10) + 3) * 9, 10);
-        drawString("Fog Near:", Const.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 10, 10);
-        drawString("Fog Far:", Const.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 11, 10);
-        drawString("Rim Color:", Const.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 12, 10);
-        drawString("#", Const.FONT_COLOR, mainView.window.width - 108 - getStringWidth("#", 10), 3 + (getFontHeight(10) + 3) * 12, 10);
-        drawString("Rim Color 2:", Const.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 13, 10);
-        drawString("#", Const.FONT_COLOR, mainView.window.width - 108 - getStringWidth("#", 10), 3 + (getFontHeight(10) + 3) * 13, 10);
-        drawString("Baked Shadow Amount:", Const.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 14, 10);
-        drawString("Baked Shadow Blur:", Const.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 15, 10);
-        drawString("Baked AO Bias:", Const.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 16, 10);
-        drawString("Baked AO Scale:", Const.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 17, 10);
-        drawString("Dynamic AO Amount:", Const.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 18, 10);
-        drawString("DOF Near:", Const.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 19, 10);
-        drawString("DOF Far:", Const.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 20, 10);
-        drawString("Z Effect Amount:", Const.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 21, 10);
-        drawString("Z Effect Brightness:", Const.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 22, 10);
-        drawString("Z Effect Contrast:", Const.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 23, 10);
+        drawRect(mainView.window.width - 305, 0, 305, mainView.window.height, Config.PRIMARY_COLOR);
+        drawLine(new Vector2i(mainView.window.width - 304, 0), new Vector2i(mainView.window.width - 304, mainView.window.height), Config.SECONDARY_COLOR, false);
+        drawString("Sun Position:", Config.FONT_COLOR, mainView.window.width - 302, 3, 10);
+        drawString("Scale:", Config.FONT_COLOR, mainView.window.width - sunFields - getStringWidth("Scale:", 10), 3 + (getFontHeight(10) + 3) * 1, 10);
+        drawString("X:", Config.FONT_COLOR, mainView.window.width - sunFields - getStringWidth("X:", 10), 3 + (getFontHeight(10) + 3) * 2, 10);
+        drawString("Y:", Config.FONT_COLOR, mainView.window.width - sunFields - getStringWidth("Y:", 10), 3 + (getFontHeight(10) + 3) * 3, 10);
+        drawString("Z:", Config.FONT_COLOR, mainView.window.width - sunFields - getStringWidth("Z:", 10), 3 + (getFontHeight(10) + 3) * 4, 10);
+        drawString("Sun Color:", Config.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 5, 10);
+        drawString("#", Config.FONT_COLOR, mainView.window.width - 108 - getStringWidth("#", 10), 3 + (getFontHeight(10) + 3) * 5, 10);
+        drawString("Sun Multiplier:", Config.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 6, 10);
+        drawString("Ambient Color:", Config.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 7, 10);
+        drawString("#", Config.FONT_COLOR, mainView.window.width - 108 - getStringWidth("#", 10), 3 + (getFontHeight(10) + 3) * 7, 10);
+        drawString("Exposure:", Config.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 8, 10);
+        drawString("Fog Color:", Config.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 9, 10);
+        drawString("#", Config.FONT_COLOR, mainView.window.width - 108 - getStringWidth("#", 10), 3 + (getFontHeight(10) + 3) * 9, 10);
+        drawString("Fog Near:", Config.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 10, 10);
+        drawString("Fog Far:", Config.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 11, 10);
+        drawString("Rim Color:", Config.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 12, 10);
+        drawString("#", Config.FONT_COLOR, mainView.window.width - 108 - getStringWidth("#", 10), 3 + (getFontHeight(10) + 3) * 12, 10);
+        drawString("Rim Color 2:", Config.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 13, 10);
+        drawString("#", Config.FONT_COLOR, mainView.window.width - 108 - getStringWidth("#", 10), 3 + (getFontHeight(10) + 3) * 13, 10);
+        drawString("Baked Shadow Amount:", Config.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 14, 10);
+        drawString("Baked Shadow Blur:", Config.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 15, 10);
+        drawString("Baked AO Bias:", Config.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 16, 10);
+        drawString("Baked AO Scale:", Config.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 17, 10);
+        drawString("Dynamic AO Amount:", Config.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 18, 10);
+        drawString("DOF Near:", Config.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 19, 10);
+        drawString("DOF Far:", Config.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 20, 10);
+        drawString("Z Effect Amount:", Config.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 21, 10);
+        drawString("Z Effect Brightness:", Config.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 22, 10);
+        drawString("Z Effect Contrast:", Config.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 23, 10);
 
-        drawRect(mainView.window.width - 320 - getStringWidth("Add Presets from .PLAN/.BIN", 10), 0, getStringWidth("Add Presets from .PLAN/.BIN", 10) + 12, 263, Const.PRIMARY_COLOR);
-        drawString("Ambiance:", Const.FONT_COLOR, mainView.window.width - 317 - getStringWidth("Add Presets from .PLAN/.BIN", 10), 224, 10);
+        drawRect(mainView.window.width - 320 - getStringWidth("Add Presets from .PLAN/.BIN", 10), 0, getStringWidth("Add Presets from .PLAN/.BIN", 10) + 12, 263, Config.PRIMARY_COLOR);
+        drawString("Ambiance:", Config.FONT_COLOR, mainView.window.width - 317 - getStringWidth("Add Presets from .PLAN/.BIN", 10), 224, 10);
 
         LevelSettings ls = null;
 

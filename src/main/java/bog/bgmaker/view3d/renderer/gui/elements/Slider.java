@@ -4,13 +4,11 @@ import bog.bgmaker.view3d.ObjectLoader;
 import bog.bgmaker.view3d.managers.MouseInput;
 import bog.bgmaker.view3d.managers.RenderMan;
 import bog.bgmaker.view3d.managers.WindowMan;
-import bog.bgmaker.view3d.utils.Const;
+import bog.bgmaker.view3d.utils.Config;
 import org.joml.Math;
 import org.joml.Vector2d;
 import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
-
-import java.awt.*;
 
 /**
  * @author Bog
@@ -55,9 +53,9 @@ public class Slider extends Element{
             sliderPosition = Math.clamp(0, 100, sliderPosition);
         }
 
-        drawRect((int) pos.x, (int) (pos.y + size.y/2f - size.y * 0.1f), (int) size.x, (int) (size.y * 0.2f), Const.INTERFACE_PRIMARY_COLOR);
-        drawRectOutline((int) pos.x, (int) (pos.y + size.y/2f - size.y * 0.1f), (int) size.x, (int) (size.y * 0.2f), Const.INTERFACE_PRIMARY_COLOR2, false);
-        drawRect((int) (pos.x + (sliderPosition * ((size.x - size.y * 0.1f)/100))), (int) (pos.y), (int) (size.y * 0.2f), (int) size.y, Const.FONT_COLOR);
+        drawRect((int) pos.x, (int) (pos.y + size.y/2f - size.y * 0.1f), (int) size.x, (int) (size.y * 0.2f), Config.INTERFACE_PRIMARY_COLOR);
+        drawRectOutline((int) pos.x, (int) (pos.y + size.y/2f - size.y * 0.1f), (int) size.x, (int) (size.y * 0.2f), Config.INTERFACE_PRIMARY_COLOR2, false);
+        drawRect((int) (pos.x + (sliderPosition * ((size.x - size.y * 0.1f)/100))), (int) (pos.y), (int) (size.y * 0.2f), (int) size.y, Config.FONT_COLOR);
 
     }
 

@@ -1,6 +1,5 @@
 package bog.bgmaker.view3d.mainWindow.screens;
 
-import bog.bgmaker.view3d.core.Model;
 import bog.bgmaker.view3d.core.Transformation3D;
 import bog.bgmaker.view3d.core.types.Entity;
 import bog.bgmaker.view3d.core.types.MaterialPrimitive;
@@ -12,14 +11,13 @@ import bog.bgmaker.view3d.managers.MouseInput;
 import bog.bgmaker.view3d.renderer.gui.GuiScreen;
 import bog.bgmaker.view3d.renderer.gui.elements.Button;
 import bog.bgmaker.view3d.renderer.gui.elements.*;
-import bog.bgmaker.view3d.utils.Const;
+import bog.bgmaker.view3d.utils.Config;
 import bog.bgmaker.view3d.utils.Utils;
 import common.FileChooser;
 import cwlib.enums.Part;
 import cwlib.enums.ResourceType;
 import cwlib.ex.SerializationException;
 import cwlib.resources.RLevel;
-import cwlib.resources.RMesh;
 import cwlib.resources.RPlan;
 import cwlib.structs.things.Thing;
 import cwlib.structs.things.parts.PShape;
@@ -1232,8 +1230,8 @@ public class ElementEditing extends GuiScreen {
                 scale.isClicked,
                 mainView.crosshair, screenPos, mainView.window, mainView.loader, mainView.renderer, mouseInput);
 
-        drawRect(mainView.window.width - 305, 0, 305, mainView.window.height, Const.PRIMARY_COLOR);
-        drawLine(new Vector2i(mainView.window.width - 304, 0), new Vector2i(mainView.window.width - 304, mainView.window.height), Const.SECONDARY_COLOR, false);
+        drawRect(mainView.window.width - 305, 0, 305, mainView.window.height, Config.PRIMARY_COLOR);
+        drawLine(new Vector2i(mainView.window.width - 304, 0), new Vector2i(mainView.window.width - 304, mainView.window.height), Config.SECONDARY_COLOR, false);
 
         super.draw(mouseInput);
     }

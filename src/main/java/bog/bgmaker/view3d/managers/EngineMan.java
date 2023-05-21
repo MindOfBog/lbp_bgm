@@ -2,7 +2,7 @@ package bog.bgmaker.view3d.managers;
 
 import bog.bgmaker.Main;
 import bog.bgmaker.view3d.ILogic;
-import bog.bgmaker.view3d.utils.Const;
+import bog.bgmaker.view3d.utils.Config;
 import bog.bgmaker.view3d.utils.MousePicker;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -16,7 +16,7 @@ public class EngineMan {
     public static int fps = 0;
     public static int avgFPS = 60;
     public static double ms = 0;
-    public static float frameTime = 1f / Math.max(Const.FRAMERATE, 5);
+    public static float frameTime = 1f / Math.max(Config.FRAMERATE, 5);
 
     public boolean isRunning;
     public WindowMan window;
@@ -63,8 +63,8 @@ public class EngineMan {
             long passedTime = startTime - lastTime;
             lastTime = startTime;
 
-            unprocessedTime += passedTime / (double)Const.NANOSECOND;
-            frameTime = 1f / Math.max(Const.FRAMERATE, 1f);
+            unprocessedTime += passedTime / (double) Config.NANOSECOND;
+            frameTime = 1f / Math.max(Config.FRAMERATE, 1f);
 
             while(unprocessedTime > frameTime)
             {

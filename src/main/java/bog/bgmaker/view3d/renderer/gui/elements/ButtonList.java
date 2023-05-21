@@ -4,11 +4,9 @@ import bog.bgmaker.view3d.ObjectLoader;
 import bog.bgmaker.view3d.managers.MouseInput;
 import bog.bgmaker.view3d.managers.RenderMan;
 import bog.bgmaker.view3d.managers.WindowMan;
-import bog.bgmaker.view3d.utils.Const;
-import cwlib.types.databases.FileEntry;
+import bog.bgmaker.view3d.utils.Config;
 import org.joml.Vector2d;
 import org.joml.Vector2f;
-import org.joml.Vector2i;
 import org.lwjgl.glfw.GLFW;
 
 import java.awt.*;
@@ -181,23 +179,23 @@ public abstract class ButtonList<T> extends Element{
     }
     public Color textColor(T object, int index)
     {
-        return Const.FONT_COLOR;
+        return Config.FONT_COLOR;
     }
     public Color buttonColor(T object, int index)
     {
-        return Const.INTERFACE_PRIMARY_COLOR;
+        return Config.INTERFACE_PRIMARY_COLOR;
     }
     public Color buttonColor2(T object, int index)
     {
-        return Const.INTERFACE_PRIMARY_COLOR2;
+        return Config.INTERFACE_PRIMARY_COLOR2;
     }
     public Color buttonColorHighlighted(T object, int index)
     {
-        return Const.INTERFACE_SECONDARY_COLOR;
+        return Config.INTERFACE_SECONDARY_COLOR;
     }
     public Color buttonColorSelected(T object, int index)
     {
-        return Const.INTERFACE_TERTIARY_COLOR;
+        return Config.INTERFACE_TERTIARY_COLOR;
     }
     public void drawButton(int posY, float scrollY, float scrollHeight, int height, T object, int i)
     {

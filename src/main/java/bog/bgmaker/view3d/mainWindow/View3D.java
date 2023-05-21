@@ -23,7 +23,7 @@ import bog.bgmaker.view3d.renderer.gui.ingredients.*;
 import bog.bgmaker.view3d.renderer.gui.ingredients.Triangle;
 import bog.bgmaker.view3d.utils.CWLibUtils.LevelSettingsUtils;
 import bog.bgmaker.view3d.utils.CWLibUtils.SkeletonUtils;
-import bog.bgmaker.view3d.utils.Const;
+import bog.bgmaker.view3d.utils.Config;
 import bog.bgmaker.view3d.utils.MousePicker;
 import bog.bgmaker.view3d.utils.Utils;
 import cwlib.enums.*;
@@ -131,21 +131,21 @@ public class View3D implements ILogic {
         createUI();
 
         borders = loader.loadOBJModel("/models/border.obj");
-        borders.material = new Material(Const.BORDER_COLOR_1, 0f).disableCulling(true);
+        borders.material = new Material(Config.BORDER_COLOR_1, 0f).disableCulling(true);
         BORDERS.add(new Entity(borders, new Vector3f(21219f, 1557f, 10f), new Vector3f(0, 0, 0), new Vector3f(1f, 1f, 1f), loader));
         BORDERS.add(new Entity(borders, new Vector3f(21219f, 1557f, -390f), new Vector3f(0, 0, 0), new Vector3f(1f, 1f, 1f), loader));
 
         borders1 = new Model(borders);
-        borders1.material = new Material(Const.BORDER_COLOR_2, 0f).disableCulling(true);
+        borders1.material = new Material(Config.BORDER_COLOR_2, 0f).disableCulling(true);
         BORDERS.add(new Entity(borders1, new Vector3f(21219f, 1557f, -190f), new Vector3f(0, 0, 0), new Vector3f(1f, 1f, 1f), loader));
 
         borders2 = new Model(borders);
-        borders2.material = new Material(Const.BORDER_COLOR_3, 0f).disableCulling(true);
+        borders2.material = new Material(Config.BORDER_COLOR_3, 0f).disableCulling(true);
         for(int layer = 0; layer < 7; layer++)
             BORDERS.add(new Entity(borders2, new Vector3f(21219f, 1557f, -590f + -400f * layer), new Vector3f(0, 0, 0), new Vector3f(1f, 1f, 1f), loader));
 
         borders3 = new Model(borders);
-        borders3.material = new Material(Const.BORDER_COLOR_4, 0f).disableCulling(true);
+        borders3.material = new Material(Config.BORDER_COLOR_4, 0f).disableCulling(true);
         for(int layer = 0; layer < 6; layer++)
             BORDERS.add(new Entity(borders3, new Vector3f(21219f, 1557f, -790f + -400f * layer), new Vector3f(0, 0, 0), new Vector3f(1f, 1f, 1f), loader));
 
@@ -154,11 +154,11 @@ public class View3D implements ILogic {
 
         pod = loader.loadOBJModel("/models/pod.obj");
         pod.material = new Material(new Texture[]{new Texture(loader.loadTexture(ImageIO.read(Main.class.getResourceAsStream("/textures/pod.png")), GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR))});
-        pod.material.overlayColor = new Vector4f(Const.POD_COLOR.getRed() / 255f, Const.POD_COLOR.getGreen() / 255f, Const.POD_COLOR.getBlue() / 255f, Const.POD_COLOR.getAlpha() / 255f);
+        pod.material.overlayColor = new Vector4f(Config.POD_COLOR.getRed() / 255f, Config.POD_COLOR.getGreen() / 255f, Config.POD_COLOR.getBlue() / 255f, Config.POD_COLOR.getAlpha() / 255f);
         POD_EARTH.add(new Entity(pod, new Vector3f(25.0f, 260.0f, 13490.0f), new Vector3f(-105.0f, 0.0f, 0.0f), new Vector3f(1f, 1f, 1f), loader));
         earth = loader.loadOBJModel("/models/earth.obj");
         earth.material = new Material(new Texture[]{new Texture(loader.loadTexture(ImageIO.read(Main.class.getResourceAsStream("/textures/earth.png")), GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR))});
-        earth.material.overlayColor = new Vector4f(Const.EARTH_COLOR.getRed() / 255f, Const.EARTH_COLOR.getGreen() / 255f, Const.EARTH_COLOR.getBlue() / 255f, Const.EARTH_COLOR.getAlpha() / 255f);
+        earth.material.overlayColor = new Vector4f(Config.EARTH_COLOR.getRed() / 255f, Config.EARTH_COLOR.getGreen() / 255f, Config.EARTH_COLOR.getBlue() / 255f, Config.EARTH_COLOR.getAlpha() / 255f);
         POD_EARTH.add(new Entity(earth, new Vector3f(30.71f, 60.38f, 243.31f), new Vector3f(0, 0, 0), new Vector3f(1.5f, 1.5f, 1.5f), loader));
     }
 
@@ -178,7 +178,7 @@ public class View3D implements ILogic {
         boolean overElement = currentScreen == null ? false : currentScreen.isMouseOverElement(mouseInput);
 
         if(!elementFocused && !overElement)
-            camera.movePos((cameraInc.x * Const.CAMERA_MOVE_SPEED) / (EngineMan.fps == 0 ? 60 : EngineMan.fps), (cameraInc.y * Const.CAMERA_MOVE_SPEED) / (EngineMan.fps == 0 ? 60 : EngineMan.fps), (cameraInc.z * Const.CAMERA_MOVE_SPEED) / (EngineMan.fps == 0 ? 60 : EngineMan.fps));
+            camera.movePos((cameraInc.x * Config.CAMERA_MOVE_SPEED) / (EngineMan.fps == 0 ? 60 : EngineMan.fps), (cameraInc.y * Config.CAMERA_MOVE_SPEED) / (EngineMan.fps == 0 ? 60 : EngineMan.fps), (cameraInc.z * Config.CAMERA_MOVE_SPEED) / (EngineMan.fps == 0 ? 60 : EngineMan.fps));
 
         this.mouseInput = mouseInput;
 
@@ -210,7 +210,7 @@ public class View3D implements ILogic {
         if(mouseInput.middleButtonPress && !overElement && introPlayed)
         {
             if(camera.getWrappedRotation().x > -90 && camera.getWrappedRotation().x < 90)
-                camera.moveRot(mouseInput.displayVec.x * Const.MOUSE_SENS, mouseInput.displayVec.y * Const.MOUSE_SENS, 0);
+                camera.moveRot(mouseInput.displayVec.x * Config.MOUSE_SENS, mouseInput.displayVec.y * Config.MOUSE_SENS, 0);
 
             mouseInput.displayVec.set(0, 0);
         }
@@ -399,13 +399,13 @@ public class View3D implements ILogic {
 
         if(!currentScreen.isMouseOverElement(mouseInput) && !currentScreen.isElementFocused())
         {
-            if(Const.CAMERA_MOVE_SPEED == 0 && yOffset > 0)
-                Const.CAMERA_MOVE_SPEED = 1;
-            Const.CAMERA_MOVE_SPEED = yOffset > 0 ? Const.CAMERA_MOVE_SPEED * 1.2f : Const.CAMERA_MOVE_SPEED * 0.8f;
-            Const.CAMERA_MOVE_SPEED = yOffset > 0 ? Math.ceil(Const.CAMERA_MOVE_SPEED) : Math.floor(Const.CAMERA_MOVE_SPEED);
+            if(Config.CAMERA_MOVE_SPEED == 0 && yOffset > 0)
+                Config.CAMERA_MOVE_SPEED = 1;
+            Config.CAMERA_MOVE_SPEED = yOffset > 0 ? Config.CAMERA_MOVE_SPEED * 1.2f : Config.CAMERA_MOVE_SPEED * 0.8f;
+            Config.CAMERA_MOVE_SPEED = yOffset > 0 ? Math.ceil(Config.CAMERA_MOVE_SPEED) : Math.floor(Config.CAMERA_MOVE_SPEED);
             DropDownTab settings = ((Settings) Settings).rendererSettings;
             Textbox speed = ((DropDownTab.LabeledTextbox) settings.tabElements.get(3)).textbox;
-            speed.text(Float.toString(Const.CAMERA_MOVE_SPEED));
+            speed.text(Float.toString(Config.CAMERA_MOVE_SPEED));
         }
     }
 
@@ -530,9 +530,9 @@ public class View3D implements ILogic {
 
     private void drawUI(MouseInput mouseInput) {
 
-        drawRect(7, 7, 150, 25, Const.INTERFACE_PRIMARY_COLOR);
-        drawRectOutline(7, 7, 150, 25, Const.INTERFACE_PRIMARY_COLOR2, false);
-        drawString("FPS: " + EngineMan.avgFPS, Const.FONT_COLOR, 85 - (getStringWidth("FPS: " + EngineMan.avgFPS, 10) / 2), 12, 10);
+        drawRect(7, 7, 150, 25, Config.INTERFACE_PRIMARY_COLOR);
+        drawRectOutline(7, 7, 150, 25, Config.INTERFACE_PRIMARY_COLOR2, false);
+        drawString("FPS: " + EngineMan.avgFPS, Config.FONT_COLOR, 85 - (getStringWidth("FPS: " + EngineMan.avgFPS, 10) / 2), 12, 10);
 
         if(Main.debug)
         {
@@ -546,19 +546,19 @@ public class View3D implements ILogic {
             if (vao)
             {
                 drawRect(10 - 3, 10 - 3 + ((getFontHeight(10) + 2) + 3) * l, getStringWidth("VAOs: " + loader.vaos.size(), 10) + 6, (getFontHeight(10) + 2) + 3, new Color(0f, 0f, 0f, 0.5f));
-                drawString("VAOs: " + loader.vaos.size(), Const.FONT_COLOR, 10, 10 + ((getFontHeight(10) + 2) + 3) * l, 10);
+                drawString("VAOs: " + loader.vaos.size(), Config.FONT_COLOR, 10, 10 + ((getFontHeight(10) + 2) + 3) * l, 10);
                 l++;
             }
             if (vbo)
             {
                 drawRect(10 - 3, 10 - 3 + ((getFontHeight(10) + 2) + 3) * l, getStringWidth("VBOs: " + loader.vbos.size(), 10) + 6, (getFontHeight(10) + 2) + 3, new Color(0f, 0f, 0f, 0.5f));
-                drawString("VBOs: " + loader.vbos.size(), Const.FONT_COLOR, 10, 10 + ((getFontHeight(10) + 2) + 3) * l, 10);
+                drawString("VBOs: " + loader.vbos.size(), Config.FONT_COLOR, 10, 10 + ((getFontHeight(10) + 2) + 3) * l, 10);
                 l++;
             }
             if (tex)
             {
                 drawRect(10 - 3, 10 - 3 + ((getFontHeight(10) + 2) + 3) * l, getStringWidth("Textures: " + loader.textures.size(), 10) + 6, (getFontHeight(10) + 2) + 3, new Color(0f, 0f, 0f, 0.5f));
-                drawString("Textures: " + loader.textures.size(), Const.FONT_COLOR, 10, 10 + ((getFontHeight(10) + 2) + 3) * l, 10);
+                drawString("Textures: " + loader.textures.size(), Config.FONT_COLOR, 10, 10 + ((getFontHeight(10) + 2) + 3) * l, 10);
                 l++;
             }
 
@@ -989,7 +989,7 @@ public class View3D implements ILogic {
 
         }
 
-        return new Vector3f(Const.NaNf, Const.NaNf, Const.NaNf);
+        return new Vector3f(Config.NaNf, Config.NaNf, Config.NaNf);
     }
 
     public String getSelectedMeshDescriptor()
@@ -1174,7 +1174,7 @@ public class View3D implements ILogic {
             }
         }
 
-        return Const.NaNf;
+        return Config.NaNf;
     }
 
     public float getSelectedBevelSize()
@@ -1210,7 +1210,7 @@ public class View3D implements ILogic {
             }
         }
 
-        return Const.NaNf;
+        return Config.NaNf;
     }
 
     public String getSelectedSoundName()
@@ -1282,7 +1282,7 @@ public class View3D implements ILogic {
             }
         }
 
-        return Const.NaNf;
+        return Config.NaNf;
     }
 
     public float getSelectedSoundPitch()
@@ -1318,7 +1318,7 @@ public class View3D implements ILogic {
             }
         }
 
-        return Const.NaNf;
+        return Config.NaNf;
     }
 
     public String getSelectedName()
