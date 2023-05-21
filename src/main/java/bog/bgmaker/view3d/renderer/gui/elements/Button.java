@@ -56,10 +56,9 @@ public abstract class Button extends Element{
             isClicked = false;
 
         startScissor((int)pos.x, (int)pos.y, (int)size.x, (int)size.y);
-        Color c = !isMouseOverElement(mouseInput) || overOther ? Const.INTERFACE_PRIMARY_COLOR : (isClicked ? Const.INTERFACE_TERTIARY_COLOR : Const.INTERFACE_SECONDARY_COLOR);
-        drawRect((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, c);
+        drawRect((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, (!isMouseOverElement(mouseInput) || overOther ? Const.INTERFACE_PRIMARY_COLOR : (isClicked ? Const.INTERFACE_TERTIARY_COLOR : Const.INTERFACE_SECONDARY_COLOR)));
         drawString(buttonText, Const.FONT_COLOR, (int)(pos.x + size.x / 2 - getStringWidth(buttonText, fontSize) / 2), (int)(pos.y + size.y / 2 - getFontHeight(fontSize) / 2), fontSize);
-        drawRectOutline((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, c, false);
+        drawRectOutline((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, (!isMouseOverElement(mouseInput) || overOther ? Const.INTERFACE_PRIMARY_COLOR2 : (isClicked ? Const.INTERFACE_TERTIARY_COLOR2 : Const.INTERFACE_SECONDARY_COLOR2)), false);
         endScissor();
     }
 

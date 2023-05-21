@@ -164,7 +164,7 @@ public class Textarea extends Element{
             }
             currentLength += line.length() + 1;
         }
-        drawRectOutline((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, isMouseOverElement(mouseInput) && !overOther || this.isFocused() ? Const.INTERFACE_SECONDARY_COLOR : Const.INTERFACE_PRIMARY_COLOR, false);
+        drawRectOutline((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, isMouseOverElement(mouseInput) && !overOther || this.isFocused() ? Const.INTERFACE_SECONDARY_COLOR2 : Const.INTERFACE_PRIMARY_COLOR2, false);
         endScissor();
 
     }

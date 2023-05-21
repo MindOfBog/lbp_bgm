@@ -531,7 +531,7 @@ public class View3D implements ILogic {
     private void drawUI(MouseInput mouseInput) {
 
         drawRect(7, 7, 150, 25, Const.INTERFACE_PRIMARY_COLOR);
-        drawRectOutline(7, 7, 150, 25, Const.INTERFACE_PRIMARY_COLOR, false);
+        drawRectOutline(7, 7, 150, 25, Const.INTERFACE_PRIMARY_COLOR2, false);
         drawString("FPS: " + EngineMan.avgFPS, Const.FONT_COLOR, 85 - (getStringWidth("FPS: " + EngineMan.avgFPS, 10) / 2), 12, 10);
 
         if(Main.debug)

@@ -91,7 +91,7 @@ public abstract class ButtonList<T> extends Element{
             yScroll = 0;
 
         drawRect((int) scrollX, (int) scrollY, 3, (int) scrollHeight, buttonColor(null, -1));
-        drawRectOutline((int) scrollX, (int) scrollY, 3, (int) scrollHeight, buttonColor(null, -1), false);
+        drawRectOutline((int) scrollX, (int) scrollY, 3, (int) scrollHeight, buttonColor2(null, -1), false);
         drawRect((int) scrollX, (int) (scrollY + ((Math.abs(yScroll) / maxScroll) * (scrollHeight - frac))), 3, (int) frac, textColor(null, -1));
 
         startScissor((int) pos.x, (int) scrollY, (int) size.x, (int) Math.ceil(scrollHeight));
@@ -186,6 +186,10 @@ public abstract class ButtonList<T> extends Element{
     public Color buttonColor(T object, int index)
     {
         return Const.INTERFACE_PRIMARY_COLOR;
+    }
+    public Color buttonColor2(T object, int index)
+    {
+        return Const.INTERFACE_PRIMARY_COLOR2;
     }
     public Color buttonColorHighlighted(T object, int index)
     {

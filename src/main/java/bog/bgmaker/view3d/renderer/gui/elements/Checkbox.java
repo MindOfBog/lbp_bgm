@@ -44,7 +44,7 @@ public class Checkbox extends Element{
         super.draw(mouseInput, overElement);
 
         drawRect((int) Math.floor(pos.x + (size.y * 0.10f)/2), (int) Math.floor(pos.y + (size.y * 0.10f)/2), (int) Math.floor(size.y * 0.90f), (int) Math.floor(size.y * 0.90f), isMouseOverElement(mouseInput) ? Const.INTERFACE_SECONDARY_COLOR : Const.INTERFACE_PRIMARY_COLOR);
-        drawRectOutline((int) Math.floor(pos.x + (size.y * 0.10f)/2), (int) Math.floor(pos.y + (size.y * 0.10f)/2), (int) Math.floor(size.y * 0.90f), (int) Math.floor(size.y * 0.90f), isMouseOverElement(mouseInput) ? Const.INTERFACE_SECONDARY_COLOR : Const.INTERFACE_PRIMARY_COLOR, false);
+        drawRectOutline((int) Math.floor(pos.x + (size.y * 0.10f)/2), (int) Math.floor(pos.y + (size.y * 0.10f)/2), (int) Math.floor(size.y * 0.90f), (int) Math.floor(size.y * 0.90f), isMouseOverElement(mouseInput) ? Const.INTERFACE_SECONDARY_COLOR2 : Const.INTERFACE_PRIMARY_COLOR2, false);
 
         if(isChecked)
             drawRect((int) Math.floor(pos.x + (size.y * 0.90f * 0.275f)), (int) Math.floor(pos.y + (size.y * 0.90f * 0.275f)), (int) Math.floor(size.y * 0.90f * 0.45f), (int) Math.floor(size.y * 0.90f * 0.45f), Const.FONT_COLOR);

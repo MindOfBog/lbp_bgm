@@ -49,16 +49,23 @@ public abstract class ButtonImage extends Element{
             setClicked(false);
 
         Color c = Const.INTERFACE_PRIMARY_COLOR;
+        Color c2 = Const.INTERFACE_PRIMARY_COLOR2;
 
         if(isMouseOverElement(mouseInput) && !overOther)
+        {
             c = Const.INTERFACE_SECONDARY_COLOR;
+            c2 = Const.INTERFACE_SECONDARY_COLOR2;
+        }
 
         if(isClicked)
+        {
             c = Const.INTERFACE_TERTIARY_COLOR;
+            c2 = Const.INTERFACE_TERTIARY_COLOR2;
+        }
 
         drawRect((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, c);
         drawImageStatic(buttonImage, (int)pos.x, (int)pos.y, (int)size.x, (int)size.y);
-        drawRectOutline((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, c, false);
+        drawRectOutline((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, c2, false);
     }
 
     public void setClicked(boolean clicked) {

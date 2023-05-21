@@ -95,6 +95,7 @@ public class DropDownTab extends Element{
             button.size = new Vector2f(size.x - 4, getFontHeight(fontSize) + 4);
             button.fontSize = fontSize;
             button.renderer = renderer;
+            button.window = window;
             button.loader = loader;
             tabElements.add(button);
         }
@@ -226,7 +227,7 @@ public class DropDownTab extends Element{
     public void addLabeledSlider(String id, String label, float sliderPosition, float min, float max)
     {
         if(!containsElementByID(id))
-            tabElements.add(new LabeledSlider(label, id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight(fontSize) + 4), fontSize, renderer, loader, sliderPosition, min, max));
+            tabElements.add(new LabeledSlider(label, id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight(fontSize) + 4), fontSize, renderer, loader, window, sliderPosition, min, max));
     }
 
     public void addString(String id, String string)
@@ -300,7 +301,7 @@ public class DropDownTab extends Element{
         }
 
         drawRect((int) pos.x, (int) pos.y, (int) size.x, (int) size.y, dragging || (mouseInput.rightButtonPress && isMouseOverTab(mouseInput)) ? Const.INTERFACE_TERTIARY_COLOR : (isMouseOverTab(mouseInput) && !overOther ? Const.INTERFACE_SECONDARY_COLOR : Const.INTERFACE_PRIMARY_COLOR));
-        drawRectOutline((int) pos.x, (int) pos.y, (int) size.x, (int) size.y, dragging || (mouseInput.rightButtonPress && isMouseOverTab(mouseInput)) ? Const.INTERFACE_TERTIARY_COLOR : (isMouseOverTab(mouseInput) && !overOther ? Const.INTERFACE_SECONDARY_COLOR : Const.INTERFACE_PRIMARY_COLOR), false);
+        drawRectOutline((int) pos.x, (int) pos.y, (int) size.x, (int) size.y, dragging || (mouseInput.rightButtonPress && isMouseOverTab(mouseInput)) ? Const.INTERFACE_TERTIARY_COLOR2 : (isMouseOverTab(mouseInput) && !overOther ? Const.INTERFACE_SECONDARY_COLOR2 : Const.INTERFACE_PRIMARY_COLOR2), false);
 
         if (extended)
         {
@@ -578,6 +579,7 @@ public class DropDownTab extends Element{
             button.fontSize = fontSize;
             button.renderer = renderer;
             button.loader = loader;
+            button.window = window;
             this.button = button;
             this.label = label;
         }
@@ -633,7 +635,7 @@ public class DropDownTab extends Element{
             this.label = label;
         }
 
-        public LabeledSlider(String label, String id, Vector2f pos, Vector2f size, int fontSize, RenderMan renderer, ObjectLoader loader, float sliderPos, float min, float max)
+        public LabeledSlider(String label, String id, Vector2f pos, Vector2f size, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window, float sliderPos, float min, float max)
         {
             this.id = id;
             this.pos = pos;
