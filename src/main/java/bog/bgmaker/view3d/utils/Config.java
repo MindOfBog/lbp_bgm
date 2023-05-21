@@ -41,7 +41,7 @@ public class Config {
     public static Color EARTH_COLOR = new Color(236, 93, 154, 166);
     public static Color FONT_COLOR = new Color(255, 255, 255, 255);
     public static Color PRIMARY_COLOR = new Color(0, 0, 0, 127);
-    public static Color SECONDARY_COLOR = new Color(0, 0, 0, 127);
+    public static Color SECONDARY_COLOR = new Color(0, 0, 0, 255);
     public static Color INTERFACE_PRIMARY_COLOR = new Color(0, 0, 0, 157);
     public static Color INTERFACE_PRIMARY_COLOR2 = new Color(0, 0, 0, 255);
     public static Color INTERFACE_SECONDARY_COLOR = new Color(50, 50, 50, 200);
