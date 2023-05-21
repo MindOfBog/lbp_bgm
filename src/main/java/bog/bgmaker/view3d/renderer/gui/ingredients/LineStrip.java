@@ -76,6 +76,28 @@ public class LineStrip extends Drawable{
         return new LineStrip(new Vector2f[]{new Vector2f(x1, y1), new Vector2f(x1, y2), new Vector2f(x2, y2), new Vector2f(x2, y1), new Vector2f(x1, y1)}, color, loader, window, smooth, staticVs);
     }
 
+    public static LineStrip lineRectangle(Vector2f pos, Vector2f size, Color color, ObjectLoader loader, WindowMan window, boolean smooth, boolean staticVs, int openSide)
+    {
+        float x1 = (float) Math.round(pos.x) + 0.5f;
+        float y1 = (float) Math.round(pos.y) + 0.5f;
+
+        float x2 = (float) Math.round(pos.x + size.x) - 0.5f;
+        float y2 = (float) Math.round(pos.y + size.y) - 0.5f;
+
+        switch (openSide)
+        {
+            default:
+            case 0:
+                return new LineStrip(new Vector2f[]{new Vector2f(x1, y1), new Vector2f(x1, y2), new Vector2f(x2, y2), new Vector2f(x2, y1 - 1)}, color, loader, window, smooth, staticVs);
+            case 1:
+                return new LineStrip(new Vector2f[]{new Vector2f(x2, y2), new Vector2f(x2, y1), new Vector2f(x1, y1), new Vector2f(x1, y2)}, color, loader, window, smooth, staticVs);
+            case 2:
+                return new LineStrip(new Vector2f[]{new Vector2f(x1, y2), new Vector2f(x2, y2), new Vector2f(x2, y1), new Vector2f(x1, y1)}, color, loader, window, smooth, staticVs);
+            case 3:
+                return new LineStrip(new Vector2f[]{new Vector2f(x2, y1), new Vector2f(x1, y1), new Vector2f(x1, y2), new Vector2f(x2, y2)}, color, loader, window, smooth, staticVs);
+        }
+    }
+
     public static LineStrip lineRectangle(Vector2f pos, Vector2f size, ObjectLoader loader, WindowMan window, boolean smooth, boolean staticVs)
     {
         float x1 = (float) Math.round(pos.x) + 0.5f;
@@ -86,6 +108,33 @@ public class LineStrip extends Drawable{
 
         return new LineStrip(new Vector2f[]{new Vector2f(x1, y1), new Vector2f(x1, y2), new Vector2f(x2, y2), new Vector2f(x2, y1), new Vector2f(x1, y1)}, loader, window, smooth, staticVs);
     }
+
+    public static LineStrip lineRectangle(Vector2f pos, Vector2f size, ObjectLoader loader, WindowMan window, boolean smooth, boolean staticVs, int openSide)
+    {
+        float x1 = (float) Math.round(pos.x) + 0.5f;
+        float y1 = (float) Math.round(pos.y) + 0.5f;
+
+        float x2 = (float) Math.round(pos.x + size.x) - 0.5f;
+        float y2 = (float) Math.round(pos.y + size.y) - 0.5f;
+
+        switch (openSide)
+        {
+            default:
+            case 0:
+                return new LineStrip(new Vector2f[]{new Vector2f(x1, y1), new Vector2f(x1, y2), new Vector2f(x2, y2), new Vector2f(x2, y1 - 1)}, loader, window, smooth, staticVs);
+            case 1:
+                return new LineStrip(new Vector2f[]{new Vector2f(x2, y2), new Vector2f(x2, y1), new Vector2f(x1, y1), new Vector2f(x1, y2)}, loader, window, smooth, staticVs);
+            case 2:
+                return new LineStrip(new Vector2f[]{new Vector2f(x1, y2), new Vector2f(x2, y2), new Vector2f(x2, y1), new Vector2f(x1, y1)}, loader, window, smooth, staticVs);
+            case 3:
+                return new LineStrip(new Vector2f[]{new Vector2f(x2, y1), new Vector2f(x1, y1), new Vector2f(x1, y2), new Vector2f(x2, y2)}, loader, window, smooth, staticVs);
+        }
+    }
+
+    public static int UP = 0;
+    public static int DOWN = 1;
+    public static int LEFT = 2;
+    public static int RIGHT = 3;
 
     @Override
     public int getType() {

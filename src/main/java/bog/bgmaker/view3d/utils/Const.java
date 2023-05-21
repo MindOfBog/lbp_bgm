@@ -32,5 +32,14 @@ public class Const {
     public static Color BORDER_COLOR_4 = new Color(0, 62, 219, 166);
     public static Color POD_COLOR = new Color(154, 236, 93, 166);
     public static Color EARTH_COLOR = new Color(236, 93, 154, 166);
+    public static Color FONT_COLOR = new Color(255, 255, 255, 255);
+    public static Color PRIMARY_COLOR = new Color(0, 0, 0, 127);
+    public static Color SECONDARY_COLOR = new Color(0, 0, 0, 127);
+    public static Color INTERFACE_PRIMARY_COLOR = new Color(0, 0, 0, 157);
+    public static Color INTERFACE_PRIMARY_COLOR2 = new Color(0, 0, 0, 157);
+    public static Color INTERFACE_SECONDARY_COLOR = new Color(50, 50, 50, 200);
+    public static Color INTERFACE_SECONDARY_COLOR2 = new Color(50, 50, 50, 200);
+    public static Color INTERFACE_TERTIARY_COLOR = new Color(100, 100, 100, 210);
+    public static Color INTERFACE_TERTIARY_COLOR2 = new Color(100, 100, 100, 210);
 
 }

@@ -3,6 +3,7 @@ package bog.bgmaker.view3d.core;
 import bog.bgmaker.view3d.managers.ShaderMan;
 import bog.bgmaker.view3d.utils.Const;
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 import java.awt.*;
@@ -103,5 +104,12 @@ public class Material {
         customShader.setUniform("pointLightsSize", pointLights.size());
         customShader.setUniform("spotLights", spotLights.toArray(SpotLight[]::new));
         customShader.setUniform("spotLightsSize", spotLights.size());
+    }
+
+    public void setupUniformsThroughwall() {
+        customShader.setUniform("ambientLight", new Vector3f(1f, 1f, 1f));
+        customShader.setUniform("directionalLightsSize", 0);
+        customShader.setUniform("pointLightsSize", 0);
+        customShader.setUniform("spotLightsSize", 0);
     }
 }

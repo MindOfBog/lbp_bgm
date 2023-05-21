@@ -4,9 +4,11 @@ import bog.bgmaker.view3d.ObjectLoader;
 import bog.bgmaker.view3d.managers.MouseInput;
 import bog.bgmaker.view3d.managers.RenderMan;
 import bog.bgmaker.view3d.managers.WindowMan;
+import bog.bgmaker.view3d.utils.Const;
 import cwlib.types.databases.FileEntry;
 import org.joml.Vector2d;
 import org.joml.Vector2f;
+import org.joml.Vector2i;
 import org.lwjgl.glfw.GLFW;
 
 import java.awt.*;
@@ -19,7 +21,6 @@ public abstract class ButtonList<T> extends Element{
 
     public ArrayList<T> list;
     public int fontSize;
-
     float yScroll = 0;
     boolean scrolling = false;
 
@@ -77,8 +78,8 @@ public abstract class ButtonList<T> extends Element{
         float maxScroll = (4 + (height + 2) * (indexes.size() - 1) + height) - (size.y);
         float frac = size.x - (size.x - 4f - size.x * 0.05f);
         float scrollX = pos.x + size.x - 4f - size.x * 0.05f + (frac / 2f);
-        float scrollY = pos.y + (frac / 2f);
-        float scrollHeight = size.y - (frac / 2f) * 2;
+        float scrollY = pos.y + (frac / 4f);
+        float scrollHeight = size.y - (frac / 4f) * 2;
 
         if(scrolling)
              yScroll = -(((((float)mouseInput.currentPos.y) - (frac/2)) - scrollY)/(scrollHeight - frac)) * maxScroll;
@@ -89,13 +90,11 @@ public abstract class ButtonList<T> extends Element{
         if(yScroll > 0)
             yScroll = 0;
 
-        drawRect((int) pos.x, (int) pos.y, (int) size.x, (int) size.y, backdropColor());
-        drawRectOutline((int) pos.x, (int) pos.y, (int) size.x, (int) size.y, backdropColor(), false);
         drawRect((int) scrollX, (int) scrollY, 3, (int) scrollHeight, buttonColor(null, -1));
         drawRectOutline((int) scrollX, (int) scrollY, 3, (int) scrollHeight, buttonColor(null, -1), false);
         drawRect((int) scrollX, (int) (scrollY + ((Math.abs(yScroll) / maxScroll) * (scrollHeight - frac))), 3, (int) frac, textColor(null, -1));
 
-        startScissor((int) pos.x, (int) pos.y, (int) size.x, (int) size.y);
+        startScissor((int) pos.x, (int) scrollY, (int) size.x, (int) Math.ceil(scrollHeight));
         int ind = 0;
 
         for(int i : indexes)
@@ -113,8 +112,8 @@ public abstract class ButtonList<T> extends Element{
             ind++;
 
             if(!overElement)
-                if(posY <= pos.y + size.y &&
-                        posY + height >= pos.y)
+                if(mouseInput.currentPos.y <= scrollY + scrollHeight &&
+                        mouseInput.currentPos.y >= scrollY)
                 {
                     double posX = this.pos.x + 2d;
                     double width = size.x - 4d - size.x * 0.05d;
@@ -127,7 +126,7 @@ public abstract class ButtonList<T> extends Element{
             if(posY <= pos.y + size.y &&
                     posY + height >= pos.y)
             {
-                drawButton(posY, height, object, i);
+                drawButton(posY, scrollY, scrollHeight, height, object, i);
             }
         }
         endScissor();
@@ -180,38 +179,30 @@ public abstract class ButtonList<T> extends Element{
         if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_RELEASE)
             scrolling = false;
     }
-
-
     public Color textColor(T object, int index)
     {
-        return Color.white;
+        return Const.FONT_COLOR;
     }
     public Color buttonColor(T object, int index)
     {
-        return new Color(0f, 0f, 0f, 0.5f);
+        return Const.INTERFACE_PRIMARY_COLOR;
     }
-    public Color backdropColor()
-    {
-        return new Color(0f, 0f, 0f, 0.5f);
-    }
-
     public Color buttonColorHighlighted(T object, int index)
     {
-        return new Color(0.10f, 0.10f, 0.10f, 0.5f);
+        return Const.INTERFACE_SECONDARY_COLOR;
     }
     public Color buttonColorSelected(T object, int index)
     {
-        return new Color(1f, 1f, 1f, 0.5f);
+        return Const.INTERFACE_TERTIARY_COLOR;
     }
-    public void drawButton(int posY, int height, T object, int i)
+    public void drawButton(int posY, float scrollY, float scrollHeight, int height, T object, int i)
     {
-        startScissor((int)pos.x + 2, posY, (int)(size.x - 4f - size.x * 0.05f), (int) height);
-        drawRect((int)pos.x + 2, posY, (int)(size.x - 4f - size.x * 0.05f), (int) height, !(isHighlighted(object, i) || isSelected(object, i)) ? buttonColor(object, i) : (isSelected(object, i) ? buttonColorSelected(object, i) : buttonColorHighlighted(object, i)));
+        startScissor((int)pos.x + 4, posY, (int)(size.x - 6f - size.x * 0.05f), (int) height);
+        drawRect((int)pos.x + 4, posY, (int)(size.x - 6f - size.x * 0.05f), (int) height, !(isHighlighted(object, i) || isSelected(object, i)) ? buttonColor(object, i) : (isSelected(object, i) ? buttonColorSelected(object, i) : buttonColorHighlighted(object, i)));
         drawString(buttonText(object, i), textColor(object, i), (int)(pos.x + (size.x - size.x * 0.05f) / 2f - getStringWidth(buttonText(object, i), fontSize) / 2), posY + height / 2 - getFontHeight(fontSize) / 2, fontSize);
-        drawRectOutline((int)pos.x + 2, posY, (int)(size.x - 4f - size.x * 0.05f), (int) height, !(isHighlighted(object, i) || isSelected(object, i)) ? buttonColor(object, i) : (isSelected(object, i) ? buttonColorSelected(object, i) : buttonColorHighlighted(object, i)), false);
+        drawRectOutline((int)pos.x + 4, posY, (int)(size.x - 6f - size.x * 0.05f), (int) height, !(isHighlighted(object, i) || isSelected(object, i)) ? buttonColor(object, i) : (isSelected(object, i) ? buttonColorSelected(object, i) : buttonColorHighlighted(object, i)), false);
         endScissor();
     }
-
     public int buttonHeight()
     {
         return getFontHeight(fontSize);

@@ -115,6 +115,30 @@ public class Transformation3D{
                             renderer.processThroughWallEntity(tools.get(i));
         }
 
+        public void render(boolean hasSelection,
+                           boolean translateX, boolean translateY, boolean translateZ,
+                           boolean rotateX, boolean rotateY, boolean rotateZ,
+                           boolean scaleX, boolean scaleY, boolean scaleZ,
+                           int crosshair, Vector3f screenPos, WindowMan window, ObjectLoader loader, RenderMan renderer, MouseInput mouseInput)
+        {
+            if(selected >= 3 && selected < 6)
+            {
+                Vector2i point = new Vector2i((int) screenPos.x, (int) screenPos.y);
+                Vector2i mouse = new Vector2i((int) mouseInput.currentPos.x, (int) mouseInput.currentPos.y);
+
+                renderer.processGuiElement(new Line(mouse, point, Color.black, loader, window, true, false));
+                renderer.processGuiElement(new Quad(loader, crosshair, new Vector2f((int)(screenPos.x - 7.5f), (int)(screenPos.y - 7.5f)), new Vector2f(15, 15), false).staticTexture());
+            }
+
+            if(selected == -1)
+                for(int i = 0; i < tools.size(); i++)
+                    if(hasSelection)
+                        if((i == 0 && translateX) || (i == 1 && translateY) || (i == 2 && translateZ) ||
+                                (i == 3 && rotateX) || (i == 4 && rotateY) || (i == 5 && rotateZ) ||
+                                (i == 7 && scaleX) || (i == 8 && scaleY) || (i == 9 && scaleZ))
+                            renderer.processThroughWallEntity(tools.get(i));
+        }
+
         public boolean onClick(Vector2d pos, int button, int action, int mods, WindowMan window, Camera camera)
         {
             hit = -1;

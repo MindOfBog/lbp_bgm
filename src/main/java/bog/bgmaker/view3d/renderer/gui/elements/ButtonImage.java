@@ -5,6 +5,7 @@ import bog.bgmaker.view3d.ObjectLoader;
 import bog.bgmaker.view3d.managers.MouseInput;
 import bog.bgmaker.view3d.managers.RenderMan;
 import bog.bgmaker.view3d.managers.WindowMan;
+import bog.bgmaker.view3d.utils.Const;
 import org.joml.Vector2d;
 import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
@@ -19,9 +20,6 @@ import java.awt.*;
 public abstract class ButtonImage extends Element{
 
     public int buttonImage;
-    Color buttonColor;
-    Color buttonColorHighlighted;
-    Color buttonColorClicked;
     public boolean isClicked = false;
 
     public ButtonImage(String id, String imagePath, Vector2f pos, Vector2f size, RenderMan renderer, ObjectLoader loader, WindowMan window)
@@ -35,25 +33,6 @@ public abstract class ButtonImage extends Element{
         try {
             this.buttonImage = loader.loadTexture(ImageIO.read(Main.class.getResourceAsStream(imagePath)), GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR);
         } catch (Exception e) {e.printStackTrace();}
-        this.buttonColor = new Color(0f, 0f, 0f, 0.5f);
-        this.buttonColorHighlighted = new Color(0.10f, 0.10f, 0.10f, 0.5f);
-        this.buttonColorClicked = new Color(0.38f, 0.38f, 0.38f, 0.5f);
-    }
-
-    public ButtonImage(String id, String imagePath, Vector2f pos, Vector2f size, RenderMan renderer, ObjectLoader loader, WindowMan window, Color buttonColor, Color buttonColorHighlighted, Color buttonColorClicked)
-    {
-        this.id = id;
-        this.pos = pos;
-        this.size = size;
-        this.renderer = renderer;
-        this.loader = loader;
-        this.window = window;
-        try {
-            this.buttonImage = loader.loadTexture(ImageIO.read(Main.class.getResourceAsStream(imagePath)), GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR);
-        } catch (Exception e) {e.printStackTrace();}
-        this.buttonColor = buttonColor;
-        this.buttonColorHighlighted = buttonColorHighlighted;
-        this.buttonColorClicked = buttonColorClicked;
     }
 
     public ButtonImage clicked()
@@ -69,13 +48,13 @@ public abstract class ButtonImage extends Element{
         if(!isMouseOverElement(mouseInput) || overOther)
             setClicked(false);
 
-        Color c = buttonColor;
+        Color c = Const.INTERFACE_PRIMARY_COLOR;
 
         if(isMouseOverElement(mouseInput) && !overOther)
-            c = buttonColorHighlighted;
+            c = Const.INTERFACE_SECONDARY_COLOR;
 
         if(isClicked)
-            c = buttonColorClicked;
+            c = Const.INTERFACE_TERTIARY_COLOR;
 
         drawRect((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, c);
         drawImageStatic(buttonImage, (int)pos.x, (int)pos.y, (int)size.x, (int)size.y);

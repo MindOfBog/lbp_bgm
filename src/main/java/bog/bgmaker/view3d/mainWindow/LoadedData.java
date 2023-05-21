@@ -156,7 +156,9 @@ public class LoadedData {
                     int output = material.getOutputBox();
                     MaterialBox outBox = material.getBoxConnectedToPort(output, 0);
 
-                    shaderColor = "ambientC = vec4(" + buildColor(outBox, material, textures, colors, loader) + ");" +
+                    String sh = buildColor(outBox, material, textures, colors, loader);
+
+                    shaderColor = sh == null ? null : "ambientC = vec4(" + sh + ");" +
                             "        if(highlightMode == 1)" +
                             "        {" +
                             "            float mul = (ambientC.r + ambientC.g + ambientC.b) / 3.0;" +
@@ -257,6 +259,9 @@ public class LoadedData {
         if(colors == null)
             colors = new ArrayList<>();
 
+        if(box == null)
+            return null;
+
         switch (box.type)
         {
             case BoxType.MULTIPLY:
@@ -275,13 +280,21 @@ public class LoadedData {
 
                 return "(" + in1 + " + " + in2 + ")";
             }
-//            TODO case BoxType.MULTIPLY_ADD:
+//            case BoxType.MULTIPLY_ADD:
+//            {
 //                MaterialBox[] connectedBoxes = material.getBoxesConnected(box);
-//                System.out.println("MULTIPLY_ADD" + connectedBoxes.length);
-//                break;
-//            case BoxType.MIX:
-//                System.out.println("MIX");
-//                break;
+//                System.out.println("muladd: " + connectedBoxes.length);
+//                return "";
+//            }
+            case BoxType.MIX:
+            {
+                MaterialBox[] connectedBoxes = material.getBoxesConnected(box);
+                String in1 = buildColor(connectedBoxes[0], material, textures, colors, loader);
+                String in2 = buildColor(connectedBoxes[1], material, textures, colors, loader);
+                for(int param : connectedBoxes[0].getParameters()) System.out.println("MIX PARAM 0: " + param);
+                for(int param : connectedBoxes[1].getParameters()) System.out.println("MIX PARAM 1: " + param);
+                return "(mix(" + in1 + ", " + in2 + ", 0.5))";
+            }
 //            case BoxType.BLEND:
 //                System.out.println("BLEND");
 //                break;
@@ -299,6 +312,9 @@ public class LoadedData {
             case BoxType.TEXTURE_SAMPLE:
             default:
                 textures.add(getTexture(material.textures[box.getParameters()[5]], loader));
+
+                if(box.type != BoxType.TEXTURE_SAMPLE)
+                System.out.println("MISSING BOX TYPE: " + box.type);
                 return "vec4(texture2D(textureSampler[" + (textures.size() - 1) + "], fragTextureCoord))";
         }
     }

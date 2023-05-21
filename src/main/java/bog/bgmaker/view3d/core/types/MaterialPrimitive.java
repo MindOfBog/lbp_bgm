@@ -66,8 +66,8 @@ public class MaterialPrimitive extends Entity{
     @Override
     public ArrayList<Model> getModel() {
 
-        if (this.model == null || reloadModel) {
-            reloadModel = false;
+        if (this.model == null || this.reloadModel) {
+            this.reloadModel = false;
 
             Vector2f[] bevelPoints = new Vector2f[] {
                     new Vector2f(0.2f, 0.0f),
@@ -127,6 +127,18 @@ public class MaterialPrimitive extends Entity{
                 norms[i * 3 + 1] = normals[i].y;
                 norms[i * 3 + 2] = normals[i].z;
             }
+
+            if(model != null)
+                for(Model model : model)
+                {
+                    GL30.glDeleteVertexArrays(model.vao);
+                    loader.vaos.remove((Object)model.vao);
+                    for(int vbo: model.vbos)
+                    {
+                        GL30.glDeleteBuffers(vbo);
+                        loader.vbos.remove((Object)vbo);
+                    }
+                }
 
             this.model = new ArrayList<Model>(Arrays.asList(new Model[]{loader.loadModel(verts, texCoords, norms, triangles)}));
 

@@ -6,10 +6,14 @@ import bog.bgmaker.view3d.managers.MouseInput;
 import bog.bgmaker.view3d.renderer.gui.GuiKeybind;
 import bog.bgmaker.view3d.renderer.gui.GuiScreen;
 import bog.bgmaker.view3d.renderer.gui.elements.*;
+import bog.bgmaker.view3d.renderer.gui.elements.Button;
+import bog.bgmaker.view3d.renderer.gui.elements.Checkbox;
 import bog.bgmaker.view3d.utils.Const;
 import bog.bgmaker.view3d.utils.Utils;
 import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
+
+import java.awt.*;
 
 /**
  * @author Bog
@@ -26,12 +30,13 @@ public class Settings extends GuiScreen{
     }
 
     public DropDownTab rendererSettings;
+    public DropDownTab guiSettings;
     public DropDownTab controls;
     public DropDownTab debug;
 
     public void init()
     {
-        rendererSettings = new DropDownTab("rendererSettings", "Renderer Settings", new Vector2f(7, 19 + getFontHeight(10)), new Vector2f(200, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window).closed();
+        rendererSettings = new DropDownTab("rendererSettings", "Renderer Settings", new Vector2f(7, 39), new Vector2f(200, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window).closed();
         rendererSettings.addCheckbox("culling", "No culling", Const.NO_CULLING);
         rendererSettings.addLabeledSlider("fov", "FOV:  ", (float) Math.toDegrees(Const.FOV), 20, 175);
         rendererSettings.addLabeledTextbox("fps", "FPS:  ", true, false, false, Float.toString(Const.FRAMERATE));
@@ -56,7 +61,114 @@ public class Settings extends GuiScreen{
         rendererSettings.addString("podColorLabel", "Pod Color:");
         rendererSettings.addLabeledTextbox("podColor", "# ");
 
-        controls = new DropDownTab("controls", "Controls", new Vector2f(7, 19 + getFontHeight(10) + 7 + rendererSettings.getFullHeight()), new Vector2f(200, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window).closed();
+        rendererSettings.tabElements.set(10, new DropDownTab.LabeledTextbox("# ", "outlineColor", new Vector2f(0, 0), new Vector2f(rendererSettings.size.x - 4, getFontHeight(rendererSettings.fontSize) + 4), rendererSettings.fontSize, rendererSettings.renderer, rendererSettings.loader, rendererSettings.window)
+        {
+            @Override
+            public Color textColor() {
+                return Const.OUTLINE_COLOR;
+            }
+        });
+        rendererSettings.tabElements.set(12, new DropDownTab.LabeledTextbox("# ", "borderColor1", new Vector2f(0, 0), new Vector2f(rendererSettings.size.x - 4, getFontHeight(rendererSettings.fontSize) + 4), rendererSettings.fontSize, rendererSettings.renderer, rendererSettings.loader, rendererSettings.window)
+        {
+            @Override
+            public Color textColor() {
+                return Const.BORDER_COLOR_1;
+            }
+        });
+        rendererSettings.tabElements.set(14, new DropDownTab.LabeledTextbox("# ", "borderColor2", new Vector2f(0, 0), new Vector2f(rendererSettings.size.x - 4, getFontHeight(rendererSettings.fontSize) + 4), rendererSettings.fontSize, rendererSettings.renderer, rendererSettings.loader, rendererSettings.window)
+        {
+            @Override
+            public Color textColor() {
+                return Const.BORDER_COLOR_2;
+            }
+        });
+        rendererSettings.tabElements.set(16, new DropDownTab.LabeledTextbox("# ", "borderColor3", new Vector2f(0, 0), new Vector2f(rendererSettings.size.x - 4, getFontHeight(rendererSettings.fontSize) + 4), rendererSettings.fontSize, rendererSettings.renderer, rendererSettings.loader, rendererSettings.window)
+        {
+            @Override
+            public Color textColor() {
+                return Const.BORDER_COLOR_3;
+            }
+        });
+        rendererSettings.tabElements.set(18, new DropDownTab.LabeledTextbox("# ", "borderColor4", new Vector2f(0, 0), new Vector2f(rendererSettings.size.x - 4, getFontHeight(rendererSettings.fontSize) + 4), rendererSettings.fontSize, rendererSettings.renderer, rendererSettings.loader, rendererSettings.window)
+        {
+            @Override
+            public Color textColor() {
+                return Const.BORDER_COLOR_4;
+            }
+        });
+        rendererSettings.tabElements.set(20, new DropDownTab.LabeledTextbox("# ", "earthColor", new Vector2f(0, 0), new Vector2f(rendererSettings.size.x - 4, getFontHeight(rendererSettings.fontSize) + 4), rendererSettings.fontSize, rendererSettings.renderer, rendererSettings.loader, rendererSettings.window)
+        {
+            @Override
+            public Color textColor() {
+                return Const.EARTH_COLOR;
+            }
+        });
+        rendererSettings.tabElements.set(22, new DropDownTab.LabeledTextbox("# ", "podColor", new Vector2f(0, 0), new Vector2f(rendererSettings.size.x - 4, getFontHeight(rendererSettings.fontSize) + 4), rendererSettings.fontSize, rendererSettings.renderer, rendererSettings.loader, rendererSettings.window)
+        {
+            @Override
+            public Color textColor() {
+                return Const.POD_COLOR;
+            }
+        });
+
+        guiSettings = new DropDownTab("guiSettings", "GUI Settings", new Vector2f(7, 39 + 7 + rendererSettings.getFullHeight()), new Vector2f(200, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window).closed();
+        guiSettings.addString("fontColorLabel", "Font Color:");
+        guiSettings.addLabeledTextbox("fontColor", "# ");
+        guiSettings.addString("primaryColorLabel", "Primary Color:");
+        guiSettings.addLabeledTextbox("primaryColor", "# ");
+        guiSettings.addString("secondaryColorLabel", "Secondary Color:");
+        guiSettings.addLabeledTextbox("secondaryColor", "# ");
+        guiSettings.addString("interfacePrimaryColorLabel", "Interface Prim. Color:");
+        guiSettings.addLabeledTextbox("interfacePrimaryColor", "# ");
+        guiSettings.addString("interfaceSecondaryColorLabel", "Interface Sec. Color:");
+        guiSettings.addLabeledTextbox("interfaceSecondaryColor", "# ");
+        guiSettings.addString("interfaceTertiaryColorLabel", "Interface Tert. Color:");
+        guiSettings.addLabeledTextbox("interfaceTertiaryColor", "# ");
+
+        guiSettings.tabElements.set(1, new DropDownTab.LabeledTextbox("# ", "fontColor", new Vector2f(0, 0), new Vector2f(rendererSettings.size.x - 4, getFontHeight(rendererSettings.fontSize) + 4), rendererSettings.fontSize, rendererSettings.renderer, rendererSettings.loader, rendererSettings.window)
+        {
+            @Override
+            public Color textColor() {
+                return Const.FONT_COLOR;
+            }
+        });
+        guiSettings.tabElements.set(3, new DropDownTab.LabeledTextbox("# ", "primaryColor", new Vector2f(0, 0), new Vector2f(rendererSettings.size.x - 4, getFontHeight(rendererSettings.fontSize) + 4), rendererSettings.fontSize, rendererSettings.renderer, rendererSettings.loader, rendererSettings.window)
+        {
+            @Override
+            public Color textColor() {
+                return Const.PRIMARY_COLOR;
+            }
+        });
+        guiSettings.tabElements.set(5, new DropDownTab.LabeledTextbox("# ", "secondaryColor", new Vector2f(0, 0), new Vector2f(rendererSettings.size.x - 4, getFontHeight(rendererSettings.fontSize) + 4), rendererSettings.fontSize, rendererSettings.renderer, rendererSettings.loader, rendererSettings.window)
+        {
+            @Override
+            public Color textColor() {
+                return Const.SECONDARY_COLOR;
+            }
+        });
+        guiSettings.tabElements.set(7, new DropDownTab.LabeledTextbox("# ", "interfacePrimaryColor", new Vector2f(0, 0), new Vector2f(rendererSettings.size.x - 4, getFontHeight(rendererSettings.fontSize) + 4), rendererSettings.fontSize, rendererSettings.renderer, rendererSettings.loader, rendererSettings.window)
+        {
+            @Override
+            public Color textColor() {
+                return Const.INTERFACE_PRIMARY_COLOR;
+            }
+        });
+        guiSettings.tabElements.set(9, new DropDownTab.LabeledTextbox("# ", "interfaceSecondaryColor", new Vector2f(0, 0), new Vector2f(rendererSettings.size.x - 4, getFontHeight(rendererSettings.fontSize) + 4), rendererSettings.fontSize, rendererSettings.renderer, rendererSettings.loader, rendererSettings.window)
+        {
+            @Override
+            public Color textColor() {
+                return Const.INTERFACE_SECONDARY_COLOR;
+            }
+        });
+        guiSettings.tabElements.set(11, new DropDownTab.LabeledTextbox("# ", "interfaceTertiaryColor", new Vector2f(0, 0), new Vector2f(rendererSettings.size.x - 4, getFontHeight(rendererSettings.fontSize) + 4), rendererSettings.fontSize, rendererSettings.renderer, rendererSettings.loader, rendererSettings.window)
+        {
+            @Override
+            public Color textColor() {
+                return Const.INTERFACE_TERTIARY_COLOR;
+            }
+        });
+
+        controls = new DropDownTab("controls", "Controls", new Vector2f(7, 39 + 14 + rendererSettings.getFullHeight() + guiSettings.getFullHeight()), new Vector2f(200, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window).closed();
         controls.addLabeledButton("forward", "Forward:  ", "W", new Button() {
             @Override
             public void clickedButton(int button, int action, int mods) {
@@ -203,10 +315,11 @@ public class Settings extends GuiScreen{
         });
 
         this.guiElements.add(rendererSettings);
+        this.guiElements.add(guiSettings);
         this.guiElements.add(controls);
 
         if (Main.debug) {
-            debug = new DropDownTab("debug", "Debug", new Vector2f(214, 7), new Vector2f(200, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window).closed();
+            debug = new DropDownTab("debug", "Debug", new Vector2f(214, 39), new Vector2f(200, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window).closed();
             debug.addCheckbox("aabb", "AABB");
             debug.addCheckbox("glScissorTest", "GL Scissor");
             debug.addCheckbox("vaoCount", "VAO Count");
@@ -254,43 +367,66 @@ public class Settings extends GuiScreen{
         String outlineColor = setTextboxValueString(outlC, Utils.toHexColor(Const.OUTLINE_COLOR));
         if(outlineColor != null)
             try{Const.OUTLINE_COLOR = Utils.parseHexColor(outlineColor);}catch (Exception e){}
-        outlC.textColor = Const.OUTLINE_COLOR;
 
         Textbox borderCol1 = ((DropDownTab.LabeledTextbox) rendererSettings.tabElements.get(12)).textbox;
         String borderColor1 = setTextboxValueString(borderCol1, Utils.toHexColor(Const.BORDER_COLOR_1));
         if(borderColor1 != null)
             try{Const.BORDER_COLOR_1 = Utils.parseHexColor(borderColor1); mainView.borders.material.setColor(Const.BORDER_COLOR_1);}catch (Exception e){}
-        borderCol1.textColor = Const.BORDER_COLOR_1;
 
         Textbox borderCol2 = ((DropDownTab.LabeledTextbox) rendererSettings.tabElements.get(14)).textbox;
         String borderColor2 = setTextboxValueString(borderCol2, Utils.toHexColor(Const.BORDER_COLOR_2));
         if(borderColor2 != null)
             try{Const.BORDER_COLOR_2 = Utils.parseHexColor(borderColor2); mainView.borders1.material.setColor(Const.BORDER_COLOR_2);}catch (Exception e){}
-        borderCol2.textColor = Const.BORDER_COLOR_2;
 
         Textbox borderCol3 = ((DropDownTab.LabeledTextbox) rendererSettings.tabElements.get(16)).textbox;
         String borderColor3 = setTextboxValueString(borderCol3, Utils.toHexColor(Const.BORDER_COLOR_3));
         if(borderColor3 != null)
             try{Const.BORDER_COLOR_3 = Utils.parseHexColor(borderColor3); mainView.borders2.material.setColor(Const.BORDER_COLOR_3);}catch (Exception e){}
-        borderCol3.textColor = Const.BORDER_COLOR_3;
 
         Textbox borderCol4 = ((DropDownTab.LabeledTextbox) rendererSettings.tabElements.get(18)).textbox;
         String borderColor4 = setTextboxValueString(borderCol4, Utils.toHexColor(Const.BORDER_COLOR_4));
         if(borderColor4 != null)
             try{Const.BORDER_COLOR_4 = Utils.parseHexColor(borderColor4); mainView.borders3.material.setColor(Const.BORDER_COLOR_4);}catch (Exception e){}
-        borderCol4.textColor = Const.BORDER_COLOR_4;
 
         Textbox earthCol = ((DropDownTab.LabeledTextbox) rendererSettings.tabElements.get(20)).textbox;
         String earthColor = setTextboxValueString(earthCol, Utils.toHexColor(Const.EARTH_COLOR));
         if(earthColor != null)
             try{Const.EARTH_COLOR = Utils.parseHexColor(earthColor); mainView.earth.material.setOverlayColor(Const.EARTH_COLOR);}catch (Exception e){}
-        earthCol.textColor = Const.EARTH_COLOR;
 
         Textbox podCol = ((DropDownTab.LabeledTextbox) rendererSettings.tabElements.get(22)).textbox;
         String podColor = setTextboxValueString(podCol, Utils.toHexColor(Const.POD_COLOR));
         if(podColor != null)
             try{Const.POD_COLOR = Utils.parseHexColor(podColor); mainView.pod.material.setOverlayColor(Const.POD_COLOR);}catch (Exception e){}
-        podCol.textColor = Const.POD_COLOR;
+
+        Textbox fontC = ((DropDownTab.LabeledTextbox) guiSettings.tabElements.get(1)).textbox;
+        String fontColor = setTextboxValueString(fontC, Utils.toHexColor(Const.FONT_COLOR));
+        if(fontColor != null)
+            try{Const.FONT_COLOR = Utils.parseHexColor(fontColor);}catch (Exception e){}
+
+        Textbox primC = ((DropDownTab.LabeledTextbox) guiSettings.tabElements.get(3)).textbox;
+        String primColor = setTextboxValueString(primC, Utils.toHexColor(Const.PRIMARY_COLOR));
+        if(primColor != null)
+            try{Const.PRIMARY_COLOR = Utils.parseHexColor(primColor);}catch (Exception e){}
+
+        Textbox secC = ((DropDownTab.LabeledTextbox) guiSettings.tabElements.get(5)).textbox;
+        String secColor = setTextboxValueString(secC, Utils.toHexColor(Const.SECONDARY_COLOR));
+        if(secColor != null)
+            try{Const.SECONDARY_COLOR = Utils.parseHexColor(secColor);}catch (Exception e){}
+
+        Textbox iprimC = ((DropDownTab.LabeledTextbox) guiSettings.tabElements.get(7)).textbox;
+        String iprimColor = setTextboxValueString(iprimC, Utils.toHexColor(Const.INTERFACE_PRIMARY_COLOR));
+        if(iprimColor != null)
+            try{Const.INTERFACE_PRIMARY_COLOR = Utils.parseHexColor(iprimColor);}catch (Exception e){}
+
+        Textbox isecC = ((DropDownTab.LabeledTextbox) guiSettings.tabElements.get(9)).textbox;
+        String isecColor = setTextboxValueString(isecC, Utils.toHexColor(Const.INTERFACE_SECONDARY_COLOR));
+        if(isecColor != null)
+            try{Const.INTERFACE_SECONDARY_COLOR = Utils.parseHexColor(isecColor);}catch (Exception e){}
+
+        Textbox itertC = ((DropDownTab.LabeledTextbox) guiSettings.tabElements.get(11)).textbox;
+        String itertColor = setTextboxValueString(itertC, Utils.toHexColor(Const.INTERFACE_TERTIARY_COLOR));
+        if(itertColor != null)
+            try{Const.INTERFACE_TERTIARY_COLOR = Utils.parseHexColor(itertColor);}catch (Exception e){}
     }
 
 }

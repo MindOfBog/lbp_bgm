@@ -235,8 +235,9 @@ public class View3D implements ILogic {
         try {
             pos = new Vector3f(levelSettings.get(selectedPresetIndex).sunPosition).mul(levelSettings.get(selectedPresetIndex).sunPositionScale);
 
-//            TODO:Vector4f sunColor = levelSettings.get(selectedPresetIndex).sunColor;
-//            renderer.processPointLight(new PointLight(
+            Vector4f sunColor = levelSettings.get(selectedPresetIndex).sunColor;
+//            renderer.processDirectionalLight(new DirectionalLight(new Vector3f(sunColor.x, sunColor.y, sunColor.z), new Vector3f(pos), levelSettings.get(selectedPresetIndex).sunMultiplier));
+//            TODO renderer.processPointLight(new PointLight(
 //                    new Vector3f(sunColor.x, sunColor.y, sunColor.z),
 //                    pos,
 //                    levelSettings.get(selectedPresetIndex).sunMultiplier,
@@ -424,7 +425,7 @@ public class View3D implements ILogic {
 
         if(window.resize)
         {
-            GL11.glViewport(0, 0, window.width, window.height);
+            renderer.entityRenderer.resize();
             window.resize = false;
         }
 
@@ -445,51 +446,48 @@ public class View3D implements ILogic {
     public int selectedPresetIndex = 1;
     private void createUI() {
 
-        Button elementEditing = new Button("elementEditing", "Scene", new Vector2f(0, window.height - 25), new Vector2f(150, 25), 10, renderer, loader, window) {
+        Button elementEditing = new Button("elementEditing", "Scene", new Vector2f(164, 7), new Vector2f(150, 25), 10, renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
-                setCurrentScreen(ElementEditing);
+                if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)setCurrentScreen(ElementEditing);
             }
 
             @Override
             public void draw(MouseInput mouseInput, boolean overOther) {
-                this.pos = new Vector2f(0, window.height - 25);
                 super.draw(mouseInput, overOther);
             }
         };
-        Button levelSettingsEditing = new Button("levelSettingsEditing", "Global Settings", new Vector2f(150, window.height - 25), new Vector2f(150, 25), 10, renderer, loader, window) {
+        Button levelSettingsEditing = new Button("levelSettingsEditing", "Global Settings", new Vector2f(321, 7), new Vector2f(150, 25), 10, renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
-                setCurrentScreen(LevelSettingsEditing);
+                if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)setCurrentScreen(LevelSettingsEditing);
             }
 
             @Override
             public void draw(MouseInput mouseInput, boolean overOther) {
-                this.pos = new Vector2f(150, window.height - 25);
                 super.draw(mouseInput, overOther);
             }
         };
-        Button export = new Button("export", "Export", new Vector2f(300, window.height - 25), new Vector2f(150, 25), 10, renderer, loader, window) {
+        Button export = new Button("export", "Export", new Vector2f(478, 7), new Vector2f(150, 25), 10, renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
-                setCurrentScreen(Export);
+                if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)setCurrentScreen(Export);
             }
 
             @Override
             public void draw(MouseInput mouseInput, boolean overOther) {
-                this.pos = new Vector2f(300, window.height - 25);
                 super.draw(mouseInput, overOther);
             }
         };
-        Button settingss = new Button("settingss", "Settings", new Vector2f(450, window.height - 25), new Vector2f(150, 25), 10, renderer, loader, window) {
+        Button settingss = new Button("settingss", "Settings", new Vector2f(7, window.height - 32), new Vector2f(150, 25), 10, renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
-                setCurrentScreen(Settings);
+                if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)setCurrentScreen(Settings);
             }
 
             @Override
             public void draw(MouseInput mouseInput, boolean overOther) {
-                this.pos = new Vector2f(450, window.height - 25);
+                this.pos = new Vector2f(7, window.height - 32);
                 super.draw(mouseInput, overOther);
             }
         };
@@ -532,9 +530,9 @@ public class View3D implements ILogic {
 
     private void drawUI(MouseInput mouseInput) {
 
-        drawRect(10 - 3, 10 - 3, getStringWidth("FPS: " + EngineMan.avgFPS, 10) + 6, (getFontHeight(10) + 2) + 3, new Color(0f, 0f, 0f, 0.5f));
-        drawRectOutline(10 - 3, 10 - 3, getStringWidth("FPS: " + EngineMan.avgFPS, 10) + 6, (getFontHeight(10) + 2) + 3, new Color(0f, 0f, 0f, 1f), false);
-        drawString("FPS: " + EngineMan.avgFPS, Color.white, 10, 10, 10);
+        drawRect(7, 7, 150, 25, Const.INTERFACE_PRIMARY_COLOR);
+        drawRectOutline(7, 7, 150, 25, Const.INTERFACE_PRIMARY_COLOR, false);
+        drawString("FPS: " + EngineMan.avgFPS, Const.FONT_COLOR, 85 - (getStringWidth("FPS: " + EngineMan.avgFPS, 10) / 2), 12, 10);
 
         if(Main.debug)
         {
@@ -548,19 +546,19 @@ public class View3D implements ILogic {
             if (vao)
             {
                 drawRect(10 - 3, 10 - 3 + ((getFontHeight(10) + 2) + 3) * l, getStringWidth("VAOs: " + loader.vaos.size(), 10) + 6, (getFontHeight(10) + 2) + 3, new Color(0f, 0f, 0f, 0.5f));
-                drawString("VAOs: " + loader.vaos.size(), Color.white, 10, 10 + ((getFontHeight(10) + 2) + 3) * l, 10);
+                drawString("VAOs: " + loader.vaos.size(), Const.FONT_COLOR, 10, 10 + ((getFontHeight(10) + 2) + 3) * l, 10);
                 l++;
             }
             if (vbo)
             {
                 drawRect(10 - 3, 10 - 3 + ((getFontHeight(10) + 2) + 3) * l, getStringWidth("VBOs: " + loader.vbos.size(), 10) + 6, (getFontHeight(10) + 2) + 3, new Color(0f, 0f, 0f, 0.5f));
-                drawString("VBOs: " + loader.vbos.size(), Color.white, 10, 10 + ((getFontHeight(10) + 2) + 3) * l, 10);
+                drawString("VBOs: " + loader.vbos.size(), Const.FONT_COLOR, 10, 10 + ((getFontHeight(10) + 2) + 3) * l, 10);
                 l++;
             }
             if (tex)
             {
                 drawRect(10 - 3, 10 - 3 + ((getFontHeight(10) + 2) + 3) * l, getStringWidth("Textures: " + loader.textures.size(), 10) + 6, (getFontHeight(10) + 2) + 3, new Color(0f, 0f, 0f, 0.5f));
-                drawString("Textures: " + loader.textures.size(), Color.white, 10, 10 + ((getFontHeight(10) + 2) + 3) * l, 10);
+                drawString("Textures: " + loader.textures.size(), Const.FONT_COLOR, 10, 10 + ((getFontHeight(10) + 2) + 3) * l, 10);
                 l++;
             }
 
@@ -692,6 +690,11 @@ public class View3D implements ILogic {
     private void drawRectOutline(int x, int y, int width, int height, Color color, boolean smooth)
     {
         renderer.processGuiElement(LineStrip.lineRectangle(new Vector2f(x, y), new Vector2f(width, height), color, loader, window, smooth, false));
+    }
+
+    private void drawRectOutline(int x, int y, int width, int height, Color color, boolean smooth, int openSide)
+    {
+        renderer.processGuiElement(LineStrip.lineRectangle(new Vector2f(x, y), new Vector2f(width, height), color, loader, window, smooth, false, openSide));
     }
 
     private void drawTriangle(Vector2f p1, Vector2f p2, Vector2f p3, Color color)

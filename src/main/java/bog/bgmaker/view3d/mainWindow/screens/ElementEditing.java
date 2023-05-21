@@ -12,6 +12,7 @@ import bog.bgmaker.view3d.managers.MouseInput;
 import bog.bgmaker.view3d.renderer.gui.GuiScreen;
 import bog.bgmaker.view3d.renderer.gui.elements.Button;
 import bog.bgmaker.view3d.renderer.gui.elements.*;
+import bog.bgmaker.view3d.utils.Const;
 import bog.bgmaker.view3d.utils.Utils;
 import common.FileChooser;
 import cwlib.enums.Part;
@@ -75,7 +76,7 @@ public class ElementEditing extends GuiScreen {
     public void init() {
         elementTool = new Transformation3D.Tool(mainView.loader);
 
-        camPos = new DropDownTab("camPosition", "Camera position", new Vector2f(7, 19 + getFontHeight(10)), new Vector2f(200, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window) {
+        camPos = new DropDownTab("camPosition", "Camera position", new Vector2f(7, 39), new Vector2f(200, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window) {
             @Override
             public void secondThread() {
                 super.secondThread();
@@ -95,7 +96,7 @@ public class ElementEditing extends GuiScreen {
         camPos.addLabeledTextbox("y", "Y:  ", true, false, false);
         camPos.addLabeledTextbox("z", "Z:  ", true, false, false);
 
-        currentSelection = new DropDownTab("currentSelection", "Current Selection", new Vector2f(521, 7), new Vector2f(200, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window) {
+        currentSelection = new DropDownTab("currentSelection", "Current Selection", new Vector2f(521, 39), new Vector2f(200, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window) {
             @Override
             public void secondThread() {
                 super.secondThread();
@@ -314,7 +315,7 @@ public class ElementEditing extends GuiScreen {
         currentSelection.addLabeledTextbox("posY", "Y:  ", true, false, false);
         currentSelection.addLabeledTextbox("posZ", "Z:  ", true, false, false);
 
-        fileLoading = new DropDownTab("fileLoading", "File Loading", new Vector2f(7, 19 + getFontHeight(10) + camPos.getFullHeight() + 7), new Vector2f(200, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window);
+        fileLoading = new DropDownTab("fileLoading", "File Loading", new Vector2f(7, 39 + camPos.getFullHeight() + 7), new Vector2f(200, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window);
         fileLoading.addCheckbox("legacyFileLoading", "Legacy file dialogue");
         fileLoading.addButton("map", "Load .MAP", new bog.bgmaker.view3d.renderer.gui.elements.Button() {
             @Override
@@ -370,7 +371,7 @@ public class ElementEditing extends GuiScreen {
             }
         });
 
-        helpers = new DropDownTab("helpers", "Helpers", new Vector2f(7, 19 + getFontHeight(10) + camPos.getFullHeight() + 7 + fileLoading.getFullHeight() + 3), new Vector2f(200, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window).closed();
+        helpers = new DropDownTab("helpers", "Helpers", new Vector2f(7, 39 + camPos.getFullHeight() + 7 + fileLoading.getFullHeight() + 3), new Vector2f(200, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window).closed();
         helpers.addCheckbox("levelBorders", "Level borders", true);
         helpers.addCheckbox("podHelper", "Pod helper");
         helpers.addButton("podCam", "Pod cam", new bog.bgmaker.view3d.renderer.gui.elements.Button() {
@@ -381,7 +382,7 @@ public class ElementEditing extends GuiScreen {
             }
         });
 
-        availableAssets = new DropDownTab("availableModels", "Available assets", new Vector2f(214, 7), new Vector2f(300, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window);
+        availableAssets = new DropDownTab("availableModels", "Available assets", new Vector2f(214, 39), new Vector2f(300, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window);
         availableAssets.addLabeledTextbox("availableEntitiesSearch", "Search:  ");
 
         assetList = new ButtonList("availableModelsList", mainView.entries, new Vector2f(), new Vector2f(), 10, mainView.renderer, mainView.loader, mainView.window) {
@@ -527,11 +528,6 @@ public class ElementEditing extends GuiScreen {
             }
 
             @Override
-            public Color backdropColor() {
-                return new Color(0, 0, 0, 0);
-            }
-
-            @Override
             public Color buttonColorSelected(Object object, int index) {
                 return new Color(0.38f, 0.38f, 0.38f, 0.5f);
             }
@@ -673,19 +669,14 @@ public class ElementEditing extends GuiScreen {
             }
 
             @Override
-            public void drawButton(int posY, int height, Object object, int i) {
-                super.drawButton(posY, height, object, i);
+            public void drawButton(int posY, float scrollY, float scrollHeight, int height, Object object, int i) {
+                super.drawButton(posY, scrollY, scrollHeight, height, object, i);
                 endScissor();
-                startScissor((int) pos.x - height, (int) pos.y, (int) size.x + 2 + height, (int) size.y);
+                startScissor((int) pos.x - height, (int) scrollY, (int) size.x + 2 + height, (int) java.lang.Math.ceil(scrollHeight));
                 Entity entity = (Entity) object;
-                drawRect((int)pos.x - height, posY, height, height, buttonColor(object, i));
-                drawImageStatic(entity.getType() == 0 ? mainView.modelIcon : entity.getType() == 1 ? mainView.materialIcon : entity.getType() == 2 ? mainView.lightIcon : mainView.audioIcon, (int)pos.x - height, posY, height, height);
-                drawRectOutline((int)pos.x - height, posY, height, height, buttonColor(object, i), false);
-            }
-
-            @Override
-            public Color backdropColor() {
-                return new Color(0f, 0f, 0f, 0f);
+                drawRect((int)pos.x - height + 2, posY, height, height, buttonColor(object, i));
+                drawImageStatic(entity.getType() == 0 ? mainView.modelIcon : entity.getType() == 1 ? mainView.materialIcon : entity.getType() == 2 ? mainView.lightIcon : mainView.audioIcon, (int)pos.x - height + 2, posY, height, height);
+                drawRectOutline((int)pos.x - height + 2, posY, height, height, buttonColor(object, i), false);
             }
 
             @Override
@@ -1241,7 +1232,8 @@ public class ElementEditing extends GuiScreen {
                 scale.isClicked,
                 mainView.crosshair, screenPos, mainView.window, mainView.loader, mainView.renderer, mouseInput);
 
-        drawRect(mainView.window.width - 305, 0, 305, mainView.window.height, new Color(0f, 0f, 0f, 0.5f));
+        drawRect(mainView.window.width - 305, 0, 305, mainView.window.height, Const.PRIMARY_COLOR);
+        drawLine(new Vector2i(mainView.window.width - 304, 0), new Vector2i(mainView.window.width - 304, mainView.window.height), Const.SECONDARY_COLOR, false);
 
         super.draw(mouseInput);
     }

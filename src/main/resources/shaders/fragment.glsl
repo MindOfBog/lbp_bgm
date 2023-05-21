@@ -50,6 +50,7 @@ uniform PointLight pointLights[50];
 uniform int pointLightsSize;
 uniform SpotLight spotLights[50];
 uniform int spotLightsSize;
+uniform mat4 transformationMatrix;
 
 const mat4 thresholdMatrix = mat4(
     1, 9, 3, 11,
@@ -61,15 +62,15 @@ vec4 ambientC;
 vec4 diffuseC;
 vec4 specularC;
 
-vec4 calcLightColor(vec3 light_color, float light_intensity, vec3 position, vec3 to_light_dir, vec3 normal)
+vec4 calcLightColor(vec3 light_color, float light_intensity, vec3 to_light_dir)
 {
-    float diffuseFactor = max(dot(to_light_dir, normal), 0.0);
+    float diffuseFactor = max(dot(normalize(fragNormal), to_light_dir), 0.2);
     vec4 diffuseColor = diffuseC * vec4(light_color, 1.0) * light_intensity * diffuseFactor;
 
-    vec3 camera_direction = normalize(-position);
+    vec3 camera_direction = normalize(-fragPos);
     vec3 from_light_dir = -to_light_dir;
-    vec3 reflectedLight = normalize(reflect(from_light_dir, normal));
-    float specularFactor = max(dot(camera_direction, reflectedLight), 0.0);
+    vec3 reflectedLight = normalize(reflect(from_light_dir, normalize(fragNormal)));
+    float specularFactor = max(dot(reflectedLight, camera_direction), 0.0);
     specularFactor = pow(specularFactor, specularPower);
     vec4 specularColor = specularC * light_intensity * specularFactor * material.reflectance * vec4(light_color, 1.0);
 
@@ -78,12 +79,12 @@ vec4 calcLightColor(vec3 light_color, float light_intensity, vec3 position, vec3
     return outC;
 }
 
-vec4 calcPointLight(PointLight light, vec3 position, vec3 normal)
+vec4 calcPointLight(PointLight light)
 {
-    vec3 light_dir = light.position - position;
+    vec3 light_dir = light.position - fragPos;
 
     vec3 to_light_dir = normalize(light_dir);
-    vec4 light_color = calcLightColor(light.color, light.intensity, position, normalize(to_light_dir), normalize(normal));
+    vec4 light_color = calcLightColor(light.color, light.intensity, to_light_dir);
 
     float dist = length(light_dir);
     float attenuationInv = light.constant + (light.linear * dist) + (light.exponent * dist * dist);
@@ -93,9 +94,9 @@ vec4 calcPointLight(PointLight light, vec3 position, vec3 normal)
     return outC;
 }
 
-vec4 calcSpotLight(SpotLight light, vec3 position, vec3 normal)
+vec4 calcSpotLight(SpotLight light)
 {
-    vec3 light_dir = light.pl.position - position;
+    vec3 light_dir = light.pl.position - fragPos;
     vec3 to_light_dir = normalize(light_dir);
     vec3 from_light_dir = -to_light_dir;
     float spot_alfa = dot(from_light_dir, normalize(light.conedir));
@@ -104,23 +105,23 @@ vec4 calcSpotLight(SpotLight light, vec3 position, vec3 normal)
 
     if(spot_alfa > light.cutoff)
     {
-        color = calcPointLight(light.pl, position, normal);
+        color = calcPointLight(light.pl);
         color *= (1.0 - (1.0 - spot_alfa) / (1.0 - light.cutoff));
     }
 
     return color;
 }
 
-vec4 calcDirectionalLight(DirectionalLight light, vec3 position, vec3 normal)
+vec4 calcDirectionalLight(DirectionalLight light)
 {
-    return calcLightColor(light.color, light.intensity, position, normalize(light.direction), normal);
+    return calcLightColor(light.color, light.intensity, normalize(light.direction));
 }
 
 void setupColors()
 {
     //%&AMBIENTC
 
-    vec4 cT = texture2D(textureSampler[0], fragTextureCoord);
+    vec4 cT = texture(textureSampler[0], fragTextureCoord);
 
     if(cT.x != -5)
     {
@@ -165,27 +166,28 @@ void main()
 {
     setupColors();
 
+    vec3 translation = vec3(transformationMatrix[0][3], transformationMatrix[1][3], transformationMatrix[2][3]);
     vec4 diffuseSpecularComp = vec4(0,0,0,0);
 
     for(int i = 0; i < directionalLightsSize; i++)
     {
         if(directionalLights[i].intensity > 0)
         {
-            diffuseSpecularComp += calcDirectionalLight(directionalLights[i], fragPos, fragNormal);
+            diffuseSpecularComp += calcDirectionalLight(directionalLights[i]);
         }
     }
     for(int i = 0; i < pointLightsSize; i++)
     {
         if(pointLights[i].intensity > 0)
         {
-            diffuseSpecularComp += calcPointLight(pointLights[i], fragPos, fragNormal);
+            diffuseSpecularComp += calcPointLight(pointLights[i]);
         }
     }
     for(int i = 0; i < spotLightsSize; i++)
     {
         if(spotLights[i].pl.intensity > 0)
         {
-            diffuseSpecularComp += calcSpotLight(spotLights[i], fragPos, fragNormal);
+            diffuseSpecularComp += calcSpotLight(spotLights[i]);
         }
     }
 

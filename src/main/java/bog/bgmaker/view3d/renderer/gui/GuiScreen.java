@@ -7,6 +7,7 @@ import bog.bgmaker.view3d.managers.WindowMan;
 import bog.bgmaker.view3d.renderer.gui.elements.*;
 import bog.bgmaker.view3d.renderer.gui.font.FontRenderer;
 import bog.bgmaker.view3d.renderer.gui.ingredients.Line;
+import bog.bgmaker.view3d.renderer.gui.ingredients.LineStrip;
 import bog.bgmaker.view3d.renderer.gui.ingredients.Quad;
 import bog.bgmaker.view3d.renderer.gui.ingredients.Scissor;
 import org.joml.Vector2d;
@@ -229,6 +230,15 @@ public class GuiScreen {
         renderer.processGuiElement(new Quad(loader, color, new Vector2f(x, y), new Vector2f(width, height), false));
     }
 
+    public void drawRectOutline(int x, int y, int width, int height, Color color, boolean smooth)
+    {
+        renderer.processGuiElement(LineStrip.lineRectangle(new Vector2f(x, y), new Vector2f(width, height), color, loader, window, smooth, false));
+    }
+
+    public void drawRectOutline(int x, int y, int width, int height, Color color, boolean smooth, int openSide)
+    {
+        renderer.processGuiElement(LineStrip.lineRectangle(new Vector2f(x, y), new Vector2f(width, height), color, loader, window, smooth, false, openSide));
+    }
     public void drawString(String text, Color color, int x, int y, int size)
     {
         FontRenderer.drawString(renderer, text, x, y, size, color, 0, text.length());

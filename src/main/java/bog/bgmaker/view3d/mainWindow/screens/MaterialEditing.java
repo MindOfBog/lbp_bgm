@@ -62,13 +62,15 @@ public class MaterialEditing extends GuiScreen {
         });
     }
 
+    MaterialPrimitive material;
+
     @Override
     public void draw(MouseInput mouseInput) {
 
         for(Entity entity : mainView.entities)
             if(entity.selected && entity.getType() == 1)
             {
-                MaterialPrimitive material = (MaterialPrimitive)entity;
+                material = (MaterialPrimitive)entity;
 
                 HashMap<Vector3f, Integer> screenPositions = new HashMap<>();
 
@@ -90,25 +92,21 @@ public class MaterialEditing extends GuiScreen {
 
                 ArrayList<Vector3f> positions = new ArrayList<>(screenPositions.keySet());
 
-                Collections.sort(positions, new Comparator<Vector3f>(){
+                positions.sort(new Comparator<Vector3f>() {
                     @Override
                     public int compare(Vector3f v1, Vector3f v2) {
-                        if(v1.z == 1 && v2.z == 1)
+                        if (v1.z == 1 && v2.z == 1)
                             return 0;
                         else if (v1.z == 1 && v2.z == 0) {
                             return -1;
-                        }
-                        else if (v1.z == 0 && v2.z == 1) {
+                        } else if (v1.z == 0 && v2.z == 1) {
                             return 1;
-                        }
-                        else
+                        } else
                             return Double.compare(mouseInput.currentPos.distance(v1.x, v1.y), mouseInput.currentPos.distance(v2.x, v2.y));
                     }
                 });
 
                 material.closest = -1;
-
-                boolean highlighted = false;
 
                 for(int i = 0; i < positions.size(); i++)
                 {
@@ -122,7 +120,6 @@ public class MaterialEditing extends GuiScreen {
                         }
                         else
                         {
-                            highlighted = true;
                             if(material.selectedVertices.contains(screenPositions.get(positions.get(i))))
                                 drawImageStatic(cornerEdit, (int)(screenPoint.x - 7.5f), (int)(screenPoint.y - 7.5f), 15, 15, new Color(0.25f, 0.063f, 0.63f));
                             else
@@ -141,7 +138,7 @@ public class MaterialEditing extends GuiScreen {
                 if(material.selectedVertices != null && material.selectedVertices.size() > 0)
                 {
                     Vector3f screenPos = null;
-
+                    Vector3f avgPos = null;
                     try
                     {
                         float x = 0;
@@ -160,19 +157,103 @@ public class MaterialEditing extends GuiScreen {
                         screenPos = new Vector3f(x/amount, y/amount, z/amount);
                     }
                     catch (Exception e){e.printStackTrace();}
+                    try
+                    {
+                        float x = 0;
+                        float y = 0;
+                        float z = 0;
+                        int amount = 0;
+                        for(int i : material.selectedVertices)
+                        {
+                            Vector3f vpos = material.shape.polygon.vertices[i];
+                            x += vpos.x;
+                            y += vpos.y;
+                            z += vpos.z;
+                            amount++;
+                        }
+                        avgPos = new Vector3f(x/amount, y/amount, z/amount);
+                    }
+                    catch (Exception e){e.printStackTrace();}
 
                     if(screenPos != null)
                     {
                         vertexTool.updateModels(mainView.camera, screenPos, mainView.window);
-                        if(!highlighted)
-                            vertexTool.testForMouse(true, mainView.camera, mainView.mousePicker, true, false, false);
-                        vertexTool.render(true, true, false, false, mainView.crosshair, screenPos, mainView.window, mainView.loader, mainView.renderer, mouseInput);
+                        vertexTool.testForMouse(true, mainView.camera, mainView.mousePicker, true, false, false);
+                        vertexTool.render(true, true, true, false, false, false, false, false, false, false, mainView.crosshair, screenPos, mainView.window, mainView.loader, mainView.renderer, mouseInput);
+
+                        if(vertexTool.selected != -1) {
+                            switch (vertexTool.selected) {
+                                //0,1,2 pos
+                                //3,4,5 rot
+                                //7,8,9 scale
+                                case 0:
+                                    //x pos
+                                {
+                                    float mousediff = (float) (mouseInput.currentPos.x - vertexTool.initPos.x);
+                                    boolean h = false;
+
+                                    if (mainView.camera.getWrappedRotation().y > 60f) {
+                                        mousediff = -(float) (mouseInput.currentPos.y - vertexTool.initPos.y);
+                                        h = true;
+                                    }
+
+                                    if (mainView.camera.getWrappedRotation().y < -60f) {
+                                        mousediff = (float) (mouseInput.currentPos.y - vertexTool.initPos.y);
+                                        h = true;
+                                    }
+
+                                    if (mainView.camera.getWrappedRotation().y > 120f || mainView.camera.getWrappedRotation().y < -120f) {
+                                        mousediff = -(float) (mouseInput.currentPos.x - vertexTool.initPos.x);
+                                        h = false;
+                                    }
+
+                                    for (int i : material.selectedVertices) {
+                                        Vector3f ppos = material.shape.polygon.vertices[i];
+                                        float diff = ppos.x - avgPos.x;
+                                        material.shape.polygon.vertices[i] = new Vector3f(lastPos.x + diff + (mousediff * (mainView.camera.pos.distance(new Vector3f(lastPos)))) / (h ? 1000f : 4000f), ppos.y, ppos.z);
+                                    }
+
+                                    material.reloadModel();
+                                }
+                                break;
+                                case 1:
+                                    //y pos
+                                {
+                                    float mousediff = -(float) (mouseInput.currentPos.y - vertexTool.initPos.y);
+
+                                    boolean h = false;
+
+                                    if (mainView.camera.getWrappedRotation().x > 20f)
+                                        h = true;
+
+                                    if (mainView.camera.getWrappedRotation().x < -20f)
+                                        h = true;
+
+                                    for (int i : material.selectedVertices) {
+                                        Vector3f ppos = material.shape.polygon.vertices[i];
+                                        float diff = ppos.y - avgPos.y;
+                                        material.shape.polygon.vertices[i] = new Vector3f(ppos.x, lastPos.y + diff + (mousediff * (mainView.camera.pos.distance(new Vector3f(lastPos)))) / (h ? 1000f : 4000f), ppos.z);
+                                    }
+
+                                    material.reloadModel();
+                                }
+                                break;
+                                case 2:
+                                    //z pos
+                                {
+
+                                }
+                                break;
+                            }
+                        }
                     }
                 }
             }
 
         super.draw(mouseInput);
     }
+
+    public Vector3f lastPos = new Vector3f();
 
     @Override
     public boolean onClick(Vector2d pos, int button, int action, int mods) {
@@ -183,9 +264,9 @@ public class MaterialEditing extends GuiScreen {
             {
                 MaterialPrimitive material = (MaterialPrimitive) entity;
 
-                    if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
+                    if(button == GLFW.GLFW_MOUSE_BUTTON_1)
                     {
-                        if(material.closest != -1)
+                        if(material.closest != -1 && action == GLFW.GLFW_PRESS)
                         {
                             if(mods == GLFW.GLFW_MOD_CONTROL)
                             {
@@ -202,7 +283,28 @@ public class MaterialEditing extends GuiScreen {
                                     material.selectedVertices.add(material.closest);
                             }
                         }
-                        else material.selectedVertices.clear();
+                        else if(vertexTool.onClick(pos, button, action, mods, mainView.window, mainView.camera))
+                        {
+                            try
+                            {
+                                float x = 0;
+                                float y = 0;
+                                float z = 0;
+                                int amount = 0;
+                                for(int i : material.selectedVertices)
+                                {
+                                    Vector3f vpos = material.shape.polygon.vertices[i];
+                                    x += vpos.x;
+                                    y += vpos.y;
+                                    z += vpos.z;
+                                    amount++;
+                                }
+                                lastPos = new Vector3f(x/amount, y/amount, z/amount);
+                            }
+                            catch (Exception e){e.printStackTrace();}
+                        }
+                        else if(action == GLFW.GLFW_PRESS)
+                            material.selectedVertices.clear();
                     }
             }
 

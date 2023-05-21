@@ -1,11 +1,14 @@
 package bog.bgmaker.view3d.mainWindow.screens;
 
+import bog.bgmaker.view3d.core.Transformation3D;
+import bog.bgmaker.view3d.core.types.Entity;
 import bog.bgmaker.view3d.mainWindow.View3D;
 import bog.bgmaker.view3d.managers.MouseInput;
 import bog.bgmaker.view3d.renderer.gui.GuiScreen;
 import bog.bgmaker.view3d.renderer.gui.elements.Button;
 import bog.bgmaker.view3d.renderer.gui.elements.*;
 import bog.bgmaker.view3d.utils.CWLibUtils.LevelSettingsUtils;
+import bog.bgmaker.view3d.utils.Const;
 import bog.bgmaker.view3d.utils.Utils;
 import common.FileChooser;
 import cwlib.enums.Part;
@@ -15,9 +18,8 @@ import cwlib.structs.things.Thing;
 import cwlib.structs.things.components.LevelSettings;
 import cwlib.structs.things.parts.PLevelSettings;
 import cwlib.types.Resource;
+import org.joml.*;
 import org.joml.Math;
-import org.joml.Vector2f;
-import org.joml.Vector4f;
 import org.lwjgl.glfw.GLFW;
 
 import java.awt.*;
@@ -32,6 +34,7 @@ public class LevelSettingsEditing extends GuiScreen {
 
     View3D mainView;
     int sunFields = 210;
+    Transformation3D.Tool sunTool;
 
     public LevelSettingsEditing(View3D mainView)
     {
@@ -40,10 +43,37 @@ public class LevelSettingsEditing extends GuiScreen {
         init();
     }
 
+    Element settingsHitbox;
+    Element presetsHitbox;
+    Textbox sunScale;
+    Textbox sunX;
+    Textbox sunY;
+    Textbox sunZ;
+    Textbox sunColor;
+    Textbox sunMultiplier;
+    Textbox ambientColor;
+    Textbox exposure;
+    Textbox fogColor;
+    Textbox forNear;
+    Textbox forFar;
+    Textbox rimColor;
+    Textbox rimColor2;
+    Textbox bakedShadowAmount;
+    Textbox bakedShadowBlur;
+    Textbox bakedAOBias;
+    Textbox bakedAOScale;
+    Textbox dynamicAOAmount;
+    Textbox dofNear;
+    Textbox dofFar;
+    Textbox zEffectAmount;
+    Textbox zEffectBrightness;
+    Textbox zEffectContrast;
+
     public void init()
     {
+        sunTool = new Transformation3D.Tool(mainView.loader);
 
-        Element settingsHitbox = new Element()
+        settingsHitbox = new Element()
         {
             @Override
             public void draw(MouseInput mouseInput, boolean overElement) {
@@ -54,7 +84,7 @@ public class LevelSettingsEditing extends GuiScreen {
         };
         settingsHitbox.pos = new Vector2f(mainView.window.width - 305, 0);
         settingsHitbox.size = new Vector2f(305, mainView.window.height);
-        Element presetsHitbox = new Element()
+        presetsHitbox = new Element()
         {
             @Override
             public void draw(MouseInput mouseInput, boolean overElement) {
@@ -65,7 +95,7 @@ public class LevelSettingsEditing extends GuiScreen {
         };
         presetsHitbox.pos = new Vector2f(mainView.window.width - 320 - getStringWidth("Add Presets from .PLAN/.BIN", 10), 0);
         presetsHitbox.size = new Vector2f(getStringWidth("Add Presets from .PLAN/.BIN", 10) + 12, 278);
-        Textbox sunScale = new Textbox("sunScale", new Vector2f(mainView.window.width - sunFields + 5, 3 + (getFontHeight(10) + 3) * 1), new Vector2f(sunFields - 8, getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
+        sunScale = new Textbox("sunScale", new Vector2f(mainView.window.width - sunFields + 5, 3 + (getFontHeight(10) + 3) * 1), new Vector2f(sunFields - 8, getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public void draw(MouseInput mouseInput, boolean overOther) {
@@ -76,7 +106,7 @@ public class LevelSettingsEditing extends GuiScreen {
                     mainView.levelSettings.get(mainView.selectedPresetIndex).sunPositionScale = getText().isEmpty() ? 0f :  Float.parseFloat(getText());
             }
         }.noLetters().noOthers();
-        Textbox sunX = new Textbox("sunX", new Vector2f(mainView.window.width - sunFields + 5, 3 + (getFontHeight(10) + 3) * 2), new Vector2f(sunFields - 8, getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
+        sunX = new Textbox("sunX", new Vector2f(mainView.window.width - sunFields + 5, 3 + (getFontHeight(10) + 3) * 2), new Vector2f(sunFields - 8, getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public void draw(MouseInput mouseInput, boolean overOther) {
@@ -85,8 +115,21 @@ public class LevelSettingsEditing extends GuiScreen {
                 if(isFocused() && !mainView.levelSettings.isEmpty())
                     mainView.levelSettings.get(mainView.selectedPresetIndex).sunPosition.x = getText().isEmpty() ? 0f :  Float.parseFloat(getText());
             }
+
+            @Override
+            public void secondThread() {
+                super.secondThread();
+                LevelSettings ls = null;
+                try
+                {
+                    ls = mainView.levelSettings.get(mainView.selectedPresetIndex);
+                }catch (Exception e){}
+
+                if(ls != null)
+                    setText(Float.toString(ls.sunPosition.x));
+            }
         }.noLetters().noOthers();
-        Textbox sunY = new Textbox("sunY", new Vector2f(mainView.window.width - sunFields + 5, 3 + (getFontHeight(10) + 3) * 3), new Vector2f(sunFields - 8, getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
+        sunY = new Textbox("sunY", new Vector2f(mainView.window.width - sunFields + 5, 3 + (getFontHeight(10) + 3) * 3), new Vector2f(sunFields - 8, getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public void draw(MouseInput mouseInput, boolean overOther) {
@@ -95,8 +138,21 @@ public class LevelSettingsEditing extends GuiScreen {
                 if(isFocused() && !mainView.levelSettings.isEmpty())
                     mainView.levelSettings.get(mainView.selectedPresetIndex).sunPosition.y = getText().isEmpty() ? 0f :  Float.parseFloat(getText());
             }
+
+            @Override
+            public void secondThread() {
+                super.secondThread();
+                LevelSettings ls = null;
+                try
+                {
+                    ls = mainView.levelSettings.get(mainView.selectedPresetIndex);
+                }catch (Exception e){}
+
+                if(ls != null)
+                    setText(Float.toString(ls.sunPosition.y));
+            }
         }.noLetters().noOthers();
-        Textbox sunZ = new Textbox("sunZ", new Vector2f(mainView.window.width - sunFields + 5, 3 + (getFontHeight(10) + 3) * 4), new Vector2f(sunFields - 8, getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
+        sunZ = new Textbox("sunZ", new Vector2f(mainView.window.width - sunFields + 5, 3 + (getFontHeight(10) + 3) * 4), new Vector2f(sunFields - 8, getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public void draw(MouseInput mouseInput, boolean overOther) {
@@ -105,20 +161,37 @@ public class LevelSettingsEditing extends GuiScreen {
                 if(isFocused() && !mainView.levelSettings.isEmpty())
                     mainView.levelSettings.get(mainView.selectedPresetIndex).sunPosition.z = getText().isEmpty() ? 0f :  Float.parseFloat(getText());
             }
+
+            @Override
+            public void secondThread() {
+                super.secondThread();
+                LevelSettings ls = null;
+                try
+                {
+                    ls = mainView.levelSettings.get(mainView.selectedPresetIndex);
+                }catch (Exception e){}
+
+                if(ls != null)
+                    setText(Float.toString(ls.sunPosition.z));
+            }
         }.noLetters().noOthers();
         int textboxWidth = 105;
-        Textbox sunColor = new Textbox("sunColor", new Vector2f(mainView.window.width - textboxWidth, 3 + (getFontHeight(10) + 3) * 5), new Vector2f(textboxWidth - 3, getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
+        sunColor = new Textbox("sunColor", new Vector2f(mainView.window.width - textboxWidth, 3 + (getFontHeight(10) + 3) * 5), new Vector2f(textboxWidth - 3, getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
         {
+            @Override
+            public Color textColor() {
+                return Utils.parseHexColor(this.getText());
+            }
+
             @Override
             public void draw(MouseInput mouseInput, boolean overOther) {
                 this.pos.x = mainView.window.width - textboxWidth;
-                this.textColor = Utils.parseHexColor(this.getText());
                 super.draw(mouseInput, overOther);
                 if(isFocused() && !mainView.levelSettings.isEmpty())
                     mainView.levelSettings.get(mainView.selectedPresetIndex).sunColor = Utils.parseHexColorVec(getText());
             }
         }.noOthers();
-        Textbox sunMultiplier = new Textbox("sunMultiplier", new Vector2f(mainView.window.width - textboxWidth, 3 + (getFontHeight(10) + 3) * 6), new Vector2f(textboxWidth - 3, getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
+        sunMultiplier = new Textbox("sunMultiplier", new Vector2f(mainView.window.width - textboxWidth, 3 + (getFontHeight(10) + 3) * 6), new Vector2f(textboxWidth - 3, getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public void draw(MouseInput mouseInput, boolean overOther) {
@@ -128,18 +201,22 @@ public class LevelSettingsEditing extends GuiScreen {
                     mainView.levelSettings.get(mainView.selectedPresetIndex).sunMultiplier = getText().isEmpty() ? 0f :  Float.parseFloat(getText());
             }
         }.noLetters().noOthers();
-        Textbox ambientColor = new Textbox("ambientColor", new Vector2f(mainView.window.width - textboxWidth, 3 + (getFontHeight(10) + 3) * 7), new Vector2f(textboxWidth - 3, getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
+        ambientColor = new Textbox("ambientColor", new Vector2f(mainView.window.width - textboxWidth, 3 + (getFontHeight(10) + 3) * 7), new Vector2f(textboxWidth - 3, getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
         {
+            @Override
+            public Color textColor() {
+                return Utils.parseHexColor(this.getText());
+            }
+
             @Override
             public void draw(MouseInput mouseInput, boolean overOther) {
                 this.pos.x = mainView.window.width - textboxWidth;
-                this.textColor = Utils.parseHexColor(this.getText());
                 super.draw(mouseInput, overOther);
                 if(isFocused() && !mainView.levelSettings.isEmpty())
                     mainView.levelSettings.get(mainView.selectedPresetIndex).ambientColor = Utils.parseHexColorVec(getText());
             }
         }.noOthers();
-        Textbox exposure = new Textbox("exposure", new Vector2f(mainView.window.width - textboxWidth, 3 + (getFontHeight(10) + 3) * 8), new Vector2f(textboxWidth - 3, getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
+        exposure = new Textbox("exposure", new Vector2f(mainView.window.width - textboxWidth, 3 + (getFontHeight(10) + 3) * 8), new Vector2f(textboxWidth - 3, getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public void draw(MouseInput mouseInput, boolean overOther) {
@@ -149,18 +226,22 @@ public class LevelSettingsEditing extends GuiScreen {
                     mainView.levelSettings.get(mainView.selectedPresetIndex).exposure = getText().isEmpty() ? 0f :  Float.parseFloat(getText());
             }
         }.noLetters().noOthers();
-        Textbox fogColor = new Textbox("fogColor", new Vector2f(mainView.window.width - textboxWidth, 3 + (getFontHeight(10) + 3) * 9), new Vector2f(textboxWidth - 3, getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
+        fogColor = new Textbox("fogColor", new Vector2f(mainView.window.width - textboxWidth, 3 + (getFontHeight(10) + 3) * 9), new Vector2f(textboxWidth - 3, getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
         {
+            @Override
+            public Color textColor() {
+                return Utils.parseHexColor(this.getText());
+            }
+
             @Override
             public void draw(MouseInput mouseInput, boolean overOther) {
                 this.pos.x = mainView.window.width - textboxWidth;
-                this.textColor = Utils.parseHexColor(this.getText());
                 super.draw(mouseInput, overOther);
                 if(isFocused() && !mainView.levelSettings.isEmpty())
                     mainView.levelSettings.get(mainView.selectedPresetIndex).fogColor = Utils.parseHexColorVec(getText());
             }
         }.noOthers();
-        Textbox forNear = new Textbox("forNear", new Vector2f(mainView.window.width - textboxWidth, 3 + (getFontHeight(10) + 3) * 10), new Vector2f(textboxWidth - 3, getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
+        forNear = new Textbox("forNear", new Vector2f(mainView.window.width - textboxWidth, 3 + (getFontHeight(10) + 3) * 10), new Vector2f(textboxWidth - 3, getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public void draw(MouseInput mouseInput, boolean overOther) {
@@ -170,7 +251,7 @@ public class LevelSettingsEditing extends GuiScreen {
                     mainView.levelSettings.get(mainView.selectedPresetIndex).fogNear = getText().isEmpty() ? 0f :  Float.parseFloat(getText());
             }
         }.noLetters().noOthers();
-        Textbox forFar = new Textbox("forFar", new Vector2f(mainView.window.width - textboxWidth, 3 + (getFontHeight(10) + 3) * 11), new Vector2f(textboxWidth - 3, getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
+        forFar = new Textbox("forFar", new Vector2f(mainView.window.width - textboxWidth, 3 + (getFontHeight(10) + 3) * 11), new Vector2f(textboxWidth - 3, getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public void draw(MouseInput mouseInput, boolean overOther) {
@@ -180,29 +261,37 @@ public class LevelSettingsEditing extends GuiScreen {
                     mainView.levelSettings.get(mainView.selectedPresetIndex).fogFar = getText().isEmpty() ? 0f :  Float.parseFloat(getText());
             }
         }.noLetters().noOthers();
-        Textbox rimColor = new Textbox("rimColor", new Vector2f(mainView.window.width - textboxWidth, 3 + (getFontHeight(10) + 3) * 12), new Vector2f(textboxWidth - 3, getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
+        rimColor = new Textbox("rimColor", new Vector2f(mainView.window.width - textboxWidth, 3 + (getFontHeight(10) + 3) * 12), new Vector2f(textboxWidth - 3, getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
         {
+            @Override
+            public Color textColor() {
+                return Utils.parseHexColor(this.getText());
+            }
+
             @Override
             public void draw(MouseInput mouseInput, boolean overOther) {
                 this.pos.x = mainView.window.width - textboxWidth;
-                this.textColor = Utils.parseHexColor(this.getText());
                 super.draw(mouseInput, overOther);
                 if(isFocused() && !mainView.levelSettings.isEmpty())
                     mainView.levelSettings.get(mainView.selectedPresetIndex).rimColor = Utils.parseHexColorVec(getText());
             }
         }.noOthers();
-        Textbox rimColor2 = new Textbox("rimColor2", new Vector2f(mainView.window.width - textboxWidth, 3 + (getFontHeight(10) + 3) * 13), new Vector2f(textboxWidth - 3, getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
+        rimColor2 = new Textbox("rimColor2", new Vector2f(mainView.window.width - textboxWidth, 3 + (getFontHeight(10) + 3) * 13), new Vector2f(textboxWidth - 3, getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
         {
+            @Override
+            public Color textColor() {
+                return Utils.parseHexColor(this.getText());
+            }
+
             @Override
             public void draw(MouseInput mouseInput, boolean overOther) {
                 this.pos.x = mainView.window.width - textboxWidth;
-                this.textColor = Utils.parseHexColor(this.getText());
                 super.draw(mouseInput, overOther);
                 if(isFocused() && !mainView.levelSettings.isEmpty())
                     mainView.levelSettings.get(mainView.selectedPresetIndex).rimColor2 = Utils.parseHexColorVec(getText());
             }
         }.noOthers();
-        Textbox bakedShadowAmount = new Textbox("bakedShadowAmount", new Vector2f(mainView.window.width - textboxWidth, 3 + (getFontHeight(10) + 3) * 14), new Vector2f(textboxWidth - 3, getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
+        bakedShadowAmount = new Textbox("bakedShadowAmount", new Vector2f(mainView.window.width - textboxWidth, 3 + (getFontHeight(10) + 3) * 14), new Vector2f(textboxWidth - 3, getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public void draw(MouseInput mouseInput, boolean overOther) {
@@ -212,7 +301,7 @@ public class LevelSettingsEditing extends GuiScreen {
                     mainView.levelSettings.get(mainView.selectedPresetIndex).bakedShadowAmount = getText().isEmpty() ? 0f :  Float.parseFloat(getText());
             }
         }.noLetters().noOthers();
-        Textbox bakedShadowBlur = new Textbox("bakedShadowBlur", new Vector2f(mainView.window.width - textboxWidth, 3 + (getFontHeight(10) + 3) * 15), new Vector2f(textboxWidth - 3, getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
+        bakedShadowBlur = new Textbox("bakedShadowBlur", new Vector2f(mainView.window.width - textboxWidth, 3 + (getFontHeight(10) + 3) * 15), new Vector2f(textboxWidth - 3, getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public void draw(MouseInput mouseInput, boolean overOther) {
@@ -222,7 +311,7 @@ public class LevelSettingsEditing extends GuiScreen {
                     mainView.levelSettings.get(mainView.selectedPresetIndex).bakedShadowBlur = getText().isEmpty() ? 0f :  Float.parseFloat(getText());
             }
         }.noLetters().noOthers();
-        Textbox bakedAOBias = new Textbox("bakedAOBias", new Vector2f(mainView.window.width - textboxWidth, 3 + (getFontHeight(10) + 3) * 16), new Vector2f(textboxWidth - 3, getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
+        bakedAOBias = new Textbox("bakedAOBias", new Vector2f(mainView.window.width - textboxWidth, 3 + (getFontHeight(10) + 3) * 16), new Vector2f(textboxWidth - 3, getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public void draw(MouseInput mouseInput, boolean overOther) {
@@ -232,7 +321,7 @@ public class LevelSettingsEditing extends GuiScreen {
                     mainView.levelSettings.get(mainView.selectedPresetIndex).bakedAOBias = getText().isEmpty() ? 0f : Float.parseFloat(getText());
             }
         }.noLetters().noOthers();
-        Textbox bakedAOScale = new Textbox("bakedAOScale", new Vector2f(mainView.window.width - textboxWidth, 3 + (getFontHeight(10) + 3) * 17), new Vector2f(textboxWidth - 3, getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
+        bakedAOScale = new Textbox("bakedAOScale", new Vector2f(mainView.window.width - textboxWidth, 3 + (getFontHeight(10) + 3) * 17), new Vector2f(textboxWidth - 3, getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public void draw(MouseInput mouseInput, boolean overOther) {
@@ -242,7 +331,7 @@ public class LevelSettingsEditing extends GuiScreen {
                     mainView.levelSettings.get(mainView.selectedPresetIndex).bakedAOScale = getText().isEmpty() ? 0f : Float.parseFloat(getText());
             }
         }.noLetters().noOthers();
-        Textbox dynamicAOAmount = new Textbox("dynamicAOAmount", new Vector2f(mainView.window.width - textboxWidth, 3 + (getFontHeight(10) + 3) * 18), new Vector2f(textboxWidth - 3, getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
+        dynamicAOAmount = new Textbox("dynamicAOAmount", new Vector2f(mainView.window.width - textboxWidth, 3 + (getFontHeight(10) + 3) * 18), new Vector2f(textboxWidth - 3, getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public void draw(MouseInput mouseInput, boolean overOther) {
@@ -252,7 +341,7 @@ public class LevelSettingsEditing extends GuiScreen {
                     mainView.levelSettings.get(mainView.selectedPresetIndex).dynamicAOAmount = getText().isEmpty() ? 0f : Float.parseFloat(getText());
             }
         }.noLetters().noOthers();
-        Textbox dofNear = new Textbox("dofNear", new Vector2f(mainView.window.width - textboxWidth, 3 + (getFontHeight(10) + 3) * 19), new Vector2f(textboxWidth - 3, getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
+        dofNear = new Textbox("dofNear", new Vector2f(mainView.window.width - textboxWidth, 3 + (getFontHeight(10) + 3) * 19), new Vector2f(textboxWidth - 3, getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public void draw(MouseInput mouseInput, boolean overOther) {
@@ -262,7 +351,7 @@ public class LevelSettingsEditing extends GuiScreen {
                     mainView.levelSettings.get(mainView.selectedPresetIndex).dofNear = getText().isEmpty() ? 0f : Float.parseFloat(getText());
             }
         }.noLetters().noOthers();
-        Textbox dofFar = new Textbox("dofFar", new Vector2f(mainView.window.width - textboxWidth, 3 + (getFontHeight(10) + 3) * 20), new Vector2f(textboxWidth - 3, getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
+        dofFar = new Textbox("dofFar", new Vector2f(mainView.window.width - textboxWidth, 3 + (getFontHeight(10) + 3) * 20), new Vector2f(textboxWidth - 3, getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public void draw(MouseInput mouseInput, boolean overOther) {
@@ -272,7 +361,7 @@ public class LevelSettingsEditing extends GuiScreen {
                     mainView.levelSettings.get(mainView.selectedPresetIndex).dofFar = getText().isEmpty() ? 0f : Float.parseFloat(getText());
             }
         }.noLetters().noOthers();
-        Textbox zEffectAmount = new Textbox("zEffectAmount", new Vector2f(mainView.window.width - textboxWidth, 3 + (getFontHeight(10) + 3) * 21), new Vector2f(textboxWidth - 3, getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
+        zEffectAmount = new Textbox("zEffectAmount", new Vector2f(mainView.window.width - textboxWidth, 3 + (getFontHeight(10) + 3) * 21), new Vector2f(textboxWidth - 3, getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public void draw(MouseInput mouseInput, boolean overOther) {
@@ -282,7 +371,7 @@ public class LevelSettingsEditing extends GuiScreen {
                     mainView.levelSettings.get(mainView.selectedPresetIndex).zEffectAmount = getText().isEmpty() ? 0f : Float.parseFloat(getText());
             }
         }.noLetters().noOthers();
-        Textbox zEffectBrightness = new Textbox("zEffectBrightness", new Vector2f(mainView.window.width - textboxWidth, 3 + (getFontHeight(10) + 3) * 22), new Vector2f(textboxWidth - 3, getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
+        zEffectBrightness = new Textbox("zEffectBrightness", new Vector2f(mainView.window.width - textboxWidth, 3 + (getFontHeight(10) + 3) * 22), new Vector2f(textboxWidth - 3, getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public void draw(MouseInput mouseInput, boolean overOther) {
@@ -292,7 +381,7 @@ public class LevelSettingsEditing extends GuiScreen {
                     mainView.levelSettings.get(mainView.selectedPresetIndex).zEffectBright = getText().isEmpty() ? 0f : Float.parseFloat(getText());
             }
         }.noLetters().noOthers();
-        Textbox zEffectContrast = new Textbox("zEffectContrast", new Vector2f(mainView.window.width - textboxWidth, 3 + (getFontHeight(10) + 3) * 23), new Vector2f(textboxWidth - 3, getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
+        zEffectContrast = new Textbox("zEffectContrast", new Vector2f(mainView.window.width - textboxWidth, 3 + (getFontHeight(10) + 3) * 23), new Vector2f(textboxWidth - 3, getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public void draw(MouseInput mouseInput, boolean overOther) {
@@ -595,11 +684,6 @@ public class LevelSettingsEditing extends GuiScreen {
                 hovering = -1;
                 this.pos.x = mainView.window.width - 317 - getStringWidth("Add Presets from .PLAN/.BIN", 10);
                 super.draw(mouseInput, overElement);
-            }
-
-            @Override
-            public Color backdropColor() {
-                return new Color(0f, 0f, 0f, 0f);
             }
         };
         bog.bgmaker.view3d.renderer.gui.elements.Button addNew = new bog.bgmaker.view3d.renderer.gui.elements.Button("addNew", "Add", new Vector2f(mainView.window.width - 317 - getStringWidth("Add Presets from .PLAN/.BIN", 10), getFontHeight(10) + 163), new Vector2f(getStringWidth("Add Presets from .PLAN/.BIN", 10)/2 + 1, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window)
@@ -942,10 +1026,6 @@ public class LevelSettingsEditing extends GuiScreen {
                 return true;
             }
 
-            @Override
-            public Color backdropColor() {
-                return new Color(0f, 0f, 0f, 0f);
-            }
         };
         templates.addList("templateList", templateList, 240);
         this.guiElements.add(addFromPlanBin);
@@ -961,41 +1041,159 @@ public class LevelSettingsEditing extends GuiScreen {
     @Override
     public void draw(MouseInput mouseInput) {
 
-        drawRect(mainView.window.width - 305, 0, 305, mainView.window.height, new Color(0f, 0f, 0f, 0.5f));
-        drawString("Sun Position:", Color.white, mainView.window.width - 302, 3, 10);
-        drawString("Scale:", Color.white, mainView.window.width - sunFields - getStringWidth("Scale:", 10), 3 + (getFontHeight(10) + 3) * 1, 10);
-        drawString("X:", Color.white, mainView.window.width - sunFields - getStringWidth("X:", 10), 3 + (getFontHeight(10) + 3) * 2, 10);
-        drawString("Y:", Color.white, mainView.window.width - sunFields - getStringWidth("Y:", 10), 3 + (getFontHeight(10) + 3) * 3, 10);
-        drawString("Z:", Color.white, mainView.window.width - sunFields - getStringWidth("Z:", 10), 3 + (getFontHeight(10) + 3) * 4, 10);
-        drawString("Sun Color:", Color.white, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 5, 10);
-        drawString("#", Color.white, mainView.window.width - 108 - getStringWidth("#", 10), 3 + (getFontHeight(10) + 3) * 5, 10);
-        drawString("Sun Multiplier:", Color.white, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 6, 10);
-        drawString("Ambient Color:", Color.white, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 7, 10);
-        drawString("#", Color.white, mainView.window.width - 108 - getStringWidth("#", 10), 3 + (getFontHeight(10) + 3) * 7, 10);
-        drawString("Exposure:", Color.white, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 8, 10);
-        drawString("Fog Color:", Color.white, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 9, 10);
-        drawString("#", Color.white, mainView.window.width - 108 - getStringWidth("#", 10), 3 + (getFontHeight(10) + 3) * 9, 10);
-        drawString("Fog Near:", Color.white, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 10, 10);
-        drawString("Fog Far:", Color.white, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 11, 10);
-        drawString("Rim Color:", Color.white, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 12, 10);
-        drawString("#", Color.white, mainView.window.width - 108 - getStringWidth("#", 10), 3 + (getFontHeight(10) + 3) * 12, 10);
-        drawString("Rim Color 2:", Color.white, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 13, 10);
-        drawString("#", Color.white, mainView.window.width - 108 - getStringWidth("#", 10), 3 + (getFontHeight(10) + 3) * 13, 10);
-        drawString("Baked Shadow Amount:", Color.white, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 14, 10);
-        drawString("Baked Shadow Blur:", Color.white, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 15, 10);
-        drawString("Baked AO Bias:", Color.white, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 16, 10);
-        drawString("Baked AO Scale:", Color.white, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 17, 10);
-        drawString("Dynamic AO Amount:", Color.white, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 18, 10);
-        drawString("DOF Near:", Color.white, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 19, 10);
-        drawString("DOF Far:", Color.white, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 20, 10);
-        drawString("Z Effect Amount:", Color.white, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 21, 10);
-        drawString("Z Effect Brightness:", Color.white, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 22, 10);
-        drawString("Z Effect Contrast:", Color.white, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 23, 10);
+        drawRect(mainView.window.width - 305, 0, 305, mainView.window.height, Const.PRIMARY_COLOR);
+        drawLine(new Vector2i(mainView.window.width - 304, 0), new Vector2i(mainView.window.width - 304, mainView.window.height), Const.SECONDARY_COLOR, false);
+        drawString("Sun Position:", Const.FONT_COLOR, mainView.window.width - 302, 3, 10);
+        drawString("Scale:", Const.FONT_COLOR, mainView.window.width - sunFields - getStringWidth("Scale:", 10), 3 + (getFontHeight(10) + 3) * 1, 10);
+        drawString("X:", Const.FONT_COLOR, mainView.window.width - sunFields - getStringWidth("X:", 10), 3 + (getFontHeight(10) + 3) * 2, 10);
+        drawString("Y:", Const.FONT_COLOR, mainView.window.width - sunFields - getStringWidth("Y:", 10), 3 + (getFontHeight(10) + 3) * 3, 10);
+        drawString("Z:", Const.FONT_COLOR, mainView.window.width - sunFields - getStringWidth("Z:", 10), 3 + (getFontHeight(10) + 3) * 4, 10);
+        drawString("Sun Color:", Const.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 5, 10);
+        drawString("#", Const.FONT_COLOR, mainView.window.width - 108 - getStringWidth("#", 10), 3 + (getFontHeight(10) + 3) * 5, 10);
+        drawString("Sun Multiplier:", Const.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 6, 10);
+        drawString("Ambient Color:", Const.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 7, 10);
+        drawString("#", Const.FONT_COLOR, mainView.window.width - 108 - getStringWidth("#", 10), 3 + (getFontHeight(10) + 3) * 7, 10);
+        drawString("Exposure:", Const.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 8, 10);
+        drawString("Fog Color:", Const.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 9, 10);
+        drawString("#", Const.FONT_COLOR, mainView.window.width - 108 - getStringWidth("#", 10), 3 + (getFontHeight(10) + 3) * 9, 10);
+        drawString("Fog Near:", Const.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 10, 10);
+        drawString("Fog Far:", Const.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 11, 10);
+        drawString("Rim Color:", Const.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 12, 10);
+        drawString("#", Const.FONT_COLOR, mainView.window.width - 108 - getStringWidth("#", 10), 3 + (getFontHeight(10) + 3) * 12, 10);
+        drawString("Rim Color 2:", Const.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 13, 10);
+        drawString("#", Const.FONT_COLOR, mainView.window.width - 108 - getStringWidth("#", 10), 3 + (getFontHeight(10) + 3) * 13, 10);
+        drawString("Baked Shadow Amount:", Const.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 14, 10);
+        drawString("Baked Shadow Blur:", Const.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 15, 10);
+        drawString("Baked AO Bias:", Const.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 16, 10);
+        drawString("Baked AO Scale:", Const.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 17, 10);
+        drawString("Dynamic AO Amount:", Const.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 18, 10);
+        drawString("DOF Near:", Const.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 19, 10);
+        drawString("DOF Far:", Const.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 20, 10);
+        drawString("Z Effect Amount:", Const.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 21, 10);
+        drawString("Z Effect Brightness:", Const.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 22, 10);
+        drawString("Z Effect Contrast:", Const.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 23, 10);
 
-        drawRect(mainView.window.width - 320 - getStringWidth("Add Presets from .PLAN/.BIN", 10), 0, getStringWidth("Add Presets from .PLAN/.BIN", 10) + 12, 263, new Color(0f, 0f, 0f, 0.5f));
-        drawString("Ambiance:", Color.white, mainView.window.width - 317 - getStringWidth("Add Presets from .PLAN/.BIN", 10), 224, 10);
+        drawRect(mainView.window.width - 320 - getStringWidth("Add Presets from .PLAN/.BIN", 10), 0, getStringWidth("Add Presets from .PLAN/.BIN", 10) + 12, 263, Const.PRIMARY_COLOR);
+        drawString("Ambiance:", Const.FONT_COLOR, mainView.window.width - 317 - getStringWidth("Add Presets from .PLAN/.BIN", 10), 224, 10);
+
+        LevelSettings ls = null;
+
+        try
+        {
+            ls = mainView.levelSettings.get(mainView.selectedPresetIndex);
+        }catch (Exception e){}
+
+        Vector3f sunPos3D = ls == null ? new Vector3f() : new Vector3f(ls.sunPosition).mul(ls.sunPositionScale);
+        Vector3f sunPos2D = mainView.camera.worldToScreenPointF(sunPos3D, mainView.window);
+
+        sunTool.updateModels(mainView.camera, sunPos2D, mainView.window);
+
+        if(mouseInput.inWindow && sunTool.selected == -1)
+            sunTool.testForMouse(true, mainView.camera, mainView.mousePicker, true, false, false);
+
+        if(sunTool.selected != -1)
+        {
+            switch (sunTool.selected)
+            {
+                //0,1,2 pos
+                //3,4,5 rot
+                //7,8,9 scale
+                case 0:
+                    //x pos
+                {
+                    float mousediff = (float) (mouseInput.currentPos.x - sunTool.initPos.x);
+                    boolean h = false;
+
+                    if (mainView.camera.getWrappedRotation().y > 60f) {
+                        mousediff = -(float) (mouseInput.currentPos.y - sunTool.initPos.y);
+                        h = true;
+                    }
+
+                    if (mainView.camera.getWrappedRotation().y < -60f) {
+                        mousediff = (float) (mouseInput.currentPos.y - sunTool.initPos.y);
+                        h = true;
+                    }
+
+                    if (mainView.camera.getWrappedRotation().y > 120f || mainView.camera.getWrappedRotation().y < -120f)
+                    {
+                        mousediff = -(float) (mouseInput.currentPos.x - sunTool.initPos.x);
+                        h = false;
+                    }
+
+                    Vector3f ppos = sunPos3D;
+                    if(ls != null)
+                        ls.sunPosition = new Vector3f(lastPos.x + (mousediff * (mainView.camera.pos.distance(new Vector3f(lastPos)))) / (h ? 100f : 400f), ppos.y, ppos.z).div(ls.sunPositionScale);
+                }
+                break;
+                case 1:
+                    //y pos
+                {
+                    float mousediff = -(float) (mouseInput.currentPos.y - sunTool.initPos.y);
+
+                    boolean h = false;
+
+                    if (mainView.camera.getWrappedRotation().x > 20f)
+                        h = true;
+
+                    if (mainView.camera.getWrappedRotation().x < -20f)
+                        h = true;
+
+                    Vector3f ppos = sunPos3D;
+                    if(ls != null)
+                        ls.sunPosition = new Vector3f(ppos.x, lastPos.y + (mousediff * (mainView.camera.pos.distance(new Vector3f(lastPos)))) / (h ? 100f : 400f), ppos.z).div(ls.sunPositionScale);
+                }
+                break;
+                case 2:
+                    //z pos
+                {
+                    float mousediff = (float) (mouseInput.currentPos.x - sunTool.initPos.x);
+                    boolean h = false;
+
+                    if (mainView.camera.getWrappedRotation().y > 60f + 90f) {
+                        mousediff = -(float) (mouseInput.currentPos.y - sunTool.initPos.y);
+                        h = true;
+                    }
+
+                    if (mainView.camera.getWrappedRotation().y < -60f + 90f) {
+                        mousediff = (float) (mouseInput.currentPos.y - sunTool.initPos.y);
+                        h = true;
+                    }
+
+                    if (mainView.camera.getWrappedRotation().y > 120f + 90f || mainView.camera.getWrappedRotation().y < -120f + 90f)
+                    {
+                        mousediff = -(float) (mouseInput.currentPos.x - sunTool.initPos.x);
+                        h = false;
+                    }
+
+                    Vector3f ppos = sunPos3D;
+                    if(ls != null)
+                        ls.sunPosition = new Vector3f(ppos.x, ppos.y, lastPos.z + (mousediff * (mainView.camera.pos.distance(new Vector3f(lastPos)))) / (h ? 100f : 400f)).div(ls.sunPositionScale);
+
+                }
+                break;
+            }
+        }
+
+        sunTool.render(true, true, false, false, mainView.crosshair, sunPos2D, mainView.window, mainView.loader, mainView.renderer, mouseInput);
 
         super.draw(mouseInput);
     }
 
+    public Vector3f lastPos = new Vector3f();
+
+    @Override
+    public boolean onClick(Vector2d pos, int button, int action, int mods) {
+
+        LevelSettings ls = null;
+
+        try
+        {
+            ls = mainView.levelSettings.get(mainView.selectedPresetIndex);
+        }catch (Exception e){}
+
+        if(sunTool.onClick(pos, button, action, mods, mainView.window, mainView.camera) && ls != null)
+            lastPos = new Vector3f(ls.sunPosition).mul(ls.sunPositionScale);
+
+        return super.onClick(pos, button, action, mods);
+    }
 }

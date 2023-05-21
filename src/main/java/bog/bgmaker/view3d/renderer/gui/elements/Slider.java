@@ -4,6 +4,7 @@ import bog.bgmaker.view3d.ObjectLoader;
 import bog.bgmaker.view3d.managers.MouseInput;
 import bog.bgmaker.view3d.managers.RenderMan;
 import bog.bgmaker.view3d.managers.WindowMan;
+import bog.bgmaker.view3d.utils.Const;
 import org.joml.Math;
 import org.joml.Vector2d;
 import org.joml.Vector2f;
@@ -20,8 +21,6 @@ public class Slider extends Element{
     public boolean isSliding = false;
     float min = 0;
     float max = 100;
-    Color track;
-    Color slider;
 
     public Slider(String id, Vector2f pos, Vector2f size, RenderMan renderer, ObjectLoader loader, WindowMan window)
     {
@@ -31,8 +30,6 @@ public class Slider extends Element{
         this.renderer = renderer;
         this.loader = loader;
         this.window = window;
-        this.track = new Color(0f, 0f, 0f, 0.5f);
-        this.slider = new Color(1f, 1f, 1f, 1f);
     }
 
     public Slider(String id, Vector2f pos, Vector2f size, RenderMan renderer, ObjectLoader loader, WindowMan window, float sliderPosition, float min, float max)
@@ -46,35 +43,6 @@ public class Slider extends Element{
         this.sliderPosition = ((sliderPosition - min)/(max - min)) * 100f;
         this.min = min;
         this.max = max;
-        this.track = new Color(0f, 0f, 0f, 0.5f);
-        this.slider = new Color(1f, 1f, 1f, 1f);
-    }
-
-    public Slider(String id, Vector2f pos, Vector2f size, RenderMan renderer, ObjectLoader loader, WindowMan window, Color track, Color slider)
-    {
-        this.id = id;
-        this.pos = pos;
-        this.size = size;
-        this.renderer = renderer;
-        this.loader = loader;
-        this.window = window;
-        this.track = track;
-        this.slider = slider;
-    }
-
-    public Slider(String id, Vector2f pos, Vector2f size, RenderMan renderer, ObjectLoader loader, WindowMan window, float sliderPosition, float min, float max, Color track, Color slider)
-    {
-        this.id = id;
-        this.pos = pos;
-        this.size = size;
-        this.renderer = renderer;
-        this.loader = loader;
-        this.window = window;
-        this.sliderPosition = ((sliderPosition - min)/(max - min)) * 100f;
-        this.min = min;
-        this.max = max;
-        this.track = track;
-        this.slider = slider;
     }
 
     @Override
@@ -87,9 +55,9 @@ public class Slider extends Element{
             sliderPosition = Math.clamp(0, 100, sliderPosition);
         }
 
-        drawRect((int) pos.x, (int) (pos.y + size.y/2f - size.y * 0.1f), (int) size.x, (int) (size.y * 0.2f), track);
-        drawRectOutline((int) pos.x, (int) (pos.y + size.y/2f - size.y * 0.1f), (int) size.x, (int) (size.y * 0.2f), track, false);
-        drawRect((int) (pos.x + (sliderPosition * ((size.x - size.y * 0.1f)/100))), (int) (pos.y), (int) (size.y * 0.2f), (int) size.y, slider);
+        drawRect((int) pos.x, (int) (pos.y + size.y/2f - size.y * 0.1f), (int) size.x, (int) (size.y * 0.2f), Const.INTERFACE_PRIMARY_COLOR);
+        drawRectOutline((int) pos.x, (int) (pos.y + size.y/2f - size.y * 0.1f), (int) size.x, (int) (size.y * 0.2f), Const.INTERFACE_PRIMARY_COLOR, false);
+        drawRect((int) (pos.x + (sliderPosition * ((size.x - size.y * 0.1f)/100))), (int) (pos.y), (int) (size.y * 0.2f), (int) size.y, Const.FONT_COLOR);
 
     }
 

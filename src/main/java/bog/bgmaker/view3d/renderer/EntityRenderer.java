@@ -15,7 +15,6 @@ import bog.bgmaker.view3d.renderer.gui.ingredients.TriStrip;
 import bog.bgmaker.view3d.utils.Const;
 import bog.bgmaker.view3d.utils.Transformation;
 import bog.bgmaker.view3d.utils.Utils;
-import editor.gl.objects.Shader;
 import org.joml.*;
 import org.lwjgl.opengl.*;
 
@@ -157,6 +156,19 @@ public class EntityRenderer implements IRenderer{
         shaderOutlineHorizontal.createUniform("hasColor");
 
         GL11.glEnable(GL11.GL_LINE_SMOOTH);
+
+        outlineFB = initFrameBuffer();
+        outlineCT = initColorTex(window.width, window.height);
+    }
+
+    int outlineFB = -1;
+    int outlineCT = -1;
+
+    public void resize()
+    {
+        GL11.glViewport(0, 0, window.width, window.height);
+        GL11.glDeleteTextures(outlineCT);
+        outlineCT = initColorTex(window.width, window.height);
     }
 
     @Override
@@ -170,8 +182,6 @@ public class EntityRenderer implements IRenderer{
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, mouseDepthTexture);
         GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_DEPTH_COMPONENT, window.width, window.height, 0, GL11.GL_DEPTH_COMPONENT, GL11.GL_FLOAT, (FloatBuffer) null);
         GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_DEPTH_ATTACHMENT, GL11.GL_TEXTURE_2D, mouseDepthTexture, 0);
-
-        GL11.glViewport(0, 0, window.width, window.height);
 
         shaderMousePick.bind();
         shaderMousePick.setUniform("projectionMatrix", Main.window.updateProjectionMatrix());
@@ -225,7 +235,7 @@ public class EntityRenderer implements IRenderer{
 
                                 // Mouse picker render to FBO
 
-                                GL11.glDrawElements(GL11.GL_TRIANGLES, model.vertexCount, 5125, 0L);
+                                GL11.glDrawElements(GL11.GL_TRIANGLES, model.vertexCount, GL11.GL_UNSIGNED_INT, 0L);
 
                                 unbind();
                             }
@@ -277,7 +287,7 @@ public class EntityRenderer implements IRenderer{
 
                                 // Mouse picker render to FBO
 
-                                GL11.glDrawElements(GL11.GL_TRIANGLES, model.vertexCount, 5125, 0L);
+                                GL11.glDrawElements(GL11.GL_TRIANGLES, model.vertexCount, GL11.GL_UNSIGNED_INT, 0L);
 
                                 unbind();
                             }
@@ -328,8 +338,6 @@ public class EntityRenderer implements IRenderer{
 
         boolean outline = false;
 
-        ArrayList<Integer> outlineEntities = new ArrayList<>();
-
         ShaderMan lastShader = shader;
         ArrayList<Material> setUpMats = new ArrayList<>();
 
@@ -339,6 +347,10 @@ public class EntityRenderer implements IRenderer{
                 {
                     Entity entity = entities.get(i);
                     ArrayList<Model> models = entity.getModel();
+
+                    if (entity.selected)
+                        outline = true;
+
                     if(models != null)
                         for(Model model : models)
                             if (model != null) {
@@ -349,12 +361,12 @@ public class EntityRenderer implements IRenderer{
                                         lastShader = shader;
                                     }
                                 } else {
-                                    if (!lastShader.equals(model.material.customShader)) {
+                                    if (!lastShader.equals(model.material.customShader))
+                                    {
                                         lastShader.unbind();
                                         model.material.customShader.bind();
                                         lastShader = model.material.customShader;
                                     }
-
                                     if(!setUpMats.contains(model.material))
                                     {
                                         model.material.setupUniforms(projection, directionalLights, pointLights, spotLights);
@@ -390,11 +402,6 @@ public class EntityRenderer implements IRenderer{
                                         RenderMan.disableCulling();
                                 }
 
-                                if (entity.selected) {
-                                    outline = true;
-                                    outlineEntities.add(i);
-                                }
-
                                 if (model.material.overlayColor != null) {
                                     lastShader.setUniform("highlightMode", 1);
                                     lastShader.setUniform("highlightColor", model.material.overlayColor);
@@ -405,61 +412,39 @@ public class EntityRenderer implements IRenderer{
 
                                 // Main render
 
-                                GL11.glDrawElements(GL11.GL_TRIANGLES, model.vertexCount, 5125, 0L);
+                                GL11.glDrawElements(GL11.GL_TRIANGLES, model.vertexCount, GL11.GL_UNSIGNED_INT, 0L);
+
+                                //render entities to outline to FBO
+                                if(entity.selected)
+                                {
+                                    bindFrameBuffer(outlineFB);
+                                    bindColorTex(outlineCT);
+                                    bindNoCullColor(model, hasBones);
+
+                                    GL11.glDrawElements(GL11.GL_TRIANGLES, model.vertexCount, GL11.GL_UNSIGNED_INT, 0L);
+
+                                    unbindFrameBuffer();
+                                }
 
                                 lastShader.setUniform("highlightMode", 0);
                                 unbind();
                             }
-                }catch (Exception e){System.err.println("Failed rendering entity " + i + ".");}
+                }catch (Exception e){System.err.println("Failed rendering entity " + i + ".");e.printStackTrace();}
 
         GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
         shader.setUniform("ambientLight", new Vector3f(1f, 1f, 1f));
 
         if(outline)
         {
-            int vertSelectFB = initFrameBuffer();
-
-            int vertWidth = Math.round(window.width);
-            int vertHeight = Math.round(window.height);
-
-            int vertSelectCT = initColorTex(vertWidth, vertHeight);
-
-            GL11.glViewport(0, 0, vertWidth, vertHeight);
-
-            for (int i : outlineEntities)
-                    try{
-                        Entity entity = entities.get(i);
-                        ArrayList<Model> models = entity.getModel();
-                        if(models != null)
-                            for(Model model : models)
-                                if(model != null)
-                                {
-                                    boolean hasBones = entity instanceof Mesh ? ((Mesh)entity).skeleton != null : false;
-                                    bindNoCullColor(model, new Vector4f(0f, 0f, 0f, 1f), hasBones);
-                                    prepare(entity, camera, shader, model);
-
-                                    shader.setUniform("highlightMode", 0);
-
-                                    shader.setUniform("bones", hasBones ? ((Mesh)entity).skeleton : null);
-                                    shader.setUniform("hasBones", hasBones);
-
-                                    // Outline render to FBO
-
-                                    GL11.glDrawElements(GL11.GL_TRIANGLES, model.vertexCount, 5125, 0L);
-
-                                    unbind();
-                                }
-                    }catch (Exception e){System.err.println("Failed rendering entity " + i + " for outline fbo.");}
-
-            unbindFrameBuffer();
-
             GL11.glEnable(GL11.GL_STENCIL_TEST);
             GL11.glStencilOp(GL11.GL_REPLACE, GL11.GL_REPLACE, GL11.GL_REPLACE);
             GL11.glStencilFunc(GL11.GL_ALWAYS, 1, 0xff);
             GL11.glStencilMask(0xff);
+
             GL11.glColorMask(false, false, false, false);
 
-            drawOutline(vertSelectFB, vertSelectCT, shaderOutlineVertical, shader, true, 1, 0, Const.OUTLINE_COLOR);
+            //render FBO for stencil
+            drawOutline(outlineFB, outlineCT, shaderOutlineVertical, shader, true, 1, 0, Const.OUTLINE_COLOR);
 
             GL11.glColorMask(true, true, true, true);
 
@@ -468,26 +453,18 @@ public class EntityRenderer implements IRenderer{
             GL11.glDisable(GL11.GL_DEPTH_TEST);
             GL11.glStencilOp(GL11.GL_KEEP, GL11.GL_KEEP, GL11.GL_KEEP);
 
-            int horSelectFB = initFrameBuffer();
-
-            int horWidth = Math.round(vertWidth);
-            int horHeight = Math.round(vertHeight);
-
-            int horSelectCT = initColorTex(horWidth, horHeight);
-
-            GL11.glViewport(0, 0, horWidth, horHeight);
-
             int radius = Math.round((Const.OUTLINE_DISTANCE * 2f - 1f) * 10f);
 
-            drawOutline(vertSelectFB, vertSelectCT, shaderOutlineVertical, shader, false, horHeight, radius, Const.OUTLINE_COLOR);
-            GL30.glDeleteFramebuffers(vertSelectFB);
-            GL11.glDeleteTextures(vertSelectCT);
-
+            bindFrameBuffer(outlineFB);
+            drawOutline(outlineFB, outlineCT, shaderOutlineVertical, shader, false, window.height, radius, Const.OUTLINE_COLOR);
             unbindFrameBuffer();
+            drawOutline(outlineFB, outlineCT, shaderOutlineHorizontal, shader, false, window.width, radius, Const.OUTLINE_COLOR);
 
-            drawOutline(horSelectFB, horSelectCT, shaderOutlineHorizontal, shader, false, horWidth, radius, Const.OUTLINE_COLOR);
-            GL30.glDeleteFramebuffers(horSelectFB);
-            GL11.glDeleteTextures(horSelectCT);
+            bindFrameBuffer(outlineFB);
+            bindColorTex(outlineCT);
+            GL11.glClearColor(0,0,0,0);
+            GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
+            unbindFrameBuffer();
 
             GL11.glStencilMask(0xff);
             GL11.glStencilFunc(GL11.GL_ALWAYS, 0, 0xff);
@@ -502,7 +479,11 @@ public class EntityRenderer implements IRenderer{
 
         GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
         GL11.glCullFace(GL11.GL_BACK);
+
         shader.setUniform("ambientLight", new Vector3f(1f, 1f, 1f));
+        shader.setUniform("directionalLightsSize", 0);
+        shader.setUniform("pointLightsSize", 0);
+        shader.setUniform("spotLightsSize", 0);
 
         for(int i = 0; i < throughWallEntities.size(); i++)
             if(throughWallEntities.get(i) != null)
@@ -530,6 +511,7 @@ public class EntityRenderer implements IRenderer{
                                 model.material.setupUniforms(projection, directionalLights, pointLights, spotLights);
                                 setUpMats.add(model.material);
                             }
+                            model.material.setupUniformsThroughwall();
                         }
 
                         boolean hasBones = entity instanceof Mesh ? ((Mesh) entity).skeleton != null : false;
@@ -589,7 +571,8 @@ public class EntityRenderer implements IRenderer{
 
     }
 
-    public void bindNoCullColor(Model model, Vector4f color, boolean hasBones)
+    private static Material noCol = new Material(new Vector4f(0f, 0f, 0f, 1f), 0f);
+    public void bindNoCullColor(Model model, boolean hasBones)
     {
         GL30.glBindVertexArray(model.vao);
         GL20.glEnableVertexAttribArray(0);
@@ -604,7 +587,7 @@ public class EntityRenderer implements IRenderer{
 
         RenderMan.disableCulling();
 
-        shader.setUniform("material", new Material(color, 0f));
+        shader.setUniform("material", noCol);
     }
 
     public void bindThroughWalls(Model model, boolean hasBones, ShaderMan shader)
@@ -682,10 +665,6 @@ public class EntityRenderer implements IRenderer{
         prevShader.unbind();
         outlineShader.bind();
 
-        GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
-        GL30.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, frameBuffer);
-        GL11.glReadBuffer(GL30.GL_COLOR_ATTACHMENT0);
-
         if(!stipple)
         {
             GL11.glEnable(GL11.GL_BLEND);
@@ -751,6 +730,13 @@ public class EntityRenderer implements IRenderer{
         return frameBuffer;
     }
 
+    private void bindFrameBuffer(int frameBuffer)
+    {
+        GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, frameBuffer);
+        GL11.glDrawBuffer(GL30.GL_COLOR_ATTACHMENT0);
+        GL30.glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, frameBuffer);
+    }
+
     private int initColorTex(int width, int height)
     {
         int colorTexture = GL11.glGenTextures();
@@ -762,6 +748,12 @@ public class EntityRenderer implements IRenderer{
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
         GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT0, GL11.GL_TEXTURE_2D, colorTexture, 0);
         return colorTexture;
+    }
+
+    private void bindColorTex(int colorTexture)
+    {
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, colorTexture);
+        GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT0, GL11.GL_TEXTURE_2D, colorTexture, 0);
     }
 
     private int initFrameBufferINT()
@@ -787,6 +779,5 @@ public class EntityRenderer implements IRenderer{
     private void unbindFrameBuffer()
     {
         GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, 0);
-        GL11.glViewport(0, 0, window.width, window.height);
     }
 }

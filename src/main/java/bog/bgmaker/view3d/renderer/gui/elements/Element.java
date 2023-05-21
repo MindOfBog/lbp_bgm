@@ -54,6 +54,16 @@ public class Element {
         return isMouseOverElement(mouseInput.currentPos);
     }
 
+    protected void drawLine(Vector2i pos1, Vector2i pos2, boolean smooth)
+    {
+        renderer.processGuiElement(new Line(pos1, pos2, loader, window, smooth, false));
+    }
+
+    protected void drawLine(Vector2i pos1, Vector2i pos2, Color color, boolean smooth)
+    {
+        renderer.processGuiElement(new Line(pos1, pos2, color, loader, window, smooth, false));
+    }
+
     protected void drawImage(String path, float x, float y, float width, float height)
     {
         renderer.processGuiElement(new Quad(loader, path, new Vector2f(x, y), new Vector2f(width, height), false));
@@ -81,6 +91,11 @@ public class Element {
     protected void drawRectOutline(int x, int y, int width, int height, Color color, boolean smooth)
     {
         renderer.processGuiElement(LineStrip.lineRectangle(new Vector2f(x, y), new Vector2f(width, height), color, loader, window, smooth, false));
+    }
+
+    protected void drawRectOutline(int x, int y, int width, int height, Color color, boolean smooth, int openSide)
+    {
+        renderer.processGuiElement(LineStrip.lineRectangle(new Vector2f(x, y), new Vector2f(width, height), color, loader, window, smooth, false, openSide));
     }
 
     protected void drawTriangle(Vector2f p1, Vector2f p2, Vector2f p3, Color color)

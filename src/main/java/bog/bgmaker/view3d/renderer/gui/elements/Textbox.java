@@ -4,6 +4,7 @@ import bog.bgmaker.view3d.ObjectLoader;
 import bog.bgmaker.view3d.managers.MouseInput;
 import bog.bgmaker.view3d.managers.RenderMan;
 import bog.bgmaker.view3d.managers.WindowMan;
+import bog.bgmaker.view3d.utils.Const;
 import org.joml.Vector2d;
 import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
@@ -19,9 +20,6 @@ import java.awt.datatransfer.StringSelection;
 public class Textbox extends Element{
 
     private String text = "";
-    public Color textColor;
-    Color textFieldColor;
-    Color textFieldColorHighlighted;
     int fontSize;
     boolean numbers = true;
     boolean letters = true;
@@ -36,9 +34,6 @@ public class Textbox extends Element{
         this.renderer = renderer;
         this.loader = loader;
         this.window = window;
-        this.textColor = Color.white;
-        this.textFieldColor = new Color(0f, 0f, 0f, 0.5f);
-        this.textFieldColorHighlighted = new Color(0.10f, 0.10f, 0.10f, 0.5f);
     }
 
     public Textbox text(String text)
@@ -68,7 +63,7 @@ public class Textbox extends Element{
         super.draw(mouseInput, overOther);
 
         startScissor((int)pos.x, (int)pos.y, (int)size.x, (int)size.y);
-        drawRect((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, isMouseOverElement(mouseInput) && !overOther || this.isFocused() ? textFieldColorHighlighted : textFieldColor);
+        drawRect((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, isMouseOverElement(mouseInput) && !overOther || this.isFocused() ? Const.INTERFACE_SECONDARY_COLOR : Const.INTERFACE_PRIMARY_COLOR);
 
         float xScroll = 0;
         if(!this.isFocused())
@@ -102,12 +97,12 @@ public class Textbox extends Element{
             }catch (Exception e){}
         }
 
-        drawString(text, textColor, (int)(pos.x + xScroll + this.size.y / 2 - getFontHeight(fontSize) / 2), (int)(pos.y + this.size.y / 2 - getFontHeight(fontSize) / 2), fontSize, begin, end);
+        drawString(text, textColor(), (int)(pos.x + xScroll + this.size.y / 2 - getFontHeight(fontSize) / 2), (int)(pos.y + this.size.y / 2 - getFontHeight(fontSize) / 2), fontSize, begin, end);
 
         try {
             if( 350 > System.currentTimeMillis() % 500 && isFocused())
                 if(currentSelection == text.length())
-                    drawString("_", textColor, (int) (pos.x + xScroll + getStringWidth(text, fontSize) + 1 + this.size.y/2 - getFontHeight(fontSize)/2), (int) (pos.y + this.size.y/2 - getFontHeight(fontSize)/2), fontSize);
+                    drawString("_", textColor(), (int) (pos.x + xScroll + getStringWidth(text, fontSize) + 1 + this.size.y/2 - getFontHeight(fontSize)/2), (int) (pos.y + this.size.y/2 - getFontHeight(fontSize)/2), fontSize);
                 else
                 {
                     bool = true;
@@ -139,13 +134,13 @@ public class Textbox extends Element{
         {
             try
             {
-                drawRect((int) (xScroll + pos.x + getStringWidth(text.substring(0, currentSelection), fontSize) + this.size.y/2 - getFontHeight(fontSize)/2), (int) (pos.y + this.size.y/2 - getFontHeight(fontSize)/2 - 1), 1, (int) (getFontHeight(fontSize)), textColor);
+                drawRect((int) (xScroll + pos.x + getStringWidth(text.substring(0, currentSelection), fontSize) + this.size.y/2 - getFontHeight(fontSize)/2), (int) (pos.y + this.size.y/2 - getFontHeight(fontSize)/2 - 1), 1, (int) (getFontHeight(fontSize)), textColor());
             }catch (Exception e){}
         }
-        drawRectOutline((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, isMouseOverElement(mouseInput) && !overOther || this.isFocused() ? textFieldColorHighlighted : textFieldColor, false);
+        drawRectOutline((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, isMouseOverElement(mouseInput) && !overOther || this.isFocused() ? Const.INTERFACE_SECONDARY_COLOR : Const.INTERFACE_PRIMARY_COLOR, false);
         endScissor();
-
     }
+
     @Override
     public void onClick(Vector2d pos, int button, int action, int mods, boolean overOther) {
 
@@ -509,6 +504,11 @@ public class Textbox extends Element{
         }
 
         super.onChar(codePoint, modifiers);
+    }
+
+    public Color textColor()
+    {
+        return Const.FONT_COLOR;
     }
 
     public void setText(String text)

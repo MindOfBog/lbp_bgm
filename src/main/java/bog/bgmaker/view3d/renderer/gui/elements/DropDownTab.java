@@ -4,6 +4,8 @@ import bog.bgmaker.view3d.ObjectLoader;
 import bog.bgmaker.view3d.managers.MouseInput;
 import bog.bgmaker.view3d.managers.RenderMan;
 import bog.bgmaker.view3d.managers.WindowMan;
+import bog.bgmaker.view3d.renderer.gui.ingredients.LineStrip;
+import bog.bgmaker.view3d.utils.Const;
 import org.joml.Vector2d;
 import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
@@ -18,12 +20,8 @@ public class DropDownTab extends Element{
 
     String tabTitle = "";
     public ArrayList<Element> tabElements;
-    int fontSize;
+    public int fontSize;
     boolean extended = true;
-    Color fontColor;
-    Color tabColor;
-    Color tabColorHighlighted;
-    Color tabColorClicked;
 
     boolean resizeX = false;
     boolean resizeY = false;
@@ -39,10 +37,6 @@ public class DropDownTab extends Element{
         this.loader = loader;
         this.window = window;
         tabElements = new ArrayList<>();
-
-        this.tabColor = new Color(0f, 0f, 0f, 0.5f);
-        this.tabColorHighlighted = new Color(0.10f, 0.10f, 0.10f, 0.5f);
-        this.tabColorClicked = new Color(0.38f, 0.38f, 0.38f, 0.5f);
     }
 
     public DropDownTab closed()
@@ -238,7 +232,7 @@ public class DropDownTab extends Element{
     public void addString(String id, String string)
     {
         if(!containsElementByID(id))
-            tabElements.add(new StringElement(id, string, fontColor, fontSize, renderer, loader, window));
+            tabElements.add(new StringElement(id, string, fontSize, renderer, loader, window));
     }
 
     public void addRect(String id, float height)
@@ -270,49 +264,49 @@ public class DropDownTab extends Element{
     public void draw(MouseInput mouseInput, boolean overOther) {
         super.draw(mouseInput, overOther);
 
-        if(dragging)
-        {
-            this.pos.x = ((float)mouseInput.currentPos.x) - dragOffset.x;
-            this.pos.y = ((float)mouseInput.currentPos.y) - dragOffset.y;
+        if (dragging) {
+            this.pos.x = ((float) mouseInput.currentPos.x) - dragOffset.x;
+            this.pos.y = ((float) mouseInput.currentPos.y) - dragOffset.y;
         }
 
-        if(!renderer.window.isMinimized)
-        {
-            if(this.pos.x < 0)
+        if (!renderer.window.isMinimized) {
+            if (this.pos.x < 0)
                 this.pos.x = 0;
-            if(this.pos.y < 0)
+            if (this.pos.y < 0)
                 this.pos.y = 0;
 
-            if(this.pos.x + this.size.x > renderer.window.width)
+            if (this.pos.x + this.size.x > renderer.window.width)
                 this.pos.x = renderer.window.width - this.size.x;
-            if(this.pos.y + this.size.y > renderer.window.height)
+            if (this.pos.y + this.size.y > renderer.window.height)
                 this.pos.y = renderer.window.height - this.size.y;
         }
 
         float yOffset = 0;
 
-        if(extended)
-        {
-            for(int i = 0; i < tabElements.size(); i++)
-            {
+        if (extended) {
+            for (int i = 0; i < tabElements.size(); i++) {
                 Element element = tabElements.get(i);
                 element.pos = new Vector2f(pos.x + (element instanceof ButtonList ? 0 : 2), pos.y + size.y + 2 + yOffset);
 
-                if(element.size == null)
+                if (element.size == null)
                     element.size = new Vector2f(size.x - (element instanceof ButtonList ? 0 : 4), getFontHeight(fontSize) + 4);
                 else
                     element.size = new Vector2f(size.x - (element instanceof ButtonList ? 0 : 4), element.size.y);
 
                 yOffset += element.size.y + 2;
             }
-            if(resizeX || resizeY)
+            if (resizeX || resizeY)
                 yOffset += 12;
         }
 
-        drawRect((int) pos.x, (int) pos.y, (int) size.x, (int) size.y, isMouseOverTab(mouseInput) && !overOther ? (dragging || mouseInput.rightButtonPress ? tabColorClicked : tabColorHighlighted) : tabColor);
-        drawRectOutline((int) pos.x, (int) pos.y, (int) size.x, (int) size.y, isMouseOverTab(mouseInput) && !overOther ? (dragging || mouseInput.rightButtonPress ? tabColorClicked : tabColorHighlighted) : tabColor, false);
-        drawRect((int) pos.x, (int) pos.y, (int) size.x, (int) (size.y + (extended ? 2f + yOffset : 0)), new Color(0f, 0f, 0f, 0.5f));
-        drawRectOutline((int) pos.x, (int) pos.y, (int) size.x, (int) (size.y + (extended ? 2f + yOffset : 0)), new Color(0f, 0f, 0f, 0.5f), false);
+        drawRect((int) pos.x, (int) pos.y, (int) size.x, (int) size.y, dragging || (mouseInput.rightButtonPress && isMouseOverTab(mouseInput)) ? Const.INTERFACE_TERTIARY_COLOR : (isMouseOverTab(mouseInput) && !overOther ? Const.INTERFACE_SECONDARY_COLOR : Const.INTERFACE_PRIMARY_COLOR));
+        drawRectOutline((int) pos.x, (int) pos.y, (int) size.x, (int) size.y, dragging || (mouseInput.rightButtonPress && isMouseOverTab(mouseInput)) ? Const.INTERFACE_TERTIARY_COLOR : (isMouseOverTab(mouseInput) && !overOther ? Const.INTERFACE_SECONDARY_COLOR : Const.INTERFACE_PRIMARY_COLOR), false);
+
+        if (extended)
+        {
+            drawRect((int) pos.x, (int) (pos.y + size.y), (int) size.x, (int) (2f + yOffset), Const.PRIMARY_COLOR);
+            drawRectOutline((int) pos.x, (int) (pos.y + size.y), (int) size.x, (int) (2f + yOffset), Const.SECONDARY_COLOR, false, LineStrip.UP);
+        }
 
         if(extended && (resizeX || resizeY))
         {
@@ -323,14 +317,14 @@ public class DropDownTab extends Element{
 //            drawTriangle(p1, p2, p3, mouseInTriangle ? Color.blue : new Color(0f, 0f, 0f, 0.5f));
         }
 
-        drawString(tabTitle, Color.white, (int) (pos.x + size.y / 2 - getFontHeight(fontSize) / 2), (int) (pos.y + size.y / 2 - getFontHeight(fontSize) / 2), fontSize);
+        drawString(tabTitle, Const.FONT_COLOR, (int) (pos.x + size.y / 2 - getFontHeight(fontSize) / 2), (int) (pos.y + size.y / 2 - getFontHeight(fontSize) / 2), fontSize);
 
         if(extended)
         {
             Vector2f p1 = new Vector2f(pos.x + size.x - size.y * 0.35f, pos.y + size.y * 0.25f);
             Vector2f p2 = new Vector2f(p1.x - size.y / 2f, p1.y);
             Vector2f p3 = new Vector2f(p1.x - size.y / 4f, pos.y + size.y * 0.75f);
-            drawTriangle(p1, p2, p3, Color.white);
+            drawTriangle(p1, p2, p3, Const.FONT_COLOR);
 
             for(int i = 0; i < tabElements.size(); i++)
             {
@@ -343,7 +337,7 @@ public class DropDownTab extends Element{
             Vector2f p1 = new Vector2f(pos.x + size.x - size.y * 0.35f, pos.y + size.y / 2f);
             Vector2f p2 = new Vector2f(p1.x - size.y / 2f, pos.y + size.y * 0.25f);
             Vector2f p3 = new Vector2f(p1.x - size.y / 2f, pos.y + size.y * 0.75f);
-            drawTriangle(p1, p2, p3, Color.white);
+            drawTriangle(p1, p2, p3, Const.FONT_COLOR);
         }
     }
 
@@ -491,9 +485,6 @@ public class DropDownTab extends Element{
     {
         String label = "";
         public Textbox textbox;
-        Color textColor;
-        Color textFieldColor;
-        Color textFieldColorHighlighted;
         int fontSize;
 
         public LabeledTextbox(String label, String id, Vector2f pos, Vector2f size, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window)
@@ -505,10 +496,15 @@ public class DropDownTab extends Element{
             this.renderer = renderer;
             this.loader = loader;
             this.window = window;
-            this.textColor = Color.white;
-            this.textFieldColor = new Color(0f, 0f, 0f, 0.5f);
-            this.textFieldColorHighlighted = new Color(0.10f, 0.10f, 0.10f, 0.5f);
-            this.textbox = new Textbox(id, pos, size, fontSize, renderer, loader, window);
+
+            LabeledTextbox these = this;
+            this.textbox = new Textbox(id, pos, size, fontSize, renderer, loader, window)
+            {
+                @Override
+                public Color textColor() {
+                    return these.textColor();
+                }
+            };
             this.label = label;
         }
 
@@ -516,7 +512,7 @@ public class DropDownTab extends Element{
         public void draw(MouseInput mouseInput, boolean overElement) {
             super.draw(mouseInput, overElement);
 
-            drawString(label, textColor, (int) (pos.x + size.y / 2 - getFontHeight(fontSize) / 2), (int) (pos.y + size.y / 2 - getFontHeight(fontSize) / 2), fontSize);
+            drawString(label, textColor(), (int) (pos.x + size.y / 2 - getFontHeight(fontSize) / 2), (int) (pos.y + size.y / 2 - getFontHeight(fontSize) / 2), fontSize);
             textbox.pos = new Vector2f(pos.x + 5*(Math.round((getStringWidth(label, fontSize))/5)), pos.y);
             textbox.size = new Vector2f(size.x - 5*(Math.round((getStringWidth(label, fontSize))/5)), size.y);
             textbox.draw(mouseInput, overElement);
@@ -543,6 +539,11 @@ public class DropDownTab extends Element{
             textbox.onClick(pos, button, action, mods, overElement);
         }
 
+        public Color textColor()
+        {
+            return Const.FONT_COLOR;
+        }
+
         @Override
         public boolean isFocused() {
             return textbox.isFocused();
@@ -559,9 +560,6 @@ public class DropDownTab extends Element{
     {
         String label = "";
         public Button button;
-        Color textColor;
-        Color textFieldColor;
-        Color textFieldColorHighlighted;
         int fontSize;
 
         public LabeledButton(String label, String id, String buttonText, Vector2f pos, Vector2f size, int fontSize, Button button, RenderMan renderer, ObjectLoader loader, WindowMan window)
@@ -573,9 +571,6 @@ public class DropDownTab extends Element{
             this.renderer = renderer;
             this.loader = loader;
             this.window = window;
-            this.textColor = Color.white;
-            this.textFieldColor = new Color(0f, 0f, 0f, 0.5f);
-            this.textFieldColorHighlighted = new Color(0.10f, 0.10f, 0.10f, 0.5f);
             button.id = id;
             button.buttonText = buttonText;
             button.pos = pos;
@@ -591,7 +586,7 @@ public class DropDownTab extends Element{
         public void draw(MouseInput mouseInput, boolean overElement) {
             super.draw(mouseInput, overElement);
 
-            drawString(label, textColor, (int) (pos.x + size.y / 2 - getFontHeight(fontSize) / 2), (int) (pos.y + size.y / 2 - getFontHeight(fontSize) / 2), fontSize);
+            drawString(label, Const.FONT_COLOR, (int) (pos.x + size.y / 2 - getFontHeight(fontSize) / 2), (int) (pos.y + size.y / 2 - getFontHeight(fontSize) / 2), fontSize);
             button.pos = new Vector2f(pos.x + 5 * (Math.round((getStringWidth(label, fontSize))/5)), pos.y);
             button.size = new Vector2f(size.x - 5 * (Math.round((getStringWidth(label, fontSize))/5)), size.y);
             button.draw(mouseInput, overElement);
@@ -623,9 +618,6 @@ public class DropDownTab extends Element{
     {
         String label = "";
         public Slider slider;
-        Color textColor;
-        Color textFieldColor;
-        Color textFieldColorHighlighted;
         int fontSize;
 
         public LabeledSlider(String label, String id, Vector2f pos, Vector2f size, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window)
@@ -637,9 +629,6 @@ public class DropDownTab extends Element{
             this.renderer = renderer;
             this.loader = loader;
             this.window = window;
-            this.textColor = Color.white;
-            this.textFieldColor = new Color(0f, 0f, 0f, 0.5f);
-            this.textFieldColorHighlighted = new Color(0.10f, 0.10f, 0.10f, 0.5f);
             this.slider = new Slider(id, pos, size, renderer, loader, window);
             this.label = label;
         }
@@ -652,9 +641,6 @@ public class DropDownTab extends Element{
             this.fontSize = fontSize;
             this.renderer = renderer;
             this.loader = loader;
-            this.textColor = Color.white;
-            this.textFieldColor = new Color(0f, 0f, 0f, 0.5f);
-            this.textFieldColorHighlighted = new Color(0.10f, 0.10f, 0.10f, 0.5f);
             this.slider = new Slider(id, pos, size, renderer, loader, window, sliderPos, min, max);
             this.label = label;
         }
@@ -663,7 +649,7 @@ public class DropDownTab extends Element{
         public void draw(MouseInput mouseInput, boolean overElement) {
             super.draw(mouseInput, overElement);
 
-            drawString(label, textColor, (int) (pos.x + size.y / 2 - getFontHeight(fontSize) / 2), (int) (pos.y + size.y / 2 - getFontHeight(fontSize) / 2), fontSize);
+            drawString(label, Const.FONT_COLOR, (int) (pos.x + size.y / 2 - getFontHeight(fontSize) / 2), (int) (pos.y + size.y / 2 - getFontHeight(fontSize) / 2), fontSize);
             slider.pos = new Vector2f(pos.x + 5*(Math.round((getStringWidth(label, fontSize))/5)), pos.y);
             slider.size = new Vector2f(size.x - 5*(Math.round((getStringWidth(label, fontSize))/5)), size.y);
             slider.draw(mouseInput, overElement);
@@ -700,14 +686,12 @@ public class DropDownTab extends Element{
     public static class StringElement extends  Element
     {
         public String string = "";
-        Color color;
         int fontSize;
 
-        public StringElement(String id, String string, Color color, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window)
+        public StringElement(String id, String string, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window)
         {
             this.string = string;
             this.id = id;
-            this.color = color;
             this.fontSize = fontSize;
             this.renderer = renderer;
             this.loader = loader;
@@ -718,20 +702,17 @@ public class DropDownTab extends Element{
         public void draw(MouseInput mouseInput, boolean overElement) {
             super.draw(mouseInput, overElement);
 
-            try{drawString(string, color, (int) (pos.x + size.y / 2 - getFontHeight(fontSize) / 2), (int) (pos.y + size.y / 2 - getFontHeight(fontSize) / 2), fontSize);}catch (Exception e){}
+            try{drawString(string, Const.FONT_COLOR, (int) (pos.x + size.y / 2 - getFontHeight(fontSize) / 2), (int) (pos.y + size.y / 2 - getFontHeight(fontSize) / 2), fontSize);}catch (Exception e){}
         }
     }
 
     public static class RectangleElement extends Element
     {
 
-        Color separatorColor;
-
         public RectangleElement(String id, float height, RenderMan renderer, ObjectLoader loader, WindowMan window)
         {
             this.id = id;
             this.size = new Vector2f(0, height);
-            this.separatorColor = Color.white;
             this.renderer = renderer;
             this.loader = loader;
             this.window = window;
@@ -741,7 +722,6 @@ public class DropDownTab extends Element{
         {
             this.id = id;
             this.size = new Vector2f(0, height);
-            this.separatorColor = separatorColor;
             this.renderer = renderer;
             this.loader = loader;
             this.window = window;
@@ -751,8 +731,8 @@ public class DropDownTab extends Element{
         public void draw(MouseInput mouseInput, boolean overElement) {
             super.draw(mouseInput, overElement);
 
-            drawRect((int) pos.x, (int) pos.y, (int) size.x, (int) size.y, separatorColor);
-            drawRectOutline((int) pos.x, (int) pos.y, (int) size.x, (int) size.y, separatorColor, false);
+            drawRect((int) pos.x, (int) pos.y, (int) size.x, (int) size.y, Const.PRIMARY_COLOR);
+            drawRectOutline((int) pos.x, (int) pos.y, (int) size.x, (int) size.y, Const.SECONDARY_COLOR, false);
         }
     }
 }

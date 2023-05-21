@@ -66,36 +66,6 @@ public class Entity {
         this.model = new ArrayList<Model>(Arrays.asList(new Model[]{model}));
     }
 
-//    public Vector3f rayIntersectModel(Vector3f ray, Vector3f origin) {
-//
-//        ArrayList<Triangle> tris = new ArrayList<>();
-//        for(Triangle tri : model.triangles)
-//            tris.add(tri);
-//
-//        for (Triangle triangle : tris) {
-//            Vector3f v0v1 = triangle.p2.sub((Vector3fc)triangle.p1, new Vector3f());
-//            Vector3f v0v2 = triangle.p3.sub((Vector3fc)triangle.p1, new Vector3f());
-//            Vector3f N = v0v1.cross((Vector3fc)v0v2, new Vector3f());
-//            float area2 = N.length();
-//            triangle = new Triangle(triangle);
-//            float D = -(N.x * triangle.p1.x + N.y * triangle.p1.y + N.z * triangle.p1.z);
-//            float t = -(N.dot((Vector3fc)origin) + D) / N.dot((Vector3fc)ray);
-//            Vector3f P = origin.add((Vector3fc)ray.mul(t, new Vector3f()), new Vector3f());
-//            Vector3f edge0 = triangle.p2.sub((Vector3fc)triangle.p1, new Vector3f());
-//            Vector3f edge1 = triangle.p3.sub((Vector3fc)triangle.p2, new Vector3f());
-//            Vector3f edge2 = triangle.p1.sub((Vector3fc)triangle.p3, new Vector3f());
-//            Vector3f C0 = P.sub((Vector3fc)triangle.p1, new Vector3f());
-//            Vector3f C1 = P.sub((Vector3fc)triangle.p2, new Vector3f());
-//            Vector3f C2 = P.sub((Vector3fc)triangle.p3, new Vector3f());
-//            if (N.dot((Vector3fc)edge0.cross((Vector3fc)C0, new Vector3f())) > 0.0F && N
-//                    .dot((Vector3fc)edge1.cross((Vector3fc)C1, new Vector3f())) > 0.0F && N
-//                    .dot((Vector3fc)edge2.cross((Vector3fc)C2, new Vector3f())) > 0.0F)
-//                return P;
-//        }
-//
-//        return null;
-//    }
-
     public int getType(){return 0;}
     public ArrayList<Model> getModel(){return model;}
 }
