@@ -76,8 +76,8 @@ public abstract class ButtonList<T> extends Element{
         float maxScroll = (4 + (height + 2) * (indexes.size() - 1) + height) - (size.y);
         float frac = size.x - (size.x - 4f - size.x * 0.05f);
         float scrollX = pos.x + size.x - 4f - size.x * 0.05f + (frac / 2f);
-        float scrollY = pos.y + (frac / 4f);
-        float scrollHeight = size.y - (frac / 4f) * 2;
+        float scrollY = pos.y;
+        float scrollHeight = size.y;
 
         if(scrolling)
              yScroll = -(((((float)mouseInput.currentPos.y) - (frac/2)) - scrollY)/(scrollHeight - frac)) * maxScroll;
@@ -193,16 +193,24 @@ public abstract class ButtonList<T> extends Element{
     {
         return Config.INTERFACE_SECONDARY_COLOR;
     }
+    public Color buttonColorHighlighted2(T object, int index)
+    {
+        return Config.INTERFACE_SECONDARY_COLOR2;
+    }
     public Color buttonColorSelected(T object, int index)
     {
         return Config.INTERFACE_TERTIARY_COLOR;
+    }
+    public Color buttonColorSelected2(T object, int index)
+    {
+        return Config.INTERFACE_TERTIARY_COLOR2;
     }
     public void drawButton(int posY, float scrollY, float scrollHeight, int height, T object, int i)
     {
         startScissor((int)pos.x + 4, posY, (int)(size.x - 6f - size.x * 0.05f), (int) height);
         drawRect((int)pos.x + 4, posY, (int)(size.x - 6f - size.x * 0.05f), (int) height, !(isHighlighted(object, i) || isSelected(object, i)) ? buttonColor(object, i) : (isSelected(object, i) ? buttonColorSelected(object, i) : buttonColorHighlighted(object, i)));
         drawString(buttonText(object, i), textColor(object, i), (int)(pos.x + (size.x - size.x * 0.05f) / 2f - getStringWidth(buttonText(object, i), fontSize) / 2), posY + height / 2 - getFontHeight(fontSize) / 2, fontSize);
-        drawRectOutline((int)pos.x + 4, posY, (int)(size.x - 6f - size.x * 0.05f), (int) height, !(isHighlighted(object, i) || isSelected(object, i)) ? buttonColor(object, i) : (isSelected(object, i) ? buttonColorSelected(object, i) : buttonColorHighlighted(object, i)), false);
+        drawRectOutline((int)pos.x + 4, posY, (int)(size.x - 6f - size.x * 0.05f), (int) height, !(isHighlighted(object, i) || isSelected(object, i)) ? buttonColor2(object, i) : (isSelected(object, i) ? buttonColorSelected2(object, i) : buttonColorHighlighted2(object, i)), false);
         endScissor();
     }
     public int buttonHeight()

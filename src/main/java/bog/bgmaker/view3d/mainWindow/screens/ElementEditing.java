@@ -674,7 +674,7 @@ public class ElementEditing extends GuiScreen {
                 Entity entity = (Entity) object;
                 drawRect((int)pos.x - height + 2, posY, height, height, buttonColor(object, i));
                 drawImageStatic(entity.getType() == 0 ? mainView.modelIcon : entity.getType() == 1 ? mainView.materialIcon : entity.getType() == 2 ? mainView.lightIcon : mainView.audioIcon, (int)pos.x - height + 2, posY, height, height);
-                drawRectOutline((int)pos.x - height + 2, posY, height, height, buttonColor(object, i), false);
+                drawRectOutline((int)pos.x - height + 2, posY, height, height, buttonColor2(object, i), false);
             }
 
             @Override

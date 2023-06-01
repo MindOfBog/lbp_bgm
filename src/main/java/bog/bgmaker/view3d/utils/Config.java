@@ -99,7 +99,7 @@ public class Config {
                 scanner.close();
             } catch (FileNotFoundException e) {
                 config.createNewFile();
-                updateFile();
+                updateFile(config);
             }
 
             return config;
@@ -162,13 +162,18 @@ public class Config {
         }catch (Exception e){e.printStackTrace();}
     }
 
-    public static void updateFile()
+    private static void updateFile(File config)
     {
         try
         {
-            FileWriter writer = new FileWriter(getConfig());
+            FileWriter writer = new FileWriter(config);
             writer.write("LBPBGM" + Utils.encrypt(buildSettings()));
             writer.close();
         }catch (Exception e){e.printStackTrace();}
+    }
+
+    public static void updateFile()
+    {
+        updateFile(getConfig());
     }
 }

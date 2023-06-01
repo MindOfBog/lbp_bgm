@@ -341,6 +341,8 @@ public class EntityRenderer implements IRenderer{
         ShaderMan lastShader = shader;
         ArrayList<Material> setUpMats = new ArrayList<>();
 
+        ArrayList<Integer> selInd = new ArrayList<>();
+
         for (int i = 0; i < entities.size(); i++)
             if(entities.get(i) != null)
                 try
@@ -414,22 +416,42 @@ public class EntityRenderer implements IRenderer{
 
                                 GL11.glDrawElements(GL11.GL_TRIANGLES, model.vertexCount, GL11.GL_UNSIGNED_INT, 0L);
 
-                                //render entities to outline to FBO
                                 if(entity.selected)
-                                {
-                                    bindFrameBuffer(outlineFB);
-                                    bindColorTex(outlineCT);
-                                    bindNoCullColor(model, hasBones);
-
-                                    GL11.glDrawElements(GL11.GL_TRIANGLES, model.vertexCount, GL11.GL_UNSIGNED_INT, 0L);
-
-                                    unbindFrameBuffer();
-                                }
+                                    selInd.add(i);
 
                                 lastShader.setUniform("highlightMode", 0);
                                 unbind();
                             }
                 }catch (Exception e){System.err.println("Failed rendering entity " + i + ".");e.printStackTrace();}
+
+        if (!lastShader.equals(shader)) {
+            lastShader.unbind();
+            shader.bind();
+            lastShader = shader;
+        }
+        bindFrameBuffer(outlineFB);
+        bindColorTex(outlineCT);
+        for(int i : selInd)
+            try
+            {
+                Entity entity = entities.get(i);
+                ArrayList<Model> models = entity.getModel();
+
+                if(models != null)
+                    for(Model model : models)
+                        if (model != null)
+                        {
+                            boolean hasBones = entity instanceof Mesh ? ((Mesh) entity).skeleton != null : false;
+                            bindNoCullColor(model, hasBones);
+                            prepare(entity, camera, lastShader, model);
+                            lastShader.setUniform("bones", entity instanceof Mesh ? ((Mesh) entity).skeleton : null);
+                            lastShader.setUniform("hasBones", hasBones);
+                            //render entities to outline to FBO
+                            GL11.glDrawElements(GL11.GL_TRIANGLES, model.vertexCount, GL11.GL_UNSIGNED_INT, 0L);
+
+                        }
+            }catch (Exception e){System.err.println("Failed rendering entity " + i + ".");e.printStackTrace();}
+        unbindFrameBuffer();
 
         GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
         shader.setUniform("ambientLight", new Vector3f(1f, 1f, 1f));

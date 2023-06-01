@@ -533,12 +533,6 @@ public class LevelSettingsEditing extends GuiScreen {
                         break;
                 }
             }
-
-            @Override
-            public void draw(MouseInput mouseInput, boolean overOther) {
-                this.pos.x = mainView.window.width - 317 - getStringWidth("Add Presets from .PLAN/.BIN", 10);
-                super.draw(mouseInput, overOther);
-            }
         };
         ButtonList presetList = new ButtonList("presetList", mainView.levelSettings, new Vector2f(mainView.window.width - 317 - getStringWidth("Add Presets from .PLAN/.BIN", 10), 10 + getFontHeight(10)), new Vector2f(getStringWidth("Add Presets from .PLAN/.BIN", 10) + 6, 150), 10, mainView.renderer, mainView.loader, mainView.window) {
             @Override
@@ -674,6 +668,42 @@ public class LevelSettingsEditing extends GuiScreen {
             }
 
             @Override
+            public Color buttonColor2(Object object, int index) {
+                if(object == null)
+                    return super.buttonColor(object, index);
+                Vector4f fogcolor = ((LevelSettings)object).fogColor;
+                Color fogcolor1 = new Color(Math.clamp(0, 1, fogcolor.x),
+                        Math.clamp(0, 1, fogcolor.y),
+                        Math.clamp(0, 1, fogcolor.z),
+                        0.5f);
+                return fogcolor1.darker().darker();
+            }
+
+            @Override
+            public Color buttonColorHighlighted2(Object object, int index) {
+                if(object == null)
+                    return Color.black;
+                Vector4f fogcolor = ((LevelSettings)object).fogColor;
+                Color fogcolor1 = new Color(Math.clamp(0.1f, 1, fogcolor.x),
+                        Math.clamp(0.1f, 1, fogcolor.y),
+                        Math.clamp(0.1f, 1, fogcolor.z),
+                        0.45f);
+                return fogcolor1.darker();
+            }
+
+            @Override
+            public Color buttonColorSelected2(Object object, int index) {
+                if(object == null)
+                    return Color.black;
+                Vector4f fogcolor = ((LevelSettings)object).fogColor;
+                Color fogcolor1 = new Color(Math.clamp(0.1f, 1, fogcolor.x),
+                        Math.clamp(0.1f, 1, fogcolor.y),
+                        Math.clamp(0.1f, 1, fogcolor.z),
+                        0.75f);
+                return fogcolor1;
+            }
+
+            @Override
             public boolean searchFilter(Object object, int index) {
                 return true;
             }
@@ -681,11 +711,10 @@ public class LevelSettingsEditing extends GuiScreen {
             @Override
             public void draw(MouseInput mouseInput, boolean overElement) {
                 hovering = -1;
-                this.pos.x = mainView.window.width - 317 - getStringWidth("Add Presets from .PLAN/.BIN", 10);
                 super.draw(mouseInput, overElement);
             }
         };
-        bog.bgmaker.view3d.renderer.gui.elements.Button addNew = new bog.bgmaker.view3d.renderer.gui.elements.Button("addNew", "Add", new Vector2f(mainView.window.width - 317 - getStringWidth("Add Presets from .PLAN/.BIN", 10), getFontHeight(10) + 163), new Vector2f(getStringWidth("Add Presets from .PLAN/.BIN", 10)/2 + 1, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window)
+        Button addNew = new bog.bgmaker.view3d.renderer.gui.elements.Button("addNew", "Add", new Vector2f(mainView.window.width - 317 - getStringWidth("Add Presets from .PLAN/.BIN", 10), getFontHeight(10) + 163), new Vector2f(getStringWidth("Add Presets from .PLAN/.BIN", 10)/2 + 1, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public void clickedButton(int button, int action, int mods) {
@@ -761,14 +790,8 @@ public class LevelSettingsEditing extends GuiScreen {
                     zEffectContrast.setText(Float.toString(ls.zEffectContrast));
                 }
             }
-
-            @Override
-            public void draw(MouseInput mouseInput, boolean overOther) {
-                this.pos.x = mainView.window.width - 317 - getStringWidth("Add Presets from .PLAN/.BIN", 10);
-                super.draw(mouseInput, overOther);
-            }
         };
-        bog.bgmaker.view3d.renderer.gui.elements.Button moveUp = new bog.bgmaker.view3d.renderer.gui.elements.Button("moveUp", "Move Up", new Vector2f(mainView.window.width - 313 - getStringWidth("Add Presets from .PLAN/.BIN", 10) / 2, getFontHeight(10) + 163), new Vector2f(getStringWidth("Add Presets from .PLAN/.BIN", 10)/2 + 2, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window)
+        Button moveUp = new bog.bgmaker.view3d.renderer.gui.elements.Button("moveUp", "Move Up", new Vector2f(mainView.window.width - 313 - getStringWidth("Add Presets from .PLAN/.BIN", 10) / 2, getFontHeight(10) + 163), new Vector2f(getStringWidth("Add Presets from .PLAN/.BIN", 10)/2 + 2, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public void clickedButton(int button, int action, int mods) {
@@ -778,14 +801,8 @@ public class LevelSettingsEditing extends GuiScreen {
                     mainView.selectedPresetIndex--;
                 }
             }
-
-            @Override
-            public void draw(MouseInput mouseInput, boolean overOther) {
-                this.pos.x = mainView.window.width - 313 - getStringWidth("Add Presets from .PLAN/.BIN", 10) / 2;
-                super.draw(mouseInput, overOther);
-            }
         };
-        bog.bgmaker.view3d.renderer.gui.elements.Button delete = new bog.bgmaker.view3d.renderer.gui.elements.Button("delete", "Delete", new Vector2f(mainView.window.width - 317 - getStringWidth("Add Presets from .PLAN/.BIN", 10), getFontHeight(10) * 2 + 170), new Vector2f(getStringWidth("Add Presets from .PLAN/.BIN", 10)/2 + 1, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window)
+        Button delete = new bog.bgmaker.view3d.renderer.gui.elements.Button("delete", "Delete", new Vector2f(mainView.window.width - 317 - getStringWidth("Add Presets from .PLAN/.BIN", 10), getFontHeight(10) * 2 + 170), new Vector2f(getStringWidth("Add Presets from .PLAN/.BIN", 10)/2 + 1, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public void clickedButton(int button, int action, int mods) {
@@ -888,14 +905,8 @@ public class LevelSettingsEditing extends GuiScreen {
                     }
                 }
             }
-
-            @Override
-            public void draw(MouseInput mouseInput, boolean overOther) {
-                this.pos.x = mainView.window.width - 317 - getStringWidth("Add Presets from .PLAN/.BIN", 10);
-                super.draw(mouseInput, overOther);
-            }
         };
-        bog.bgmaker.view3d.renderer.gui.elements.Button moveDown = new Button("moveDown", "Move Down", new Vector2f(mainView.window.width - 313 - getStringWidth("Add Presets from .PLAN/.BIN", 10) / 2, getFontHeight(10) * 2 + 170), new Vector2f(getStringWidth("Add Presets from .PLAN/.BIN", 10)/2 + 2, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window)
+        Button moveDown = new Button("moveDown", "Move Down", new Vector2f(mainView.window.width - 313 - getStringWidth("Add Presets from .PLAN/.BIN", 10) / 2, getFontHeight(10) * 2 + 170), new Vector2f(getStringWidth("Add Presets from .PLAN/.BIN", 10)/2 + 2, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public void clickedButton(int button, int action, int mods){
@@ -905,27 +916,25 @@ public class LevelSettingsEditing extends GuiScreen {
                     mainView.selectedPresetIndex++;
                 }
             }
-
-            @Override
-            public void draw(MouseInput mouseInput, boolean overOther) {
-                this.pos.x = mainView.window.width - 313 - getStringWidth("Add Presets from .PLAN/.BIN", 10) / 2;
-                super.draw(mouseInput, overOther);
-            }
         };
-        Textbox ambiance = new Textbox("ambiance", new Vector2f(mainView.window.width - 317 - getStringWidth("Add Presets from .PLAN/.BIN", 10), getFontHeight(10) * 4 + 181), new Vector2f(getStringWidth("Add Presets from .PLAN/.BIN", 10) + 6, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window)
+
+        DropDownTab presetEditor = new DropDownTab("presetEditor", "Presets", new Vector2f(7, 39), new Vector2f(getStringWidth("Add Presets from .PLAN/.BIN", 10) + 16, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window);
+
+        presetEditor.addButton("addFromPlanBin", "Add Presets from .PLAN/.BIN", addFromPlanBin);
+        presetEditor.addList("presetList", presetList, 150);
+        presetEditor.addButton("moveUp", "Move Up", moveUp);
+        presetEditor.addButton("moveDown", "Move Down", moveDown);
+        presetEditor.addButton("addNew", "Add", addNew);
+        presetEditor.addButton("delete", "Delete", delete);
+        presetEditor.addString("amb", "Ambiance :");
+        presetEditor.addTextbox("ambiance", "ambiences/amb_empty_world");
+
+        Textbox ambiance = (Textbox) presetEditor.getElementByID("ambiance");
+
+        DropDownTab templates = new DropDownTab("templates", "Preset Templates", new Vector2f(7, 39 + presetEditor.getFullHeight() + 7), new Vector2f(getStringWidth("Add Presets from .PLAN/.BIN", 10) + 16, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public void draw(MouseInput mouseInput, boolean overOther) {
-                this.pos.x = mainView.window.width - 317 - getStringWidth("Add Presets from .PLAN/.BIN", 10);
-                super.draw(mouseInput, overOther);
-            }
-        }.text("ambiences/amb_empty_world");
-        DropDownTab templates = new DropDownTab("templates", "Preset Templates", new Vector2f(mainView.window.width - 339 - getStringWidth("Add Presets from .PLAN/.BIN", 10) * 2, 0), new Vector2f(getStringWidth("Add Presets from .PLAN/.BIN", 10) + 16, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window)
-        {
-            @Override
-            public void draw(MouseInput mouseInput, boolean overOther) {
-                this.dragging = false;
-                this.pos.x = mainView.window.width - 339 - getStringWidth("Add Presets from .PLAN/.BIN", 10) * 2;
                 super.draw(mouseInput, overOther);
             }
         }.closed();
@@ -1027,13 +1036,8 @@ public class LevelSettingsEditing extends GuiScreen {
 
         };
         templates.addList("templateList", templateList, 240);
-        this.guiElements.add(addFromPlanBin);
-        this.guiElements.add(presetList);
-        this.guiElements.add(addNew);
-        this.guiElements.add(moveUp);
-        this.guiElements.add(delete);
-        this.guiElements.add(moveDown);
-        this.guiElements.add(ambiance);
+
+        this.guiElements.add(presetEditor);
         this.guiElements.add(templates);
     }
 
@@ -1071,9 +1075,6 @@ public class LevelSettingsEditing extends GuiScreen {
         drawString("Z Effect Amount:", Config.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 21, 10);
         drawString("Z Effect Brightness:", Config.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 22, 10);
         drawString("Z Effect Contrast:", Config.FONT_COLOR, mainView.window.width - 302, 3 + (getFontHeight(10) + 3) * 23, 10);
-
-        drawRect(mainView.window.width - 320 - getStringWidth("Add Presets from .PLAN/.BIN", 10), 0, getStringWidth("Add Presets from .PLAN/.BIN", 10) + 12, 263, Config.PRIMARY_COLOR);
-        drawString("Ambiance:", Config.FONT_COLOR, mainView.window.width - 317 - getStringWidth("Add Presets from .PLAN/.BIN", 10), 224, 10);
 
         LevelSettings ls = null;
 

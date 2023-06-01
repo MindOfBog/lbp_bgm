@@ -23,8 +23,8 @@ public class DropDownTab extends Element{
     public int fontSize;
     boolean extended = true;
 
-    boolean resizeX = false;
-    boolean resizeY = false;
+    public boolean resizeX = false;
+    public boolean resizeY = false;
 
     public DropDownTab(String id, String tabTitle, Vector2f pos, Vector2f size, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window)
     {
@@ -59,7 +59,17 @@ public class DropDownTab extends Element{
 
     public float getFullHeight()
     {
-        return size.y + (extended ? 2 + (getFontHeight(fontSize) + 6) * tabElements.size() : 0);
+        if(extended)
+        {
+            float fullSize = size.y;
+
+            for(Element e : tabElements)
+                fullSize += e.size == null ? e instanceof DropDownTab.StringElement ? getFontHeight(((StringElement)e).fontSize) : 0 : e.size.y + 3;
+
+            return fullSize;
+        }
+        else
+            return size.y;
     }
 
     public Element getElementByID(String id)
@@ -284,29 +294,15 @@ public class DropDownTab extends Element{
 
         float yOffset = 0;
 
-        if (extended) {
-            for (int i = 0; i < tabElements.size(); i++) {
-                Element element = tabElements.get(i);
-                element.pos = new Vector2f(pos.x + (element instanceof ButtonList ? 0 : 2), pos.y + size.y + 2 + yOffset);
-
-                if (element.size == null)
-                    element.size = new Vector2f(size.x - (element instanceof ButtonList ? 0 : 4), getFontHeight(fontSize) + 4);
-                else
-                    element.size = new Vector2f(size.x - (element instanceof ButtonList ? 0 : 4), element.size.y);
-
-                yOffset += element.size.y + 2;
-            }
-            if (resizeX || resizeY)
-                yOffset += 12;
-        }
+        if (extended)
+            yOffset = updateElements(yOffset);
 
         drawRect((int) pos.x, (int) pos.y, (int) size.x, (int) size.y, dragging || (mouseInput.rightButtonPress && isMouseOverTab(mouseInput)) ? Config.INTERFACE_TERTIARY_COLOR : (isMouseOverTab(mouseInput) && !overOther ? Config.INTERFACE_SECONDARY_COLOR : Config.INTERFACE_PRIMARY_COLOR));
         drawRectOutline((int) pos.x, (int) pos.y, (int) size.x, (int) size.y, dragging || (mouseInput.rightButtonPress && isMouseOverTab(mouseInput)) ? Config.INTERFACE_TERTIARY_COLOR2 : (isMouseOverTab(mouseInput) && !overOther ? Config.INTERFACE_SECONDARY_COLOR2 : Config.INTERFACE_PRIMARY_COLOR2), false);
 
         if (extended)
         {
-            drawRect((int) pos.x, (int) (pos.y + size.y), (int) size.x, (int) (2f + yOffset), Config.PRIMARY_COLOR);
-            drawRectOutline((int) pos.x, (int) (pos.y + size.y), (int) size.x, (int) (2f + yOffset), Config.SECONDARY_COLOR, false, LineStrip.UP);
+            drawBackdrop(yOffset);
         }
 
         if(extended && (resizeX || resizeY))
@@ -327,11 +323,7 @@ public class DropDownTab extends Element{
             Vector2f p3 = new Vector2f(p1.x - size.y / 4f, pos.y + size.y * 0.75f);
             drawTriangle(p1, p2, p3, Config.FONT_COLOR);
 
-            for(int i = 0; i < tabElements.size(); i++)
-            {
-                Element element = tabElements.get(i);
-                element.draw(mouseInput, overOther);
-            }
+            drawElements(mouseInput, overOther);
         }
         else
         {
@@ -340,6 +332,40 @@ public class DropDownTab extends Element{
             Vector2f p3 = new Vector2f(p1.x - size.y / 2f, pos.y + size.y * 0.75f);
             drawTriangle(p1, p2, p3, Config.FONT_COLOR);
         }
+    }
+
+    public void drawBackdrop(float yOffset)
+    {
+        drawRect((int) pos.x, (int) (pos.y + size.y), (int) size.x, (int) (2f + yOffset), Config.PRIMARY_COLOR);
+        drawRectOutline((int) pos.x, (int) (pos.y + size.y), (int) size.x, (int) (2f + yOffset), Config.SECONDARY_COLOR, false, LineStrip.UP);
+    }
+
+    public void drawElements(MouseInput mouseInput, boolean overOther)
+    {
+        for(int i = 0; i < tabElements.size(); i++)
+        {
+            Element element = tabElements.get(i);
+            element.draw(mouseInput, overOther);
+        }
+    }
+
+    public float updateElements(float yOffset)
+    {
+        for (int i = 0; i < tabElements.size(); i++) {
+            Element element = tabElements.get(i);
+            element.pos = new Vector2f(pos.x + (element instanceof ButtonList ? 0 : 2), pos.y + size.y + 2 + yOffset);
+
+            if (element.size == null)
+                element.size = new Vector2f(size.x - (element instanceof ButtonList ? 0 : 4), getFontHeight(fontSize) + 4);
+            else
+                element.size = new Vector2f(size.x - (element instanceof ButtonList ? 0 : 4), element.size.y);
+
+            yOffset += element.size.y + 2;
+        }
+        if (resizeX || resizeY)
+            yOffset += 12;
+
+        return yOffset;
     }
 
     @Override

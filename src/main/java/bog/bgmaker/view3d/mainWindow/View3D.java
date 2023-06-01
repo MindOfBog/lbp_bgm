@@ -1370,7 +1370,7 @@ public class View3D implements ILogic {
             presets.add(LevelSettingsUtils.clone(preset));
 
         settings.presets = presets;
-        settings.backdropAmbience = ((Textbox)LevelSettingsEditing.getElementByID("ambiance")).getText().isEmpty() ? "ambiences/amb_empty_world" : ((Textbox)LevelSettingsEditing.getElementByID("ambiance")).getText();
+        settings.backdropAmbience = ((Textbox)((DropDownTab)LevelSettingsEditing.getElementByID("presetEditor")).getElementByID("ambiance")).getText().isEmpty() ? "ambiences/amb_empty_world" : ((Textbox)LevelSettingsEditing.getElementByID("ambiance")).getText();
 
         lighting.setPart(Part.LEVEL_SETTINGS, settings);
 
