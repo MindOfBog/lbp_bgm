@@ -26,7 +26,7 @@ vec4 setupBones(vec4 inPos)
     weights.z * bones[joints.z] +
     weights.w * bones[joints.w]);
 
-    return skin * vec4(inPos.xyz, 1.0);
+    return skin * inPos;
 }
 
 void main()
