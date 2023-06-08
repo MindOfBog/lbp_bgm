@@ -533,6 +533,12 @@ public class View3D implements ILogic {
         drawRect(7, 7, 150, 25, Config.INTERFACE_PRIMARY_COLOR);
         drawRectOutline(7, 7, 150, 25, Config.INTERFACE_PRIMARY_COLOR2, false);
         drawString("FPS: " + EngineMan.avgFPS, Config.FONT_COLOR, 85 - (getStringWidth("FPS: " + EngineMan.avgFPS, 10) / 2), 12, 10);
+        drawString("entRen ent: " + renderer.entityRenderer.entities.size(), Config.FONT_COLOR, 10, 32, 10);
+        drawString("entRen dir L: " + renderer.entityRenderer.directionalLights.size(), Config.FONT_COLOR, 10, 42, 10);
+        drawString("entRen poi L: " + renderer.entityRenderer.pointLights.size(), Config.FONT_COLOR, 10, 52, 10);
+        drawString("entRen spo L: " + renderer.entityRenderer.spotLights.size(), Config.FONT_COLOR, 10, 62, 10);
+        drawString("entRen thr ent: " + renderer.entityRenderer.throughWallEntities.size(), Config.FONT_COLOR, 10, 72, 10);
+        drawString("guiRen ele: " + renderer.guiRenderer.elements.size(), Config.FONT_COLOR, 10, 82, 10);
 
         if(Main.debug)
         {
@@ -545,20 +551,20 @@ public class View3D implements ILogic {
 
             if (vao)
             {
-                drawRect(10 - 3, 10 - 3 + ((getFontHeight(10) + 2) + 3) * l, getStringWidth("VAOs: " + loader.vaos.size(), 10) + 6, (getFontHeight(10) + 2) + 3, new Color(0f, 0f, 0f, 0.5f));
-                drawString("VAOs: " + loader.vaos.size(), Config.FONT_COLOR, 10, 10 + ((getFontHeight(10) + 2) + 3) * l, 10);
+                drawRect(10 - 3, 20 - 3 + ((getFontHeight(10) + 2) + 3) * l, getStringWidth("VAOs: " + loader.vaos.size(), 10) + 6, (getFontHeight(10) + 2) + 3, new Color(0f, 0f, 0f, 0.5f));
+                drawString("VAOs: " + loader.vaos.size(), Config.FONT_COLOR, 10, 20 + ((getFontHeight(10) + 2) + 3) * l, 10);
                 l++;
             }
             if (vbo)
             {
-                drawRect(10 - 3, 10 - 3 + ((getFontHeight(10) + 2) + 3) * l, getStringWidth("VBOs: " + loader.vbos.size(), 10) + 6, (getFontHeight(10) + 2) + 3, new Color(0f, 0f, 0f, 0.5f));
-                drawString("VBOs: " + loader.vbos.size(), Config.FONT_COLOR, 10, 10 + ((getFontHeight(10) + 2) + 3) * l, 10);
+                drawRect(10 - 3, 20 - 3 + ((getFontHeight(10) + 2) + 3) * l, getStringWidth("VBOs: " + loader.vbos.size(), 10) + 6, (getFontHeight(10) + 2) + 3, new Color(0f, 0f, 0f, 0.5f));
+                drawString("VBOs: " + loader.vbos.size(), Config.FONT_COLOR, 10, 20 + ((getFontHeight(10) + 2) + 3) * l, 10);
                 l++;
             }
             if (tex)
             {
-                drawRect(10 - 3, 10 - 3 + ((getFontHeight(10) + 2) + 3) * l, getStringWidth("Textures: " + loader.textures.size(), 10) + 6, (getFontHeight(10) + 2) + 3, new Color(0f, 0f, 0f, 0.5f));
-                drawString("Textures: " + loader.textures.size(), Config.FONT_COLOR, 10, 10 + ((getFontHeight(10) + 2) + 3) * l, 10);
+                drawRect(10 - 3, 20 - 3 + ((getFontHeight(10) + 2) + 3) * l, getStringWidth("Textures: " + loader.textures.size(), 10) + 6, (getFontHeight(10) + 2) + 3, new Color(0f, 0f, 0f, 0.5f));
+                drawString("Textures: " + loader.textures.size(), Config.FONT_COLOR, 10, 20 + ((getFontHeight(10) + 2) + 3) * l, 10);
                 l++;
             }
 

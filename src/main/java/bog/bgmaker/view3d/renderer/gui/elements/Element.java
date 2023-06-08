@@ -85,7 +85,7 @@ public class Element {
     }
 
     protected void drawRect(int x, int y, int width, int height, Color color) {
-        renderer.processGuiElement(new Quad(loader, color, new Vector2f(x, y), new Vector2f(width, height), false).staticTexture());
+        renderer.processGuiElement(new Quad(loader, color, new Vector2f(x, y), new Vector2f(width, height), false));
     }
 
     protected void drawRectOutline(int x, int y, int width, int height, Color color, boolean smooth)

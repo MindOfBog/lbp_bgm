@@ -141,6 +141,19 @@ public class Quad extends TriStrip {
         this.staticVBO = staticVs;
     }
 
+    public Quad(Quad original)
+    {
+        this.model = original.model;
+        this.hasTexCoords = original.hasTexCoords;
+        this.texture = original.texture;
+        this.pos = new Vector2f(original.pos.x, original.pos.y);
+        this.scale = new Vector2f(original.scale.x, original.scale.y);
+        this.loader = original.loader;
+        this.staticTexture = original.staticTexture;
+        this.color = new Color(original.color.getRed(), original.color.getGreen(), original.color.getBlue(), original.color.getAlpha());
+        this.smoothstep = original.smoothstep;
+    }
+
     public Quad staticTexture()
     {
         this.staticTexture = true;

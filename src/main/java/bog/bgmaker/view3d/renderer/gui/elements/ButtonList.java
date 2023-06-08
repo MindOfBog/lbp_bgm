@@ -4,6 +4,7 @@ import bog.bgmaker.view3d.ObjectLoader;
 import bog.bgmaker.view3d.managers.MouseInput;
 import bog.bgmaker.view3d.managers.RenderMan;
 import bog.bgmaker.view3d.managers.WindowMan;
+import bog.bgmaker.view3d.renderer.gui.ingredients.Quad;
 import bog.bgmaker.view3d.utils.Config;
 import org.joml.Vector2d;
 import org.joml.Vector2f;
@@ -99,31 +100,29 @@ public abstract class ButtonList<T> extends Element{
         {
             T object = null;
 
-            try{
+            if(!(list.size() <= i))
                 object = list.get(i);
-            }catch (Exception e)
-            {
+
+            if(object == null)
                 continue;
-            }
 
             int posY = (int) (yScroll + pos.y + 2 + (height + 2) * ind);
             ind++;
 
-            if(!overElement)
-                if(mouseInput.currentPos.y <= scrollY + scrollHeight &&
-                        mouseInput.currentPos.y >= scrollY)
-                {
-                    double posX = this.pos.x + 2d;
-                    double width = size.x - 4d - size.x * 0.05d;
-
-                    if(mouseInput.currentPos.x >= posX && mouseInput.currentPos.x <= posX + width &&
-                            mouseInput.currentPos.y >= posY && mouseInput.currentPos.y <= posY + height)
-                        hoveringButton(object, i);
-                }
-
             if(posY <= pos.y + size.y &&
                     posY + height >= pos.y)
             {
+                if(!overElement)
+                    if(mouseInput.currentPos.y <= scrollY + scrollHeight &&
+                            mouseInput.currentPos.y >= scrollY)
+                    {
+                        double posX = this.pos.x + 2d;
+                        double width = size.x - 4d - size.x * 0.05d;
+
+                        if(mouseInput.currentPos.x >= posX && mouseInput.currentPos.x <= posX + width &&
+                                mouseInput.currentPos.y >= posY && mouseInput.currentPos.y <= posY + height)
+                            hoveringButton(object, i);
+                    }
                 drawButton(posY, scrollY, scrollHeight, height, object, i);
             }
         }
@@ -205,6 +204,7 @@ public abstract class ButtonList<T> extends Element{
     {
         return Config.INTERFACE_TERTIARY_COLOR2;
     }
+
     public void drawButton(int posY, float scrollY, float scrollHeight, int height, T object, int i)
     {
         startScissor((int)pos.x + 4, posY, (int)(size.x - 6f - size.x * 0.05f), (int) height);
