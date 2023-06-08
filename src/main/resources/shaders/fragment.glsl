@@ -121,14 +121,15 @@ void setupColors()
 {
     //%&AMBIENTC
 
-    vec4 cT = texture(textureSampler[0], fragTextureCoord);
-
-    if(cT.x != -5)
+    for(int i = 0; i < 25; i++)
     {
-        ambientC.r = min(ambientC.r, 1.0);
-        ambientC.g = min(ambientC.g, 1.0);
-        ambientC.b = min(ambientC.b, 1.0);
-        ambientC.a = min(ambientC.a, 1.0);
+        if (texture(textureSampler[i], fragTextureCoord).x != -5 && material.specular[i].x != -5 && material.diffuse[i].x != -5 && material.ambient[i].x != -5)
+        {
+            ambientC.r = min(ambientC.r, 1.0);
+            ambientC.g = min(ambientC.g, 1.0);
+            ambientC.b = min(ambientC.b, 1.0);
+            ambientC.a = min(ambientC.a, 1.0);
+        }
     }
 
     if(ambientC.a < 0.4)
