@@ -25,6 +25,7 @@ public class Config {
     public static float Z_NEAR = 10f;
     public static float Z_FAR = 500000f;
     public static boolean NO_CULLING;
+    public static boolean NO_BONE_TRANSFORMS;
     public static float MOUSE_SENS = 0.2f;
     public static float CAMERA_MOVE_SPEED = 1500f;
     public static Vector4f DEFAULT_COLOR = new Vector4f(1f, 1f, 1f, 1f);
@@ -57,6 +58,7 @@ public class Config {
         builtString += "Z_NEAR:" + Z_NEAR + ";";
         builtString += "Z_FAR:" + Z_FAR + ";";
         builtString += "NO_CULLING:" + NO_CULLING + ";";
+        builtString += "NO_BONE_TRANSFORMS:" + NO_BONE_TRANSFORMS + ";";
         builtString += "MOUSE_SENS:" + MOUSE_SENS + ";";
         builtString += "CAMERA_MOVE_SPEED:" + CAMERA_MOVE_SPEED + ";";
         builtString += "DEFAULT_COLOR:" + DEFAULT_COLOR.x + "," + DEFAULT_COLOR.y + "," + DEFAULT_COLOR.z + "," + DEFAULT_COLOR.w + ";";
@@ -131,6 +133,7 @@ public class Config {
                         case "Z_NEAR" : Z_NEAR = Float.parseFloat(data); break;
                         case "Z_FAR" : Z_FAR = Float.parseFloat(data); break;
                         case "NO_CULLING" : NO_CULLING = Boolean.parseBoolean(data); break;
+                        case "NO_BONE_TRANSFORMS" : NO_BONE_TRANSFORMS = Boolean.parseBoolean(data); break;
                         case "MOUSE_SENS" : MOUSE_SENS = Float.parseFloat(data); break;
                         case "CAMERA_MOVE_SPEED" : CAMERA_MOVE_SPEED = Float.parseFloat(data); break;
                         case "DEFAULT_COLOR" : DEFAULT_COLOR = new Vector4f(Float.parseFloat(d[0]), Float.parseFloat(d[1]), Float.parseFloat(d[2]), Float.parseFloat(d[3])); break;

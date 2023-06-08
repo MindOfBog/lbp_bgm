@@ -231,7 +231,7 @@ public class EntityRenderer implements IRenderer{
                                 prepareMousePick(entity, camera);
 
                                 shaderMousePick.setUniform("bones", entity instanceof Mesh ? ((Mesh)entity).skeleton : null);
-                                shaderMousePick.setUniform("hasBones", entity instanceof Mesh ? ((Mesh)entity).skeleton != null : false);
+                                shaderMousePick.setUniform("hasBones", Config.NO_BONE_TRANSFORMS ? false : entity instanceof Mesh ? ((Mesh)entity).skeleton != null : false);
 
                                 // Mouse picker render to FBO
 
@@ -283,7 +283,7 @@ public class EntityRenderer implements IRenderer{
                                 prepareMousePick(entity, camera);
 
                                 shaderMousePick.setUniform("bones", entity instanceof Mesh ? ((Mesh)entity).skeleton : null);
-                                shaderMousePick.setUniform("hasBones", entity instanceof Mesh ? ((Mesh)entity).skeleton != null : false);
+                                shaderMousePick.setUniform("hasBones", Config.NO_BONE_TRANSFORMS ? false : entity instanceof Mesh ? ((Mesh)entity).skeleton != null : false);
 
                                 // Mouse picker render to FBO
 
@@ -376,7 +376,7 @@ public class EntityRenderer implements IRenderer{
                                     }
                                 }
 
-                                boolean hasBones = entity instanceof Mesh ? ((Mesh) entity).skeleton != null : false;
+                                boolean hasBones = Config.NO_BONE_TRANSFORMS ? false : entity instanceof Mesh ? ((Mesh) entity).skeleton != null : false;
                                 bind(model, hasBones, lastShader);
                                 prepare(entity, camera, lastShader, model);
 
@@ -441,7 +441,7 @@ public class EntityRenderer implements IRenderer{
                     for(Model model : models)
                         if (model != null)
                         {
-                            boolean hasBones = entity instanceof Mesh ? ((Mesh) entity).skeleton != null : false;
+                            boolean hasBones = Config.NO_BONE_TRANSFORMS ? false : entity instanceof Mesh ? ((Mesh) entity).skeleton != null : false;
                             bindNoCullColor(model, hasBones);
                             prepare(entity, camera, lastShader, model);
                             lastShader.setUniform("bones", entity instanceof Mesh ? ((Mesh) entity).skeleton : null);
@@ -536,7 +536,7 @@ public class EntityRenderer implements IRenderer{
                             model.material.setupUniformsThroughwall();
                         }
 
-                        boolean hasBones = entity instanceof Mesh ? ((Mesh) entity).skeleton != null : false;
+                        boolean hasBones = Config.NO_BONE_TRANSFORMS ? false : entity instanceof Mesh ? ((Mesh) entity).skeleton != null : false;
                         bindThroughWalls(model, hasBones, lastShader);
                         prepare(entity, camera, lastShader, model);
 

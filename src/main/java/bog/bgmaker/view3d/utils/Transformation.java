@@ -1,9 +1,9 @@
 package bog.bgmaker.view3d.utils;
 
 import bog.bgmaker.view3d.Camera;
+import bog.bgmaker.view3d.core.Bone;
 import bog.bgmaker.view3d.core.types.Entity;
 import bog.bgmaker.view3d.core.types.Mesh;
-import cwlib.structs.mesh.Bone;
 import org.joml.Math;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
@@ -25,11 +25,13 @@ public class Transformation {
     {
         Matrix4f matrix = new Matrix4f(entity.transformation);
 
-//       TODO if (entity instanceof Mesh && ((Mesh)entity).mesh != null) {
-//            Bone root = ((Mesh)entity).mesh.getBones()[0];
-//            if (root != null)
-//                matrix.mul(root.invSkinPoseMatrix);
-//        }
+        if(Config.NO_BONE_TRANSFORMS)
+            if (entity instanceof Mesh && ((Mesh)entity).meshDescriptor != null)
+            {
+                Bone root = ((Mesh)entity).skeleton[0];
+                if (root != null)
+                    matrix.mul(root.invSkinPoseMatrix);
+            }
 
         return matrix;
     }
