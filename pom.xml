@@ -7,8 +7,8 @@
    <version>0.1</version>
    <packaging>jar</packaging>
    <properties>
-      <lwjgl.version>3.3.0</lwjgl.version>
-      <joml.version>1.10.4</joml.version>
+      <lwjgl.version>3.3.2</lwjgl.version>
+      <joml.version>1.10.5</joml.version>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
       <maven.compiler.source>1.8</maven.compiler.source>
@@ -651,7 +651,7 @@
       <dependency>
          <groupId>org.joml</groupId>
          <artifactId>joml</artifactId>
-         <version>1.10.1</version>
+         <version>${joml.version}</version>
       </dependency>
       <dependency>
          <groupId>org.jetbrains.kotlin</groupId>
