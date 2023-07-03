@@ -1,6 +1,6 @@
 #version 400 core
 
-in vec2 fragTextureCoord;
+in vec4 fragTextureCoord;
 in vec3 fragNormal;
 in vec3 fragPos;
 
@@ -122,7 +122,7 @@ void setupColors()
     //%&AMBIENTC
 
     for(int i = 0; i < 25; i++)
-        if (texture(textureSampler[i], fragTextureCoord).x == -5 && material.specular[i].x == -5 && material.diffuse[i].x == -5 && material.ambient[i].x == -5)
+        if (texture(textureSampler[i], fragTextureCoord.xy).x == -5 && material.specular[i].x == -5 && material.diffuse[i].x == -5 && material.ambient[i].x == -5)
             discard;
 
     ambientC.r = min(ambientC.r, 1.0);

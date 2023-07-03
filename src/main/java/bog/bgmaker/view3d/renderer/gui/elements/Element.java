@@ -66,26 +66,26 @@ public class Element {
 
     protected void drawImage(String path, float x, float y, float width, float height)
     {
-        renderer.processGuiElement(new Quad(loader, path, new Vector2f(x, y), new Vector2f(width, height), false));
+        renderer.processGuiElement(new Quad(loader, path, new Vector2f(x, y), new Vector2f(width, height)));
     }
 
     protected void drawImage(BufferedImage image, float x, float y, float width, float height)
     {
-        renderer.processGuiElement(new Quad(loader, image, new Vector2f(x, y), new Vector2f(width, height), false));
+        renderer.processGuiElement(new Quad(loader, image, new Vector2f(x, y), new Vector2f(width, height)));
     }
 
     protected void drawImage(int image, float x, float y, float width, float height)
     {
-        renderer.processGuiElement(new Quad(loader, image, new Vector2f(x, y), new Vector2f(width, height), false));
+        renderer.processGuiElement(new Quad(loader, image, new Vector2f(x, y), new Vector2f(width, height)));
     }
 
     protected void drawImageStatic(int image, float x, float y, float width, float height)
     {
-        renderer.processGuiElement(new Quad(loader, image, new Vector2f(x, y), new Vector2f(width, height), false).staticTexture());
+        renderer.processGuiElement(new Quad(loader, image, new Vector2f(x, y), new Vector2f(width, height)).staticTexture());
     }
 
     protected void drawRect(int x, int y, int width, int height, Color color) {
-        renderer.processGuiElement(new Quad(loader, color, new Vector2f(x, y), new Vector2f(width, height), false));
+        renderer.processGuiElement(new Quad(loader, color, new Vector2f(x, y), new Vector2f(width, height)));
     }
 
     protected void drawRectOutline(int x, int y, int width, int height, Color color, boolean smooth)

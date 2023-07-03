@@ -15,7 +15,7 @@ import java.awt.image.BufferedImage;
  */
 public class Quad extends TriStrip {
 
-    public Quad(ObjectLoader loader, String path, Vector2f pos, Vector2f scale, boolean staticVs) {
+    public Quad(ObjectLoader loader, String path, Vector2f pos, Vector2f scale) {
         this.loader = loader;
         try {
             this.texture = loader.loadResourceTexture(path, GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR);
@@ -23,14 +23,14 @@ public class Quad extends TriStrip {
         this.pos = pos;
         this.scale = scale;
 
-        this.model = GuiRenderer.defaultQuad(loader);
+        this.model = GuiRenderer.defaultQuad;
         this.hasTexCoords = false;
 
-        this.staticVAO = staticVs;
-        this.staticVBO = staticVs;
+        this.staticVAO = true;
+        this.staticVBO = true;
     }
 
-    public Quad(ObjectLoader loader, BufferedImage image, Vector2f pos, Vector2f scale, boolean staticVs) {
+    public Quad(ObjectLoader loader, BufferedImage image, Vector2f pos, Vector2f scale) {
         this.loader = loader;
         try {
             this.texture = loader.loadTexture(image, GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR);
@@ -38,24 +38,24 @@ public class Quad extends TriStrip {
         this.pos = pos;
         this.scale = scale;
 
-        this.model = GuiRenderer.defaultQuad(loader);
+        this.model = GuiRenderer.defaultQuad;
         this.hasTexCoords = false;
 
-        this.staticVAO = staticVs;
-        this.staticVBO = staticVs;
+        this.staticVAO = true;
+        this.staticVBO = true;
     }
 
-    public Quad(ObjectLoader loader, int ID, Vector2f pos, Vector2f scale, boolean staticVs) {
+    public Quad(ObjectLoader loader, int ID, Vector2f pos, Vector2f scale) {
         this.loader = loader;
         this.texture = ID;
         this.pos = pos;
         this.scale = scale;
 
-        this.model = GuiRenderer.defaultQuad(loader);
+        this.model = GuiRenderer.defaultQuad;
         this.hasTexCoords = false;
 
-        this.staticVAO = staticVs;
-        this.staticVBO = staticVs;
+        this.staticVAO = true;
+        this.staticVBO = true;
     }
 
     public Quad(ObjectLoader loader, int ID, Vector2f pos, Vector2f scale, Model m, boolean staticVs) {
@@ -84,31 +84,31 @@ public class Quad extends TriStrip {
         this.staticVAO = staticVs;
         this.staticVBO = staticVs;
     }
-    public Quad(ObjectLoader loader, Color color, Vector2f pos, Vector2f scale, boolean staticVs) {
+    public Quad(ObjectLoader loader, Color color, Vector2f pos, Vector2f scale) {
         this.loader = loader;
         this.texture = -1;
         this.pos = pos;
         this.scale = scale;
 
-        this.model = GuiRenderer.defaultQuad(loader);
+        this.model = GuiRenderer.defaultQuad;
         this.hasTexCoords = false;
         this.color = color;
 
-        this.staticVAO = staticVs;
-        this.staticVBO = staticVs;
+        this.staticVAO = true;
+        this.staticVBO = true;
     }
-    public Quad(ObjectLoader loader, Vector4f color, Vector2f pos, Vector2f scale, boolean staticVs) {
+    public Quad(ObjectLoader loader, Vector4f color, Vector2f pos, Vector2f scale) {
         this.loader = loader;
         this.texture = -1;
         this.pos = pos;
         this.scale = scale;
 
-        this.model = GuiRenderer.defaultQuad(loader);
+        this.model = GuiRenderer.defaultQuad;
         this.hasTexCoords = false;
         this.color = new Color(color.x, color.y, color.z, color.w);
 
-        this.staticVAO = staticVs;
-        this.staticVBO = staticVs;
+        this.staticVAO = true;
+        this.staticVBO = true;
     }
 
     public Quad(ObjectLoader loader, Vector4f color, Vector2f pos, Vector2f scale, Model model, boolean staticVs)

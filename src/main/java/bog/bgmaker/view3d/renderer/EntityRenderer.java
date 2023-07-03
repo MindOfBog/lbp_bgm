@@ -64,7 +64,7 @@ public class EntityRenderer implements IRenderer{
                         "    {" +
                         "        for(int i = 0; i < samplerCount; i++)" +
                         "        {" +
-                        "           ambientC = texture(textureSampler[i], fragTextureCoord);" +
+                        "           ambientC = texture(textureSampler[i], fragTextureCoord.xy);" +
                         "        }" +
                         "        if(highlightMode == 1)" +
                         "        {" +
@@ -693,7 +693,7 @@ public class EntityRenderer implements IRenderer{
             GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         }
 
-        Quad outlineFBO = new Quad(loader, colorTexture, new Vector2f(), new Vector2f(window.width, window.height), false);
+        Quad outlineFBO = new Quad(loader, colorTexture, new Vector2f(), new Vector2f(window.width, window.height));
 
         GL30.glBindVertexArray(outlineFBO.model.vao);
         GL20.glEnableVertexAttribArray(0);

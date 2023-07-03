@@ -105,7 +105,7 @@ public class Transformation3D{
                 Vector2i mouse = new Vector2i((int) mouseInput.currentPos.x, (int) mouseInput.currentPos.y);
 
                 renderer.processGuiElement(new Line(mouse, point, Color.black, loader, window, true, false));
-                renderer.processGuiElement(new Quad(loader, crosshair, new Vector2f((int)(screenPos.x - 7.5f), (int)(screenPos.y - 7.5f)), new Vector2f(15, 15), false).staticTexture());
+                renderer.processGuiElement(new Quad(loader, crosshair, new Vector2f((int)(screenPos.x - 7.5f), (int)(screenPos.y - 7.5f)), new Vector2f(15, 15)).staticTexture());
             }
 
             if(selected == -1)
@@ -127,7 +127,7 @@ public class Transformation3D{
                 Vector2i mouse = new Vector2i((int) mouseInput.currentPos.x, (int) mouseInput.currentPos.y);
 
                 renderer.processGuiElement(new Line(mouse, point, Color.black, loader, window, true, false));
-                renderer.processGuiElement(new Quad(loader, crosshair, new Vector2f((int)(screenPos.x - 7.5f), (int)(screenPos.y - 7.5f)), new Vector2f(15, 15), false).staticTexture());
+                renderer.processGuiElement(new Quad(loader, crosshair, new Vector2f((int)(screenPos.x - 7.5f), (int)(screenPos.y - 7.5f)), new Vector2f(15, 15)).staticTexture());
             }
 
             if(selected == -1)

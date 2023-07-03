@@ -1,12 +1,12 @@
 #version 400 core
 
 in vec3 position;
-in vec2 textureCoord;
+in vec4 textureCoord;
 in vec3 normal;
 in ivec4 joints;
 in vec4 weights;
 
-out vec2 fragTextureCoord;
+out vec4 fragTextureCoord;
 out vec3 fragNormal;
 out vec3 fragPos;
 
@@ -42,5 +42,5 @@ void main()
     gl_Position = projectionMatrix * viewMatrix * worldPos;
     fragNormal = normalize(worldPos).xyz;
     fragPos = worldPos.xyz;
-    fragTextureCoord = vec2(textureCoord);
+    fragTextureCoord = vec4(textureCoord);
 }

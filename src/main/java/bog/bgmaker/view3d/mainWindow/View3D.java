@@ -304,6 +304,8 @@ public class View3D implements ILogic {
     public int KEY_UP = GLFW.GLFW_KEY_SPACE;
     public int KEY_DOWN = GLFW.GLFW_KEY_LEFT_SHIFT;
 
+    boolean shadingMenu = false;
+
     @Override
     public void onKey(int key, int scancode, int action, int mods)
     {
@@ -311,6 +313,14 @@ public class View3D implements ILogic {
             return;
 
         boolean elementFocused = currentScreen.onKey(key, scancode, action, mods);
+
+        if(!elementFocused)
+        {
+            if(key == GLFW.GLFW_KEY_Z && action == GLFW.GLFW_PRESS)
+                shadingMenu = true;
+            else if(key == GLFW.GLFW_KEY_Z && action == GLFW.GLFW_RELEASE)
+                shadingMenu = false;
+        }
 
         if(key != GLFW.GLFW_KEY_LEFT_CONTROL && !window.isKeyPressed(GLFW.GLFW_KEY_LEFT_CONTROL))
         {
@@ -527,7 +537,6 @@ public class View3D implements ILogic {
 
     public boolean introPlayed = false;
 
-
     private void drawUI(MouseInput mouseInput) {
 
         drawRect(7, 7, 150, 25, Config.INTERFACE_PRIMARY_COLOR);
@@ -670,27 +679,27 @@ public class View3D implements ILogic {
 
     private void drawImage(String path, float x, float y, float width, float height)
     {
-        renderer.processGuiElement(new Quad(loader, path, new Vector2f(x, y), new Vector2f(width, height), false));
+        renderer.processGuiElement(new Quad(loader, path, new Vector2f(x, y), new Vector2f(width, height)));
     }
 
     private void drawImage(BufferedImage image, float x, float y, float width, float height)
     {
-        renderer.processGuiElement(new Quad(loader, image, new Vector2f(x, y), new Vector2f(width, height), false));
+        renderer.processGuiElement(new Quad(loader, image, new Vector2f(x, y), new Vector2f(width, height)));
     }
 
     private void drawImage(int image, float x, float y, float width, float height)
     {
-        renderer.processGuiElement(new Quad(loader, image, new Vector2f(x, y), new Vector2f(width, height), false));
+        renderer.processGuiElement(new Quad(loader, image, new Vector2f(x, y), new Vector2f(width, height)));
     }
 
     private void drawImageStatic(int image, float x, float y, float width, float height)
     {
-        renderer.processGuiElement(new Quad(loader, image, new Vector2f(x, y), new Vector2f(width, height), false).staticTexture());
+        renderer.processGuiElement(new Quad(loader, image, new Vector2f(x, y), new Vector2f(width, height)).staticTexture());
     }
 
     private void drawRect(int x, int y, int width, int height, Color color)
     {
-        renderer.processGuiElement(new Quad(loader, color, new Vector2f(x, y), new Vector2f(width, height), false));
+        renderer.processGuiElement(new Quad(loader, color, new Vector2f(x, y), new Vector2f(width, height)));
     }
 
     private void drawRectOutline(int x, int y, int width, int height, Color color, boolean smooth)

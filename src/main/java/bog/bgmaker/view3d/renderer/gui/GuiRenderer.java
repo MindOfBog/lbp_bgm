@@ -23,11 +23,12 @@ import java.util.ArrayList;
 public class GuiRenderer {
     private final ShaderMan shader;
     WindowMan window;
-    public static Model defaultQuad(ObjectLoader loader)
+    static Model defaultQuad(ObjectLoader loader)
     {
         Model quad = loader.loadModel(new float[]{-1, 1, -1, -1, 1, 1, 1, -1});
         return quad;
     }
+    public static Model defaultQuad;
     ObjectLoader loader;
 
     public GuiRenderer(ObjectLoader loader, WindowMan window) throws Exception {
@@ -50,6 +51,7 @@ public class GuiRenderer {
         shader.createUniform("smoothst");
 
         line = loader.loadModel(new float[]{0f, 0f, 100f, 100f});
+        defaultQuad = defaultQuad(loader);
     }
 
     public ArrayList<Drawable> elements = new ArrayList<>();

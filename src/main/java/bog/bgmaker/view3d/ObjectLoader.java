@@ -42,7 +42,7 @@ public class ObjectLoader {
         ArrayList<String> lines = Utils.readAllLines(fileName);
         ArrayList<Vector3f> vertices = new ArrayList<>();
         ArrayList<Vector3f> normals = new ArrayList<>();
-        ArrayList<Vector2f> textures = new ArrayList<>();
+        ArrayList<Vector4f> textures = new ArrayList<>();
         ArrayList<Vector3i> faces = new ArrayList<>();
 
         for(String line : lines)
@@ -61,7 +61,9 @@ public class ObjectLoader {
                     break;
                 case "vt":
                     //textures
-                    Vector2f texturesVec = new Vector2f(
+                    Vector4f texturesVec = new Vector4f(
+                            Float.parseFloat(tokens[1]),
+                            Float.parseFloat(tokens[2]),
                             Float.parseFloat(tokens[1]),
                             Float.parseFloat(tokens[2])
                     );
@@ -99,7 +101,7 @@ public class ObjectLoader {
             i++;
         }
 
-        float[] texCoordArr = new float[vertices.size() * 2];
+        float[] texCoordArr = new float[vertices.size() * 4];
         float[] normalsArr = new float[vertices.size() * 3];
 
         for(Vector3i face : faces)
@@ -146,10 +148,10 @@ public class ObjectLoader {
                 verticesArr[j * 3 + 2] = posV.z;
                 j++;
             }
-            float[] texCoordArr = new float[vertices.size() * 2];
+            float[] texCoordArr = new float[vertices.size() * 4];
             float[] normalsArr = new float[vertices.size() * 3];
             for (Vector3i face : faces)
-                processVertex(face.x, face.y, face.z, textures, normals, indices, texCoordArr, normalsArr);
+                processVertex2F(face.x, face.y, face.z, textures, normals, indices, texCoordArr, normalsArr);
             int[] indicesArr = indices.stream().mapToInt(v -> v.intValue()).toArray();
 
             byte[][] js = mesh.getJoints();
@@ -197,7 +199,7 @@ public class ObjectLoader {
         try {
             ArrayList<Vector3f> vertices = new ArrayList<>();
             ArrayList<Vector3f> normals = new ArrayList<>();
-            ArrayList<Vector2f> textures = new ArrayList<>();
+            ArrayList<Vector4f> textures = new ArrayList<>();
             ArrayList<Vector3i> faces = new ArrayList<>();
             for (Vector3f vertex : mastermesh.getVertices()) {
                 Vector3f verticesVec = new Vector3f(vertex.x, vertex.y, vertex.z);
@@ -208,41 +210,33 @@ public class ObjectLoader {
                 normals.add(normalsVec);
             }
 
-            int channel = 0;
+            boolean has2UVs = false;
 
-            ResourceDescriptor mat = submesh.getMaterial();
-
-            if(mat != null) {
-                RGfxMaterial material = LoadedData.loadGfxMaterial(mat);
-
-                if (material != null)
-                {
-                    int outputBox = material.getOutputBox();
-                    for (int k = 0; k < material.boxes.size(); k++) {
-                        MaterialBox box = material.boxes.get(k);
-                        MaterialWire wire = material.findWireFrom(k);
-                        if (box.type == 1) {
-                            while (wire.boxTo != outputBox)
-                                wire = material.findWireFrom(wire.boxTo);
-                            if (wire.portTo == 0) {
-                                channel = box.getParameters()[4];
-                            }
-                        }
+            RGfxMaterial material = LoadedData.loadGfxMaterial(submesh.getMaterial());
+            if (material != null)
+            {
+                int outputBox = material.getOutputBox();
+                for (int k = 0; k < material.boxes.size(); k++) {
+                    MaterialBox box = material.boxes.get(k);
+                    MaterialWire wire = material.findWireFrom(k);
+                    if (box.type == 1) {
+                        while (wire.boxTo != outputBox)
+                            wire = material.findWireFrom(wire.boxTo);
+                        if (wire.portTo == 0)
+                            if(box.getParameters()[4] == 1)
+                                has2UVs = true;
                     }
                 }
-
-//                if (material != null) {
-//                    int output = material.getOutputBox();
-//                    MaterialBox outBox = material.getBoxConnectedToPort(output, 0);
-//                    if(outBox.isTexture())
-//                        channel = outBox.getParameters()[4];
-//                }
             }
 
-            for (Vector2f texture : mastermesh.getUVs(channel)) {
-                Vector2f texturesVec = new Vector2f(texture.x, 1.0F - texture.y);
+            Vector2f[] UV0 = mastermesh.getUVs(0);
+            Vector2f[] UV1 = has2UVs ? mastermesh.getUVs(1) : UV0;
+
+            for (int i = 0; i < UV0.length; i++) {
+                Vector4f texturesVec = new Vector4f(UV0[i].x, 1.0F - UV0[i].y, UV1[i].x, 1.0F - UV1[i].y);
                 textures.add(texturesVec);
             }
+
             int[] indices1 = mastermesh.getTriangles(submesh);
 
             for (int i = 0; i < indices1.length; i += 3)
@@ -261,7 +255,7 @@ public class ObjectLoader {
                 verticesArr[j * 3 + 2] = posV.z;
                 j++;
             }
-            float[] texCoordArr = new float[vertices.size() * 2];
+            float[] texCoordArr = new float[vertices.size() * 4];
             float[] normalsArr = new float[vertices.size() * 3];
             for (Vector3i face : faces)
                 processVertex(face.x, face.y, face.z, textures, normals, indices, texCoordArr, normalsArr);
@@ -296,17 +290,26 @@ public class ObjectLoader {
         }
     }
 
-    public static void processVertex(int pos, int texCoord, int normal,
-                                     ArrayList<Vector2f> texCoordList, ArrayList<Vector3f> normalList, ArrayList<Integer> indicesList,
-                                     float[] texCoordArr, float[] normalArr)
+    public static void processVertex2F(int pos, int texCoord, int normal, ArrayList<Vector2f> texCoordList, ArrayList<Vector3f> normalList, ArrayList<Integer> indicesList, float[] texCoordArr, float[] normalArr)
+    {
+        ArrayList<Vector4f> texCL = new ArrayList();
+        for(Vector2f texC : texCoordList)
+            texCL.add(new Vector4f(texC.x, texC.y, texC.x, texC.y));
+
+        processVertex(pos, texCoord, normal, texCL, normalList, indicesList, texCoordArr, normalArr);
+    }
+
+    public static void processVertex(int pos, int texCoord, int normal, ArrayList<Vector4f> texCoordList, ArrayList<Vector3f> normalList, ArrayList<Integer> indicesList, float[] texCoordArr, float[] normalArr)
     {
         indicesList.add(pos);
 
         if(texCoord >= 0)
         {
-            Vector2f texCoordVec = texCoordList.get(texCoord);
-            texCoordArr[pos * 2] = texCoordVec.x;
-            texCoordArr[pos * 2 + 1] = 1 - texCoordVec.y;
+            Vector4f texCoordVec = texCoordList.get(texCoord);
+            texCoordArr[pos * 4] = texCoordVec.x;
+            texCoordArr[pos * 4 + 1] = 1 - texCoordVec.y;
+            texCoordArr[pos * 4 + 2] = texCoordVec.z;
+            texCoordArr[pos * 4 + 3] = 1 - texCoordVec.w;
         }
 
         if(normal >= 0)
@@ -343,7 +346,7 @@ public class ObjectLoader {
         int[] vbos = new int[]{
         storeIndicesBuffer(indices),
         storeDataInAttribList(0, 3, vertices),
-        storeDataInAttribList(1, 2, textureCoords),
+        storeDataInAttribList(1, 4, textureCoords),
         storeDataInAttribList(2, 3, normals)};
         unbind();
         return new Model(vao, vbos, indices.length, indices);
@@ -355,7 +358,7 @@ public class ObjectLoader {
         int[] vbos = new int[]{
                 storeIndicesBuffer(indices),
                 storeDataInAttribList(0, 3, vertices),
-                storeDataInAttribList(1, 2, textureCoords),
+                storeDataInAttribList(1, 4, textureCoords),
                 storeDataInAttribList(2, 3, normals),
                 storeDataInAttribList(3, 4, joints),
                 storeDataInAttribList(4, 4, weights)};

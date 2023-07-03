@@ -12,6 +12,7 @@ import cwlib.resources.RGfxMaterial;
 import cwlib.resources.RMesh;
 import cwlib.resources.RTexture;
 import cwlib.structs.gmat.MaterialBox;
+import cwlib.structs.gmat.MaterialWire;
 import cwlib.types.Resource;
 import cwlib.types.archives.FileArchive;
 import cwlib.types.data.ResourceDescriptor;
@@ -291,8 +292,6 @@ public class LoadedData {
                 MaterialBox[] connectedBoxes = material.getBoxesConnected(box);
                 String in1 = buildColor(connectedBoxes[0], material, textures, colors, loader);
                 String in2 = buildColor(connectedBoxes[1], material, textures, colors, loader);
-                for(int param : connectedBoxes[0].getParameters()) System.out.println("MIX PARAM 0: " + param);
-                for(int param : connectedBoxes[1].getParameters()) System.out.println("MIX PARAM 1: " + param);
                 return "(mix(" + in1 + ", " + in2 + ", 0.5))";
             }
 //            case BoxType.BLEND:
@@ -314,8 +313,14 @@ public class LoadedData {
                 textures.add(getTexture(material.textures[box.getParameters()[5]], loader));
 
                 if(box.type != BoxType.TEXTURE_SAMPLE)
-                System.out.println("MISSING BOX TYPE: " + box.type);
-                return "vec4(texture2D(textureSampler[" + (textures.size() - 1) + "], fragTextureCoord))";
+                    System.out.println("MISSING BOX TYPE: " + box.type);
+
+                boolean UV0 = true;
+
+                if(box.type == BoxType.TEXTURE_SAMPLE && box.getParameters()[4] == 1)
+                    UV0 = false;
+
+                return "vec4(texture2D(textureSampler[" + (textures.size() - 1) + "], " + (UV0 ? "vec2(fragTextureCoord.x, fragTextureCoord.y)" : "vec2(fragTextureCoord.z, fragTextureCoord.w)") + "))";
         }
     }
 

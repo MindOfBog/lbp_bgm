@@ -200,34 +200,34 @@ public class GuiScreen {
 
     public void drawImage(String path, float x, float y, float width, float height)
     {
-        renderer.processGuiElement(new Quad(loader, path, new Vector2f(x, y), new Vector2f(width, height), false));
+        renderer.processGuiElement(new Quad(loader, path, new Vector2f(x, y), new Vector2f(width, height)));
     }
 
     public void drawImage(BufferedImage image, float x, float y, float width, float height)
     {
-        renderer.processGuiElement(new Quad(loader, image, new Vector2f(x, y), new Vector2f(width, height), false));
+        renderer.processGuiElement(new Quad(loader, image, new Vector2f(x, y), new Vector2f(width, height)));
     }
 
     public void drawImage(int image, float x, float y, float width, float height)
     {
-        renderer.processGuiElement(new Quad(loader, image, new Vector2f(x, y), new Vector2f(width, height), false));
+        renderer.processGuiElement(new Quad(loader, image, new Vector2f(x, y), new Vector2f(width, height)));
     }
 
     public void drawImageStatic(int image, float x, float y, float width, float height)
     {
-        renderer.processGuiElement(new Quad(loader, image, new Vector2f(x, y), new Vector2f(width, height), false).staticTexture());
+        renderer.processGuiElement(new Quad(loader, image, new Vector2f(x, y), new Vector2f(width, height)).staticTexture());
     }
 
     public void drawImageStatic(int image, float x, float y, float width, float height, Color color)
     {
-        Quad tex = new Quad(loader, image, new Vector2f(x, y), new Vector2f(width, height), false);
+        Quad tex = new Quad(loader, image, new Vector2f(x, y), new Vector2f(width, height));
         tex.color = color;
         renderer.processGuiElement(tex.staticTexture());
     }
 
     public void drawRect(int x, int y, int width, int height, Color color)
     {
-        renderer.processGuiElement(new Quad(loader, color, new Vector2f(x, y), new Vector2f(width, height), false));
+        renderer.processGuiElement(new Quad(loader, color, new Vector2f(x, y), new Vector2f(width, height)));
     }
 
     public void drawRectOutline(int x, int y, int width, int height, Color color, boolean smooth)
