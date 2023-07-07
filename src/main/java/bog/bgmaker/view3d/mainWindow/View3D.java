@@ -166,14 +166,13 @@ public class View3D implements ILogic {
     {
         entities.add(e);
     }
-    
+
     private int[] prevSelection = new int[0];
-    public MousePicker mousePicker;
     public MousePicker centerPicker;
     public MouseInput mouseInput;
 
     @Override
-    public void update(MouseInput mouseInput, MousePicker mousePicker) {
+    public void update(MouseInput mouseInput) {
         boolean elementFocused = currentScreen == null ? false : currentScreen.elementFocused();
         boolean overElement = currentScreen == null ? false : currentScreen.isMouseOverElement(mouseInput);
 
@@ -197,9 +196,7 @@ public class View3D implements ILogic {
             e.printStackTrace();
         }
 
-        if(this.mousePicker == null)
-            this.mousePicker = mousePicker;
-        this.mousePicker.update(camera);
+        mouseInput.mousePicker.update(camera);
 
         if(this.centerPicker == null)
             this.centerPicker = new MousePicker(null, window);
@@ -294,7 +291,7 @@ public class View3D implements ILogic {
         if(!introPlayed)
             return;
 
-        currentScreen.onClick(mouseInput.currentPos, button, action, mods);
+        currentScreen.onClick(mouseInput, button, action, mods);
     }
 
     public int KEY_FORWARD = GLFW.GLFW_KEY_W;
@@ -1385,7 +1382,8 @@ public class View3D implements ILogic {
             presets.add(LevelSettingsUtils.clone(preset));
 
         settings.presets = presets;
-        settings.backdropAmbience = ((Textbox)((DropDownTab)LevelSettingsEditing.getElementByID("presetEditor")).getElementByID("ambiance")).getText().isEmpty() ? "ambiences/amb_empty_world" : ((Textbox)LevelSettingsEditing.getElementByID("ambiance")).getText();
+        Textbox amb = ((Textbox)((DropDownTab)LevelSettingsEditing.getElementByID("presetEditor")).getElementByID("ambiance"));
+        settings.backdropAmbience = amb == null || amb.getText().isEmpty() ? "ambiences/amb_empty_world" : amb.getText();
 
         lighting.setPart(Part.LEVEL_SETTINGS, settings);
 

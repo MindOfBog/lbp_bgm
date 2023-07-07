@@ -21,27 +21,25 @@ public class EngineMan {
     public boolean isRunning;
     public WindowMan window;
     public MouseInput mouseInput;
-    public MousePicker mousePicker;
     public GLFWErrorCallback errorCallback;
     public ILogic viewLogic;
 
     ArrayList<Integer> fpsBuffer = new ArrayList<>();
 
-    public void init() throws Exception
+    public void init(WindowMan window, ILogic view) throws Exception
     {
         GLFW.glfwSetErrorCallback(errorCallback = GLFWErrorCallback.createPrint(System.err));
-        window = Main.window;
-        viewLogic = Main.view;
+        this.window = window;
+        viewLogic = view;
         mouseInput = new MouseInput(viewLogic);
-        mousePicker = new MousePicker(mouseInput, window);
         window.init();
         viewLogic.init();
-        mouseInput.init();
+        mouseInput.init(window);
     }
 
-    public void start() throws Exception
+    public void start(WindowMan window, ILogic viewLogic) throws Exception
     {
-        init();
+        init(window, viewLogic);
 
         if(isRunning)
             return;
@@ -114,7 +112,7 @@ public class EngineMan {
 
     public void update()
     {
-        viewLogic.update(mouseInput, mousePicker);
+        viewLogic.update(mouseInput);
     }
 
     public void cleanup()

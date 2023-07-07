@@ -9,7 +9,7 @@ import bog.bgmaker.view3d.utils.MousePicker;
 public interface ILogic {
 
     void init() throws Exception;
-    void update(MouseInput mouseInput, MousePicker mousePicker);
+    void update(MouseInput mouseInput);
     void render();
     void cleanup();
     void onMouseClick(MouseInput mouseInput, int button, int action, int mods) throws Exception;

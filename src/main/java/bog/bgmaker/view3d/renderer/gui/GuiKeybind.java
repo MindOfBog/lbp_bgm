@@ -5,6 +5,7 @@ import bog.bgmaker.view3d.managers.MouseInput;
 import bog.bgmaker.view3d.managers.RenderMan;
 import bog.bgmaker.view3d.managers.WindowMan;
 import bog.bgmaker.view3d.renderer.gui.elements.Button;
+import bog.bgmaker.view3d.utils.MousePicker;
 import bog.bgmaker.view3d.utils.Utils;
 import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;

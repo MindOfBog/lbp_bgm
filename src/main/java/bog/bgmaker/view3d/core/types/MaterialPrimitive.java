@@ -105,11 +105,15 @@ public class MaterialPrimitive extends Entity{
             int stride = 0x4 * elementCount;
             int numVerts = vertices.length;
 
-            float[] texCoords = new float[uvs.length * 2];
+            Vector3f scale = this.transformation.getScale(new Vector3f());
+
+            float[] texCoords = new float[uvs.length * 4];
             for(int i = 0; i < uvs.length; i++)
             {
-                texCoords[i * 2] = uvs[i].x;
-                texCoords[i * 2 + 1] = uvs[i].y;
+                texCoords[i * 4] = uvs[i].x * scale.x;
+                texCoords[i * 4 + 1] = uvs[i].y * scale.y;
+                texCoords[i * 4 + 2] = uvs[i].x * scale.x;
+                texCoords[i * 4 + 3] = uvs[i].y * scale.y;
             }
 
             float[] verts = new float[vertices.length * 3];

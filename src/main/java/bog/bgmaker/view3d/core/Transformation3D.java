@@ -3,6 +3,7 @@ package bog.bgmaker.view3d.core;
 import bog.bgmaker.view3d.Camera;
 import bog.bgmaker.view3d.ObjectLoader;
 import bog.bgmaker.view3d.core.types.Entity;
+import bog.bgmaker.view3d.mainWindow.View3D;
 import bog.bgmaker.view3d.managers.MouseInput;
 import bog.bgmaker.view3d.managers.RenderMan;
 import bog.bgmaker.view3d.managers.WindowMan;
@@ -39,7 +40,10 @@ public class Transformation3D{
         public ArrayList<Entity> tools;
         public int selected = -1;
         public float lastAng = 0;
-        public Vector2d initPos = new Vector2d();
+        public Vector3f initPosX = new Vector3f();
+        public Vector3f initPosY = new Vector3f();
+        public Vector3f initPosZ = new Vector3f();
+        public Vector2f initPos = new Vector2f();
         public int hit = -1;
 
         public Tool(ObjectLoader loader) {
@@ -97,7 +101,7 @@ public class Transformation3D{
             }
         }
 
-        public void render(boolean hasSelection, boolean translate, boolean rotate, boolean scale, int crosshair, Vector3f screenPos, WindowMan window, ObjectLoader loader, RenderMan renderer, MouseInput mouseInput)
+        public void render(boolean hasSelection, boolean translate, boolean rotate, boolean scale, int crosshair, WindowMan window, ObjectLoader loader, RenderMan renderer, MouseInput mouseInput)
         {
             if(selected >= 3 && selected < 6)
             {
@@ -119,7 +123,7 @@ public class Transformation3D{
                            boolean translateX, boolean translateY, boolean translateZ,
                            boolean rotateX, boolean rotateY, boolean rotateZ,
                            boolean scaleX, boolean scaleY, boolean scaleZ,
-                           int crosshair, Vector3f screenPos, WindowMan window, ObjectLoader loader, RenderMan renderer, MouseInput mouseInput)
+                           int crosshair, WindowMan window, ObjectLoader loader, RenderMan renderer, MouseInput mouseInput)
         {
             if(selected >= 3 && selected < 6)
             {
@@ -139,7 +143,7 @@ public class Transformation3D{
                             renderer.processThroughWallEntity(tools.get(i));
         }
 
-        public boolean onClick(Vector2d pos, int button, int action, int mods, WindowMan window, Camera camera)
+        public boolean onClick(MouseInput mouseInput, int button, int action, int mods, WindowMan window, Camera camera)
         {
             hit = -1;
 
@@ -150,36 +154,45 @@ public class Transformation3D{
                     hit = i;
             }
 
-            if (hit != -1 && button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS) {
+            if (hit != -1 && button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && !mouseInput.middleButtonPress) {
                 selected = hit;
 
-                initPos = new Vector2d(pos);
+                initPosX = mouseInput.mousePicker.getPointOnPlaneX(currentPosition.x);
+                initPosY = mouseInput.mousePicker.getPointOnPlaneY(currentPosition.y);
+                initPosZ = mouseInput.mousePicker.getPointOnPlaneZ(currentPosition.z);
+                initPos = new Vector2f((float) mouseInput.currentPos.x, (float) mouseInput.currentPos.y);
 
                 Vector3f screenPos = camera.worldToScreenPointF(tools.get(0).transformation.getTranslation(new Vector3f()), window);
 
-                double y = pos.y - screenPos.y;
-                double x = pos.x - screenPos.x;
+                double y = mouseInput.currentPos.y - screenPos.y;
+                double x = mouseInput.currentPos.x - screenPos.x;
 
                 lastAng = ((float) Math.atan2(y, x));
                 return true;
             }
-            if (button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_RELEASE)
+            if (button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_RELEASE || button == GLFW.GLFW_MOUSE_BUTTON_3 && action == GLFW.GLFW_PRESS)
                 selected = -1;
             return false;
         }
 
-        public void updateModels(Camera camera, Vector3f screenPos, WindowMan window)
+        public Vector3f currentPosition = new Vector3f();
+        public Vector3f screenPos = new Vector3f();
+
+        public void updateModels(View3D view, Vector3f currentPosition)
         {
             for (int i = 0; i < tools.size(); i++) {
                 Entity entity = tools.get(i);
 
                 MouseInput mi = new MouseInput(null);
 
+                this.currentPosition = currentPosition;
+                screenPos = view.camera.worldToScreenPointF(this.currentPosition, view.window);
+
                 if(screenPos.z == 0)
                 {
                     mi.currentPos = new Vector2d(screenPos.x, screenPos.y);
-                    MousePicker posPicker = new MousePicker(mi, window);
-                    posPicker.update(camera);
+                    MousePicker posPicker = new MousePicker(mi, view.window);
+                    posPicker.update(view.camera);
                     Vector3f pos = new Vector3f(posPicker.getPointOnRay(posPicker.currentRay, 4000));
                     entity.transformation = entity.transformation.setTranslation(pos);
                 }

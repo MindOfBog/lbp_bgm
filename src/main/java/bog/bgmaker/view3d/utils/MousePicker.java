@@ -87,4 +87,61 @@ public class MousePicker {
         return start.add(scaledRay);
     }
 
+    public Vector3f getPointOnPlaneX(float xPos)
+    {
+        Vector3f intersectionPoint = new Vector3f();
+
+        if (currentRay.x == 0)
+            return null;
+
+        float t = (xPos - camera.pos.x) / currentRay.x;
+
+        if (t < 0)
+            return null;
+
+        intersectionPoint.set(currentRay)
+                .mul(t)
+                .add(camera.pos);
+
+        return intersectionPoint;
+    }
+
+    public Vector3f getPointOnPlaneY(float yPos)
+    {
+        Vector3f intersectionPoint = new Vector3f();
+
+        if (currentRay.y == 0)
+            return null;
+
+        float t = (yPos - camera.pos.y) / currentRay.y;
+
+        if (t < 0)
+            return null;
+
+        intersectionPoint.set(currentRay)
+                .mul(t)
+                .add(camera.pos);
+
+        return intersectionPoint;
+    }
+
+    public Vector3f getPointOnPlaneZ(float zPos)
+    {
+        Vector3f intersectionPoint = new Vector3f();
+
+        if (currentRay.z == 0)
+            return null;
+
+        float t = (zPos - camera.pos.z) / currentRay.z;
+
+        if (t < 0)
+            return null;
+
+        intersectionPoint.set(currentRay)
+                .mul(t)
+                .add(camera.pos);
+
+        return intersectionPoint;
+    }
+
 }

@@ -77,9 +77,9 @@ public class Extruder {
                 Vector3f z2;
 
                 boolean bool0 = pointInLoop == loops[currentLoop] && currentLoop < loops.length - 1;
-                boolean bool1 = n == bpSize - 2 || bool0 || i == shapePoints.length - 1;
+                boolean isThickness = n == bpSize - 2 || bool0 || i == shapePoints.length - 1;
 
-                if (bool1)
+                if (isThickness)
                     z2 = new Vector3f(0, 0, -thickness * 2f);
                 else
                     z2 = new Vector3f(0, 0, bevelPoints[n + 1].y);
@@ -122,8 +122,8 @@ public class Extruder {
                 else
                 {
                     triList.add(vertexList.size() + 1);
-                    triList.add(vertexList.size());
                     triList.add(vertexList.size() + c);
+                    triList.add(vertexList.size());
 
                     triList.add(vertexList.size() + c + 1);
                     triList.add(vertexList.size() + 1);
@@ -140,11 +140,11 @@ public class Extruder {
                     newVert.y * scale
                 ));
 
-                if (bool1)
+                if (isThickness)
                 {
                     vertexList.add(b.mul(bevelPoints[n + 1].x - o, new Vector3f()).add(z2).add(v));
                     uvList.add(new Vector2f(
-                        nn.x * scale,
+                        nn.x * scale / 2,
                         nn.y * scale
                     ));
                 } //else if (s[n + 1]) {

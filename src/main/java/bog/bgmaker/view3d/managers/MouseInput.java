@@ -1,9 +1,9 @@
 package bog.bgmaker.view3d.managers;
 
-import bog.bgmaker.Main;
 import bog.bgmaker.view3d.ILogic;
 import bog.bgmaker.view3d.mainWindow.View3D;
 import bog.bgmaker.view3d.utils.Config;
+import bog.bgmaker.view3d.utils.MousePicker;
 import org.joml.Vector2d;
 import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
@@ -20,6 +20,8 @@ public class MouseInput {
 
     ILogic viewLogic;
 
+    public MousePicker mousePicker;
+
     public MouseInput(ILogic viewLogic)
     {
         previousPos = new Vector2d(-1, -1);
@@ -28,20 +30,20 @@ public class MouseInput {
         this.viewLogic = viewLogic;
     }
 
-    public void init()
+    public void init(WindowMan windowMan)
     {
-        GLFW.glfwSetCursorPosCallback(Main.window.window, (window, xpos, ypos) ->
+        GLFW.glfwSetCursorPosCallback(windowMan.window, (window, xpos, ypos) ->
         {
             currentPos.set(xpos, ypos);
-            onMousePos(xpos, ypos);
+            onMousePos(windowMan, xpos, ypos);
         });
 
-        GLFW.glfwSetCursorEnterCallback(Main.window.window, (window, entered) ->
+        GLFW.glfwSetCursorEnterCallback(windowMan.window, (window, entered) ->
         {
             inWindow = entered;
         });
 
-        GLFW.glfwSetMouseButtonCallback(Main.window.window, (window, button, action, mods) ->
+        GLFW.glfwSetMouseButtonCallback(windowMan.window, (window, button, action, mods) ->
         {
             if(action == GLFW.GLFW_PRESS)
             {
@@ -58,13 +60,14 @@ public class MouseInput {
 
             onMouseClick(button, action, mods);
         });
+        mousePicker = new MousePicker(this, windowMan);
     }
 
-    public void onMousePos(double xPos, double yPos)
+    public void onMousePos(WindowMan window, double xPos, double yPos)
     {
         displayVec.set(0, 0);
 
-        if(previousPos.x >= 0 && previousPos.y >= 0 && previousPos.x <= Main.window.width && previousPos.y <= Main.window.height && inWindow)
+        if(previousPos.x >= 0 && previousPos.y >= 0 && previousPos.x <= window.width && previousPos.y <= window.height && inWindow)
         {
             double x = xPos - previousPos.x;
             double y = yPos - previousPos.y;

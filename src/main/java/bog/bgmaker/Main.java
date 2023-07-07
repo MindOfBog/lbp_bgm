@@ -62,7 +62,7 @@ public class Main {
 
         try
         {
-            engine.start();
+            engine.start(window, view);
         }
         catch (Exception e)
         {

@@ -6,6 +6,7 @@ import bog.bgmaker.view3d.renderer.gui.GuiScreen;
 import bog.bgmaker.view3d.renderer.gui.elements.Button;
 import bog.bgmaker.view3d.renderer.gui.elements.*;
 import bog.bgmaker.view3d.utils.Config;
+import bog.bgmaker.view3d.utils.MousePicker;
 import common.FileChooser;
 import cwlib.types.Resource;
 import cwlib.types.data.GUID;

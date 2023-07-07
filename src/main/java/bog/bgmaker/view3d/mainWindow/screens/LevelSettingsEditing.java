@@ -8,6 +8,7 @@ import bog.bgmaker.view3d.renderer.gui.elements.Button;
 import bog.bgmaker.view3d.renderer.gui.elements.*;
 import bog.bgmaker.view3d.utils.CWLibUtils.LevelSettingsUtils;
 import bog.bgmaker.view3d.utils.Config;
+import bog.bgmaker.view3d.utils.MousePicker;
 import bog.bgmaker.view3d.utils.Utils;
 import common.FileChooser;
 import cwlib.enums.Part;
@@ -1084,15 +1085,15 @@ public class LevelSettingsEditing extends GuiScreen {
         }catch (Exception e){}
 
         Vector3f sunPos3D = ls == null ? new Vector3f() : new Vector3f(ls.sunPosition).mul(ls.sunPositionScale);
-        Vector3f sunPos2D = mainView.camera.worldToScreenPointF(sunPos3D, mainView.window);
 
-        sunTool.updateModels(mainView.camera, sunPos2D, mainView.window);
+        sunTool.updateModels(mainView, sunPos3D);
 
         if(mouseInput.inWindow && sunTool.selected == -1)
-            sunTool.testForMouse(true, mainView.camera, mainView.mousePicker, true, false, false);
+            sunTool.testForMouse(true, mainView.camera, mouseInput.mousePicker, true, false, false);
 
         if(sunTool.selected != -1)
         {
+            Vector3f ppos = sunPos3D;
             switch (sunTool.selected)
             {
                 //0,1,2 pos
@@ -1101,88 +1102,115 @@ public class LevelSettingsEditing extends GuiScreen {
                 case 0:
                     //x pos
                 {
-                    float mousediff = (float) (mouseInput.currentPos.x - sunTool.initPos.x);
-                    boolean h = false;
+                    boolean failed = false;
 
-                    if (mainView.camera.getWrappedRotation().y > 60f) {
-                        mousediff = -(float) (mouseInput.currentPos.y - sunTool.initPos.y);
-                        h = true;
-                    }
-
-                    if (mainView.camera.getWrappedRotation().y < -60f) {
-                        mousediff = (float) (mouseInput.currentPos.y - sunTool.initPos.y);
-                        h = true;
-                    }
-
-                    if (mainView.camera.getWrappedRotation().y > 120f || mainView.camera.getWrappedRotation().y < -120f)
+                    if ((mainView.camera.getWrappedRotation().x < 45f && mainView.camera.getWrappedRotation().x > -45f) ||
+                            (mainView.camera.getWrappedRotation().x > 135f && mainView.camera.getWrappedRotation().x < -135f))
                     {
-                        mousediff = -(float) (mouseInput.currentPos.x - sunTool.initPos.x);
-                        h = false;
+                        Vector3f currentPosOnZ = mouseInput.mousePicker.getPointOnPlaneZ(ppos.z);
+                        if(currentPosOnZ == null || sunTool.initPosZ == null)
+                            failed = true;
+                        else
+                        {
+                            if(ls != null)
+                                ls.sunPosition = new Vector3f(ppos.x + (currentPosOnZ.x - sunTool.initPosZ.x), ppos.y, ppos.z).div(ls.sunPositionScale);
+                            sunTool.initPosZ = currentPosOnZ;
+                        }
                     }
+                    else
+                        failed = true;
 
-                    Vector3f ppos = sunPos3D;
-                    if(ls != null)
-                        ls.sunPosition = new Vector3f(lastPos.x + (mousediff * (mainView.camera.pos.distance(new Vector3f(lastPos)))) / (h ? 100f : 400f), ppos.y, ppos.z).div(ls.sunPositionScale);
+                    if(failed)
+                    {
+                        Vector3f currentPosOnY = mouseInput.mousePicker.getPointOnPlaneY(ppos.y);
+
+                        if(currentPosOnY != null && sunTool.initPosY != null)
+                        {
+                            if(ls != null)
+                                ls.sunPosition = new Vector3f(ppos.x + (currentPosOnY.x - sunTool.initPosY.x), ppos.y, ppos.z).div(ls.sunPositionScale);
+                            sunTool.initPosY = currentPosOnY;
+                        }
+                    }
                 }
                 break;
                 case 1:
                     //y pos
                 {
-                    float mousediff = -(float) (mouseInput.currentPos.y - sunTool.initPos.y);
+                    boolean failed = false;
 
-                    boolean h = false;
+                    if ((mainView.camera.getWrappedRotation().y < 45f && mainView.camera.getWrappedRotation().y > -45f) ||
+                            (mainView.camera.getWrappedRotation().y > 135f && mainView.camera.getWrappedRotation().y < -135f))
+                    {
+                        Vector3f currentPosOnZ = mouseInput.mousePicker.getPointOnPlaneZ(ppos.z);
+                        if(currentPosOnZ == null || sunTool.initPosZ == null)
+                            failed = true;
+                        else
+                        {
+                            if(ls != null)
+                                ls.sunPosition = new Vector3f(ppos.x, ppos.y + (currentPosOnZ.y - sunTool.initPosZ.y), ppos.z).div(ls.sunPositionScale);
+                            sunTool.initPosZ = currentPosOnZ;
+                        }
+                    }
+                    else
+                        failed = true;
 
-                    if (mainView.camera.getWrappedRotation().x > 20f)
-                        h = true;
+                    if(failed)
+                    {
+                        Vector3f currentPosOnX = mouseInput.mousePicker.getPointOnPlaneX(ppos.x);
 
-                    if (mainView.camera.getWrappedRotation().x < -20f)
-                        h = true;
-
-                    Vector3f ppos = sunPos3D;
-                    if(ls != null)
-                        ls.sunPosition = new Vector3f(ppos.x, lastPos.y + (mousediff * (mainView.camera.pos.distance(new Vector3f(lastPos)))) / (h ? 100f : 400f), ppos.z).div(ls.sunPositionScale);
+                        if(currentPosOnX != null && sunTool.initPosX != null)
+                        {
+                            if(ls != null)
+                                ls.sunPosition = new Vector3f(ppos.x, ppos.y + (currentPosOnX.y - sunTool.initPosX.y), ppos.z).div(ls.sunPositionScale);
+                            sunTool.initPosX = currentPosOnX;
+                        }
+                    }
                 }
                 break;
                 case 2:
                     //z pos
                 {
-                    float mousediff = (float) (mouseInput.currentPos.x - sunTool.initPos.x);
-                    boolean h = false;
+                    boolean failed = false;
 
-                    if (mainView.camera.getWrappedRotation().y > 60f + 90f) {
-                        mousediff = -(float) (mouseInput.currentPos.y - sunTool.initPos.y);
-                        h = true;
-                    }
-
-                    if (mainView.camera.getWrappedRotation().y < -60f + 90f) {
-                        mousediff = (float) (mouseInput.currentPos.y - sunTool.initPos.y);
-                        h = true;
-                    }
-
-                    if (mainView.camera.getWrappedRotation().y > 120f + 90f || mainView.camera.getWrappedRotation().y < -120f + 90f)
+                    if ((mainView.camera.getWrappedRotation().x < 45f && mainView.camera.getWrappedRotation().x > -45f) ||
+                            (mainView.camera.getWrappedRotation().x > 135f && mainView.camera.getWrappedRotation().x < -135f))
                     {
-                        mousediff = -(float) (mouseInput.currentPos.x - sunTool.initPos.x);
-                        h = false;
+                        Vector3f currentPosOnX = mouseInput.mousePicker.getPointOnPlaneX(ppos.x);
+                        if(currentPosOnX == null || sunTool.initPosX == null)
+                            failed = true;
+                        else
+                        {
+                            if(ls != null)
+                                ls.sunPosition = new Vector3f(ppos.x, ppos.y, ppos.z + (currentPosOnX.z - sunTool.initPosX.z)).div(ls.sunPositionScale);
+                            sunTool.initPosX = currentPosOnX;
+                        }
                     }
+                    else
+                        failed = true;
 
-                    Vector3f ppos = sunPos3D;
-                    if(ls != null)
-                        ls.sunPosition = new Vector3f(ppos.x, ppos.y, lastPos.z + (mousediff * (mainView.camera.pos.distance(new Vector3f(lastPos)))) / (h ? 100f : 400f)).div(ls.sunPositionScale);
+                    if(failed)
+                    {
+                        Vector3f currentPosOnY = mouseInput.mousePicker.getPointOnPlaneY(ppos.y);
 
+                        if(currentPosOnY != null && sunTool.initPosY != null)
+                        {
+                            if(ls != null)
+                                ls.sunPosition = new Vector3f(ppos.x, ppos.y, ppos.z + (currentPosOnY.z - sunTool.initPosY.z)).div(ls.sunPositionScale);
+                            sunTool.initPosY = currentPosOnY;
+                        }
+                    }
                 }
                 break;
             }
         }
 
-        sunTool.render(true, true, false, false, mainView.crosshair, sunPos2D, mainView.window, mainView.loader, mainView.renderer, mouseInput);
+        sunTool.render(true, true, false, false, mainView.crosshair, mainView.window, mainView.loader, mainView.renderer, mouseInput);
 
         super.draw(mouseInput);
     }
 
-    public Vector3f lastPos = new Vector3f();
-
     @Override
-    public boolean onClick(Vector2d pos, int button, int action, int mods) {
+    public boolean onClick(MouseInput mouseInput, int button, int action, int mods) {
 
         LevelSettings ls = null;
 
@@ -1191,9 +1219,8 @@ public class LevelSettingsEditing extends GuiScreen {
             ls = mainView.levelSettings.get(mainView.selectedPresetIndex);
         }catch (Exception e){}
 
-        if(sunTool.onClick(pos, button, action, mods, mainView.window, mainView.camera) && ls != null)
-            lastPos = new Vector3f(ls.sunPosition).mul(ls.sunPositionScale);
+        sunTool.onClick(mouseInput, button, action, mods, mainView.window, mainView.camera);
 
-        return super.onClick(pos, button, action, mods);
+        return super.onClick(mouseInput, button, action, mods);
     }
 }

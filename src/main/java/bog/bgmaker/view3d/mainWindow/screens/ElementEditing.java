@@ -1,5 +1,6 @@
 package bog.bgmaker.view3d.mainWindow.screens;
 
+import bog.bgmaker.view3d.core.Material;
 import bog.bgmaker.view3d.core.Transformation3D;
 import bog.bgmaker.view3d.core.types.Entity;
 import bog.bgmaker.view3d.core.types.MaterialPrimitive;
@@ -8,10 +9,12 @@ import bog.bgmaker.view3d.core.types.WorldAudio;
 import bog.bgmaker.view3d.mainWindow.LoadedData;
 import bog.bgmaker.view3d.mainWindow.View3D;
 import bog.bgmaker.view3d.managers.MouseInput;
+import bog.bgmaker.view3d.managers.WindowMan;
 import bog.bgmaker.view3d.renderer.gui.GuiScreen;
 import bog.bgmaker.view3d.renderer.gui.elements.Button;
 import bog.bgmaker.view3d.renderer.gui.elements.*;
 import bog.bgmaker.view3d.utils.Config;
+import bog.bgmaker.view3d.utils.MousePicker;
 import bog.bgmaker.view3d.utils.Utils;
 import common.FileChooser;
 import cwlib.enums.Part;
@@ -38,6 +41,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Vector;
 
 /**
  * @author Bog
@@ -933,7 +937,6 @@ public class ElementEditing extends GuiScreen {
     @Override
     public void draw(MouseInput mouseInput) {
 
-        Vector3f screenPos = mainView.camera.worldToScreenPointF(mainView.getSelectedPosition(), mainView.window);
         boolean overElement = false;
         boolean hasSelection = false;
         int selectedAmount = 0;
@@ -950,7 +953,7 @@ public class ElementEditing extends GuiScreen {
             }
 
         if(hasSelection)
-            elementTool.updateModels(mainView.camera, screenPos, mainView.window);
+            elementTool.updateModels(mainView, mainView.getSelectedPosition());
 
 
         if(mouseInput.inWindow && elementTool.selected == -1)
@@ -958,7 +961,7 @@ public class ElementEditing extends GuiScreen {
             for(Entity entity : mainView.entities)
                 entity.highlighted = false;
 
-            elementTool.testForMouse(hasSelection, mainView.camera, mainView.mousePicker,
+            elementTool.testForMouse(hasSelection, mainView.camera, mouseInput.mousePicker,
                     move.isClicked,
                     rotate.isClicked,
                     scale.isClicked);
@@ -978,77 +981,110 @@ public class ElementEditing extends GuiScreen {
                 case 0:
                     //x pos
                 {
-                    float mousediff = (float) (mouseInput.currentPos.x - elementTool.initPos.x);
-                    boolean h = false;
-
-                    if (mainView.camera.getWrappedRotation().y > 60f) {
-                        mousediff = -(float) (mouseInput.currentPos.y - elementTool.initPos.y);
-                        h = true;
-                    }
-
-                    if (mainView.camera.getWrappedRotation().y < -60f) {
-                        mousediff = (float) (mouseInput.currentPos.y - elementTool.initPos.y);
-                        h = true;
-                    }
-
-                    if (mainView.camera.getWrappedRotation().y > 120f || mainView.camera.getWrappedRotation().y < -120f)
-                    {
-                        mousediff = -(float) (mouseInput.currentPos.x - elementTool.initPos.x);
-                        h = false;
-                    }
-
                     Vector3f ppos = mainView.getSelectedPosition();
-                    mainView.setSelectedPosition(new Vector3f(lastPos.x + (mousediff * (mainView.camera.pos.distance(new Vector3f(lastPos)))) / (h ? 100f : 400f), ppos.y, ppos.z));
+
+                    boolean failed = false;
+
+                    if ((mainView.camera.getWrappedRotation().x < 45f && mainView.camera.getWrappedRotation().x > -45f) ||
+                            (mainView.camera.getWrappedRotation().x > 135f && mainView.camera.getWrappedRotation().x < -135f))
+                    {
+                        Vector3f currentPosOnZ = mouseInput.mousePicker.getPointOnPlaneZ(ppos.z);
+                        if(currentPosOnZ == null || elementTool.initPosZ == null)
+                            failed = true;
+                        else
+                        {
+                            mainView.setSelectedPosition(new Vector3f(ppos.x + (currentPosOnZ.x - elementTool.initPosZ.x), ppos.y, ppos.z));
+                            elementTool.initPosZ = currentPosOnZ;
+                        }
+                    }
+                    else
+                        failed = true;
+
+                    if(failed)
+                    {
+                        Vector3f currentPosOnY = mouseInput.mousePicker.getPointOnPlaneY(ppos.y);
+
+                        if(currentPosOnY != null && elementTool.initPosY != null)
+                        {
+                            mainView.setSelectedPosition(new Vector3f(ppos.x + (currentPosOnY.x - elementTool.initPosY.x), ppos.y, ppos.z));
+                            elementTool.initPosY = currentPosOnY;
+                        }
+                    }
                 }
                 break;
                 case 1:
                     //y pos
                 {
-                    float mousediff = -(float) (mouseInput.currentPos.y - elementTool.initPos.y);
-
-                    boolean h = false;
-
-                    if (mainView.camera.getWrappedRotation().x > 20f)
-                        h = true;
-
-                    if (mainView.camera.getWrappedRotation().x < -20f)
-                        h = true;
-
                     Vector3f ppos = mainView.getSelectedPosition();
-                    mainView.setSelectedPosition(new Vector3f(ppos.x, lastPos.y + (mousediff * (mainView.camera.pos.distance(new Vector3f(lastPos)))) / (h ? 100f : 400f), ppos.z));
+
+                    boolean failed = false;
+
+                    if ((mainView.camera.getWrappedRotation().y < 45f && mainView.camera.getWrappedRotation().y > -45f) ||
+                            (mainView.camera.getWrappedRotation().y > 135f && mainView.camera.getWrappedRotation().y < -135f))
+                    {
+                        Vector3f currentPosOnZ = mouseInput.mousePicker.getPointOnPlaneZ(ppos.z);
+                        if(currentPosOnZ == null || elementTool.initPosZ == null)
+                            failed = true;
+                        else
+                        {
+                            mainView.setSelectedPosition(new Vector3f(ppos.x, ppos.y + (currentPosOnZ.y - elementTool.initPosZ.y), ppos.z));
+                            elementTool.initPosZ = currentPosOnZ;
+                        }
+                    }
+                    else
+                        failed = true;
+
+                    if(failed)
+                    {
+                        Vector3f currentPosOnX = mouseInput.mousePicker.getPointOnPlaneX(ppos.x);
+
+                        if(currentPosOnX != null && elementTool.initPosX != null)
+                        {
+                            mainView.setSelectedPosition(new Vector3f(ppos.x, ppos.y + (currentPosOnX.y - elementTool.initPosX.y), ppos.z));
+                            elementTool.initPosX = currentPosOnX;
+                        }
+                    }
                 }
                 break;
                 case 2:
                     //z pos
                 {
-                    float mousediff = (float) (mouseInput.currentPos.x - elementTool.initPos.x);
-                    boolean h = false;
-
-                    if (mainView.camera.getWrappedRotation().y > 60f + 90f) {
-                        mousediff = -(float) (mouseInput.currentPos.y - elementTool.initPos.y);
-                        h = true;
-                    }
-
-                    if (mainView.camera.getWrappedRotation().y < -60f + 90f) {
-                        mousediff = (float) (mouseInput.currentPos.y - elementTool.initPos.y);
-                        h = true;
-                    }
-
-                    if (mainView.camera.getWrappedRotation().y > 120f + 90f || mainView.camera.getWrappedRotation().y < -120f + 90f)
-                    {
-                        mousediff = -(float) (mouseInput.currentPos.x - elementTool.initPos.x);
-                        h = false;
-                    }
-
                     Vector3f ppos = mainView.getSelectedPosition();
-                    mainView.setSelectedPosition(new Vector3f(ppos.x, ppos.y, lastPos.z + (mousediff * (mainView.camera.pos.distance(new Vector3f(lastPos)))) / (h ? 100f : 400f)));
+
+                    boolean failed = false;
+
+                    if ((mainView.camera.getWrappedRotation().x < 45f && mainView.camera.getWrappedRotation().x > -45f) ||
+                            (mainView.camera.getWrappedRotation().x > 135f && mainView.camera.getWrappedRotation().x < -135f))
+                    {
+                        Vector3f currentPosOnX = mouseInput.mousePicker.getPointOnPlaneX(ppos.x);
+                        if(currentPosOnX == null || elementTool.initPosX == null)
+                            failed = true;
+                        else
+                        {
+                            mainView.setSelectedPosition(new Vector3f(ppos.x, ppos.y, ppos.z + (currentPosOnX.z - elementTool.initPosX.z)));
+                            elementTool.initPosX = currentPosOnX;
+                        }
+                    }
+                    else
+                        failed = true;
+
+                    if(failed)
+                    {
+                        Vector3f currentPosOnY = mouseInput.mousePicker.getPointOnPlaneY(ppos.y);
+
+                        if(currentPosOnY != null && elementTool.initPosY != null)
+                        {
+                            mainView.setSelectedPosition(new Vector3f(ppos.x, ppos.y, ppos.z + (currentPosOnY.z - elementTool.initPosY.z)));
+                            elementTool.initPosY = currentPosOnY;
+                        }
+                    }
                 }
                 break;
                 case 3:
                     //x rot
                 {
-                    double y = mouseInput.currentPos.y - screenPos.y;
-                    double x = mouseInput.currentPos.x - screenPos.x;
+                    double y = mouseInput.currentPos.y - elementTool.screenPos.y;
+                    double x = mouseInput.currentPos.x - elementTool.screenPos.x;
                     float ang = (float) Math.atan2(y, x);
                     float diff = ang - elementTool.lastAng;
                     if(mainView.camera.getWrappedRotation().y < 0)
@@ -1071,8 +1107,8 @@ public class ElementEditing extends GuiScreen {
                 case 4:
                     //y rot
                 {
-                    double y = mouseInput.currentPos.y - screenPos.y;
-                    double x = mouseInput.currentPos.x - screenPos.x;
+                    double y = mouseInput.currentPos.y - elementTool.screenPos.y;
+                    double x = mouseInput.currentPos.x - elementTool.screenPos.x;
                     float ang = (float) Math.atan2(y, x);
                     float diff = ang - elementTool.lastAng;
                     if(mainView.camera.getWrappedRotation().x > 0)
@@ -1093,8 +1129,8 @@ public class ElementEditing extends GuiScreen {
                 case 5:
                     //z rot
                 {
-                    double y = mouseInput.currentPos.y - screenPos.y;
-                    double x = mouseInput.currentPos.x - screenPos.x;
+                    double y = mouseInput.currentPos.y - elementTool.screenPos.y;
+                    double x = mouseInput.currentPos.x - elementTool.screenPos.x;
                     float ang = (float) Math.atan2(y, x);
                     float diff = ang - elementTool.lastAng;
                     if(mainView.camera.getWrappedRotation().y < 90 && mainView.camera.getWrappedRotation().y > -90)
@@ -1116,89 +1152,153 @@ public class ElementEditing extends GuiScreen {
                 case 6:
                     //x scale
                 {
-                    float mousediff = (float) (mouseInput.currentPos.x - elementTool.initPos.x);
-                    boolean h = false;
+                    Vector3f ppos = mainView.getSelectedPosition();
 
-                    if (mainView.camera.getWrappedRotation().y > 60f) {
-                        mousediff = -(float) (mouseInput.currentPos.y - elementTool.initPos.y);
-                        h = true;
-                    }
+                    boolean failed = false;
 
-                    if (mainView.camera.getWrappedRotation().y < -60f) {
-                        mousediff = (float) (mouseInput.currentPos.y - elementTool.initPos.y);
-                        h = true;
-                    }
-
-                    if (mainView.camera.getWrappedRotation().y > 120f || mainView.camera.getWrappedRotation().y < -120f)
+                    if ((mainView.camera.getWrappedRotation().x < 45f && mainView.camera.getWrappedRotation().x > -45f) ||
+                            (mainView.camera.getWrappedRotation().x > 135f && mainView.camera.getWrappedRotation().x < -135f))
                     {
-                        mousediff = -(float) (mouseInput.currentPos.x - elementTool.initPos.x);
-                        h = false;
+                        Vector3f currentPosOnZ = mouseInput.mousePicker.getPointOnPlaneZ(ppos.z);
+                        if(currentPosOnZ == null || elementTool.initPosZ == null)
+                            failed = true;
+                        else
+                        {
+                            for (Entity ent : mainView.entities)
+                                if (ent.selected)
+                                {
+                                    Vector3f difference = new Vector3f(currentPosOnZ).sub(elementTool.initPosZ);
+                                    ent.transformation.scaleAroundLocal(1 + difference.x * 0.005f, 1, 1, ppos.x, ppos.y, ppos.z);
+                                    if(ent.getType() == 1)
+                                        ((MaterialPrimitive)ent).reloadModel();
+                                }
+                            elementTool.initPosZ = currentPosOnZ;
+                        }
                     }
+                    else
+                        failed = true;
 
-                    elementTool.initPos = new Vector2d(mouseInput.currentPos);
-                    Vector3f centerPoint = mainView.getSelectedPosition();
+                    if(failed)
+                    {
+                        Vector3f currentPosOnY = mouseInput.mousePicker.getPointOnPlaneY(ppos.y);
 
-                    for (Entity ent : mainView.entities)
-                        if (ent.selected)
-                            ent.transformation.scaleAroundLocal(1 + (mousediff * (mainView.camera.pos.distance(centerPoint))) / (h ? 1000000f : 4000000f), 1, 1, centerPoint.x, centerPoint.y, centerPoint.z);
+                        if(currentPosOnY != null && elementTool.initPosY != null)
+                        {
+                            for (Entity ent : mainView.entities)
+                                if (ent.selected)
+                                {
+                                    Vector3f difference = new Vector3f(currentPosOnY).sub(elementTool.initPosY);
+                                    ent.transformation.scaleAroundLocal(1 + difference.x * 0.005f, 1, 1, ppos.x, ppos.y, ppos.z);
+                                    if(ent.getType() == 1)
+                                        ((MaterialPrimitive)ent).reloadModel();
+                                }
+                            elementTool.initPosY = currentPosOnY;
+                        }
+                    }
                 }
                 break;
                 case 7:
                     //y scale
                 {
-                    float mousediff = -(float) (mouseInput.currentPos.y - elementTool.initPos.y);
+                    Vector3f ppos = mainView.getSelectedPosition();
 
-                    boolean h = false;
+                    boolean failed = false;
 
-                    if (mainView.camera.getWrappedRotation().x > 20f)
-                        h = true;
+                    if ((mainView.camera.getWrappedRotation().y < 45f && mainView.camera.getWrappedRotation().y > -45f) ||
+                            (mainView.camera.getWrappedRotation().y > 135f && mainView.camera.getWrappedRotation().y < -135f))
+                    {
+                        Vector3f currentPosOnZ = mouseInput.mousePicker.getPointOnPlaneZ(ppos.z);
+                        if(currentPosOnZ == null || elementTool.initPosZ == null)
+                            failed = true;
+                        else
+                        {
+                            for (Entity ent : mainView.entities)
+                                if (ent.selected)
+                                {
+                                    Vector3f difference = new Vector3f(currentPosOnZ).sub(elementTool.initPosZ);
+                                    ent.transformation.scaleAroundLocal(1, 1 + difference.y * 0.005f, 1, ppos.x, ppos.y, ppos.z);
+                                    if(ent.getType() == 1)
+                                        ((MaterialPrimitive)ent).reloadModel();
+                                }
+                            elementTool.initPosZ = currentPosOnZ;
+                        }
+                    }
+                    else
+                        failed = true;
 
-                    if (mainView.camera.getWrappedRotation().x < -20f)
-                        h = true;
+                    if(failed) {
+                        Vector3f currentPosOnX = mouseInput.mousePicker.getPointOnPlaneX(ppos.x);
 
-                    elementTool.initPos = new Vector2d(mouseInput.currentPos);
-                    Vector3f centerPoint = mainView.getSelectedPosition();
-
-                    for (Entity ent : mainView.entities)
-                        if (ent.selected)
-                            ent.transformation.scaleAroundLocal(1, 1 + (mousediff * (mainView.camera.pos.distance(centerPoint))) / (h ? 1000000f : 4000000f), 1, centerPoint.x, centerPoint.y, centerPoint.z);
+                        if(currentPosOnX != null && elementTool.initPosX != null)
+                        {
+                            for (Entity ent : mainView.entities)
+                                if (ent.selected) {
+                                    Vector3f difference = new Vector3f(currentPosOnX).sub(elementTool.initPosX);
+                                    ent.transformation.scaleAroundLocal(1, 1 + difference.y * 0.005f, 1, ppos.x, ppos.y, ppos.z);
+                                    if (ent.getType() == 1)
+                                        ((MaterialPrimitive) ent).reloadModel();
+                                }
+                            elementTool.initPosX = currentPosOnX;
+                        }
+                    }
                 }
                 break;
                 case 8:
                     //z scale
                 {
-                    float mousediff = (float) (mouseInput.currentPos.x - elementTool.initPos.x);
-                    boolean h = false;
+                    Vector3f ppos = mainView.getSelectedPosition();
 
-                    if (mainView.camera.getWrappedRotation().y > 60f + 90f) {
-                        mousediff = -(float) (mouseInput.currentPos.y - elementTool.initPos.y);
-                        h = true;
-                    }
+                    boolean failed = false;
 
-                    if (mainView.camera.getWrappedRotation().y < -60f + 90f) {
-                        mousediff = (float) (mouseInput.currentPos.y - elementTool.initPos.y);
-                        h = true;
-                    }
-
-                    if (mainView.camera.getWrappedRotation().y > 120f + 90f || mainView.camera.getWrappedRotation().y < -120f + 90f)
+                    if ((mainView.camera.getWrappedRotation().x < 45f && mainView.camera.getWrappedRotation().x > -45f) ||
+                            (mainView.camera.getWrappedRotation().x > 135f && mainView.camera.getWrappedRotation().x < -135f))
                     {
-                        mousediff = -(float) (mouseInput.currentPos.x - elementTool.initPos.x);
-                        h = false;
-                    }
-
-                    elementTool.initPos = new Vector2d(mouseInput.currentPos);
-                    Vector3f centerPoint = mainView.getSelectedPosition();
-
-                    for (Entity ent : mainView.entities)
-                        if (ent.selected)
+                        Vector3f currentPosOnX = mouseInput.mousePicker.getPointOnPlaneX(ppos.x);
+                        if(currentPosOnX == null || elementTool.initPosX == null)
+                            failed = true;
+                        else
                         {
-                            ent.transformation.scaleAroundLocal(1, 1, 1 + (mousediff * (mainView.camera.pos.distance(centerPoint))) / (h ? 1000000f : 4000000f),  centerPoint.x, centerPoint.y, centerPoint.z);
-                            if(ent.getType() == 1)
-                            {
-                                Vector3f curTrans = ent.transformation.getTranslation(new Vector3f());
-                                ent.transformation.setTranslation(new Vector3f()).scaleLocal(1, 1, 1 / ent.transformation.getScale(new Vector3f()).z).setTranslation(curTrans);
-                            }
+                            for (Entity ent : mainView.entities)
+                                if (ent.selected)
+                                {
+                                    Vector3f difference = new Vector3f(currentPosOnX).sub(elementTool.initPosX);
+                                    ent.transformation.scaleAroundLocal(1, 1, 1 + difference.z * 0.005f, ppos.x, ppos.y, ppos.z);
+                                    if(ent.getType() == 1)
+                                    {
+                                        Vector3f curTrans = ent.transformation.getTranslation(new Vector3f());
+                                        ent.transformation.setTranslation(new Vector3f()).scaleLocal(1, 1, 1 / ent.transformation.getScale(new Vector3f()).z).setTranslation(curTrans);
+                                        ((MaterialPrimitive)ent).shape.thickness += difference.z;
+                                        ((MaterialPrimitive)ent).reloadModel();
+                                    }
+                                }
+                            elementTool.initPosX = currentPosOnX;
                         }
+                    }
+                    else
+                        failed = true;
+
+                    if(failed)
+                    {
+                        Vector3f currentPosOnY = mouseInput.mousePicker.getPointOnPlaneY(ppos.y);
+
+                        if(currentPosOnY != null && elementTool.initPosY != null)
+                        {
+                            for (Entity ent : mainView.entities)
+                                if (ent.selected)
+                                {
+                                    Vector3f difference = new Vector3f(currentPosOnY).sub(elementTool.initPosY);
+                                    ent.transformation.scaleAroundLocal(1, 1, 1 + difference.z * 0.005f, ppos.x, ppos.y, ppos.z);
+                                    if(ent.getType() == 1)
+                                    {
+                                        Vector3f curTrans = ent.transformation.getTranslation(new Vector3f());
+                                        ent.transformation.setTranslation(new Vector3f()).scaleLocal(1, 1, 1 / ent.transformation.getScale(new Vector3f()).z).setTranslation(curTrans);
+                                        ((MaterialPrimitive)ent).shape.thickness += difference.z;
+                                        ((MaterialPrimitive)ent).reloadModel();
+                                    }
+                                }
+                            elementTool.initPosY = currentPosOnY;
+                        }
+                    }
                 }
                 break;
                 case 9:
@@ -1206,17 +1306,21 @@ public class ElementEditing extends GuiScreen {
                 {
                     float mousediff = (float) (mouseInput.currentPos.x - elementTool.initPos.x);
 
-                    elementTool.initPos = new Vector2d(mouseInput.currentPos);
+                    elementTool.initPos.x = (float) mouseInput.currentPos.x;
+                    elementTool.initPos.y = (float) mouseInput.currentPos.y;
+
                     Vector3f centerPoint = mainView.getSelectedPosition();
 
                     for (Entity ent : mainView.entities)
                         if (ent.selected)
                         {
-                            ent.transformation.scaleAroundLocal(1 + (mousediff * (mainView.camera.pos.distance(centerPoint))) / 1000000f,  centerPoint.x, centerPoint.y, centerPoint.z);
+                            ent.transformation.scaleAroundLocal(1 + (mousediff * (mainView.camera.pos.distance(centerPoint))) / 100000f,  centerPoint.x, centerPoint.y, centerPoint.z);
                             if(ent.getType() == 1)
                             {
                                 Vector3f curTrans = ent.transformation.getTranslation(new Vector3f());
                                 ent.transformation.setTranslation(new Vector3f()).scaleLocal(1, 1, 1 / ent.transformation.getScale(new Vector3f()).z).setTranslation(curTrans);
+                                ((MaterialPrimitive)ent).shape.thickness += (mousediff * (mainView.camera.pos.distance(centerPoint))) / 1000f;
+                                ((MaterialPrimitive)ent).reloadModel();
                             }
                         }
                 }
@@ -1228,7 +1332,7 @@ public class ElementEditing extends GuiScreen {
                 move.isClicked,
                 rotate.isClicked,
                 scale.isClicked,
-                mainView.crosshair, screenPos, mainView.window, mainView.loader, mainView.renderer, mouseInput);
+                mainView.crosshair, mainView.window, mainView.loader, mainView.renderer, mouseInput);
 
         drawRect(mainView.window.width - 305, 0, 305, mainView.window.height, Config.PRIMARY_COLOR);
         drawLine(new Vector2i(mainView.window.width - 304, 0), new Vector2i(mainView.window.width - 304, mainView.window.height), Config.SECONDARY_COLOR, false);
@@ -1236,11 +1340,9 @@ public class ElementEditing extends GuiScreen {
         super.draw(mouseInput);
     }
 
-    public Vector3f lastPos = new Vector3f();
-
     @Override
-    public boolean onClick(Vector2d pos, int button, int action, int mods) {
-        boolean onclick = super.onClick(pos, button, action, mods);
+    public boolean onClick(MouseInput mouseInput, int button, int action, int mods) {
+        boolean onclick = super.onClick(mouseInput, button, action, mods);
 
         for (int i = 0; i < mainView.entities.size(); i++)
             if(mainView.entities.get(i).getType() == 0 || mainView.entities.get(i).getType() == 1)
@@ -1252,7 +1354,7 @@ public class ElementEditing extends GuiScreen {
         int entityHit = -1;
 
         for(Element element : guiElements)
-            if (element.isMouseOverElement(pos))
+            if (element.isMouseOverElement(mouseInput.currentPos))
                 overElement = true;
 
         for(int i = 0; i < mainView.entities.size(); i++)
@@ -1267,8 +1369,7 @@ public class ElementEditing extends GuiScreen {
                 entityHit = i;
         }
 
-        if(elementTool.onClick(pos, button, action, mods, mainView.window, mainView.camera))
-            lastPos = mainView.getSelectedPosition();
+        elementTool.onClick(mouseInput, button, action, mods, mainView.window, mainView.camera);
 
         if (button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && !overElement && !(elementTool.hit != -1 || elementTool.selected != -1)) {
             if (entityHit == -1) {

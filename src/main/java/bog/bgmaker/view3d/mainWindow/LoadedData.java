@@ -310,7 +310,15 @@ public class LoadedData {
             }
             case BoxType.TEXTURE_SAMPLE:
             default:
-                textures.add(getTexture(material.textures[box.getParameters()[5]], loader));
+                Texture tex = new Texture(missingTexture.id);
+
+                try
+                {
+                    tex = getTexture(material.textures[box.getParameters()[5]], loader);
+                }catch (Exception e){}
+
+                if(tex != null)
+                    textures.add(tex);
 
                 if(box.type != BoxType.TEXTURE_SAMPLE)
                     System.out.println("MISSING BOX TYPE: " + box.type);
