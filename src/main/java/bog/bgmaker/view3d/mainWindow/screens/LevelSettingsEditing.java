@@ -919,26 +919,14 @@ public class LevelSettingsEditing extends GuiScreen {
             }
         };
 
-        DropDownTab presetEditor = new DropDownTab("presetEditor", "Presets", new Vector2f(7, 39), new Vector2f(getStringWidth("Add Presets from .PLAN/.BIN", 10) + 16, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window);
-
-        presetEditor.addButton("addFromPlanBin", "Add Presets from .PLAN/.BIN", addFromPlanBin);
-        presetEditor.addList("presetList", presetList, 150);
-        presetEditor.addButton("moveUp", "Move Up", moveUp);
-        presetEditor.addButton("moveDown", "Move Down", moveDown);
-        presetEditor.addButton("addNew", "Add", addNew);
-        presetEditor.addButton("delete", "Delete", delete);
-        presetEditor.addString("amb", "Ambiance :");
-        presetEditor.addTextbox("ambiance", "ambiences/amb_empty_world");
-
-        Textbox ambiance = (Textbox) presetEditor.getElementByID("ambiance");
-
-        DropDownTab templates = new DropDownTab("templates", "Preset Templates", new Vector2f(7, 39 + presetEditor.getFullHeight() + 7), new Vector2f(getStringWidth("Add Presets from .PLAN/.BIN", 10) + 16, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window)
+        ComboBox templates = new ComboBox("templates", "Templates", new Vector2f(), new Vector2f(), 10, mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public void draw(MouseInput mouseInput, boolean overOther) {
                 super.draw(mouseInput, overOther);
             }
-        }.closed();
+        };
+
         ArrayList<String> templateNames = new ArrayList<>();
         templateNames.add("Blank (LBP1)");templateNames.add("Tutorials (LBP1)");templateNames.add("Gardens");templateNames.add("Savannah");templateNames.add("Wedding");templateNames.add("Canyons");templateNames.add("Metropolis");templateNames.add("Islands");templateNames.add("Temples");templateNames.add("Wilderness");templateNames.add("Blank (LBP2)");templateNames.add("Tutorials (LBP2)");templateNames.add("Da Vinci's Hideout");templateNames.add("Victoria's Laboratory");templateNames.add("Factory of a Better Tomorrow");templateNames.add("Avalonia");templateNames.add("Eve's Asylum");templateNames.add("Cosmos");
         ButtonList templateList = new ButtonList("templateList", templateNames, new Vector2f(), new Vector2f(), 10, mainView.renderer, mainView.loader, mainView.window) {
@@ -1038,9 +1026,24 @@ public class LevelSettingsEditing extends GuiScreen {
         };
         templates.addList("templateList", templateList, 240);
 
+        DropDownTab presetEditor = new DropDownTab("presetEditor", "Presets", new Vector2f(7, 39), new Vector2f(getStringWidth("Add Presets from .PLAN/.BIN", 10) + 16, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window);
+
+        presetEditor.addButton("Add Presets from .PLAN/.BIN", addFromPlanBin);
+        presetEditor.addComboBox(templates);
+        presetEditor.addList("presetList", presetList, 150);
+        presetEditor.addButton("Move Up", moveUp);
+        presetEditor.addButton("Move Down", moveDown);
+        presetEditor.addButton("Add", addNew);
+        presetEditor.addButton("Delete", delete);
+        presetEditor.addString("amb", "Ambiance :");
+        presetEditor.addTextbox("ambiance", "ambiences/amb_empty_world");
+
+        ambiance = (Textbox) presetEditor.getElementByID("ambiance");
+
         this.guiElements.add(presetEditor);
-        this.guiElements.add(templates);
     }
+
+    public Textbox ambiance = null;
 
     @Override
     public void draw(MouseInput mouseInput) {

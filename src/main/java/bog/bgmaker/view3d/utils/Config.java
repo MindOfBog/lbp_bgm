@@ -49,6 +49,7 @@ public class Config {
     public static Color INTERFACE_SECONDARY_COLOR2 = new Color(50, 50, 50, 255);
     public static Color INTERFACE_TERTIARY_COLOR = new Color(100, 100, 100, 210);
     public static Color INTERFACE_TERTIARY_COLOR2 = new Color(100, 100, 100, 255);
+    public static boolean MATERIAL_PREVIEW_SHADING = true;
 
     private static String buildSettings()
     {
@@ -82,6 +83,7 @@ public class Config {
         builtString += "INTERFACE_SECONDARY_COLOR2:" + INTERFACE_SECONDARY_COLOR2.getRed() + "," + INTERFACE_SECONDARY_COLOR2.getGreen() + "," + INTERFACE_SECONDARY_COLOR2.getBlue() + "," + INTERFACE_SECONDARY_COLOR2.getAlpha() + ";";
         builtString += "INTERFACE_TERTIARY_COLOR:" + INTERFACE_TERTIARY_COLOR.getRed() + "," + INTERFACE_TERTIARY_COLOR.getGreen() + "," + INTERFACE_TERTIARY_COLOR.getBlue() + "," + INTERFACE_TERTIARY_COLOR.getAlpha() + ";";
         builtString += "INTERFACE_TERTIARY_COLOR2:" + INTERFACE_TERTIARY_COLOR2.getRed() + "," + INTERFACE_TERTIARY_COLOR2.getGreen() + "," + INTERFACE_TERTIARY_COLOR2.getBlue() + "," + INTERFACE_TERTIARY_COLOR2.getAlpha() + ";";
+        builtString += "MATERIAL_PREVIEW_SHADING:" + MATERIAL_PREVIEW_SHADING + ";";
 
         return builtString;
     }
@@ -157,6 +159,7 @@ public class Config {
                         case "INTERFACE_SECONDARY_COLOR2" : INTERFACE_SECONDARY_COLOR2 = new Color(Integer.parseInt(d[0]), Integer.parseInt(d[1]), Integer.parseInt(d[2]), Integer.parseInt(d[3])); break;
                         case "INTERFACE_TERTIARY_COLOR" : INTERFACE_TERTIARY_COLOR = new Color(Integer.parseInt(d[0]), Integer.parseInt(d[1]), Integer.parseInt(d[2]), Integer.parseInt(d[3])); break;
                         case "INTERFACE_TERTIARY_COLOR2" : INTERFACE_TERTIARY_COLOR2 = new Color(Integer.parseInt(d[0]), Integer.parseInt(d[1]), Integer.parseInt(d[2]), Integer.parseInt(d[3])); break;
+                        case "MATERIAL_PREVIEW_SHADING" : MATERIAL_PREVIEW_SHADING = Boolean.parseBoolean(data); break;
                     }
                 }
 

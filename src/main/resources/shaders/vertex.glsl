@@ -5,10 +5,13 @@ in vec4 textureCoord;
 in vec3 normal;
 in ivec4 joints;
 in vec4 weights;
+in vec3 tangent;
 
 out vec4 fragTextureCoord;
 out vec3 fragNormal;
 out vec3 fragPos;
+out vec3 fragTang;
+out vec3 fragBitTang;
 
 uniform mat4 transformationMatrix;
 uniform mat4 projectionMatrix;
@@ -40,7 +43,13 @@ void main()
 
     vec4 worldPos = mat4(transformationMatrix) * vertPos;
     gl_Position = projectionMatrix * viewMatrix * worldPos;
-    fragNormal = normalize(worldPos).xyz;
+
+    vec3 surfaceNormal = (transformationMatrix * vec4(normal,0.0)).xyz;
+
+    fragNormal = normalize(surfaceNormal);
+    fragTang = normalize((viewMatrix * vec4(tangent, 0.0)).xyz);
+    fragBitTang = normalize(cross(fragNormal, fragTang));
+
     fragPos = worldPos.xyz;
     fragTextureCoord = vec4(textureCoord);
 }

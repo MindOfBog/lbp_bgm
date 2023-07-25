@@ -6,6 +6,7 @@ import bog.bgmaker.view3d.ObjectLoader;
 import bog.bgmaker.view3d.core.*;
 import bog.bgmaker.view3d.core.types.Entity;
 import bog.bgmaker.view3d.core.types.Mesh;
+import bog.bgmaker.view3d.mainWindow.LoadedData;
 import bog.bgmaker.view3d.managers.MouseInput;
 import bog.bgmaker.view3d.managers.RenderMan;
 import bog.bgmaker.view3d.managers.ShaderMan;
@@ -30,6 +31,7 @@ import java.util.ArrayList;
 public class EntityRenderer implements IRenderer{
 
     ShaderMan shader;
+    ShaderMan solidShader;
     ShaderMan shaderMousePick;
     ShaderMan shaderOutlineVertical;
     ShaderMan shaderOutlineHorizontal;
@@ -48,6 +50,7 @@ public class EntityRenderer implements IRenderer{
         spotLights = new ArrayList<>();
         throughWallEntities = new ArrayList<>();
         shader = new ShaderMan();
+        solidShader = new ShaderMan();
         shaderMousePick = new ShaderMan();
         shaderOutlineVertical = new ShaderMan();
         shaderOutlineHorizontal = new ShaderMan();
@@ -58,7 +61,9 @@ public class EntityRenderer implements IRenderer{
     @Override
     public void init() throws Exception
     {
-        shader.createVertexShader(Utils.loadResource("/shaders/vertex.glsl"));
+        String vertex = Utils.loadResource("/shaders/vertex.glsl");
+
+        shader.createVertexShader(vertex);
         String shaderCode = Utils.loadResource("/shaders/fragment.glsl").replaceAll("//%&AMBIENTC",
                 "if(material.hasTexture == 1)" +
                         "    {" +
@@ -122,6 +127,40 @@ public class EntityRenderer implements IRenderer{
         shader.createUniform("hasBones");
         shader.createUniform("triangleOffset");
 
+        solidShader.createVertexShader(vertex);
+        String solidShaderCode = Utils.loadResource("/shaders/fragment.glsl").replaceAll("//%&AMBIENTC",
+                "vec3 normal = normalize(fragNormal);" +
+                        "vec3 cameraDirection = normalize(-fragPos);" +
+                        "float dotProduct = dot(normal, -normalize(vec3(0.5, 0.5, -0.6)));" +
+                        "float specularDotProduct = dot(normal, cameraDirection);" +
+                        "float diffuseShade = max(dotProduct, 0.0);" +
+                        "float specularShade = pow(max(specularDotProduct, 0.0), 32.0);" +
+                        "vec3 diffuseColor = vec3(0.8, 0.8, 0.8) * diffuseShade;" +
+                        "vec3 specularColor = vec3(1.0, 1.0, 1.0) * specularShade * 0.3;" +
+                        "vec3 finalColor = diffuseColor + specularColor;" +
+                        "finalColor = pow(finalColor, vec3(0.4545));" +
+                        "ambientC = vec4((finalColor / 2) + vec3(0.25), 1.0); " +
+                        "diffuseC = ambientC;" +
+                        "specularC = ambientC;");
+
+        solidShader.createFragmentShader(solidShaderCode);
+        solidShader.link();
+        solidShader.createUniform("ambientLight");
+        solidShader.createUniform("specularPower");
+        solidShader.createDirectionalLightListUniform("directionalLights", 5);
+        solidShader.createUniform("directionalLightsSize");
+        solidShader.createPointLightListUniform("pointLights", 50);
+        solidShader.createUniform("pointLightsSize");
+        solidShader.createSpotLightListUniform("spotLights", 50);
+        solidShader.createUniform("spotLightsSize");
+
+        solidShader.createUniform("transformationMatrix");
+        solidShader.createUniform("projectionMatrix");
+        solidShader.createUniform("viewMatrix");
+        solidShader.createListUniform("bones", 100);
+        solidShader.createUniform("hasBones");
+        solidShader.createUniform("triangleOffset");
+
         shaderMousePick.createVertexShader(Utils.loadResource("/shaders/vertex.glsl"));
         shaderMousePick.createFragmentShader(Utils.loadResource("/shaders/fragment_mouse.glsl"));
         shaderMousePick.link();
@@ -174,6 +213,7 @@ public class EntityRenderer implements IRenderer{
     @Override
     public void render(Camera camera, MouseInput mouseInput)
     {
+        Matrix4f projection = window.updateProjectionMatrix();
 
         int mouseFrameBuffer = initFrameBufferINT();
         int mouseColorTexture = initColorTexINT();
@@ -184,7 +224,7 @@ public class EntityRenderer implements IRenderer{
         GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_DEPTH_ATTACHMENT, GL11.GL_TEXTURE_2D, mouseDepthTexture, 0);
 
         shaderMousePick.bind();
-        shaderMousePick.setUniform("projectionMatrix", Main.window.updateProjectionMatrix());
+        shaderMousePick.setUniform("projectionMatrix", projection);
 
         GL11.glEnable(GL11.GL_DEPTH_TEST);
         GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
@@ -225,6 +265,8 @@ public class EntityRenderer implements IRenderer{
                                     GL20.glEnableVertexAttribArray(3);
                                     GL20.glEnableVertexAttribArray(4);
                                 }
+
+                                GL20.glEnableVertexAttribArray(5);
 
                                 RenderMan.disableCulling();
 
@@ -280,6 +322,8 @@ public class EntityRenderer implements IRenderer{
                                     GL20.glEnableVertexAttribArray(4);
                                 }
 
+                                GL20.glEnableVertexAttribArray(5);
+
                                 prepareMousePick(entity, camera);
 
                                 shaderMousePick.setUniform("bones", entity instanceof Mesh ? ((Mesh)entity).skeleton : null);
@@ -323,8 +367,6 @@ public class EntityRenderer implements IRenderer{
 
         shaderMousePick.unbind();
 
-        Matrix4f projection = window.updateProjectionMatrix();
-
         shader.bind();
         shader.setUniform("projectionMatrix", projection);
         shader.setUniform("ambientLight", Config.AMBIENT_LIGHT);
@@ -335,13 +377,36 @@ public class EntityRenderer implements IRenderer{
         shader.setUniform("pointLightsSize", pointLights.size());
         shader.setUniform("spotLights", spotLights.toArray(SpotLight[]::new));
         shader.setUniform("spotLightsSize", spotLights.size());
+        shader.unbind();
+
+        solidShader.bind();
+        solidShader.setUniform("projectionMatrix", projection);
+        solidShader.setUniform("ambientLight", Config.AMBIENT_LIGHT);
+        solidShader.setUniform("specularPower", Config.SPECULAR_POWER);
+        solidShader.setUniform("directionalLights", directionalLights.toArray(DirectionalLight[]::new));
+        solidShader.setUniform("directionalLightsSize", directionalLights.size());
+        solidShader.setUniform("pointLights", pointLights);
+        solidShader.setUniform("pointLightsSize", pointLights.size());
+        solidShader.setUniform("spotLights", spotLights.toArray(SpotLight[]::new));
+        solidShader.setUniform("spotLightsSize", spotLights.size());
+        solidShader.unbind();
 
         boolean outline = false;
 
         ShaderMan lastShader = shader;
+        lastShader.bind();
         ArrayList<Material> setUpMats = new ArrayList<>();
 
         ArrayList<Integer> selInd = new ArrayList<>();
+
+        if(!Config.MATERIAL_PREVIEW_SHADING)
+        {
+            if (!lastShader.equals(solidShader)) {
+                lastShader.unbind();
+                lastShader = solidShader;
+                lastShader.bind();
+            }
+        }
 
         for (int i = 0; i < entities.size(); i++)
             if(entities.get(i) != null)
@@ -356,23 +421,25 @@ public class EntityRenderer implements IRenderer{
                     if(models != null)
                         for(Model model : models)
                             if (model != null) {
-                                if (model.material == null || model.material.customShader == null) {
-                                    if (!lastShader.equals(shader)) {
-                                        lastShader.unbind();
-                                        shader.bind();
-                                        lastShader = shader;
-                                    }
-                                } else {
-                                    if (!lastShader.equals(model.material.customShader))
-                                    {
-                                        lastShader.unbind();
-                                        model.material.customShader.bind();
-                                        lastShader = model.material.customShader;
-                                    }
-                                    if(!setUpMats.contains(model.material))
-                                    {
-                                        model.material.setupUniforms(projection, directionalLights, pointLights, spotLights);
-                                        setUpMats.add(model.material);
+
+                                if(Config.MATERIAL_PREVIEW_SHADING)
+                                {
+                                    if (model.material == null || model.material.customShader == null) {
+                                        if (!lastShader.equals(shader)) {
+                                            lastShader.unbind();
+                                            lastShader = shader;
+                                            lastShader.bind();
+                                        }
+                                    } else {
+                                        if (!lastShader.equals(model.material.customShader)) {
+                                            lastShader.unbind();
+                                            lastShader = model.material.customShader;
+                                            lastShader.bind();
+                                        }
+                                        if (!setUpMats.contains(model.material)) {
+                                            model.material.setupUniforms(projection, camera, directionalLights, pointLights, spotLights);
+                                            setUpMats.add(model.material);
+                                        }
                                     }
                                 }
 
@@ -404,7 +471,7 @@ public class EntityRenderer implements IRenderer{
                                         RenderMan.disableCulling();
                                 }
 
-                                if (model.material.overlayColor != null) {
+                                if (model.material.overlayColor != null && Config.MATERIAL_PREVIEW_SHADING) {
                                     lastShader.setUniform("highlightMode", 1);
                                     lastShader.setUniform("highlightColor", model.material.overlayColor);
                                 }
@@ -419,15 +486,17 @@ public class EntityRenderer implements IRenderer{
                                 if(entity.selected)
                                     selInd.add(i);
 
-                                lastShader.setUniform("highlightMode", 0);
+                                if(Config.MATERIAL_PREVIEW_SHADING)
+                                    lastShader.setUniform("highlightMode", 0);
+
                                 unbind();
                             }
                 }catch (Exception e){System.err.println("Failed rendering entity " + i + ".");e.printStackTrace();}
 
         if (!lastShader.equals(shader)) {
             lastShader.unbind();
-            shader.bind();
             lastShader = shader;
+            lastShader.bind();
         }
         bindFrameBuffer(outlineFB);
         bindColorTex(outlineCT);
@@ -443,6 +512,7 @@ public class EntityRenderer implements IRenderer{
                         {
                             boolean hasBones = Config.NO_BONE_TRANSFORMS ? false : entity instanceof Mesh ? ((Mesh) entity).skeleton != null : false;
                             bindNoCullColor(model, hasBones);
+                            lastShader.setUniform("material", noCol);
                             prepare(entity, camera, lastShader, model);
                             lastShader.setUniform("bones", entity instanceof Mesh ? ((Mesh) entity).skeleton : null);
                             lastShader.setUniform("hasBones", hasBones);
@@ -454,7 +524,6 @@ public class EntityRenderer implements IRenderer{
         unbindFrameBuffer();
 
         GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
-        shader.setUniform("ambientLight", new Vector3f(1f, 1f, 1f));
 
         if(outline)
         {
@@ -466,7 +535,7 @@ public class EntityRenderer implements IRenderer{
             GL11.glColorMask(false, false, false, false);
 
             //render FBO for stencil
-            drawOutline(outlineFB, outlineCT, shaderOutlineVertical, shader, true, 1, 0, Config.OUTLINE_COLOR);
+            drawOutline(outlineFB, outlineCT, shaderOutlineVertical, lastShader, true, 1, 0, Config.OUTLINE_COLOR);
 
             GL11.glColorMask(true, true, true, true);
 
@@ -478,9 +547,9 @@ public class EntityRenderer implements IRenderer{
             int radius = Math.round((Config.OUTLINE_DISTANCE * 2f - 1f) * 10f);
 
             bindFrameBuffer(outlineFB);
-            drawOutline(outlineFB, outlineCT, shaderOutlineVertical, shader, false, window.height, radius, Config.OUTLINE_COLOR);
+            drawOutline(outlineFB, outlineCT, shaderOutlineVertical, lastShader, false, window.height, radius, Config.OUTLINE_COLOR);
             unbindFrameBuffer();
-            drawOutline(outlineFB, outlineCT, shaderOutlineHorizontal, shader, false, window.width, radius, Config.OUTLINE_COLOR);
+            drawOutline(outlineFB, outlineCT, shaderOutlineHorizontal, lastShader, false, window.width, radius, Config.OUTLINE_COLOR);
 
             bindFrameBuffer(outlineFB);
             bindColorTex(outlineCT);
@@ -502,10 +571,10 @@ public class EntityRenderer implements IRenderer{
         GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
         GL11.glCullFace(GL11.GL_BACK);
 
-        shader.setUniform("ambientLight", new Vector3f(1f, 1f, 1f));
-        shader.setUniform("directionalLightsSize", 0);
-        shader.setUniform("pointLightsSize", 0);
-        shader.setUniform("spotLightsSize", 0);
+        lastShader.setUniform("ambientLight", new Vector3f(1f, 1f, 1f));
+        lastShader.setUniform("directionalLightsSize", 0);
+        lastShader.setUniform("pointLightsSize", 0);
+        lastShader.setUniform("spotLightsSize", 0);
 
         for(int i = 0; i < throughWallEntities.size(); i++)
             if(throughWallEntities.get(i) != null)
@@ -530,7 +599,7 @@ public class EntityRenderer implements IRenderer{
 
                             if(!setUpMats.contains(model.material))
                             {
-                                model.material.setupUniforms(projection, directionalLights, pointLights, spotLights);
+                                model.material.setupUniforms(projection, camera, directionalLights, pointLights, spotLights);
                                 setUpMats.add(model.material);
                             }
                             model.material.setupUniformsThroughwall();
@@ -558,7 +627,7 @@ public class EntityRenderer implements IRenderer{
                 }catch (Exception e){System.err.println("Failed rendering throughwall-entity " + i + ".");}
 
         throughWallEntities.clear();
-        shader.unbind();
+        lastShader.unbind();
     }
 
     @Override
@@ -575,12 +644,15 @@ public class EntityRenderer implements IRenderer{
             GL20.glEnableVertexAttribArray(4);
         }
 
+        GL20.glEnableVertexAttribArray(5);
+
         if(model.material.disableCulling || Config.NO_CULLING)
             RenderMan.disableCulling();
         else
             RenderMan.enableCulling();
 
-        shader.setUniform("material", model.material);
+        if(Config.MATERIAL_PREVIEW_SHADING)
+            shader.setUniform("material", model.material);
 
         if(model.material.textures != null)
         {
@@ -607,9 +679,9 @@ public class EntityRenderer implements IRenderer{
             GL20.glEnableVertexAttribArray(4);
         }
 
-        RenderMan.disableCulling();
+        GL20.glEnableVertexAttribArray(5);
 
-        shader.setUniform("material", noCol);
+        RenderMan.disableCulling();
     }
 
     public void bindThroughWalls(Model model, boolean hasBones, ShaderMan shader)
@@ -624,6 +696,8 @@ public class EntityRenderer implements IRenderer{
             GL20.glEnableVertexAttribArray(3);
             GL20.glEnableVertexAttribArray(4);
         }
+
+        GL20.glEnableVertexAttribArray(5);
 
         if(model.material.disableCulling)
             RenderMan.disableCulling();
@@ -657,16 +731,19 @@ public class EntityRenderer implements IRenderer{
     @Override
     public void prepare(Object entity, Camera camera, ShaderMan shader, Model model) {
         Texture[] tex = model.material.textures;
-        if(tex != null)
+        if(Config.MATERIAL_PREVIEW_SHADING)
         {
-            for (int i = 0; i < tex.length; i++)
-                shader.setUniform("textureSampler", i, i);
-            shader.setUniform("samplerCount", tex.length);
-        }
-        else
-        {
-            shader.setUniform("textureSampler", 0, 0);
-            shader.setUniform("samplerCount", 1);
+            if(tex != null)
+            {
+                for (int i = 0; i < tex.length; i++)
+                    shader.setUniform("textureSampler", i, i);
+                shader.setUniform("samplerCount", tex.length);
+            }
+            else
+            {
+                shader.setUniform("textureSampler", 0, 0);
+                shader.setUniform("samplerCount", 1);
+            }
         }
         shader.setUniform("transformationMatrix", Transformation.createTransformationMatrix((Entity) entity));
         shader.setUniform("viewMatrix", Transformation.getViewMatrix(camera));
@@ -680,6 +757,14 @@ public class EntityRenderer implements IRenderer{
     @Override
     public void cleanup() {
         shader.cleanup();
+        solidShader.cleanup();
+        shaderOutlineHorizontal.cleanup();
+        shaderOutlineVertical.cleanup();
+        shaderMousePick.cleanup();
+
+        for(Material material : LoadedData.loadedGfxMaterials.values())
+            if(material.customShader != null)
+                material.customShader.cleanup();
     }
 
     private void drawOutline(int frameBuffer, int colorTexture, ShaderMan outlineShader, ShaderMan prevShader, boolean stipple, float target, int radius, Color color)

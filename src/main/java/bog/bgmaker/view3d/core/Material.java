@@ -1,5 +1,6 @@
 package bog.bgmaker.view3d.core;
 
+import bog.bgmaker.view3d.Camera;
 import bog.bgmaker.view3d.managers.ShaderMan;
 import bog.bgmaker.view3d.utils.Config;
 import org.joml.Matrix4f;
@@ -94,7 +95,7 @@ public class Material {
         return textures != null;
     }
 
-    public void setupUniforms(Matrix4f projection, ArrayList<DirectionalLight> directionalLights, ArrayList<PointLight> pointLights, ArrayList<SpotLight> spotLights) {
+    public void setupUniforms(Matrix4f projection, Camera camera, ArrayList<DirectionalLight> directionalLights, ArrayList<PointLight> pointLights, ArrayList<SpotLight> spotLights) {
         customShader.setUniform("projectionMatrix", projection);
         customShader.setUniform("ambientLight", Config.AMBIENT_LIGHT);
         customShader.setUniform("specularPower", Config.SPECULAR_POWER);

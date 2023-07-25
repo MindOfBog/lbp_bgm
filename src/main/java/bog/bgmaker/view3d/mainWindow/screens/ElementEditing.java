@@ -319,7 +319,7 @@ public class ElementEditing extends GuiScreen {
 
         fileLoading = new DropDownTab("fileLoading", "File Loading", new Vector2f(7, 39 + camPos.getFullHeight() + 7), new Vector2f(200, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window);
         fileLoading.addCheckbox("legacyFileLoading", "Legacy file dialogue");
-        fileLoading.addButton("map", "Load .MAP", new bog.bgmaker.view3d.renderer.gui.elements.Button() {
+        fileLoading.addButton("Load .MAP", new bog.bgmaker.view3d.renderer.gui.elements.Button("map") {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if (button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS) {
@@ -333,7 +333,7 @@ public class ElementEditing extends GuiScreen {
                 }
             }
         });
-        fileLoading.addButton("farc", "Load .FARCs", new bog.bgmaker.view3d.renderer.gui.elements.Button() {
+        fileLoading.addButton("Load .FARCs", new bog.bgmaker.view3d.renderer.gui.elements.Button("farc") {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if (button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS) {
@@ -358,7 +358,7 @@ public class ElementEditing extends GuiScreen {
                 }
             }
         });
-        fileLoading.addButton("bigfart", "Load BIG Profile", new bog.bgmaker.view3d.renderer.gui.elements.Button() {
+        fileLoading.addButton("Load BIG Profile", new bog.bgmaker.view3d.renderer.gui.elements.Button("bigfart") {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if (button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS) {
@@ -376,7 +376,7 @@ public class ElementEditing extends GuiScreen {
         helpers = new DropDownTab("helpers", "Helpers", new Vector2f(7, 39 + camPos.getFullHeight() + 7 + fileLoading.getFullHeight() + 3), new Vector2f(200, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window).closed();
         helpers.addCheckbox("levelBorders", "Level borders", true);
         helpers.addCheckbox("podHelper", "Pod helper");
-        helpers.addButton("podCam", "Pod cam", new bog.bgmaker.view3d.renderer.gui.elements.Button() {
+        helpers.addButton("Pod cam", new bog.bgmaker.view3d.renderer.gui.elements.Button("podCam") {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 mainView.camera.pos = new Vector3f(4.673651f, 1565.6465f, 13882.88f);

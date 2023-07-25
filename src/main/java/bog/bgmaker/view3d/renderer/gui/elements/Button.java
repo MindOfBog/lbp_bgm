@@ -21,7 +21,11 @@ public abstract class Button extends Element{
     public boolean isClicked = false;
 
     public Button()
+    {}
+
+    public Button(String id)
     {
+        this.id = id;
     }
 
     public Button(String id, String buttonText, Vector2f pos, Vector2f size, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window)
@@ -53,13 +57,32 @@ public abstract class Button extends Element{
         super.draw(mouseInput, overOther);
 
         if(!isMouseOverElement(mouseInput) || overOther)
-            isClicked = false;
+            setClicked(false);
+
+        Color c = Config.INTERFACE_PRIMARY_COLOR;
+        Color c2 = Config.INTERFACE_PRIMARY_COLOR2;
+
+        if(isMouseOverElement(mouseInput) && !overOther)
+        {
+            c = Config.INTERFACE_SECONDARY_COLOR;
+            c2 = Config.INTERFACE_SECONDARY_COLOR2;
+        }
+
+        if(isClicked)
+        {
+            c = Config.INTERFACE_TERTIARY_COLOR;
+            c2 = Config.INTERFACE_TERTIARY_COLOR2;
+        }
 
         startScissor((int)pos.x, (int)pos.y, (int)size.x, (int)size.y);
-        drawRect((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, (!isMouseOverElement(mouseInput) || overOther ? Config.INTERFACE_PRIMARY_COLOR : (isClicked ? Config.INTERFACE_TERTIARY_COLOR : Config.INTERFACE_SECONDARY_COLOR)));
+        drawRect((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, c);
         drawString(buttonText, Config.FONT_COLOR, (int)(pos.x + size.x / 2 - getStringWidth(buttonText, fontSize) / 2), (int)(pos.y + size.y / 2 - getFontHeight(fontSize) / 2), fontSize);
-        drawRectOutline((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, (!isMouseOverElement(mouseInput) || overOther ? Config.INTERFACE_PRIMARY_COLOR2 : (isClicked ? Config.INTERFACE_TERTIARY_COLOR2 : Config.INTERFACE_SECONDARY_COLOR2)), false);
+        drawRectOutline((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, c2, false);
         endScissor();
+    }
+
+    public void setClicked(boolean clicked) {
+        isClicked = clicked;
     }
 
     @Override
@@ -70,11 +93,11 @@ public abstract class Button extends Element{
             if(isMouseOverElement(pos))
             {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
-                    isClicked = true;
+                    setClicked(true);
                 clickedButton(button, action, mods);
             }
             if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_RELEASE)
-                isClicked = false;
+                setClicked(false);
         }
 
         super.onClick(pos, button, action, mods, overOther);

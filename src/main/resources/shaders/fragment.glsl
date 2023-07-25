@@ -51,6 +51,8 @@ uniform int pointLightsSize;
 uniform SpotLight spotLights[50];
 uniform int spotLightsSize;
 uniform mat4 transformationMatrix;
+uniform mat4 projectionMatrix;
+uniform mat4 viewMatrix;
 
 const mat4 thresholdMatrix = mat4(
     1, 9, 3, 11,

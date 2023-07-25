@@ -11,6 +11,7 @@ import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
 
 import java.awt.*;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 /**
@@ -95,11 +96,10 @@ public class DropDownTab extends Element{
         return false;
     }
 
-    public void addButton(String id, String buttonText, Button button)
+    public void addButton(String buttonText, Button button)
     {
-        if(!containsElementByID(id))
+        if(!containsElementByID(button.id))
         {
-            button.id = id;
             button.buttonText = buttonText;
             button.pos = new Vector2f(0, 0);
             button.size = new Vector2f(size.x - 4, getFontHeight(fontSize) + 4);
@@ -108,6 +108,20 @@ public class DropDownTab extends Element{
             button.window = window;
             button.loader = loader;
             tabElements.add(button);
+        }
+    }
+
+    public void addComboBox(ComboBox comboBox)
+    {
+        if(!containsElementByID(comboBox.id))
+        {
+            comboBox.pos = new Vector2f(0, 0);
+            comboBox.size = new Vector2f(size.x - 4, getFontHeight(fontSize) + 4);
+            comboBox.fontSize = fontSize;
+            comboBox.renderer = renderer;
+            comboBox.window = window;
+            comboBox.loader = loader;
+            tabElements.add(comboBox);
         }
     }
 
@@ -342,11 +356,30 @@ public class DropDownTab extends Element{
 
     public void drawElements(MouseInput mouseInput, boolean overOther)
     {
+        ArrayList<Integer> combos = new ArrayList<>();
+        ArrayList<Boolean> combosB = new ArrayList<>();
+
         for(int i = 0; i < tabElements.size(); i++)
         {
             Element element = tabElements.get(i);
-            element.draw(mouseInput, overOther);
+
+            if(element instanceof ComboBox)
+            {
+                combos.add(i);
+                combosB.add(overOther);
+                if(element.isMouseOverElement(mouseInput))
+                    overOther = true;
+            }
+            else
+            {
+                element.draw(mouseInput, overOther);
+                if(element.isMouseOverElement(mouseInput))
+                    overOther = true;
+            }
         }
+
+        for(int i = combos.size() - 1; i >= 0; i--)
+            tabElements.get(combos.get(i)).draw(mouseInput, combosB.get(i));
     }
 
     public float updateElements(float yOffset)
@@ -493,7 +526,11 @@ public class DropDownTab extends Element{
 
         if(extended)
             for(Element element : tabElements)
+            {
                 element.onClick(pos, button, action, mods, overOther);
+                if(element.isMouseOverElement(pos))
+                    overOther = true;
+            }
 
         super.onClick(pos, button, action, mods, overOther);
     }

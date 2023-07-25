@@ -80,11 +80,11 @@ public abstract class ButtonImage extends Element{
             if(isMouseOverElement(pos))
             {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
-                    isClicked = true;
+                    setClicked(true);
                 clickedButton(button, action, mods);
             }
             if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_RELEASE)
-                isClicked = false;
+                setClicked(false);
         }
 
         super.onClick(pos, button, action, mods, overOther);
