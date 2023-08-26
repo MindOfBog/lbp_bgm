@@ -37,7 +37,6 @@ public class Settings extends GuiScreen{
     {
         rendererSettings = new DropDownTab("rendererSettings", "Renderer Settings", new Vector2f(7, 39), new Vector2f(200, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window).closed();
         rendererSettings.addCheckbox("culling", "No culling", Config.NO_CULLING);
-        rendererSettings.addCheckbox("boners", "No Bone Transforms", Config.NO_BONE_TRANSFORMS);
         rendererSettings.addLabeledSlider("fov", "FOV:  ", (float) Math.toDegrees(Config.FOV), 20, 175);
         rendererSettings.addLabeledTextbox("fps", "FPS:  ", true, false, false, Float.toString(Config.FRAMERATE));
         rendererSettings.addLabeledTextbox("moveSpeed", "Move speed:  ", true, false, false, Float.toString(Config.CAMERA_MOVE_SPEED));
@@ -61,7 +60,7 @@ public class Settings extends GuiScreen{
         rendererSettings.addString("podColorLabel", "Pod Color:");
         rendererSettings.addLabeledTextbox("podColor", "# ");
 
-        int firstInd = 11;
+        int firstInd = 10;
 
         rendererSettings.tabElements.set(firstInd, new DropDownTab.LabeledTextbox("# ", "outlineColor", new Vector2f(0, 0), new Vector2f(rendererSettings.size.x - 4, getFontHeight(rendererSettings.fontSize) + 4), rendererSettings.fontSize, rendererSettings.renderer, rendererSettings.loader, rendererSettings.window)
         {
@@ -194,15 +193,15 @@ public class Settings extends GuiScreen{
         });
 
         controls = new DropDownTab("controls", "Controls", new Vector2f(7, 39 + 14 + rendererSettings.getFullHeight() + guiSettings.getFullHeight()), new Vector2f(200, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window).closed();
-        controls.addLabeledButton("forward", "Forward:  ", "W", new Button() {
+        controls.addLabeledButton("forward", "Forward:  ", Utils.getKeyName(Config.KEY_FORWARD).toUpperCase(), new Button() {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 Button btn = this;
-                mainView.setCurrentScreen(new GuiKeybind(mainView.KEY_FORWARD, 10, renderer, loader, mainView.window) {
+                mainView.setCurrentScreen(new GuiKeybind(Config.KEY_FORWARD, 10, renderer, loader, mainView.window) {
                     @Override
                     public void keybind(int key) {
-                        mainView.KEY_FORWARD = key;
-                        if(mainView.KEY_FORWARD != GLFW.GLFW_KEY_UNKNOWN)
+                        Config.KEY_FORWARD = key;
+                        if(Config.KEY_FORWARD != GLFW.GLFW_KEY_UNKNOWN)
                             btn.buttonText = Utils.getKeyName(key).toUpperCase();
                         else
                             btn.buttonText = "NONE";
@@ -218,15 +217,15 @@ public class Settings extends GuiScreen{
                 });
             }
         });
-        controls.addLabeledButton("left", "Left:  ", "A", new Button() {
+        controls.addLabeledButton("left", "Left:  ", Utils.getKeyName(Config.KEY_LEFT).toUpperCase(), new Button() {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 Button btn = this;
-                mainView.setCurrentScreen(new GuiKeybind(mainView.KEY_LEFT, 10, renderer, loader, mainView.window) {
+                mainView.setCurrentScreen(new GuiKeybind(Config.KEY_LEFT, 10, renderer, loader, mainView.window) {
                     @Override
                     public void keybind(int key) {
-                        mainView.KEY_LEFT = key;
-                        if(mainView.KEY_LEFT != GLFW.GLFW_KEY_UNKNOWN)
+                        Config.KEY_LEFT = key;
+                        if(Config.KEY_LEFT != GLFW.GLFW_KEY_UNKNOWN)
                             btn.buttonText = Utils.getKeyName(key).toUpperCase();
                         else
                             btn.buttonText = "NONE";
@@ -242,15 +241,15 @@ public class Settings extends GuiScreen{
                 });
             }
         });
-        controls.addLabeledButton("back", "Back:  ", "S", new Button() {
+        controls.addLabeledButton("back", "Back:  ", Utils.getKeyName(Config.KEY_BACK).toUpperCase(), new Button() {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 Button btn = this;
-                mainView.setCurrentScreen(new GuiKeybind(mainView.KEY_BACK, 10, renderer, loader, mainView.window) {
+                mainView.setCurrentScreen(new GuiKeybind(Config.KEY_BACK, 10, renderer, loader, mainView.window) {
                     @Override
                     public void keybind(int key) {
-                        mainView.KEY_BACK = key;
-                        if(mainView.KEY_BACK != GLFW.GLFW_KEY_UNKNOWN)
+                        Config.KEY_BACK = key;
+                        if(Config.KEY_BACK != GLFW.GLFW_KEY_UNKNOWN)
                             btn.buttonText = Utils.getKeyName(key).toUpperCase();
                         else
                             btn.buttonText = "NONE";
@@ -266,15 +265,15 @@ public class Settings extends GuiScreen{
                 });
             }
         });
-        controls.addLabeledButton("right", "Right:  ", "D", new Button() {
+        controls.addLabeledButton("right", "Right:  ", Utils.getKeyName(Config.KEY_RIGHT).toUpperCase(), new Button() {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 Button btn = this;
-                mainView.setCurrentScreen(new GuiKeybind(mainView.KEY_RIGHT, 10, renderer, loader, mainView.window) {
+                mainView.setCurrentScreen(new GuiKeybind(Config.KEY_RIGHT, 10, renderer, loader, mainView.window) {
                     @Override
                     public void keybind(int key) {
-                        mainView.KEY_RIGHT = key;
-                        if(mainView.KEY_RIGHT != GLFW.GLFW_KEY_UNKNOWN)
+                        Config.KEY_RIGHT = key;
+                        if(Config.KEY_RIGHT != GLFW.GLFW_KEY_UNKNOWN)
                             btn.buttonText = Utils.getKeyName(key).toUpperCase();
                         else
                             btn.buttonText = "NONE";
@@ -290,15 +289,15 @@ public class Settings extends GuiScreen{
                 });
             }
         });
-        controls.addLabeledButton("up", "Up:  ", "SPACE", new Button() {
+        controls.addLabeledButton("up", "Up:  ", Utils.getKeyName(Config.KEY_UP).toUpperCase(), new Button() {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 Button btn = this;
-                mainView.setCurrentScreen(new GuiKeybind(mainView.KEY_UP, 10, renderer, loader, mainView.window) {
+                mainView.setCurrentScreen(new GuiKeybind(Config.KEY_UP, 10, renderer, loader, mainView.window) {
                     @Override
                     public void keybind(int key) {
-                        mainView.KEY_UP = key;
-                        if(mainView.KEY_UP != GLFW.GLFW_KEY_UNKNOWN)
+                        Config.KEY_UP = key;
+                        if(Config.KEY_UP != GLFW.GLFW_KEY_UNKNOWN)
                             btn.buttonText = Utils.getKeyName(key).toUpperCase();
                         else
                             btn.buttonText = "NONE";
@@ -314,15 +313,39 @@ public class Settings extends GuiScreen{
                 });
             }
         });
-        controls.addLabeledButton("down", "Down:  ", "LEFT SHIFT", new Button() {
+        controls.addLabeledButton("down", "Down:  ", Utils.getKeyName(Config.KEY_DOWN).toUpperCase(), new Button() {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 Button btn = this;
-                mainView.setCurrentScreen(new GuiKeybind(mainView.KEY_DOWN, 10, renderer, loader, mainView.window) {
+                mainView.setCurrentScreen(new GuiKeybind(Config.KEY_DOWN, 10, renderer, loader, mainView.window) {
                     @Override
                     public void keybind(int key) {
-                        mainView.KEY_DOWN = key;
-                        if(mainView.KEY_DOWN != GLFW.GLFW_KEY_UNKNOWN)
+                        Config.KEY_DOWN = key;
+                        if(Config.KEY_DOWN != GLFW.GLFW_KEY_UNKNOWN)
+                            btn.buttonText = Utils.getKeyName(key).toUpperCase();
+                        else
+                            btn.buttonText = "NONE";
+
+                        if(btn.buttonText == null)
+                            btn.buttonText = "error";
+                    }
+
+                    @Override
+                    public void returnPreviousScreen() {
+                        mainView.returnToPreviousScreen();
+                    }
+                });
+            }
+        });
+        controls.addLabeledButton("shading", "Shading:  ", Utils.getKeyName(Config.KEY_SHADING).toUpperCase(), new Button() {
+            @Override
+            public void clickedButton(int button, int action, int mods) {
+                Button btn = this;
+                mainView.setCurrentScreen(new GuiKeybind(Config.KEY_SHADING, 10, renderer, loader, mainView.window) {
+                    @Override
+                    public void keybind(int key) {
+                        Config.KEY_SHADING = key;
+                        if(Config.KEY_SHADING != GLFW.GLFW_KEY_UNKNOWN)
                             btn.buttonText = Utils.getKeyName(key).toUpperCase();
                         else
                             btn.buttonText = "NONE";
@@ -362,14 +385,11 @@ public class Settings extends GuiScreen{
 
         Config.NO_CULLING = ((Checkbox)rendererSettings.tabElements.get(i)).isChecked;
         i++;
-        Config.NO_BONE_TRANSFORMS = ((Checkbox)rendererSettings.tabElements.get(i)).isChecked;
-        i++;
 
         Vector2f fovSlider = setSliderValue(((DropDownTab.LabeledSlider)rendererSettings.tabElements.get(i)).slider, (float) Math.toDegrees(Config.FOV));
         if(fovSlider.y == 1)
         {
             Config.FOV = (float) Math.toRadians(fovSlider.x);
-            Config.updateFile();
         }
         i++;
 
@@ -377,7 +397,6 @@ public class Settings extends GuiScreen{
         if(fps != null)
             try{
                 Config.FRAMERATE = Float.parseFloat(fps);
-                Config.updateFile();
             }catch (Exception e){}
         i++;
 
@@ -385,7 +404,6 @@ public class Settings extends GuiScreen{
         if(moveSpeed != null)
             try{
                 Config.CAMERA_MOVE_SPEED = Float.parseFloat(moveSpeed);
-                Config.updateFile();
             }catch (Exception e){}
         i++;
 
@@ -393,7 +411,6 @@ public class Settings extends GuiScreen{
         if(sens != null)
             try{
                 Config.MOUSE_SENS = Float.parseFloat(sens);
-                Config.updateFile();
             }catch (Exception e){}
         i++;
 
@@ -401,7 +418,6 @@ public class Settings extends GuiScreen{
         if(zNear != null)
             try{
                 Config.Z_NEAR = Float.parseFloat(zNear);
-                Config.updateFile();
             }catch (Exception e){}
         i++;
 
@@ -409,7 +425,6 @@ public class Settings extends GuiScreen{
         if(zFar != null)
             try{
                 Config.Z_FAR = Float.parseFloat(zFar);
-                Config.updateFile();
             }catch (Exception e){}
         i += 2;
 
@@ -417,7 +432,6 @@ public class Settings extends GuiScreen{
         if(outlineDistSlider.y == 1)
         {
             Config.OUTLINE_DISTANCE = outlineDistSlider.x;
-            Config.updateFile();
         }
         i += 2;
 
@@ -426,7 +440,6 @@ public class Settings extends GuiScreen{
         if(outlineColor != null)
             try{
                 Config.OUTLINE_COLOR = Utils.parseHexColor(outlineColor);
-                Config.updateFile();
             }catch (Exception e){}
         i += 2;
 
@@ -435,7 +448,6 @@ public class Settings extends GuiScreen{
         if(borderColor1 != null)
             try{
                 Config.BORDER_COLOR_1 = Utils.parseHexColor(borderColor1); mainView.borders.material.setColor(Config.BORDER_COLOR_1);
-                Config.updateFile();
             }catch (Exception e){}
         i += 2;
 
@@ -444,7 +456,6 @@ public class Settings extends GuiScreen{
         if(borderColor2 != null)
             try{
                 Config.BORDER_COLOR_2 = Utils.parseHexColor(borderColor2); mainView.borders1.material.setColor(Config.BORDER_COLOR_2);
-                Config.updateFile();
             }catch (Exception e){}
         i += 2;
 
@@ -453,7 +464,6 @@ public class Settings extends GuiScreen{
         if(borderColor3 != null)
             try{
                 Config.BORDER_COLOR_3 = Utils.parseHexColor(borderColor3); mainView.borders2.material.setColor(Config.BORDER_COLOR_3);
-                Config.updateFile();
             }catch (Exception e){}
         i += 2;
 
@@ -462,7 +472,6 @@ public class Settings extends GuiScreen{
         if(borderColor4 != null)
             try{
                 Config.BORDER_COLOR_4 = Utils.parseHexColor(borderColor4); mainView.borders3.material.setColor(Config.BORDER_COLOR_4);
-                Config.updateFile();
             }catch (Exception e){}
         i += 2;
 
@@ -471,7 +480,6 @@ public class Settings extends GuiScreen{
         if(earthColor != null)
             try{
                 Config.EARTH_COLOR = Utils.parseHexColor(earthColor); mainView.earth.material.setOverlayColor(Config.EARTH_COLOR);
-                Config.updateFile();
             }catch (Exception e){}
         i += 2;
 
@@ -480,7 +488,6 @@ public class Settings extends GuiScreen{
         if(podColor != null)
             try{
                 Config.POD_COLOR = Utils.parseHexColor(podColor); mainView.pod.material.setOverlayColor(Config.POD_COLOR);
-                Config.updateFile();
             }catch (Exception e){}
 
         Textbox fontC = ((DropDownTab.LabeledTextbox) guiSettings.tabElements.get(1)).textbox;
@@ -488,7 +495,6 @@ public class Settings extends GuiScreen{
         if(fontColor != null)
             try{
                 Config.FONT_COLOR = Utils.parseHexColor(fontColor);
-                Config.updateFile();
             }catch (Exception e){}
 
         Textbox primC = ((DropDownTab.LabeledTextbox) guiSettings.tabElements.get(3)).textbox;
@@ -496,7 +502,6 @@ public class Settings extends GuiScreen{
         if(primColor != null)
             try{
                 Config.PRIMARY_COLOR = Utils.parseHexColor(primColor);
-                Config.updateFile();
             }catch (Exception e){}
 
         Textbox secC = ((DropDownTab.LabeledTextbox) guiSettings.tabElements.get(4)).textbox;
@@ -504,7 +509,6 @@ public class Settings extends GuiScreen{
         if(secColor != null)
             try{
                 Config.SECONDARY_COLOR = Utils.parseHexColor(secColor);
-                Config.updateFile();
             }catch (Exception e){}
 
         Textbox iprimC = ((DropDownTab.LabeledTextbox) guiSettings.tabElements.get(6)).textbox;
@@ -512,7 +516,6 @@ public class Settings extends GuiScreen{
         if(iprimColor != null)
             try{
                 Config.INTERFACE_PRIMARY_COLOR = Utils.parseHexColor(iprimColor);
-                Config.updateFile();
             }catch (Exception e){}
 
         Textbox iprimC2 = ((DropDownTab.LabeledTextbox) guiSettings.tabElements.get(7)).textbox;
@@ -520,7 +523,6 @@ public class Settings extends GuiScreen{
         if(iprimColor2 != null)
             try{
                 Config.INTERFACE_PRIMARY_COLOR2 = Utils.parseHexColor(iprimColor2);
-                Config.updateFile();
             }catch (Exception e){}
 
         Textbox isecC = ((DropDownTab.LabeledTextbox) guiSettings.tabElements.get(9)).textbox;
@@ -528,7 +530,6 @@ public class Settings extends GuiScreen{
         if(isecColor != null)
             try{
                 Config.INTERFACE_SECONDARY_COLOR = Utils.parseHexColor(isecColor);
-                Config.updateFile();
             }catch (Exception e){}
 
         Textbox isecC2 = ((DropDownTab.LabeledTextbox) guiSettings.tabElements.get(10)).textbox;
@@ -536,7 +537,6 @@ public class Settings extends GuiScreen{
         if(isecColor2 != null)
             try{
                 Config.INTERFACE_SECONDARY_COLOR2 = Utils.parseHexColor(isecColor2);
-                Config.updateFile();
             }catch (Exception e){}
 
         Textbox itertC = ((DropDownTab.LabeledTextbox) guiSettings.tabElements.get(12)).textbox;
@@ -544,7 +544,6 @@ public class Settings extends GuiScreen{
         if(itertColor != null)
             try{
                 Config.INTERFACE_TERTIARY_COLOR = Utils.parseHexColor(itertColor);
-                Config.updateFile();
             }catch (Exception e){}
 
         Textbox itertC2 = ((DropDownTab.LabeledTextbox) guiSettings.tabElements.get(13)).textbox;
@@ -552,7 +551,6 @@ public class Settings extends GuiScreen{
         if(itertColor2 != null)
             try{
                 Config.INTERFACE_TERTIARY_COLOR2 = Utils.parseHexColor(itertColor2);
-                Config.updateFile();
             }catch (Exception e){}
     }
 

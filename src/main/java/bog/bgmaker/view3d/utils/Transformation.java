@@ -1,9 +1,7 @@
 package bog.bgmaker.view3d.utils;
 
 import bog.bgmaker.view3d.Camera;
-import bog.bgmaker.view3d.core.Bone;
 import bog.bgmaker.view3d.core.types.Entity;
-import bog.bgmaker.view3d.core.types.Mesh;
 import org.joml.Math;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
@@ -24,15 +22,6 @@ public class Transformation {
     public static Matrix4f createTransformationMatrix(Entity entity)
     {
         Matrix4f matrix = new Matrix4f(entity.transformation);
-
-        if(Config.NO_BONE_TRANSFORMS)
-            if (entity instanceof Mesh && ((Mesh)entity).meshDescriptor != null)
-            {
-                Bone root = ((Mesh)entity).skeleton[0];
-                if (root != null)
-                    matrix.mul(root.invSkinPoseMatrix);
-            }
-
         return matrix;
     }
 
@@ -58,5 +47,17 @@ public class Transformation {
                 .rotate((float)Math.toRadians(rot.z), new Vector3f(0, 0, 1))
                 .translate(-pos.x, -pos.y, -pos.z);
         return matrix;
+    }
+
+    public static boolean isMatrixParseable(Matrix4f matrix) {
+        if (!matrix.isAffine()) {
+            return false;
+        }
+
+        float determinant = matrix.m00() * (matrix.m11() * matrix.m22() - matrix.m12() * matrix.m21())
+                - matrix.m01() * (matrix.m10() * matrix.m22() - matrix.m12() * matrix.m20())
+                + matrix.m02() * (matrix.m10() * matrix.m21() - matrix.m11() * matrix.m20());
+
+        return Math.abs(determinant - 1.0f) < 1e-6;
     }
 }

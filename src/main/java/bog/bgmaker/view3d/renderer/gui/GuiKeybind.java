@@ -62,11 +62,13 @@ public abstract class GuiKeybind extends GuiScreen{
     public void draw(MouseInput mouseInput) {
         this.previousScreen.draw(new MouseInput(null));
 
-        drawRect(window.width/2 - 100, window.height/2 + (getFontHeight(fontSize) / 2 - 10 - 45), 200, (getFontHeight(fontSize) / 2 - 10 + 40) * 2, new Color(0, 0, 0, 0.5f));
+        drawRect(window.width/2 - 100, window.height/2 + (getFontHeight(fontSize) / 2 - 10 - 45), 200, (getFontHeight(fontSize) / 2 + 33) * 2, new Color(0, 0, 0, 0.5f));
         drawRect(window.width / 2 - 95, window.height / 2 - getFontHeight(fontSize) / 2 - 10, 190, 20, new Color(0, 0, 0, 0.5f));
+        drawRectOutline(window.width/2 - 100, window.height/2 + (getFontHeight(fontSize) / 2 - 10 - 45), 200, (getFontHeight(fontSize) / 2 + 33) * 2, new Color(0, 0, 0, 0.5f), false);
+        drawRectOutline(window.width / 2 - 95, window.height / 2 - getFontHeight(fontSize) / 2 - 10, 190, 20, new Color(0, 0, 0, 0.5f), false);
         String key = Utils.getKeyName(currentKey).toUpperCase();
         drawString(key, Color.white, window.width / 2 - getStringWidth(key, fontSize) / 2, window.height / 2 - getFontHeight(fontSize), fontSize);
-        drawString("Select any key:", Color.white, window.width / 2 - 95, window.height / 2 + (getFontHeight(fontSize) / 2 - 5 - 45), fontSize);
+        drawString("Select any key:", Color.white, window.width / 2 - 94, window.height / 2 + (getFontHeight(fontSize) / 2 - 5 - 42), fontSize);
 
         super.draw(mouseInput);
     }

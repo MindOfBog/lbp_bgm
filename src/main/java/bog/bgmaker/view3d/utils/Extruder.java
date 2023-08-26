@@ -121,8 +121,8 @@ public class Extruder {
                 }
                 else
                 {
-                    triList.add(vertexList.size() + 1);
                     triList.add(vertexList.size() + c);
+                    triList.add(vertexList.size() + 1);
                     triList.add(vertexList.size());
 
                     triList.add(vertexList.size() + c + 1);

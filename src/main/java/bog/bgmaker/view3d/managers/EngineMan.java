@@ -101,6 +101,7 @@ public class EngineMan {
         if(!isRunning)
             return;
         isRunning = false;
+        Config.updateFile();
         System.exit(0);
     }
 

@@ -3,6 +3,8 @@
 in vec4 fragTextureCoord;
 in vec3 fragNormal;
 in vec3 fragPos;
+in vec3 fragTang;
+in vec3 fragBitTang;
 
 out vec4 fragmentColor;
 

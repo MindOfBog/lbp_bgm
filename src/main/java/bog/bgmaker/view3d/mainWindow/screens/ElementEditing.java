@@ -13,6 +13,7 @@ import bog.bgmaker.view3d.managers.WindowMan;
 import bog.bgmaker.view3d.renderer.gui.GuiScreen;
 import bog.bgmaker.view3d.renderer.gui.elements.Button;
 import bog.bgmaker.view3d.renderer.gui.elements.*;
+import bog.bgmaker.view3d.renderer.gui.elements.Checkbox;
 import bog.bgmaker.view3d.utils.Config;
 import bog.bgmaker.view3d.utils.MousePicker;
 import bog.bgmaker.view3d.utils.Utils;
@@ -374,8 +375,8 @@ public class ElementEditing extends GuiScreen {
         });
 
         helpers = new DropDownTab("helpers", "Helpers", new Vector2f(7, 39 + camPos.getFullHeight() + 7 + fileLoading.getFullHeight() + 3), new Vector2f(200, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window).closed();
-        helpers.addCheckbox("levelBorders", "Level borders", true);
-        helpers.addCheckbox("podHelper", "Pod helper");
+        helpers.addCheckbox("levelBorders", "Level borders", Config.LEVEL_BORDERS);
+        helpers.addCheckbox("podHelper", "Pod helper", Config.POD_HELPER);
         helpers.addButton("Pod cam", new bog.bgmaker.view3d.renderer.gui.elements.Button("podCam") {
             @Override
             public void clickedButton(int button, int action, int mods) {
@@ -1391,4 +1392,11 @@ public class ElementEditing extends GuiScreen {
         return onclick;
     }
 
+    @Override
+    public void secondaryThread() {
+        super.secondaryThread();
+
+        Config.LEVEL_BORDERS = ((Checkbox)helpers.tabElements.get(0)).isChecked;
+        Config.POD_HELPER = ((Checkbox)helpers.tabElements.get(1)).isChecked;
+    }
 }

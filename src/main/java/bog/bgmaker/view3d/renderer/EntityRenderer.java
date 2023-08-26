@@ -129,19 +129,38 @@ public class EntityRenderer implements IRenderer{
 
         solidShader.createVertexShader(vertex);
         String solidShaderCode = Utils.loadResource("/shaders/fragment.glsl").replaceAll("//%&AMBIENTC",
-                "vec3 normal = normalize(fragNormal);" +
-                        "vec3 cameraDirection = normalize(-fragPos);" +
-                        "float dotProduct = dot(normal, -normalize(vec3(0.5, 0.5, -0.6)));" +
-                        "float specularDotProduct = dot(normal, cameraDirection);" +
-                        "float diffuseShade = max(dotProduct, 0.0);" +
-                        "float specularShade = pow(max(specularDotProduct, 0.0), 32.0);" +
-                        "vec3 diffuseColor = vec3(0.8, 0.8, 0.8) * diffuseShade;" +
-                        "vec3 specularColor = vec3(1.0, 1.0, 1.0) * specularShade * 0.3;" +
-                        "vec3 finalColor = diffuseColor + specularColor;" +
-                        "finalColor = pow(finalColor, vec3(0.4545));" +
-                        "ambientC = vec4((finalColor / 2) + vec3(0.25), 1.0); " +
-                        "diffuseC = ambientC;" +
-                        "specularC = ambientC;");
+        "vec3 normal = normalize(fragNormal);" +
+                "vec3 tangent = normalize(fragTang);" +
+                "vec3 bitangent = normalize(fragBitTang);" +
+                "mat3 TBN = mat3(tangent, bitangent, normal);" +
+                "vec3 cameraDirection = normalize(-fragPos);" +
+                "float dotProduct = dot(normal, -normalize(vec3(0.5, 0.5, -0.6)));" +
+                "float diffuseShade = max(dotProduct, 0.0);" +
+                "float specularDotProduct = dot(normal, cameraDirection);" +
+                "float specularIntensity = max(specularDotProduct, 0.0);" +
+                "float specularPower = 16.0;" +
+                "float specularShade = pow(specularIntensity, specularPower);" +
+                "" +
+                "vec3 diffuseColor = vec3(0.8, 0.8, 0.8) * diffuseShade;" +
+                "vec3 specularColor = vec3(1.0, 1.0, 1.0) * specularShade * 0.1;" +
+                "vec3 finalColor = diffuseColor + specularColor;" +
+                "finalColor = pow(finalColor, vec3(0.4545));" +
+                "ambientC = vec4((finalColor / 2) + vec3(0.25), 1.0); " +
+                "diffuseC = ambientC;" +
+                "specularC = ambientC;");
+//                "vec3 normal = normalize(fragNormal);" +
+//                        "vec3 cameraDirection = normalize(-fragPos);" +
+//                        "float dotProduct = dot(normal, -normalize(vec3(0.5, 0.5, -0.6)));" +
+//                        "float specularDotProduct = dot(normal, cameraDirection);" +
+//                        "float diffuseShade = max(dotProduct, 0.0);" +
+//                        "float specularShade = pow(max(specularDotProduct, 0.0), 32.0);" +
+//                        "vec3 diffuseColor = vec3(0.8, 0.8, 0.8) * diffuseShade;" +
+//                        "vec3 specularColor = vec3(1.0, 1.0, 1.0) * specularShade * 0.3;" +
+//                        "vec3 finalColor = diffuseColor + specularColor;" +
+//                        "finalColor = pow(finalColor, vec3(0.4545));" +
+//                        "ambientC = vec4((finalColor / 2) + vec3(0.25), 1.0); " +
+//                        "diffuseC = ambientC;" +
+//                        "specularC = ambientC;");
 
         solidShader.createFragmentShader(solidShaderCode);
         solidShader.link();
@@ -198,10 +217,16 @@ public class EntityRenderer implements IRenderer{
 
         outlineFB = initFrameBuffer();
         outlineCT = initColorTex(window.width, window.height);
+        mouseFB = initFrameBufferINT();
+        mouseCT = initColorTexINT();
+        mouseDT = initDepthTex();
     }
 
     int outlineFB = -1;
     int outlineCT = -1;
+    int mouseFB = -1;
+    int mouseCT = -1;
+    int mouseDT = -1;
 
     public void resize()
     {
@@ -215,13 +240,12 @@ public class EntityRenderer implements IRenderer{
     {
         Matrix4f projection = window.updateProjectionMatrix();
 
-        int mouseFrameBuffer = initFrameBufferINT();
-        int mouseColorTexture = initColorTexINT();
+        bindFrameBuffer(mouseFB);
+        bindColorTex(mouseCT);
+        bindDepthTex(mouseDT);
 
-        int mouseDepthTexture = GL11.glGenTextures();
-        GL11.glBindTexture(GL11.GL_TEXTURE_2D, mouseDepthTexture);
-        GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_DEPTH_COMPONENT, window.width, window.height, 0, GL11.GL_DEPTH_COMPONENT, GL11.GL_FLOAT, (FloatBuffer) null);
-        GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_DEPTH_ATTACHMENT, GL11.GL_TEXTURE_2D, mouseDepthTexture, 0);
+        GL11.glClearColor(0,0,0,0);
+        GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
 
         shaderMousePick.bind();
         shaderMousePick.setUniform("projectionMatrix", projection);
@@ -255,17 +279,16 @@ public class EntityRenderer implements IRenderer{
                         for(Model model : models)
                             if(model != null)
                             {
+                                boolean hasBones = entity instanceof Mesh ? ((Mesh) entity).skeleton != null : false;
                                 GL30.glBindVertexArray(model.vao);
                                 GL20.glEnableVertexAttribArray(0);
                                 GL20.glEnableVertexAttribArray(1);
                                 GL20.glEnableVertexAttribArray(2);
-
-                                if(entity instanceof Mesh ? ((Mesh)entity).skeleton != null : false)
+                                if(hasBones)
                                 {
                                     GL20.glEnableVertexAttribArray(3);
                                     GL20.glEnableVertexAttribArray(4);
                                 }
-
                                 GL20.glEnableVertexAttribArray(5);
 
                                 RenderMan.disableCulling();
@@ -273,7 +296,7 @@ public class EntityRenderer implements IRenderer{
                                 prepareMousePick(entity, camera);
 
                                 shaderMousePick.setUniform("bones", entity instanceof Mesh ? ((Mesh)entity).skeleton : null);
-                                shaderMousePick.setUniform("hasBones", Config.NO_BONE_TRANSFORMS ? false : entity instanceof Mesh ? ((Mesh)entity).skeleton != null : false);
+                                shaderMousePick.setUniform("hasBones", hasBones);
 
                                 // Mouse picker render to FBO
 
@@ -311,23 +334,22 @@ public class EntityRenderer implements IRenderer{
                         for(Model model : models)
                             if(model != null)
                             {
+                                boolean hasBones = entity instanceof Mesh ? ((Mesh) entity).skeleton != null : false;
                                 GL30.glBindVertexArray(model.vao);
                                 GL20.glEnableVertexAttribArray(0);
                                 GL20.glEnableVertexAttribArray(1);
                                 GL20.glEnableVertexAttribArray(2);
-
-                                if(entity instanceof Mesh ? ((Mesh)entity).skeleton != null : false)
+                                if(hasBones)
                                 {
                                     GL20.glEnableVertexAttribArray(3);
                                     GL20.glEnableVertexAttribArray(4);
                                 }
-
                                 GL20.glEnableVertexAttribArray(5);
 
                                 prepareMousePick(entity, camera);
 
                                 shaderMousePick.setUniform("bones", entity instanceof Mesh ? ((Mesh)entity).skeleton : null);
-                                shaderMousePick.setUniform("hasBones", Config.NO_BONE_TRANSFORMS ? false : entity instanceof Mesh ? ((Mesh)entity).skeleton != null : false);
+                                shaderMousePick.setUniform("hasBones", hasBones);
 
                                 // Mouse picker render to FBO
 
@@ -342,28 +364,32 @@ public class EntityRenderer implements IRenderer{
 
         if(hasMousePick)
         {
-            GL30.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, mouseFrameBuffer);
+            GL30.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, mouseFB);
             GL11.glReadBuffer(GL30.GL_COLOR_ATTACHMENT0);
 
             int[] buffer = new int[3];
 
             GL30.glReadPixels((int)mouseInput.currentPos.x, (int)(window.height - mouseInput.currentPos.y), 1, 1, GL30.GL_RGB_INTEGER, GL30.GL_INT, buffer);
 
-            if(buffer[0] - 1 != -1)
+            int outX = buffer[0];
+            int outY = buffer[1];
+
+            try
             {
-                if(buffer[1] == 1)
-                    entities.get(buffer[0] - 1).highlighted = true;
-                else if(buffer[1] == 2)
-                    throughWallEntities.get(buffer[0] - 1).highlighted = true;
-            }
+                if(outX - 1 != -1)
+                {
+                    if(outY == 1)
+                        entities.get(outX - 1).highlighted = true;
+                    else if(outY == 2)
+                        throughWallEntities.get(outX - 1).highlighted = true;
+                }
+            }catch (Exception e){}
 
             GL11.glReadBuffer(GL30.GL_NONE);
             GL30.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, 0);
         }
 
-        GL30.glDeleteFramebuffers(mouseFrameBuffer);
-        GL11.glDeleteTextures(mouseColorTexture);
-        GL11.glDeleteTextures(mouseDepthTexture);
+        unbindFrameBuffer();
 
         shaderMousePick.unbind();
 
@@ -443,33 +469,24 @@ public class EntityRenderer implements IRenderer{
                                     }
                                 }
 
-                                boolean hasBones = Config.NO_BONE_TRANSFORMS ? false : entity instanceof Mesh ? ((Mesh) entity).skeleton != null : false;
+                                boolean hasBones = entity instanceof Mesh ? ((Mesh) entity).skeleton != null : false;
                                 bind(model, hasBones, lastShader);
                                 prepare(entity, camera, lastShader, model);
 
-                                float[] elements = entity.transformation.get(new float[16]);
+                                if (Transformation.isMatrixParseable(entity.transformation)) {
+                                    int negativeScaleChannels = 0;
+                                    if (entity.transformation.getScale(new Vector3f()).x < 0)
+                                        negativeScaleChannels++;
+                                    if (entity.transformation.getScale(new Vector3f()).y < 0)
+                                        negativeScaleChannels++;
+                                    if (entity.transformation.getScale(new Vector3f()).z < 0)
+                                        negativeScaleChannels++;
 
-                                Vector3f col0 = new Vector3f(elements[0], elements[1], elements[2]);
-                                Vector3f col1 = new Vector3f(elements[4], elements[5], elements[6]);
-                                Vector3f col2 = new Vector3f(elements[8], elements[9], elements[10]);
-
-                                boolean canDecompose = true;
-                                if (col0.dot(col1) != 0.0f) canDecompose = false;
-                                if (col1.dot(col2) != 0.0f) canDecompose = false;
-                                if (col0.dot(col2) != 0.0f) canDecompose = false;
-
-                                if (canDecompose) {
-                                    RenderMan.disableCulling();
-                                } else {
-                                    Vector3f scale = new Vector3f(col0.length(), col1.length(), col2.length());
-
-                                    col0 = col0.div(scale.x);
-                                    col1 = col1.div(scale.y);
-                                    col2 = col2.div(scale.z);
-
-                                    if (col0.cross(col1, new Vector3f()).dot(col2) < 0.0f)
-                                        RenderMan.disableCulling();
+                                    if (negativeScaleChannels == 1 || negativeScaleChannels == 3)
+                                        GL11.glCullFace(GL11.GL_FRONT);
                                 }
+                                else
+                                    RenderMan.disableCulling();
 
                                 if (model.material.overlayColor != null && Config.MATERIAL_PREVIEW_SHADING) {
                                     lastShader.setUniform("highlightMode", 1);
@@ -510,11 +527,11 @@ public class EntityRenderer implements IRenderer{
                     for(Model model : models)
                         if (model != null)
                         {
-                            boolean hasBones = Config.NO_BONE_TRANSFORMS ? false : entity instanceof Mesh ? ((Mesh) entity).skeleton != null : false;
+                            boolean hasBones = entity instanceof Mesh ? ((Mesh) entity).skeleton != null : false;
                             bindNoCullColor(model, hasBones);
                             lastShader.setUniform("material", noCol);
                             prepare(entity, camera, lastShader, model);
-                            lastShader.setUniform("bones", entity instanceof Mesh ? ((Mesh) entity).skeleton : null);
+                            lastShader.setUniform("bones", hasBones ? ((Mesh) entity).skeleton : null);
                             lastShader.setUniform("hasBones", hasBones);
                             //render entities to outline to FBO
                             GL11.glDrawElements(GL11.GL_TRIANGLES, model.vertexCount, GL11.GL_UNSIGNED_INT, 0L);
@@ -605,7 +622,7 @@ public class EntityRenderer implements IRenderer{
                             model.material.setupUniformsThroughwall();
                         }
 
-                        boolean hasBones = Config.NO_BONE_TRANSFORMS ? false : entity instanceof Mesh ? ((Mesh) entity).skeleton != null : false;
+                        boolean hasBones = entity instanceof Mesh ? ((Mesh) entity).skeleton != null : false;
                         bindThroughWalls(model, hasBones, lastShader);
                         prepare(entity, camera, lastShader, model);
 
@@ -614,7 +631,7 @@ public class EntityRenderer implements IRenderer{
                             lastShader.setUniform("brightnessMul", 0.5f);
                         }
 
-                        lastShader.setUniform("bones", entity instanceof Mesh ? ((Mesh) entity).skeleton : null);
+                        lastShader.setUniform("bones", hasBones ? ((Mesh) entity).skeleton : null);
                         lastShader.setUniform("hasBones", hasBones);
 
                         //Through wall
@@ -637,13 +654,11 @@ public class EntityRenderer implements IRenderer{
         GL20.glEnableVertexAttribArray(0);
         GL20.glEnableVertexAttribArray(1);
         GL20.glEnableVertexAttribArray(2);
-
         if(hasBones)
         {
             GL20.glEnableVertexAttribArray(3);
             GL20.glEnableVertexAttribArray(4);
         }
-
         GL20.glEnableVertexAttribArray(5);
 
         if(model.material.disableCulling || Config.NO_CULLING)
@@ -652,17 +667,16 @@ public class EntityRenderer implements IRenderer{
             RenderMan.enableCulling();
 
         if(Config.MATERIAL_PREVIEW_SHADING)
+        {
             shader.setUniform("material", model.material);
 
-        if(model.material.textures != null)
-        {
-            for(int i = 0; i < model.material.textures.length; i++)
-            {
-                GL13.glActiveTexture(GL13.GL_TEXTURE0 + i);
-                GL11.glBindTexture(GL11.GL_TEXTURE_2D, model.material.textures[i].id);
+            if (model.material.textures != null) {
+                for (int i = 0; i < model.material.textures.length; i++) {
+                    GL13.glActiveTexture(GL13.GL_TEXTURE0 + i);
+                    GL11.glBindTexture(GL11.GL_TEXTURE_2D, model.material.textures[i].id);
+                }
             }
         }
-
     }
 
     private static Material noCol = new Material(new Vector4f(0f, 0f, 0f, 1f), 0f);
@@ -672,13 +686,11 @@ public class EntityRenderer implements IRenderer{
         GL20.glEnableVertexAttribArray(0);
         GL20.glEnableVertexAttribArray(1);
         GL20.glEnableVertexAttribArray(2);
-
         if(hasBones)
         {
             GL20.glEnableVertexAttribArray(3);
             GL20.glEnableVertexAttribArray(4);
         }
-
         GL20.glEnableVertexAttribArray(5);
 
         RenderMan.disableCulling();
@@ -690,13 +702,11 @@ public class EntityRenderer implements IRenderer{
         GL20.glEnableVertexAttribArray(0);
         GL20.glEnableVertexAttribArray(1);
         GL20.glEnableVertexAttribArray(2);
-
         if(hasBones)
         {
             GL20.glEnableVertexAttribArray(3);
             GL20.glEnableVertexAttribArray(4);
         }
-
         GL20.glEnableVertexAttribArray(5);
 
         if(model.material.disableCulling)
@@ -863,6 +873,12 @@ public class EntityRenderer implements IRenderer{
         GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT0, GL11.GL_TEXTURE_2D, colorTexture, 0);
     }
 
+    private void bindDepthTex(int mouseDepthTexture)
+    {
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, mouseDepthTexture);
+        GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_DEPTH_ATTACHMENT, GL11.GL_TEXTURE_2D, mouseDepthTexture, 0);
+    }
+
     private int initFrameBufferINT()
     {
         int frameBuffer = GL30.glGenFramebuffers();
@@ -881,6 +897,15 @@ public class EntityRenderer implements IRenderer{
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
         GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT0, GL11.GL_TEXTURE_2D, colorTexture, 0);
         return colorTexture;
+    }
+
+    private int initDepthTex()
+    {
+        int mouseDepthTexture = GL11.glGenTextures();
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, mouseDepthTexture);
+        GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_DEPTH_COMPONENT, window.width, window.height, 0, GL11.GL_DEPTH_COMPONENT, GL11.GL_FLOAT, (FloatBuffer) null);
+        GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_DEPTH_ATTACHMENT, GL11.GL_TEXTURE_2D, mouseDepthTexture, 0);
+        return mouseDT;
     }
 
     private void unbindFrameBuffer()

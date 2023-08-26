@@ -1,11 +1,11 @@
-#version 400 core
+#version 330 core
 
-in vec3 position;
-in vec4 textureCoord;
-in vec3 normal;
-in ivec4 joints;
-in vec4 weights;
-in vec3 tangent;
+layout(location = 0) in vec3 position;
+layout(location = 1) in vec4 textureCoord;
+layout(location = 2) in vec3 normal;
+layout(location = 3) in ivec4 joints;
+layout(location = 4) in vec4 weights;
+layout(location = 5) in vec3 tangent;
 
 out vec4 fragTextureCoord;
 out vec3 fragNormal;
@@ -21,35 +21,27 @@ uniform vec3 triangleOffset;
 uniform mat4 bones[100];
 uniform bool hasBones;
 
-vec4 setupBones(vec4 inPos)
-{
-    mat4 skin = mat4(
-    weights.x * bones[joints.x] +
-    weights.y * bones[joints.y] +
-    weights.z * bones[joints.z] +
-    weights.w * bones[joints.w]);
+void main() {
+    mat4 modelMatrix = transformationMatrix;
 
-    return skin * inPos;
-}
-
-void main()
-{
-    vec4 vertPos = vec4(position + normal * triangleOffset, 1.0);
-
-    if(hasBones)
-    {
-        vertPos = setupBones(vertPos);
+    if (hasBones) {
+        mat4 boneTransform = mat4(0.0);
+        for (int i = 0; i < 4; ++i) {
+            boneTransform += weights[i] * bones[joints[i]];
+        }
+        modelMatrix = modelMatrix * boneTransform;
     }
 
-    vec4 worldPos = mat4(transformationMatrix) * vertPos;
-    gl_Position = projectionMatrix * viewMatrix * worldPos;
+    vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+    worldPosition.xyz += triangleOffset * normal;
 
-    vec3 surfaceNormal = (transformationMatrix * vec4(normal,0.0)).xyz;
+    vec4 viewPosition = viewMatrix * worldPosition;
 
-    fragNormal = normalize(surfaceNormal);
-    fragTang = normalize((viewMatrix * vec4(tangent, 0.0)).xyz);
-    fragBitTang = normalize(cross(fragNormal, fragTang));
+    fragTextureCoord = textureCoord;
+    fragNormal = normalize(mat3(transpose(inverse(modelMatrix))) * normal);
+    fragPos = worldPosition.xyz;
+    fragTang = normalize(mat3(transpose(inverse(modelMatrix))) * tangent);
+    fragBitTang = cross(fragNormal, fragTang);
 
-    fragPos = worldPos.xyz;
-    fragTextureCoord = vec4(textureCoord);
+    gl_Position = projectionMatrix * viewPosition;
 }

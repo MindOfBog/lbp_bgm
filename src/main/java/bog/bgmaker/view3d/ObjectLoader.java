@@ -136,6 +136,7 @@ public class ObjectLoader {
 
         return loadModel(verticesArr, texCoordArr, normalsArr, indicesArr, tangentsArr);
     }
+
     public Model loadRMesh(RMesh mesh) {
         try {
             ArrayList<Vector3f> vertices = new ArrayList<>();
@@ -589,7 +590,7 @@ public class ObjectLoader {
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo);
         IntBuffer buffer = Utils.storeDataInIntBuffer(data);
         GL15.glBufferData(GL15.GL_ARRAY_BUFFER, buffer, GL15.GL_STATIC_DRAW);
-        GL20.glVertexAttribPointer(attribNo, vertexCount, GL11.GL_FLOAT, false, 0, 0);
+        GL30.glVertexAttribIPointer(attribNo, vertexCount, GL11.GL_INT, 0, 0);
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
         return vbo;
     }

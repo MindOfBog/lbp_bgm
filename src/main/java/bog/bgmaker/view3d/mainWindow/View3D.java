@@ -174,6 +174,7 @@ public class View3D implements ILogic {
 
     @Override
     public void update(MouseInput mouseInput) {
+
         boolean elementFocused = overrideScreen == null ? false : overrideScreen.elementFocused();
         if(!elementFocused)
             elementFocused = currentScreen == null ? false : currentScreen.elementFocused();
@@ -222,14 +223,11 @@ public class View3D implements ILogic {
         while(camera.getWrappedRotation().x >= 90)
             camera.moveRot(-0.01f, 0, 0);
 
-        Checkbox level = (Checkbox) ((ElementEditing) ElementEditing).helpers.tabElements.get(0);
-        Checkbox pod = (Checkbox) ((ElementEditing) ElementEditing).helpers.tabElements.get(1);
-
-        if(level.isChecked)
+        if(Config.LEVEL_BORDERS)
             for(Entity entity : BORDERS)
                 renderer.processEntity(entity);
 
-        if(pod.isChecked)
+        if(Config.POD_HELPER)
             for(Entity entity : POD_EARTH)
                 renderer.processEntity(entity);
 
@@ -239,14 +237,14 @@ public class View3D implements ILogic {
 
             Vector4f sunColor = levelSettings.get(selectedPresetIndex).sunColor;
 //            renderer.processDirectionalLight(new DirectionalLight(new Vector3f(sunColor.x, sunColor.y, sunColor.z), new Vector3f(pos), levelSettings.get(selectedPresetIndex).sunMultiplier));
-            renderer.processPointLight(new PointLight(
-                    new Vector3f(sunColor.x, sunColor.y, sunColor.z),
-                    pos,
-                    levelSettings.get(selectedPresetIndex).sunMultiplier,
-                    1,
-                    0,
-                    0
-            ));
+//            renderer.processPointLight(new PointLight(
+//                    new Vector3f(sunColor.x, sunColor.y, sunColor.z),
+//                    pos,
+//                    levelSettings.get(selectedPresetIndex).sunMultiplier,
+//                    1,
+//                    0,
+//                    0
+//            ));
         }catch (Exception e){}
 
         Vector3f sunPos = camera.worldToScreenPointF(pos, window);
@@ -302,14 +300,6 @@ public class View3D implements ILogic {
             currentScreen.onClick(mouseInput, button, action, mods);
     }
 
-    public int KEY_FORWARD = GLFW.GLFW_KEY_W;
-    public int KEY_LEFT = GLFW.GLFW_KEY_A;
-    public int KEY_BACK = GLFW.GLFW_KEY_S;
-    public int KEY_RIGHT = GLFW.GLFW_KEY_D;
-    public int KEY_UP = GLFW.GLFW_KEY_SPACE;
-    public int KEY_DOWN = GLFW.GLFW_KEY_LEFT_SHIFT;
-    public int KEY_SHADING = GLFW.GLFW_KEY_Z;
-
     boolean shadingMenu = false;
     Vector2f shadingPos = new Vector2f();
     Button solidShading;
@@ -327,13 +317,13 @@ public class View3D implements ILogic {
 
         if(!elementFocused)
         {
-            if(key == KEY_SHADING && action == GLFW.GLFW_PRESS)
+            if(key == Config.KEY_SHADING && action == GLFW.GLFW_PRESS)
             {
                 shadingMenu = true;
                 shadingPos.x = (float) mouseInput.currentPos.x;
                 shadingPos.y = (float) mouseInput.currentPos.y;
             }
-            else if(key == KEY_SHADING && action == GLFW.GLFW_RELEASE)
+            else if(key == Config.KEY_SHADING && action == GLFW.GLFW_RELEASE)
                 shadingMenu = false;
         }
 
@@ -341,18 +331,18 @@ public class View3D implements ILogic {
         {
             if (action == 1)
             {
-                if(key == KEY_FORWARD)
-                    cameraInc.z = window.isKeyPressed(KEY_BACK) ? 0 : -1;
-                if(key == KEY_LEFT)
-                    cameraInc.x = window.isKeyPressed(KEY_RIGHT) ? 0 : -1;
-                if(key == KEY_BACK)
-                    cameraInc.z = window.isKeyPressed(KEY_FORWARD) ? 0 : 1;
-                if(key == KEY_RIGHT)
-                    cameraInc.x = window.isKeyPressed(KEY_LEFT) ? 0 : 1;
-                if(key == KEY_UP)
-                    cameraInc.y = window.isKeyPressed(KEY_DOWN) ? 0 : 1;
-                if(key == KEY_DOWN)
-                    cameraInc.y = window.isKeyPressed(KEY_UP) ? 0 : -1;
+                if(key == Config.KEY_FORWARD)
+                    cameraInc.z = window.isKeyPressed(Config.KEY_BACK) ? 0 : -1;
+                if(key == Config.KEY_LEFT)
+                    cameraInc.x = window.isKeyPressed(Config.KEY_RIGHT) ? 0 : -1;
+                if(key == Config.KEY_BACK)
+                    cameraInc.z = window.isKeyPressed(Config.KEY_FORWARD) ? 0 : 1;
+                if(key == Config.KEY_RIGHT)
+                    cameraInc.x = window.isKeyPressed(Config.KEY_LEFT) ? 0 : 1;
+                if(key == Config.KEY_UP)
+                    cameraInc.y = window.isKeyPressed(Config.KEY_DOWN) ? 0 : 1;
+                if(key == Config.KEY_DOWN)
+                    cameraInc.y = window.isKeyPressed(Config.KEY_UP) ? 0 : -1;
                 if((key == GLFW.GLFW_KEY_DELETE || key == GLFW.GLFW_KEY_BACKSPACE) && !elementFocused)
                 {
                     for (int i = entities.size() - 1; i >= 0; i--)
@@ -362,25 +352,25 @@ public class View3D implements ILogic {
             }
             else if (action == 0)
             {
-                if(key == KEY_FORWARD)
-                    cameraInc.z = window.isKeyPressed(KEY_BACK) ? 1 : 0;
-                if(key == KEY_BACK)
-                    cameraInc.z = window.isKeyPressed(KEY_FORWARD) ? -1 : 0;
-                if(key == KEY_LEFT)
-                    cameraInc.x = window.isKeyPressed(KEY_RIGHT) ? 1 : 0;
-                if(key == KEY_RIGHT)
-                    cameraInc.x = window.isKeyPressed(KEY_LEFT) ? -1 : 0;
-                if(key == KEY_UP)
-                    cameraInc.y = window.isKeyPressed(KEY_DOWN) ? -1 : 0;
-                if(key == KEY_DOWN)
-                    cameraInc.y = window.isKeyPressed(KEY_UP) ? 1 : 0;
+                if(key == Config.KEY_FORWARD)
+                    cameraInc.z = window.isKeyPressed(Config.KEY_BACK) ? 1 : 0;
+                if(key == Config.KEY_BACK)
+                    cameraInc.z = window.isKeyPressed(Config.KEY_FORWARD) ? -1 : 0;
+                if(key == Config.KEY_LEFT)
+                    cameraInc.x = window.isKeyPressed(Config.KEY_RIGHT) ? 1 : 0;
+                if(key == Config.KEY_RIGHT)
+                    cameraInc.x = window.isKeyPressed(Config.KEY_LEFT) ? -1 : 0;
+                if(key == Config.KEY_UP)
+                    cameraInc.y = window.isKeyPressed(Config.KEY_DOWN) ? -1 : 0;
+                if(key == Config.KEY_DOWN)
+                    cameraInc.y = window.isKeyPressed(Config.KEY_UP) ? 1 : 0;
             }
         }
         else if(key == GLFW.GLFW_KEY_LEFT_CONTROL && action == 0)
         {
-            cameraInc.x = window.isKeyPressed(KEY_RIGHT) ? 1 : window.isKeyPressed(KEY_LEFT) ? -1 : 0;
-            cameraInc.y = window.isKeyPressed(KEY_DOWN) ? -1 : window.isKeyPressed(KEY_UP) ? 1 : 0;
-            cameraInc.z = window.isKeyPressed(KEY_BACK) ? 1 : window.isKeyPressed(KEY_FORWARD) ? -1 : 0;
+            cameraInc.x = window.isKeyPressed(Config.KEY_RIGHT) ? 1 : window.isKeyPressed(Config.KEY_LEFT) ? -1 : 0;
+            cameraInc.y = window.isKeyPressed(Config.KEY_DOWN) ? -1 : window.isKeyPressed(Config.KEY_UP) ? 1 : 0;
+            cameraInc.z = window.isKeyPressed(Config.KEY_BACK) ? 1 : window.isKeyPressed(Config.KEY_FORWARD) ? -1 : 0;
         }
         else
         {
@@ -782,7 +772,7 @@ public class View3D implements ILogic {
         renderer.processGuiElement(new Quad(loader, image, new Vector2f(x, y), new Vector2f(width, height)).staticTexture());
     }
 
-    private void drawRect(int x, int y, int width, int height, Color color)
+    public void drawRect(int x, int y, int width, int height, Color color)
     {
         renderer.processGuiElement(new Quad(loader, color, new Vector2f(x, y), new Vector2f(width, height)));
     }

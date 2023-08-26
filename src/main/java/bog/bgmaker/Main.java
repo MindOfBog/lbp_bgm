@@ -39,6 +39,7 @@ public class Main {
         LoadedData.FARCs = new ArrayList<>();
         secondaryThread = new Thread() {
             long lastMillis = 0;
+            long lastMillis2 = 0;
             public void run() {
                 try
                 {
@@ -49,10 +50,15 @@ public class Main {
                             view.secondaryThread();
                             lastMillis = System.currentTimeMillis();
                         }
+                        if(System.currentTimeMillis() - lastMillis2 > 7500)
+                        {
+                            if(Config.hasConfigChanged())
+                                Config.updateFile();
+                            lastMillis2 = System.currentTimeMillis();
+                        }
                     }
                 } catch(Exception v) {
                     v.printStackTrace();
-                    this.stop();
                     System.exit(-1);
                 }
             }
