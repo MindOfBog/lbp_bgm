@@ -39,6 +39,7 @@ public class Mesh extends Entity{
     public ResourceDescriptor meshDescriptor;
     public Bone[] skeleton = null;
     public Thing[] boneThings = null;
+    public Model singleMesh = null;
 
     public Mesh(Entity entity, ObjectLoader loader) {
         super(entity, loader);
@@ -59,12 +60,12 @@ public class Mesh extends Entity{
 
     @Override
     public ArrayList<Model> getModel() {
-        if (this.model == null || reloadModel) {
+        if (this.model == null || this.singleMesh == null || reloadModel) {
             reloadModel = false;
 
             Matrix4f transMat = Transformation.createTransformationMatrix(this);
 
-            if(LoadedData.loadedModels.containsKey(this.meshDescriptor))
+            if(LoadedData.loadedModels.containsKey(this.meshDescriptor) && LoadedData.loadedSingleModels.containsKey(this.meshDescriptor))
             {
                 RMesh mesh = LoadedData.loadMesh(meshDescriptor);
                 if(boneThings == null)
@@ -75,6 +76,7 @@ public class Mesh extends Entity{
                     boneThings = null;
                 }
                 this.model = LoadedData.loadedModels.get(this.meshDescriptor);
+                this.singleMesh = LoadedData.loadedSingleModels.get(this.meshDescriptor);
             }
             else
             {
@@ -88,10 +90,14 @@ public class Mesh extends Entity{
                 }
                 try {
                     this.model = this.loader.loadRMeshArr(mesh);
+                    this.singleMesh = this.loader.loadRMesh(mesh);
                 }catch (Exception e){e.printStackTrace();}
 
-                if(this.model != null)
+                if(this.model != null && this.singleMesh != null)
+                {
                     LoadedData.loadedModels.put(this.meshDescriptor, this.model);
+                    LoadedData.loadedSingleModels.put(this.meshDescriptor, this.singleMesh);
+                }
             }
         }
         return this.model;

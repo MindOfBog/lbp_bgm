@@ -16,6 +16,8 @@ import bog.bgmaker.view3d.renderer.gui.ingredients.TriStrip;
 import bog.bgmaker.view3d.utils.Config;
 import bog.bgmaker.view3d.utils.Transformation;
 import bog.bgmaker.view3d.utils.Utils;
+import cwlib.types.Resource;
+import cwlib.types.data.ResourceDescriptor;
 import org.joml.*;
 import org.lwjgl.opengl.*;
 
@@ -23,7 +25,7 @@ import java.awt.*;
 import java.lang.Math;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  * @author Bog
@@ -148,19 +150,6 @@ public class EntityRenderer implements IRenderer{
                 "ambientC = vec4((finalColor / 2) + vec3(0.25), 1.0); " +
                 "diffuseC = ambientC;" +
                 "specularC = ambientC;");
-//                "vec3 normal = normalize(fragNormal);" +
-//                        "vec3 cameraDirection = normalize(-fragPos);" +
-//                        "float dotProduct = dot(normal, -normalize(vec3(0.5, 0.5, -0.6)));" +
-//                        "float specularDotProduct = dot(normal, cameraDirection);" +
-//                        "float diffuseShade = max(dotProduct, 0.0);" +
-//                        "float specularShade = pow(max(specularDotProduct, 0.0), 32.0);" +
-//                        "vec3 diffuseColor = vec3(0.8, 0.8, 0.8) * diffuseShade;" +
-//                        "vec3 specularColor = vec3(1.0, 1.0, 1.0) * specularShade * 0.3;" +
-//                        "vec3 finalColor = diffuseColor + specularColor;" +
-//                        "finalColor = pow(finalColor, vec3(0.4545));" +
-//                        "ambientC = vec4((finalColor / 2) + vec3(0.25), 1.0); " +
-//                        "diffuseC = ambientC;" +
-//                        "specularC = ambientC;");
 
         solidShader.createFragmentShader(solidShaderCode);
         solidShader.link();
@@ -216,7 +205,7 @@ public class EntityRenderer implements IRenderer{
         GL11.glEnable(GL11.GL_LINE_SMOOTH);
 
         outlineFB = initFrameBuffer();
-        outlineCT = initColorTex(window.width, window.height);
+        outlineCT = initColorTex();
         mouseFB = initFrameBufferINT();
         mouseCT = initColorTexINT();
         mouseDT = initDepthTex();
@@ -230,9 +219,13 @@ public class EntityRenderer implements IRenderer{
 
     public void resize()
     {
+        GL11.glDeleteTextures(new int[]{outlineCT, mouseCT, mouseDT});
         GL11.glViewport(0, 0, window.width, window.height);
-        GL11.glDeleteTextures(outlineCT);
-        outlineCT = initColorTex(window.width, window.height);
+        GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, outlineFB);
+        outlineCT = initColorTex();
+        GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, mouseFB);
+        mouseCT = initColorTexINT();
+        mouseDT = initDepthTex();
     }
 
     @Override
@@ -243,9 +236,6 @@ public class EntityRenderer implements IRenderer{
         bindFrameBuffer(mouseFB);
         bindColorTex(mouseCT);
         bindDepthTex(mouseDT);
-
-        GL11.glClearColor(0,0,0,0);
-        GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
 
         shaderMousePick.bind();
         shaderMousePick.setUniform("projectionMatrix", projection);
@@ -274,7 +264,13 @@ public class EntityRenderer implements IRenderer{
             if(entity != null)
                 try
                 {
-                    ArrayList<Model> models = entity.getModel();
+                    ArrayList<Model> models = new ArrayList<>();
+
+                    if(entity instanceof Mesh)
+                        models.add(((Mesh) entity).singleMesh);
+                    else
+                        models = entity.getModel();
+
                     if(models != null)
                         for(Model model : models)
                             if(model != null)
@@ -371,28 +367,27 @@ public class EntityRenderer implements IRenderer{
 
             GL30.glReadPixels((int)mouseInput.currentPos.x, (int)(window.height - mouseInput.currentPos.y), 1, 1, GL30.GL_RGB_INTEGER, GL30.GL_INT, buffer);
 
-            int outX = buffer[0];
+            int outX = buffer[0] - 1;
             int outY = buffer[1];
 
             try
             {
-                if(outX - 1 != -1)
+                if(outX != -1)
                 {
                     if(outY == 1)
-                        entities.get(outX - 1).highlighted = true;
+                        entities.get(outX).highlighted = true;
                     else if(outY == 2)
-                        throughWallEntities.get(outX - 1).highlighted = true;
+                        throughWallEntities.get(outX).highlighted = true;
                 }
             }catch (Exception e){}
-
-            GL11.glReadBuffer(GL30.GL_NONE);
-            GL30.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, 0);
         }
 
+        bindFrameBuffer(mouseFB);
+        GL11.glClearColor(0,0,0,0);
+        GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
         unbindFrameBuffer();
 
         shaderMousePick.unbind();
-
         shader.bind();
         shader.setUniform("projectionMatrix", projection);
         shader.setUniform("ambientLight", Config.AMBIENT_LIGHT);
@@ -404,7 +399,6 @@ public class EntityRenderer implements IRenderer{
         shader.setUniform("spotLights", spotLights.toArray(SpotLight[]::new));
         shader.setUniform("spotLightsSize", spotLights.size());
         shader.unbind();
-
         solidShader.bind();
         solidShader.setUniform("projectionMatrix", projection);
         solidShader.setUniform("ambientLight", Config.AMBIENT_LIGHT);
@@ -442,12 +436,15 @@ public class EntityRenderer implements IRenderer{
                     ArrayList<Model> models = entity.getModel();
 
                     if (entity.selected)
+                    {
+                        selInd.add(i);
                         outline = true;
+                    }
 
                     if(models != null)
                         for(Model model : models)
-                            if (model != null) {
-
+                            if (model != null)
+                            {
                                 if(Config.MATERIAL_PREVIEW_SHADING)
                                 {
                                     if (model.material == null || model.material.customShader == null) {
@@ -470,6 +467,7 @@ public class EntityRenderer implements IRenderer{
                                 }
 
                                 boolean hasBones = entity instanceof Mesh ? ((Mesh) entity).skeleton != null : false;
+
                                 bind(model, hasBones, lastShader);
                                 prepare(entity, camera, lastShader, model);
 
@@ -500,9 +498,6 @@ public class EntityRenderer implements IRenderer{
 
                                 GL11.glDrawElements(GL11.GL_TRIANGLES, model.vertexCount, GL11.GL_UNSIGNED_INT, 0L);
 
-                                if(entity.selected)
-                                    selInd.add(i);
-
                                 if(Config.MATERIAL_PREVIEW_SHADING)
                                     lastShader.setUniform("highlightMode", 0);
 
@@ -515,13 +510,20 @@ public class EntityRenderer implements IRenderer{
             lastShader = shader;
             lastShader.bind();
         }
+
         bindFrameBuffer(outlineFB);
         bindColorTex(outlineCT);
+
         for(int i : selInd)
             try
             {
                 Entity entity = entities.get(i);
-                ArrayList<Model> models = entity.getModel();
+                ArrayList<Model> models = new ArrayList<>();
+
+                if(entity instanceof Mesh)
+                    models.add(((Mesh) entity).singleMesh);
+                else
+                    models = entity.getModel();
 
                 if(models != null)
                     for(Model model : models)
@@ -535,7 +537,6 @@ public class EntityRenderer implements IRenderer{
                             lastShader.setUniform("hasBones", hasBones);
                             //render entities to outline to FBO
                             GL11.glDrawElements(GL11.GL_TRIANGLES, model.vertexCount, GL11.GL_UNSIGNED_INT, 0L);
-
                         }
             }catch (Exception e){System.err.println("Failed rendering entity " + i + ".");e.printStackTrace();}
         unbindFrameBuffer();
@@ -569,7 +570,6 @@ public class EntityRenderer implements IRenderer{
             drawOutline(outlineFB, outlineCT, shaderOutlineHorizontal, lastShader, false, window.width, radius, Config.OUTLINE_COLOR);
 
             bindFrameBuffer(outlineFB);
-            bindColorTex(outlineCT);
             GL11.glClearColor(0,0,0,0);
             GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
             unbindFrameBuffer();
@@ -854,11 +854,11 @@ public class EntityRenderer implements IRenderer{
         GL30.glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, frameBuffer);
     }
 
-    private int initColorTex(int width, int height)
+    private int initColorTex()
     {
         int colorTexture = GL11.glGenTextures();
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, colorTexture);
-        GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA8, width, height, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, (ByteBuffer) null);
+        GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA8, window.width, window.height, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, (ByteBuffer) null);
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
@@ -892,7 +892,7 @@ public class EntityRenderer implements IRenderer{
     {
         int colorTexture = GL11.glGenTextures();
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, colorTexture);
-        GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL30.GL_RGB32I, window.width, window.height, 0, GL30.GL_RGB_INTEGER, GL11.GL_INT, (int[]) null);
+        GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL30.GL_RGB32I, window.width, window.height, 0, GL30.GL_RGB_INTEGER, GL11.GL_INT, (ByteBuffer) null);
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
         GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT0, GL11.GL_TEXTURE_2D, colorTexture, 0);
@@ -903,7 +903,7 @@ public class EntityRenderer implements IRenderer{
     {
         int mouseDepthTexture = GL11.glGenTextures();
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, mouseDepthTexture);
-        GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_DEPTH_COMPONENT, window.width, window.height, 0, GL11.GL_DEPTH_COMPONENT, GL11.GL_FLOAT, (FloatBuffer) null);
+        GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_DEPTH_COMPONENT, window.width, window.height, 0, GL11.GL_DEPTH_COMPONENT, GL11.GL_FLOAT, (ByteBuffer) null);
         GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_DEPTH_ATTACHMENT, GL11.GL_TEXTURE_2D, mouseDepthTexture, 0);
         return mouseDT;
     }
@@ -911,5 +911,16 @@ public class EntityRenderer implements IRenderer{
     private void unbindFrameBuffer()
     {
         GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, 0);
+    }
+
+    private static class TempEntity
+    {
+        public Entity entity;
+        public Model model;
+
+        public TempEntity(Entity entity, Model model) {
+            this.entity = entity;
+            this.model = model;
+        }
     }
 }

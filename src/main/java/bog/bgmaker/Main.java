@@ -34,6 +34,7 @@ public class Main {
         debug = args.length > 0 && args[0].equalsIgnoreCase("debug");
 
         LoadedData.loadedModels = new HashMap<>();
+        LoadedData.loadedSingleModels = new HashMap<>();
         LoadedData.loadedGfxMaterials = new HashMap<>();
         LoadedData.loadedTextures = new HashMap<>();
         LoadedData.FARCs = new ArrayList<>();

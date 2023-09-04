@@ -21,9 +21,7 @@ void main(){
 	out_Color = vec4(0.0);
 
 	for(int i = -radius; i <= radius; i++)
-	{
-	    out_Color += texture(originalTexture, blurTextureCoords[i + radius]);
-	}
+	    out_Color += texture(originalTexture, vec2(blurTextureCoords[i + radius]));
 
     ivec2 coord = ivec2(gl_FragCoord.xy);
     float threshold = thresholdMatrix[coord.x % 4][coord.y % 4] / 17.0;

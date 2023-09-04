@@ -39,6 +39,7 @@ public class LoadedData {
     public static BigSave BIGFART = null;
 
     public static HashMap<ResourceDescriptor, ArrayList<Model>> loadedModels;
+    public static HashMap<ResourceDescriptor, Model> loadedSingleModels;
     public static HashMap<ResourceDescriptor, Material> loadedGfxMaterials;
     public static HashMap<ResourceDescriptor, Texture> loadedTextures;
 

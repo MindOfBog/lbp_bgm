@@ -17,7 +17,9 @@ void main(void){
 
     for(int i = -radius; i <= radius; i++)
     {
-        blurTextureCoords[i + radius] = centerTexCoords + vec2(0.0, pixelHeight * i);
+        vec2 coord = centerTexCoords + vec2(0.0, pixelHeight * i);
+        blurTextureCoords[i + radius].x = coord.x;
+        blurTextureCoords[i + radius].y = coord.y;
     }
 
 }

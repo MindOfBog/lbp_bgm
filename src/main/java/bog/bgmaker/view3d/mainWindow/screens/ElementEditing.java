@@ -956,7 +956,6 @@ public class ElementEditing extends GuiScreen {
         if(hasSelection)
             elementTool.updateModels(mainView, mainView.getSelectedPosition());
 
-
         if(mouseInput.inWindow && elementTool.selected == -1)
         {
             for(Entity entity : mainView.entities)
