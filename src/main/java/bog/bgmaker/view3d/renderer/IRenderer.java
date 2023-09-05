@@ -14,12 +14,6 @@ public interface IRenderer<T> {
 
     public void render(Camera camera, MouseInput mouseInput);
 
-    public void bind(Model model, boolean hasBones, ShaderMan shader);
-
-    public void unbind();
-
-    public void prepare(T t, Camera camera, ShaderMan shader, Model model);
-
     public void cleanup();
 
 }

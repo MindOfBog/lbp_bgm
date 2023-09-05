@@ -445,7 +445,7 @@ public class EntityRenderer implements IRenderer{
                         for(Model model : models)
                             if (model != null)
                             {
-                                if(Config.MATERIAL_PREVIEW_SHADING)
+                                if(Config.MATERIAL_PREVIEW_SHADING || entity.getType() == -1)
                                 {
                                     if (model.material == null || model.material.customShader == null) {
                                         if (!lastShader.equals(shader)) {
@@ -465,10 +465,18 @@ public class EntityRenderer implements IRenderer{
                                         }
                                     }
                                 }
+                                else
+                                {
+                                    if (!lastShader.equals(solidShader)) {
+                                        lastShader.unbind();
+                                        lastShader = solidShader;
+                                        lastShader.bind();
+                                    }
+                                }
 
                                 boolean hasBones = entity instanceof Mesh ? ((Mesh) entity).skeleton != null : false;
 
-                                bind(model, hasBones, lastShader);
+                                bind(model, hasBones, lastShader, entity.getType());
                                 prepare(entity, camera, lastShader, model);
 
                                 if (Transformation.isMatrixParseable(entity.transformation)) {
@@ -486,7 +494,7 @@ public class EntityRenderer implements IRenderer{
                                 else
                                     RenderMan.disableCulling();
 
-                                if (model.material.overlayColor != null && Config.MATERIAL_PREVIEW_SHADING) {
+                                if (model.material.overlayColor != null && (Config.MATERIAL_PREVIEW_SHADING || entity.getType() == -1)) {
                                     lastShader.setUniform("highlightMode", 1);
                                     lastShader.setUniform("highlightColor", model.material.overlayColor);
                                 }
@@ -498,7 +506,7 @@ public class EntityRenderer implements IRenderer{
 
                                 GL11.glDrawElements(GL11.GL_TRIANGLES, model.vertexCount, GL11.GL_UNSIGNED_INT, 0L);
 
-                                if(Config.MATERIAL_PREVIEW_SHADING)
+                                if(Config.MATERIAL_PREVIEW_SHADING || entity.getType() == -1)
                                     lastShader.setUniform("highlightMode", 0);
 
                                 unbind();
@@ -647,8 +655,7 @@ public class EntityRenderer implements IRenderer{
         lastShader.unbind();
     }
 
-    @Override
-    public void bind(Model model, boolean hasBones, ShaderMan shader)
+    public void bind(Model model, boolean hasBones, ShaderMan shader, int type)
     {
         GL30.glBindVertexArray(model.vao);
         GL20.glEnableVertexAttribArray(0);
@@ -666,7 +673,7 @@ public class EntityRenderer implements IRenderer{
         else
             RenderMan.enableCulling();
 
-        if(Config.MATERIAL_PREVIEW_SHADING)
+        if(Config.MATERIAL_PREVIEW_SHADING || type == -1)
         {
             shader.setUniform("material", model.material);
 
@@ -727,7 +734,6 @@ public class EntityRenderer implements IRenderer{
 
     }
 
-    @Override
     public void unbind()
     {
         GL20.glDisableVertexAttribArray(0);
@@ -738,10 +744,9 @@ public class EntityRenderer implements IRenderer{
         GL30.glBindVertexArray(0);
     }
 
-    @Override
-    public void prepare(Object entity, Camera camera, ShaderMan shader, Model model) {
+    public void prepare(Entity entity, Camera camera, ShaderMan shader, Model model) {
         Texture[] tex = model.material.textures;
-        if(Config.MATERIAL_PREVIEW_SHADING)
+        if(Config.MATERIAL_PREVIEW_SHADING || entity.getType() == -1)
         {
             if(tex != null)
             {
@@ -755,7 +760,7 @@ public class EntityRenderer implements IRenderer{
                 shader.setUniform("samplerCount", 1);
             }
         }
-        shader.setUniform("transformationMatrix", Transformation.createTransformationMatrix((Entity) entity));
+        shader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(entity));
         shader.setUniform("viewMatrix", Transformation.getViewMatrix(camera));
     }
 

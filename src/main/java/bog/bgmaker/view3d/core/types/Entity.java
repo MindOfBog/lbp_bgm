@@ -66,6 +66,6 @@ public class Entity {
         this.model = new ArrayList<Model>(Arrays.asList(new Model[]{model}));
     }
 
-    public int getType(){return 0;}
+    public int getType(){return -1;}
     public ArrayList<Model> getModel(){return model;}
 }
