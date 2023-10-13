@@ -2,7 +2,7 @@ package bog.bgmaker.view3d.managers;
 
 import bog.bgmaker.view3d.ILogic;
 import bog.bgmaker.view3d.mainWindow.View3D;
-import bog.bgmaker.view3d.utils.Config;
+import bog.bgmaker.view3d.utils.Consts;
 import bog.bgmaker.view3d.utils.MousePicker;
 import org.joml.Vector2d;
 import org.joml.Vector2f;
@@ -85,7 +85,7 @@ public class MouseInput {
     {
         try {
             if(!((View3D)viewLogic).window.isFocused)
-                currentPos = new Vector2d(Config.NaNd, Config.NaNd);
+                currentPos = new Vector2d(Consts.NaNd, Consts.NaNd);
             viewLogic.onMouseClick(this, button, action, mods);
         } catch (Exception e) {e.printStackTrace();}
     }

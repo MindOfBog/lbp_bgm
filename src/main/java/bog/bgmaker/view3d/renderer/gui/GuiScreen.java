@@ -5,6 +5,7 @@ import bog.bgmaker.view3d.managers.MouseInput;
 import bog.bgmaker.view3d.managers.RenderMan;
 import bog.bgmaker.view3d.managers.WindowMan;
 import bog.bgmaker.view3d.renderer.gui.elements.*;
+import bog.bgmaker.view3d.renderer.gui.elements.Panel;
 import bog.bgmaker.view3d.renderer.gui.font.FontRenderer;
 import bog.bgmaker.view3d.renderer.gui.ingredients.Line;
 import bog.bgmaker.view3d.renderer.gui.ingredients.LineStrip;
@@ -106,45 +107,123 @@ public class GuiScreen {
     public boolean onKey(int key, int scancode, int action, int mods)
     {
         boolean elementFocused = false;
-        boolean foundNext = false;
 
         for(int i = 0; i < guiElements.size(); i++)
         {
             Element element = guiElements.get(i);
-
             if(element.isFocused())
                 elementFocused = true;
+            element.onKey(key, scancode, action, mods);
 
-            if(key == GLFW.GLFW_KEY_TAB && action == GLFW.GLFW_PRESS && (element instanceof Textbox || element instanceof DropDownTab.LabeledTextbox || element instanceof Textarea))
-            {
-                if(element.isFocused() && !foundNext)
-                {
+            if (key == GLFW.GLFW_KEY_TAB && action == GLFW.GLFW_PRESS) {
+                if (element.isFocused() && (element instanceof Textbox || element instanceof Textarea)){
                     element.setFocused(false);
 
-                    int o = i + 1;
-
-                    while(!foundNext)
+                    Element nextElement = findNextFocusableElement(i + 1);
+                    if(nextElement != null)
+                        nextElement.setFocused(true);
+                    break;
+                }
+                else if(element instanceof Panel)
+                {
+                    Element e = findNextFocusedElement((Panel) element);
+                    if(e == null)
                     {
-                        if(o == guiElements.size())
-                            o = 0;
-
-                        Element nelement = guiElements.get(o);
-
-                        if(nelement instanceof Textbox || nelement instanceof DropDownTab.LabeledTextbox || nelement instanceof Textarea)
-                        {
-                            nelement.setFocused(true);
-                            foundNext = true;
-                        }
-
-                        o++;
+                        Element nextElement = findNextFocusableElement(i + 1);
+                        nextElement.setFocused(true);
+                        break;
                     }
                 }
             }
-
-            element.onKey(key, scancode, action, mods);
         }
 
         return elementFocused;
+    }
+
+    private Element findNextFocusedElement(Panel panel)
+    {
+        for(int i = 0; i < panel.elements.size(); i++)
+        {
+            Element element = panel.elements.get(i).element;
+            if (element.isFocused()) {
+
+                element.setFocused(false);
+
+                Element nextElement = findNextFocusableElementInPanel(panel, i + 1);
+
+                if(nextElement != null)
+                    nextElement.setFocused(true);
+
+                return nextElement;
+            }
+            else if(element instanceof Panel)
+            {
+                Element e = findNextFocusedElement((Panel) element);
+
+                if(e == null)
+                    return findNextFocusableElementInPanel(panel);
+            }
+        }
+        return new Element();
+    }
+
+    private Element findNextFocusableElement(int startIndex) {
+        for (int i = startIndex; i < guiElements.size(); i++) {
+            Element element = guiElements.get(i);
+
+            if (element instanceof Panel) {
+                Element nestedElement = findNextFocusableElementInPanel((Panel) element);
+                if (nestedElement != null) {
+                    return nestedElement;
+                }
+            }
+
+            if (element instanceof Textbox || element instanceof Textarea) {
+                return element;
+            }
+        }
+
+        if(startIndex != 0)
+            return findNextFocusableElement(0);
+        else return null;
+    }
+
+    private Element findNextFocusableElementInPanel(Panel panel) {
+        for (Panel.PanelElement panelElement : panel.elements) {
+            Element nestedElement = panelElement.element;
+
+            if (nestedElement instanceof Panel) {
+                Element result = findNextFocusableElementInPanel((Panel) nestedElement);
+                if (result != null) {
+                    return result;
+                }
+            }
+
+            if (nestedElement instanceof Textbox || nestedElement instanceof Textarea) {
+                return nestedElement;
+            }
+        }
+
+        return null;
+    }
+
+    private Element findNextFocusableElementInPanel(Panel panel, int startIndex) {
+        for (int i = startIndex; i < panel.elements.size(); i++) {
+            Element nestedElement = panel.elements.get(i).element;
+
+            if (nestedElement instanceof Panel) {
+                Element result = findNextFocusableElementInPanel((Panel) nestedElement);
+                if (result != null) {
+                    return result;
+                }
+            }
+
+            if (nestedElement instanceof Textbox || nestedElement instanceof Textarea) {
+                return nestedElement;
+            }
+        }
+
+        return null;
     }
 
     public boolean onClick(MouseInput mouseInput, int button, int action, int mods)
@@ -186,78 +265,6 @@ public class GuiScreen {
         {
             element.onMouseScroll(pos, xOffset, yOffset);
         }
-    }
-
-
-    public void drawLine(Vector2i pos1, Vector2i pos2, boolean smooth)
-    {
-        renderer.processGuiElement(new Line(pos1, pos2, loader, window, smooth, false));
-    }
-
-    public void drawLine(Vector2i pos1, Vector2i pos2, Color color, boolean smooth)
-    {
-        renderer.processGuiElement(new Line(pos1, pos2, color, loader, window, smooth, false));
-    }
-
-    public void drawImage(String path, float x, float y, float width, float height)
-    {
-        renderer.processGuiElement(new Quad(loader, path, new Vector2f(x, y), new Vector2f(width, height)));
-    }
-
-    public void drawImage(BufferedImage image, float x, float y, float width, float height)
-    {
-        renderer.processGuiElement(new Quad(loader, image, new Vector2f(x, y), new Vector2f(width, height)));
-    }
-
-    public void drawImage(int image, float x, float y, float width, float height)
-    {
-        renderer.processGuiElement(new Quad(loader, image, new Vector2f(x, y), new Vector2f(width, height)));
-    }
-
-    public void drawImageStatic(int image, float x, float y, float width, float height)
-    {
-        renderer.processGuiElement(new Quad(loader, image, new Vector2f(x, y), new Vector2f(width, height)).staticTexture());
-    }
-
-    public void drawImageStatic(int image, float x, float y, float width, float height, Color color)
-    {
-        Quad tex = new Quad(loader, image, new Vector2f(x, y), new Vector2f(width, height));
-        tex.color = color;
-        renderer.processGuiElement(tex.staticTexture());
-    }
-
-    public void drawRect(int x, int y, int width, int height, Color color)
-    {
-        renderer.processGuiElement(new Quad(loader, color, new Vector2f(x, y), new Vector2f(width, height)));
-    }
-
-    public void drawRectOutline(int x, int y, int width, int height, Color color, boolean smooth)
-    {
-        renderer.processGuiElement(LineStrip.lineRectangle(new Vector2f(x, y), new Vector2f(width, height), color, loader, window, smooth, false));
-    }
-
-    public void drawRectOutline(int x, int y, int width, int height, Color color, boolean smooth, int openSide)
-    {
-        renderer.processGuiElement(LineStrip.lineRectangle(new Vector2f(x, y), new Vector2f(width, height), color, loader, window, smooth, false, openSide));
-    }
-    public void drawString(String text, Color color, int x, int y, int size)
-    {
-        FontRenderer.drawString(renderer, text, x, y, size, color, 0, text.length());
-    }
-
-    public void startScissor(Vector2i pos, Vector2i size)
-    {
-        renderer.processGuiElement(Scissor.start(pos, size));
-    }
-
-    public void startScissor(int x, int y, int width, int height)
-    {
-        renderer.processGuiElement(Scissor.start(new Vector2i(x, y), new Vector2i(width, height)));
-    }
-
-    public void endScissor()
-    {
-        renderer.processGuiElement(Scissor.end());
     }
 
     public int getStringWidth(String text, int size)

@@ -1,10 +1,12 @@
 package bog.bgmaker.view3d.mainWindow.screens;
 
+import bog.bgmaker.view3d.core.Model;
 import bog.bgmaker.view3d.mainWindow.View3D;
 import bog.bgmaker.view3d.managers.MouseInput;
 import bog.bgmaker.view3d.renderer.gui.GuiScreen;
 import bog.bgmaker.view3d.renderer.gui.elements.Button;
 import bog.bgmaker.view3d.renderer.gui.elements.*;
+import bog.bgmaker.view3d.renderer.gui.ingredients.LineStrip;
 import bog.bgmaker.view3d.utils.Config;
 import bog.bgmaker.view3d.utils.MousePicker;
 import common.FileChooser;
@@ -43,8 +45,12 @@ public class Export extends GuiScreen {
     Button planExport;
     Button modExport;
 
+    Model outlineRect;
+
     public void init()
     {
+        outlineRect = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(400, 223)), mainView.loader, mainView.window);
+
         exportHitbox = new Element() {
 
             @Override
@@ -64,7 +70,8 @@ public class Export extends GuiScreen {
                 this.pos = new Vector2f(mainView.window.width / 2 - 90, mainView.window.height / 2 - 107);
                 super.draw(mouseInput, overOther);
             }
-        }.text("Background");
+        };
+        title.setText("Background");
         description = new Textarea("description", new Vector2f(mainView.window.width / 2 - 90, mainView.window.height / 2 - 98 + getFontHeight(10)), new Vector2f(285, getFontHeight(10) * 4 + 4), 10, mainView.renderer, mainView.loader, mainView.window) {
             @Override
             public void draw(MouseInput mouseInput, boolean overOther) {
@@ -80,14 +87,16 @@ public class Export extends GuiScreen {
                     this.setText(this.getText().substring(0, 16));
                 super.draw(mouseInput, overOther);
             }
-        }.text("MM_Studio");
+        };
+        creator.setText("MM_Studio");
         icon = new Textbox("icon", new Vector2f(mainView.window.width / 2 - 90, mainView.window.height / 2 - 80 + getFontHeight(10) * 6), new Vector2f(285, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window) {
             @Override
             public void draw(MouseInput mouseInput, boolean overOther) {
                 this.pos = new Vector2f(mainView.window.width / 2 - 90, mainView.window.height / 2 - 80 + getFontHeight(10) * 6);
                 super.draw(mouseInput, overOther);
             }
-        }.text("2551");
+        };
+        icon.setText("2551");
         unrestricted = new Radiobutton("unrestricted", "None (LBP1)", new Vector2f(mainView.window.width / 2 - 195, mainView.window.height / 2 - 66 + getFontHeight(10) * 8 + (getFontHeight(10) + 4) / 2 - getFontHeight(10) / 2), 10, mainView.renderer, mainView.loader, mainView.window) {
             @Override
             public void draw(MouseInput mouseInput, boolean overElement) {
@@ -191,13 +200,20 @@ public class Export extends GuiScreen {
 
     @Override
     public void draw(MouseInput mouseInput) {
-        drawRect(mainView.window.width / 2 - 200, mainView.window.height / 2 - 112, 400, 223, Config.PRIMARY_COLOR);
-        drawRectOutline(mainView.window.width / 2 - 200, mainView.window.height / 2 - 112, 400, 223, Config.SECONDARY_COLOR, false);
-        drawString("Title:", Config.FONT_COLOR, mainView.window.width / 2 - 193, mainView.window.height / 2 - 107 + (getFontHeight(10) + 4) / 2 - getFontHeight(10) / 2, 10);
-        drawString("Description:", Config.FONT_COLOR, mainView.window.width / 2 - 193, mainView.window.height / 2 - 102 + getFontHeight(10) + (getFontHeight(10) * 4 + 4) / 2 - getFontHeight(10) / 2, 10);
-        drawString("Creator:", Config.FONT_COLOR, mainView.window.width / 2 - 193, mainView.window.height / 2 - 89 + getFontHeight(10) * 5 + (getFontHeight(10) + 4) / 2 - getFontHeight(10) / 2, 10);
-        drawString("Icon:", Config.FONT_COLOR, mainView.window.width / 2 - 193, mainView.window.height / 2 - 81 + getFontHeight(10) * 6 + (getFontHeight(10) + 4) / 2 - getFontHeight(10) / 2, 10);
-        drawString("Restriction:", Config.FONT_COLOR, mainView.window.width / 2 - 193, mainView.window.height / 2 - 73 + getFontHeight(10) * 7 + (getFontHeight(10) + 4) / 2 - getFontHeight(10) / 2, 10);
+        mainView.renderer.drawRect(mainView.window.width / 2 - 200, mainView.window.height / 2 - 112, 400, 223, Config.PRIMARY_COLOR);
+        mainView.renderer.drawRectOutline(new Vector2f(mainView.window.width / 2 - 200, mainView.window.height / 2 - 112), outlineRect, Config.SECONDARY_COLOR, false);
+        mainView.renderer.drawString("Title:", Config.FONT_COLOR, mainView.window.width / 2 - 193, mainView.window.height / 2 - 107 + (getFontHeight(10) + 4) / 2 - getFontHeight(10) / 2, 10);
+        mainView.renderer.drawString("Description:", Config.FONT_COLOR, mainView.window.width / 2 - 193, mainView.window.height / 2 - 102 + getFontHeight(10) + (getFontHeight(10) * 4 + 4) / 2 - getFontHeight(10) / 2, 10);
+        mainView.renderer.drawString("Creator:", Config.FONT_COLOR, mainView.window.width / 2 - 193, mainView.window.height / 2 - 89 + getFontHeight(10) * 5 + (getFontHeight(10) + 4) / 2 - getFontHeight(10) / 2, 10);
+        mainView.renderer.drawString("Icon:", Config.FONT_COLOR, mainView.window.width / 2 - 193, mainView.window.height / 2 - 81 + getFontHeight(10) * 6 + (getFontHeight(10) + 4) / 2 - getFontHeight(10) / 2, 10);
+        mainView.renderer.drawString("Restriction:", Config.FONT_COLOR, mainView.window.width / 2 - 193, mainView.window.height / 2 - 73 + getFontHeight(10) * 7 + (getFontHeight(10) + 4) / 2 - getFontHeight(10) / 2, 10);
         super.draw(mouseInput);
+    }
+
+    public void resize()
+    {
+        if(this.outlineRect != null)
+            outlineRect.cleanup();
+        outlineRect = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(400, 223)), mainView.loader, mainView.window);
     }
 }

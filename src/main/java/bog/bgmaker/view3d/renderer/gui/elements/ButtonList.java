@@ -1,9 +1,11 @@
 package bog.bgmaker.view3d.renderer.gui.elements;
 
 import bog.bgmaker.view3d.ObjectLoader;
+import bog.bgmaker.view3d.core.Model;
 import bog.bgmaker.view3d.managers.MouseInput;
 import bog.bgmaker.view3d.managers.RenderMan;
 import bog.bgmaker.view3d.managers.WindowMan;
+import bog.bgmaker.view3d.renderer.gui.ingredients.LineStrip;
 import bog.bgmaker.view3d.renderer.gui.ingredients.Quad;
 import bog.bgmaker.view3d.utils.Config;
 import org.joml.Vector2d;
@@ -23,6 +25,11 @@ public abstract class ButtonList<T> extends Element{
     float yScroll = 0;
     boolean scrolling = false;
 
+    Vector2f prevSize;
+    int prevButtonHeight;
+    Model outlineScrollbar;
+    public Model outlineButton;
+
     public ButtonList(String id, ArrayList<T> list, Vector2f pos, Vector2f size, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window)
     {
         this.id = id;
@@ -33,6 +40,9 @@ public abstract class ButtonList<T> extends Element{
         this.fontSize = fontSize;
         this.pos = pos;
         this.size = size;
+        this.prevSize = size;
+        this.outlineScrollbar = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(3, (int) size.y)), loader, window);
+        this.outlineButton = getOutlineButton(buttonHeight());
     }
 
     @Override
@@ -68,12 +78,20 @@ public abstract class ButtonList<T> extends Element{
     public void draw(MouseInput mouseInput, boolean overElement) {
         super.draw(mouseInput, overElement);
 
+        int height = buttonHeight();
+
+        if(size.x != prevSize.x || size.y != prevSize.y || prevButtonHeight != height)
+        {
+            refreshOutline(height);
+            prevSize = size;
+            prevButtonHeight = height;
+        }
+
         if(indexes == null)
         {
             updateSearch();
         }
 
-        int height = buttonHeight();
         float maxScroll = (4 + (height + 2) * (indexes.size() - 1) + height) - (size.y);
         float frac = size.x - (size.x - 4f - size.x * 0.05f);
         float scrollX = pos.x + size.x - 4f - size.x * 0.05f + (frac / 2f);
@@ -89,11 +107,11 @@ public abstract class ButtonList<T> extends Element{
         if(yScroll > 0)
             yScroll = 0;
 
-        drawRect((int) scrollX, (int) scrollY, 3, (int) scrollHeight, buttonColor(null, -1));
-        drawRectOutline((int) scrollX, (int) scrollY, 3, (int) scrollHeight, buttonColor2(null, -1), false);
-        drawRect((int) scrollX, (int) (scrollY + ((Math.abs(yScroll) / maxScroll) * (scrollHeight - frac))), 3, (int) frac, textColor(null, -1));
+        renderer.drawRect((int) scrollX, (int) scrollY, 3, (int) scrollHeight, buttonColor(null, -1));
+        renderer.drawRectOutline(new Vector2f((int) scrollX, (int) scrollY), outlineScrollbar, buttonColor2(null, -1), false);
+        renderer.drawRect((int) scrollX, (int) (scrollY + ((Math.abs(yScroll) / maxScroll) * (scrollHeight - frac))), 3, (int) frac, textColor(null, -1));
 
-        startScissor((int) pos.x, (int) scrollY, (int) size.x, (int) Math.ceil(scrollHeight));
+        renderer.startScissor((int) pos.x, (int) scrollY, (int) size.x, (int) Math.ceil(scrollHeight));
         int ind = 0;
 
         for(int i : indexes)
@@ -126,9 +144,13 @@ public abstract class ButtonList<T> extends Element{
                 drawButton(posY, scrollY, scrollHeight, height, object, i);
             }
         }
-        endScissor();
+        renderer.endScissor();
     }
-
+    @Override
+    public void resize() {
+        super.resize();
+        refreshOutline(buttonHeight());
+    }
     @Override
     public void onClick(Vector2d pos, int button, int action, int mods, boolean overElement) {
         super.onClick(pos, button, action, mods, overElement);
@@ -207,17 +229,29 @@ public abstract class ButtonList<T> extends Element{
 
     public void drawButton(int posY, float scrollY, float scrollHeight, int height, T object, int i)
     {
-        startScissor((int)pos.x + 4, posY, (int)(size.x - 6f - size.x * 0.05f), (int) height);
-        drawRect((int)pos.x + 4, posY, (int)(size.x - 6f - size.x * 0.05f), (int) height, !(isHighlighted(object, i) || isSelected(object, i)) ? buttonColor(object, i) : (isSelected(object, i) ? buttonColorSelected(object, i) : buttonColorHighlighted(object, i)));
-        drawString(buttonText(object, i), textColor(object, i), (int)(pos.x + (size.x - size.x * 0.05f) / 2f - getStringWidth(buttonText(object, i), fontSize) / 2), posY + height / 2 - getFontHeight(fontSize) / 2, fontSize);
-        drawRectOutline((int)pos.x + 4, posY, (int)(size.x - 6f - size.x * 0.05f), (int) height, !(isHighlighted(object, i) || isSelected(object, i)) ? buttonColor2(object, i) : (isSelected(object, i) ? buttonColorSelected2(object, i) : buttonColorHighlighted2(object, i)), false);
-        endScissor();
+        renderer.startScissor((int)pos.x + 4, posY, (int)(size.x - 6f - size.x * 0.05f), (int) height);
+        renderer.drawRect((int)pos.x + 4, posY, (int)(size.x - 6f - size.x * 0.05f), (int) height, !(isHighlighted(object, i) || isSelected(object, i)) ? buttonColor(object, i) : (isSelected(object, i) ? buttonColorSelected(object, i) : buttonColorHighlighted(object, i)));
+        renderer.drawString(buttonText(object, i), textColor(object, i), (int)(pos.x + (size.x - size.x * 0.05f) / 2f - getStringWidth(buttonText(object, i), fontSize) / 2), posY + height / 2 - getFontHeight(fontSize) / 2, fontSize);
+        renderer.drawRectOutline(new Vector2f(pos.x + 4, posY), outlineButton, !(isHighlighted(object, i) || isSelected(object, i)) ? buttonColor2(object, i) : (isSelected(object, i) ? buttonColorSelected2(object, i) : buttonColorHighlighted2(object, i)), false);
+        renderer.endScissor();
     }
     public int buttonHeight()
     {
         return getFontHeight(fontSize);
     }
-
+    public Model getOutlineButton(int height)
+    {
+        return LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(size.x - 6f - size.x * 0.05f, height)), loader, window);
+    }
+    public void refreshOutline(int height)
+    {
+        if(outlineScrollbar != null)
+            this.outlineScrollbar.cleanup();
+        if(outlineButton != null)
+            this.outlineButton.cleanup();
+        this.outlineScrollbar = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(3, (int) size.y)), loader, window);
+        this.outlineButton = getOutlineButton(height);
+    }
     public abstract void clickedButton(T object, int index, int button, int action, int mods);
     public abstract void hoveringButton(T object, int index);
     public abstract boolean isHighlighted(T object, int index);

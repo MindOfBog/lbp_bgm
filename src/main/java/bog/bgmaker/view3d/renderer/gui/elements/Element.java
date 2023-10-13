@@ -35,6 +35,7 @@ public class Element {
     {
         hovering = isMouseOverElement(mouseInput) && !overElement;
     }
+    public void resize(){}
 
     public void secondThread(){}
 
@@ -52,85 +53,6 @@ public class Element {
     public boolean isMouseOverElement(MouseInput mouseInput)
     {
         return isMouseOverElement(mouseInput.currentPos);
-    }
-
-    protected void drawLine(Vector2i pos1, Vector2i pos2, boolean smooth)
-    {
-        renderer.processGuiElement(new Line(pos1, pos2, loader, window, smooth, false));
-    }
-
-    protected void drawLine(Vector2i pos1, Vector2i pos2, Color color, boolean smooth)
-    {
-        renderer.processGuiElement(new Line(pos1, pos2, color, loader, window, smooth, false));
-    }
-
-    protected void drawImage(String path, float x, float y, float width, float height)
-    {
-        renderer.processGuiElement(new Quad(loader, path, new Vector2f(x, y), new Vector2f(width, height)));
-    }
-
-    protected void drawImage(BufferedImage image, float x, float y, float width, float height)
-    {
-        renderer.processGuiElement(new Quad(loader, image, new Vector2f(x, y), new Vector2f(width, height)));
-    }
-
-    protected void drawImage(int image, float x, float y, float width, float height)
-    {
-        renderer.processGuiElement(new Quad(loader, image, new Vector2f(x, y), new Vector2f(width, height)));
-    }
-
-    protected void drawImageStatic(int image, float x, float y, float width, float height)
-    {
-        renderer.processGuiElement(new Quad(loader, image, new Vector2f(x, y), new Vector2f(width, height)).staticTexture());
-    }
-
-    protected void drawRect(int x, int y, int width, int height, Color color) {
-        renderer.processGuiElement(new Quad(loader, color, new Vector2f(x, y), new Vector2f(width, height)));
-    }
-
-    protected void drawRectOutline(int x, int y, int width, int height, Color color, boolean smooth)
-    {
-        renderer.processGuiElement(LineStrip.lineRectangle(new Vector2f(x, y), new Vector2f(width, height), color, loader, window, smooth, false));
-    }
-
-    protected void drawRectOutline(int x, int y, int width, int height, Color color, boolean smooth, int openSide)
-    {
-        renderer.processGuiElement(LineStrip.lineRectangle(new Vector2f(x, y), new Vector2f(width, height), color, loader, window, smooth, false, openSide));
-    }
-
-    protected void drawTriangle(Vector2f p1, Vector2f p2, Vector2f p3, Color color)
-    {
-        renderer.processGuiElement(new Triangle(loader, window, color, p1, p2, p3, false));
-    }
-
-    protected void drawCircle(Vector2f center, float radius, int tris, Color color)
-    {
-        renderer.processGuiElement(new Circle(loader, window, color, center, radius, tris, false));
-    }
-
-    protected void drawString(String text, Color color, int x, int y, int size)
-    {
-        FontRenderer.drawString(renderer, text, x, y, size, color, 0, text.length());
-    }
-
-    protected void drawString(String text, Color color, int x, int y, int size, int begin, int end)
-    {
-        FontRenderer.drawString(renderer, text, x, y, size, color, begin, end);
-    }
-
-    protected void startScissor(Vector2i pos, Vector2i size)
-    {
-        renderer.processGuiElement(Scissor.start(pos, size));
-    }
-
-    protected void startScissor(int x, int y, int width, int height)
-    {
-        renderer.processGuiElement(Scissor.start(new Vector2i(x, y), new Vector2i(width, height)));
-    }
-
-    protected void endScissor()
-    {
-        renderer.processGuiElement(Scissor.end());
     }
 
     protected int getStringWidth(String text, int size)

@@ -1,9 +1,11 @@
 package bog.bgmaker.view3d.renderer.gui.elements;
 
 import bog.bgmaker.view3d.ObjectLoader;
+import bog.bgmaker.view3d.core.Model;
 import bog.bgmaker.view3d.managers.MouseInput;
 import bog.bgmaker.view3d.managers.RenderMan;
 import bog.bgmaker.view3d.managers.WindowMan;
+import bog.bgmaker.view3d.renderer.gui.ingredients.LineStrip;
 import bog.bgmaker.view3d.utils.Config;
 import org.joml.Vector2d;
 import org.joml.Vector2f;
@@ -20,12 +22,18 @@ public abstract class Button extends Element{
     int fontSize;
     public boolean isClicked = false;
 
+    Vector2f prevSize;
+    Model outlineRect;
+
     public Button()
-    {}
+    {
+        this.prevSize = new Vector2f();
+    }
 
     public Button(String id)
     {
         this.id = id;
+        this.prevSize = new Vector2f();
     }
 
     public Button(String id, String buttonText, Vector2f pos, Vector2f size, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window)
@@ -33,6 +41,8 @@ public abstract class Button extends Element{
         this.id = id;
         this.pos = pos;
         this.size = size;
+        this.prevSize = size;
+        this.outlineRect = LineStrip.processVerts(LineStrip.getRectangle(size), loader, window);
         this.fontSize = fontSize;
         this.renderer = renderer;
         this.loader = loader;
@@ -45,6 +55,8 @@ public abstract class Button extends Element{
         this.id = id;
         this.pos = pos;
         this.size = size;
+        this.prevSize = size;
+        this.outlineRect = LineStrip.processVerts(LineStrip.getRectangle(size), loader, window);
         this.fontSize = fontSize;
         this.renderer = renderer;
         this.loader = loader;
@@ -55,6 +67,12 @@ public abstract class Button extends Element{
     @Override
     public void draw(MouseInput mouseInput, boolean overOther) {
         super.draw(mouseInput, overOther);
+
+        if(size.x != prevSize.x || size.y != prevSize.y)
+        {
+            refreshOutline();
+            prevSize = size;
+        }
 
         if(!isMouseOverElement(mouseInput) || overOther)
             setClicked(false);
@@ -74,11 +92,11 @@ public abstract class Button extends Element{
             c2 = Config.INTERFACE_TERTIARY_COLOR2;
         }
 
-        startScissor((int)pos.x, (int)pos.y, (int)size.x, (int)size.y);
-        drawRect((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, c);
-        drawString(buttonText, Config.FONT_COLOR, (int)(pos.x + size.x / 2 - getStringWidth(buttonText, fontSize) / 2), (int)(pos.y + size.y / 2 - getFontHeight(fontSize) / 2), fontSize);
-        drawRectOutline((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, c2, false);
-        endScissor();
+        renderer.startScissor(Math.round(pos.x), Math.round(pos.y), Math.round(size.x), Math.round(size.y));
+        renderer.drawRect(Math.round(pos.x), Math.round(pos.y), Math.round(size.x), Math.round(size.y), c);
+        renderer.drawString(buttonText, Config.FONT_COLOR, Math.round(pos.x + size.x / 2 - getStringWidth(buttonText, fontSize) / 2), Math.round(pos.y + size.y / 2 - getFontHeight(fontSize) / 2), fontSize);
+        renderer.drawRectOutline(new Vector2f(Math.round(pos.x), Math.round(pos.y)), outlineRect, c2, false);
+        renderer.endScissor();
     }
 
     public void setClicked(boolean clicked) {
@@ -103,6 +121,18 @@ public abstract class Button extends Element{
         super.onClick(pos, button, action, mods, overOther);
     }
 
+    @Override
+    public void resize() {
+        super.resize();
+        refreshOutline();
+    }
+
     public abstract void clickedButton(int button, int action, int mods);
 
+    public void refreshOutline()
+    {
+        if(outlineRect != null)
+            this.outlineRect.cleanup();
+        this.outlineRect = LineStrip.processVerts(LineStrip.getRectangle(size), loader, window);
+    }
 }

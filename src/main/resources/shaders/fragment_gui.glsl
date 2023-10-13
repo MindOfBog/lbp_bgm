@@ -32,7 +32,7 @@ void main(void){
 
 	if(hasColor == 1)
 	{
-        out_Color = vec4(mix(out_Color.xyz, color.xyz, 0.5).xyz, out_Color.a);
+        out_Color *= color;
 	}
 
 }

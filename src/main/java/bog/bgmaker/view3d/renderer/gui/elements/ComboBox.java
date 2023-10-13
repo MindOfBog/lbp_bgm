@@ -1,6 +1,7 @@
 package bog.bgmaker.view3d.renderer.gui.elements;
 
 import bog.bgmaker.view3d.ObjectLoader;
+import bog.bgmaker.view3d.core.Model;
 import bog.bgmaker.view3d.managers.MouseInput;
 import bog.bgmaker.view3d.managers.RenderMan;
 import bog.bgmaker.view3d.managers.WindowMan;
@@ -22,6 +23,10 @@ public class ComboBox extends Element{
     public ArrayList<Element> comboElements;
     public int fontSize;
     boolean extended = false;
+
+    Vector2f prevSize = new Vector2f();
+    Model outlineSelection;
+    Model outlineElement;
 
     public ComboBox(String id, String tabTitle, Vector2f pos, Vector2f size, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window)
     {
@@ -159,70 +164,10 @@ public class ComboBox extends Element{
         }
     }
 
-    public void addLabeledTextbox(String id, String label)
-    {
-        if(!containsElementByID(id))
-            comboElements.add(new DropDownTab.LabeledTextbox(label, id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight(fontSize) + 4), fontSize, renderer, loader, window));
-    }
-
-    public void addLabeledTextbox(String id, String label, boolean numbers, boolean letters, boolean others)
-    {
-        if(!containsElementByID(id))
-        {
-            DropDownTab.LabeledTextbox ltb = new DropDownTab.LabeledTextbox(label, id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight(fontSize) + 4), fontSize, renderer, loader, window);
-            ltb.textbox.numbers = numbers;
-            ltb.textbox.letters = letters;
-            ltb.textbox.others = others;
-            comboElements.add(ltb);
-        }
-    }
-
-    public void addLabeledTextbox(String id, String label, String text)
-    {
-
-        if(!containsElementByID(id))
-        {
-            DropDownTab.LabeledTextbox ltb = new DropDownTab.LabeledTextbox(label, id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight(fontSize) + 4), fontSize, renderer, loader, window);
-            ltb.textbox.setText(text);
-            comboElements.add(ltb);
-        }
-    }
-
-    public void addLabeledTextbox(String id, String label, boolean numbers, boolean letters, boolean others, String text)
-    {
-        if(!containsElementByID(id))
-        {
-            DropDownTab.LabeledTextbox ltb = new DropDownTab.LabeledTextbox(label, id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight(fontSize) + 4), fontSize, renderer, loader, window);
-            ltb.textbox.numbers = numbers;
-            ltb.textbox.letters = letters;
-            ltb.textbox.others = others;
-            ltb.textbox.setText(text);
-            comboElements.add(ltb);
-        }
-    }
-
-    public void addLabeledButton(String id, String label, String buttonText, Button button)
-    {
-        if(!containsElementByID(id))
-            comboElements.add(new DropDownTab.LabeledButton(label, id, buttonText, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight(fontSize) + 4), fontSize, button, renderer, loader, window));
-    }
-
-    public void addLabeledSlider(String id, String label)
-    {
-        if(!containsElementByID(id))
-            comboElements.add(new DropDownTab.LabeledSlider(label, id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight(fontSize) + 4), fontSize, renderer, loader, window));
-    }
-
-    public void addLabeledSlider(String id, String label, float sliderPosition, float min, float max)
-    {
-        if(!containsElementByID(id))
-            comboElements.add(new DropDownTab.LabeledSlider(label, id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight(fontSize) + 4), fontSize, renderer, loader, window, sliderPosition, min, max));
-    }
-
     public void addString(String id, String string)
     {
         if(!containsElementByID(id))
-            comboElements.add(new DropDownTab.StringElement(id, string, fontSize, renderer, loader, window));
+            comboElements.add(new DropDownTab.StringElement(id, string, fontSize, renderer));
     }
 
     public void addRect(String id, float height)
@@ -269,22 +214,28 @@ public class ComboBox extends Element{
         if (extended)
             yOffset = updateElements(yOffset);
 
-        drawRect((int) pos.x, (int) pos.y, (int) size.x, (int) size.y, (mouseInput.rightButtonPress && isMouseOverTab(mouseInput)) ? Config.INTERFACE_TERTIARY_COLOR : (isMouseOverTab(mouseInput) && !overOther ? Config.INTERFACE_SECONDARY_COLOR : Config.INTERFACE_PRIMARY_COLOR));
-        drawRectOutline((int) pos.x, (int) pos.y, (int) size.x, (int) size.y, (mouseInput.rightButtonPress && isMouseOverTab(mouseInput)) ? Config.INTERFACE_TERTIARY_COLOR2 : (isMouseOverTab(mouseInput) && !overOther ? Config.INTERFACE_SECONDARY_COLOR2 : Config.INTERFACE_PRIMARY_COLOR2), false);
+        if(size.x != prevSize.x || size.y != prevSize.y)
+        {
+            refreshOutline(yOffset);
+            this.prevSize = size;
+        }
+
+        renderer.drawRect((int) pos.x, (int) pos.y, (int) size.x, (int) size.y, (mouseInput.rightButtonPress && isMouseOverTab(mouseInput)) ? Config.INTERFACE_TERTIARY_COLOR : (isMouseOverTab(mouseInput) && !overOther ? Config.INTERFACE_SECONDARY_COLOR : Config.INTERFACE_PRIMARY_COLOR));
+        renderer.drawRectOutline(new Vector2f(pos.x, pos.y), outlineElement, (mouseInput.rightButtonPress && isMouseOverTab(mouseInput)) ? Config.INTERFACE_TERTIARY_COLOR2 : (isMouseOverTab(mouseInput) && !overOther ? Config.INTERFACE_SECONDARY_COLOR2 : Config.INTERFACE_PRIMARY_COLOR2), false);
 
         if (extended)
         {
             drawBackdrop(yOffset);
         }
 
-        drawString(tabTitle, Config.FONT_COLOR, (int) (pos.x + size.y / 2 - getFontHeight(fontSize) / 2), (int) (pos.y + size.y / 2 - getFontHeight(fontSize) / 2), fontSize);
+        renderer.drawString(tabTitle, Config.FONT_COLOR, (int) (pos.x + size.y / 2 - getFontHeight(fontSize) / 2), (int) (pos.y + size.y / 2 - getFontHeight(fontSize) / 2), fontSize);
 
         if(extended)
         {
             Vector2f p1 = new Vector2f(pos.x + size.x - size.y * 0.35f, pos.y + size.y * 0.25f);
             Vector2f p2 = new Vector2f(p1.x - size.y / 2f, p1.y);
             Vector2f p3 = new Vector2f(p1.x - size.y / 4f, pos.y + size.y * 0.75f);
-            drawTriangle(p1, p2, p3, Config.FONT_COLOR);
+            renderer.drawTriangle(loader, p1, p2, p3, Config.FONT_COLOR);
 
             drawElements(mouseInput, overOther);
         }
@@ -293,14 +244,33 @@ public class ComboBox extends Element{
             Vector2f p1 = new Vector2f(pos.x + size.x - size.y * 0.35f, pos.y + size.y / 2f);
             Vector2f p2 = new Vector2f(p1.x - size.y / 2f, pos.y + size.y * 0.25f);
             Vector2f p3 = new Vector2f(p1.x - size.y / 2f, pos.y + size.y * 0.75f);
-            drawTriangle(p1, p2, p3, Config.FONT_COLOR);
+            renderer.drawTriangle(loader, p1, p2, p3, Config.FONT_COLOR);
         }
+    }
+    @Override
+    public void resize() {
+        super.resize();
+
+        float yOffset = 0;
+        if (extended)
+            yOffset = updateElements(yOffset);
+        refreshOutline(yOffset);
+    }
+
+    public void refreshOutline(float yOffset)
+    {
+        if(outlineSelection != null)
+            this.outlineSelection.cleanup();
+        if(outlineElement != null)
+            this.outlineElement.cleanup();
+        this.outlineSelection = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f((int) size.x, (int) (2f + yOffset)), LineStrip.UP), loader, window);
+        this.outlineElement = LineStrip.processVerts(LineStrip.getRectangle(size), loader, window);
     }
 
     public void drawBackdrop(float yOffset)
     {
-        drawRect((int) pos.x, (int) (pos.y + size.y), (int) size.x, (int) (2f + yOffset), Config.PRIMARY_COLOR);
-        drawRectOutline((int) pos.x, (int) (pos.y + size.y), (int) size.x, (int) (2f + yOffset), Config.SECONDARY_COLOR, false, LineStrip.UP);
+        renderer.drawRect((int) pos.x, (int) (pos.y + size.y), (int) size.x, (int) (2f + yOffset), Config.PRIMARY_COLOR);
+        renderer.drawRectOutline(new Vector2f(pos.x, pos.y + size.y), outlineSelection, Config.SECONDARY_COLOR, false);
     }
 
     public void drawElements(MouseInput mouseInput, boolean overOther)
@@ -391,41 +361,120 @@ public class ComboBox extends Element{
 
         if(extended)
         {
-            boolean foundNext = false;
-
             for(int i = 0; i < comboElements.size(); i++)
             {
                 Element element = comboElements.get(i);
+                element.onKey(key, scancode, action, mods);
 
-                if(key == GLFW.GLFW_KEY_TAB && action == GLFW.GLFW_PRESS && (element instanceof Textbox || element instanceof DropDownTab.LabeledTextbox || element instanceof Textarea))
-                {
-                    if(element.isFocused() && !foundNext)
-                    {
+                if (key == GLFW.GLFW_KEY_TAB && action == GLFW.GLFW_PRESS) {
+                    if (element.isFocused()) {
+
                         element.setFocused(false);
 
-                        int o = i + 1;
-
-                        while(!foundNext)
+                        Element nextElement = findNextFocusableElement(i + 1);
+                        if(nextElement != null)
+                            nextElement.setFocused(true);
+                        break;
+                    }
+                    else if(element instanceof Panel)
+                    {
+                        Element e = findNextFocusedElement((Panel) element);
+                        if(e == null)
                         {
-                            if(o == comboElements.size())
-                                o = 0;
-
-                            Element nelement = comboElements.get(o);
-
-                            if(nelement instanceof Textbox || nelement instanceof DropDownTab.LabeledTextbox || nelement instanceof Textarea)
-                            {
-                                nelement.setFocused(true);
-                                foundNext = true;
-                            }
-
-                            o++;
+                            Element nextElement = findNextFocusableElement(i + 1);
+                            nextElement.setFocused(true);
+                            break;
                         }
                     }
                 }
-
-                element.onKey(key, scancode, action, mods);
             }
         }
+    }
+
+    private Element findNextFocusedElement(Panel panel)
+    {
+        for(int i = 0; i < panel.elements.size(); i++)
+        {
+            Element element = panel.elements.get(i).element;
+            if (element.isFocused()) {
+
+                element.setFocused(false);
+
+                Element nextElement = findNextFocusableElementInPanel(panel, i + 1);
+
+                if(nextElement != null)
+                    nextElement.setFocused(true);
+
+                return nextElement;
+            }
+            else if(element instanceof Panel)
+            {
+                Element e = findNextFocusedElement((Panel) element);
+
+                if(e == null)
+                    return findNextFocusableElementInPanel(panel);
+            }
+        }
+        return new Element();
+    }
+
+    private Element findNextFocusableElement(int startIndex) {
+        for (int i = startIndex; i < comboElements.size(); i++) {
+            Element element = comboElements.get(i);
+
+            if (element instanceof Panel) {
+                Element nestedElement = findNextFocusableElementInPanel((Panel) element);
+                if (nestedElement != null) {
+                    return nestedElement;
+                }
+            }
+
+            if (element instanceof Textbox || element instanceof Textarea) {
+                return element;
+            }
+        }
+
+        if(startIndex != 0)
+            return findNextFocusableElement(0);
+        else return null;
+    }
+
+    private Element findNextFocusableElementInPanel(Panel panel) {
+        for (Panel.PanelElement panelElement : panel.elements) {
+            Element nestedElement = panelElement.element;
+
+            if (nestedElement instanceof Panel) {
+                Element result = findNextFocusableElementInPanel((Panel) nestedElement);
+                if (result != null) {
+                    return result;
+                }
+            }
+
+            if (nestedElement instanceof Textbox || nestedElement instanceof Textarea) {
+                return nestedElement;
+            }
+        }
+
+        return null;
+    }
+
+    private Element findNextFocusableElementInPanel(Panel panel, int startIndex) {
+        for (int i = startIndex; i < panel.elements.size(); i++) {
+            Element nestedElement = panel.elements.get(i).element;
+
+            if (nestedElement instanceof Panel) {
+                Element result = findNextFocusableElementInPanel((Panel) nestedElement);
+                if (result != null) {
+                    return result;
+                }
+            }
+
+            if (nestedElement instanceof Textbox || nestedElement instanceof Textarea) {
+                return nestedElement;
+            }
+        }
+
+        return null;
     }
 
     @Override

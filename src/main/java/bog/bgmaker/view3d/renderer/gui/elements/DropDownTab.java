@@ -1,6 +1,7 @@
 package bog.bgmaker.view3d.renderer.gui.elements;
 
 import bog.bgmaker.view3d.ObjectLoader;
+import bog.bgmaker.view3d.core.Model;
 import bog.bgmaker.view3d.managers.MouseInput;
 import bog.bgmaker.view3d.managers.RenderMan;
 import bog.bgmaker.view3d.managers.WindowMan;
@@ -26,6 +27,10 @@ public class DropDownTab extends Element{
 
     public boolean resizeX = false;
     public boolean resizeY = false;
+
+    Vector2f prevSize = new Vector2f();
+    Model outlineSelection;
+    Model outlineElement;
 
     public DropDownTab(String id, String tabTitle, Vector2f pos, Vector2f size, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window)
     {
@@ -91,12 +96,12 @@ public class DropDownTab extends Element{
     public boolean containsElementByID(String id)
     {
         for(int i = 0; i < tabElements.size(); i++)
-            if(tabElements.get(i).id.equalsIgnoreCase(id))
+            if(tabElements.get(i).id != null && tabElements.get(i).id.equalsIgnoreCase(id))
                 return true;
         return false;
     }
 
-    public void addButton(String buttonText, Button button)
+    public Button addButton(String buttonText, Button button)
     {
         if(!containsElementByID(button.id))
         {
@@ -108,10 +113,13 @@ public class DropDownTab extends Element{
             button.window = window;
             button.loader = loader;
             tabElements.add(button);
+            return button;
         }
+        else
+            return (Button) getElementByID(button.id);
     }
 
-    public void addComboBox(ComboBox comboBox)
+    public ComboBox addComboBox(ComboBox comboBox)
     {
         if(!containsElementByID(comboBox.id))
         {
@@ -122,44 +130,74 @@ public class DropDownTab extends Element{
             comboBox.window = window;
             comboBox.loader = loader;
             tabElements.add(comboBox);
+            return comboBox;
         }
+        else
+            return (ComboBox) getElementByID(comboBox.id);
     }
 
-    public void addCheckbox(String id, String text)
+    public Checkbox addCheckbox(String id, String text)
     {
         if(!containsElementByID(id))
-            tabElements.add(new Checkbox(id, text, new Vector2f(0, 0), fontSize, renderer, loader, window));
+        {
+            Checkbox cb = new Checkbox(id, text, new Vector2f(0, 0), fontSize, renderer, loader, window);
+            tabElements.add(cb);
+            return cb;
+        }
+        else
+            return (Checkbox) getElementByID(id);
     }
 
-    public void addCheckbox(String id, String text, boolean checked)
+    public Checkbox addCheckbox(String id, String text, boolean checked)
     {
         if(!containsElementByID(id))
         {
             Checkbox checkbox = new Checkbox(id, text, new Vector2f(0, 0), fontSize, renderer, loader, window);
             checkbox.isChecked = checked;
             tabElements.add(checkbox);
+            return checkbox;
         }
+        else
+            return (Checkbox) getElementByID(id);
     }
 
-    public void addSlider(String id)
+    public Slider addSlider(String id)
     {
         if(!containsElementByID(id))
-            tabElements.add(new Slider(id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight(fontSize) + 4), renderer, loader, window));
+        {
+            Slider sl = new Slider(id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight(fontSize) + 4), renderer, loader, window);
+            tabElements.add(sl);
+            return sl;
+        }
+        else
+            return (Slider) getElementByID(id);
     }
 
-    public void addSlider(String id, float sliderPosition, float min, float max)
+    public Slider addSlider(String id, float sliderPosition, float min, float max)
     {
         if(!containsElementByID(id))
-            tabElements.add(new Slider(id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight(fontSize) + 4), renderer, loader, window, sliderPosition, min, max));
+        {
+            Slider sl = new Slider(id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight(fontSize) + 4), renderer, loader, window, sliderPosition, min, max);
+            tabElements.add(sl);
+            return sl;
+        }
+        else
+            return (Slider) getElementByID(id);
     }
 
-    public void addTextbox(String id)
+    public Textbox addTextbox(String id)
     {
         if(!containsElementByID(id))
-            tabElements.add(new Textbox(id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight(fontSize) + 4), fontSize, renderer, loader, window));
+        {
+            Textbox tb = new Textbox(id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight(fontSize) + 4), fontSize, renderer, loader, window);
+            tabElements.add(tb);
+            return  tb;
+        }
+        else
+            return (Textbox) getElementByID(id);
     }
 
-    public void addTextbox(String id, boolean numbers, boolean letters, boolean others)
+    public Textbox addTextbox(String id, boolean numbers, boolean letters, boolean others)
     {
         if(!containsElementByID(id))
         {
@@ -168,20 +206,26 @@ public class DropDownTab extends Element{
             tb.letters = letters;
             tb.others = others;
             tabElements.add(tb);
+            return tb;
         }
+        else
+            return (Textbox) getElementByID(id);
     }
 
-    public void addTextbox(String id, String text)
+    public Textbox addTextbox(String id, String text)
     {
         if(!containsElementByID(id))
         {
             Textbox tb = new Textbox(id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight(fontSize) + 4), fontSize, renderer, loader, window);
             tb.setText(text);
             tabElements.add(tb);
+            return tb;
         }
+        else
+            return (Textbox) getElementByID(id);
     }
 
-    public void addTextbox(String id, boolean numbers, boolean letters, boolean others, String text)
+    public Textbox addTextbox(String id, boolean numbers, boolean letters, boolean others, String text)
     {
         if(!containsElementByID(id))
         {
@@ -191,88 +235,62 @@ public class DropDownTab extends Element{
             tb.others = others;
             tb.setText(text);
             tabElements.add(tb);
+            return tb;
         }
+        else
+            return (Textbox) getElementByID(id);
     }
 
-    public void addLabeledTextbox(String id, String label)
-    {
-        if(!containsElementByID(id))
-            tabElements.add(new LabeledTextbox(label, id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight(fontSize) + 4), fontSize, renderer, loader, window));
-    }
-
-    public void addLabeledTextbox(String id, String label, boolean numbers, boolean letters, boolean others)
+    public Panel addPanel(String id)
     {
         if(!containsElementByID(id))
         {
-            LabeledTextbox ltb = new LabeledTextbox(label, id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight(fontSize) + 4), fontSize, renderer, loader, window);
-            ltb.textbox.numbers = numbers;
-            ltb.textbox.letters = letters;
-            ltb.textbox.others = others;
-            tabElements.add(ltb);
+            Panel p = new Panel(new Vector2f(size.x - 4, getFontHeight(fontSize) + 4), renderer);
+            p.id = id;
+            tabElements.add(p);
+            return p;
         }
+        else
+            return (Panel) getElementByID(id);
     }
 
-    public void addLabeledTextbox(String id, String label, String text)
-    {
-
-        if(!containsElementByID(id))
-        {
-            LabeledTextbox ltb = new LabeledTextbox(label, id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight(fontSize) + 4), fontSize, renderer, loader, window);
-            ltb.textbox.setText(text);
-            tabElements.add(ltb);
-        }
-    }
-
-    public void addLabeledTextbox(String id, String label, boolean numbers, boolean letters, boolean others, String text)
+    public StringElement addString(String id, String string)
     {
         if(!containsElementByID(id))
         {
-            LabeledTextbox ltb = new LabeledTextbox(label, id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight(fontSize) + 4), fontSize, renderer, loader, window);
-            ltb.textbox.numbers = numbers;
-            ltb.textbox.letters = letters;
-            ltb.textbox.others = others;
-            ltb.textbox.setText(text);
-            tabElements.add(ltb);
+            StringElement s = new StringElement(id, string, fontSize, renderer);
+            tabElements.add(s);
+            return s;
         }
+        else
+            return (StringElement) getElementByID(id);
     }
 
-    public void addLabeledButton(String id, String label, String buttonText, Button button)
+    public RectangleElement addRect(String id, float height)
     {
         if(!containsElementByID(id))
-            tabElements.add(new LabeledButton(label, id, buttonText, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight(fontSize) + 4), fontSize, button, renderer, loader, window));
+        {
+            RectangleElement rec = new RectangleElement(id, height, renderer, loader, window);
+            tabElements.add(rec);
+            return rec;
+        }
+        else
+            return (RectangleElement) getElementByID(id);
     }
 
-    public void addLabeledSlider(String id, String label)
+    public RectangleElement addRect(String id, float height, Color color)
     {
         if(!containsElementByID(id))
-            tabElements.add(new LabeledSlider(label, id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight(fontSize) + 4), fontSize, renderer, loader, window));
+        {
+            RectangleElement rec = new RectangleElement(id, height, color, renderer, loader, window);
+            tabElements.add(rec);
+            return rec;
+        }
+        else
+            return (RectangleElement) getElementByID(id);
     }
 
-    public void addLabeledSlider(String id, String label, float sliderPosition, float min, float max)
-    {
-        if(!containsElementByID(id))
-            tabElements.add(new LabeledSlider(label, id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight(fontSize) + 4), fontSize, renderer, loader, window, sliderPosition, min, max));
-    }
-
-    public void addString(String id, String string)
-    {
-        if(!containsElementByID(id))
-            tabElements.add(new StringElement(id, string, fontSize, renderer, loader, window));
-    }
-
-    public void addRect(String id, float height)
-    {
-        if(!containsElementByID(id))
-            tabElements.add(new RectangleElement(id, height, renderer, loader, window));
-    }
-
-    public void addRect(String id, float height, Color color)
-    {
-        if(!containsElementByID(id))
-            tabElements.add(new RectangleElement(id, height, color, renderer, loader, window));
-    }
-
-    public void addList(String id, ButtonList buttonList, int height)
+    public ButtonList addList(String id, ButtonList buttonList, int height)
     {
         if(!containsElementByID(id))
         {
@@ -280,7 +298,10 @@ public class DropDownTab extends Element{
             buttonList.pos = new Vector2f(0, 0);
             buttonList.size = new Vector2f(size.x - 4, height);
             tabElements.add(buttonList);
+            return buttonList;
         }
+        else
+            return (ButtonList) getElementByID(id);
     }
 
     public boolean dragging = false;
@@ -311,8 +332,14 @@ public class DropDownTab extends Element{
         if (extended)
             yOffset = updateElements(yOffset);
 
-        drawRect((int) pos.x, (int) pos.y, (int) size.x, (int) size.y, dragging || (mouseInput.rightButtonPress && isMouseOverTab(mouseInput)) ? Config.INTERFACE_TERTIARY_COLOR : (isMouseOverTab(mouseInput) && !overOther ? Config.INTERFACE_SECONDARY_COLOR : Config.INTERFACE_PRIMARY_COLOR));
-        drawRectOutline((int) pos.x, (int) pos.y, (int) size.x, (int) size.y, dragging || (mouseInput.rightButtonPress && isMouseOverTab(mouseInput)) ? Config.INTERFACE_TERTIARY_COLOR2 : (isMouseOverTab(mouseInput) && !overOther ? Config.INTERFACE_SECONDARY_COLOR2 : Config.INTERFACE_PRIMARY_COLOR2), false);
+        if(size.x != prevSize.x || size.y != prevSize.y)
+        {
+            refreshOutline(yOffset);
+            prevSize = size;
+        }
+
+        renderer.drawRect((int) Math.round(pos.x), (int) Math.round(pos.y), (int) Math.round(size.x), (int) Math.round(size.y), dragging || (mouseInput.rightButtonPress && isMouseOverTab(mouseInput)) ? Config.INTERFACE_TERTIARY_COLOR : (isMouseOverTab(mouseInput) && !overOther ? Config.INTERFACE_SECONDARY_COLOR : Config.INTERFACE_PRIMARY_COLOR));
+        renderer.drawRectOutline(pos, outlineSelection, dragging || (mouseInput.rightButtonPress && isMouseOverTab(mouseInput)) ? Config.INTERFACE_TERTIARY_COLOR2 : (isMouseOverTab(mouseInput) && !overOther ? Config.INTERFACE_SECONDARY_COLOR2 : Config.INTERFACE_PRIMARY_COLOR2), false);
 
         if (extended)
         {
@@ -328,14 +355,14 @@ public class DropDownTab extends Element{
 //            drawTriangle(p1, p2, p3, mouseInTriangle ? Color.blue : new Color(0f, 0f, 0f, 0.5f));
         }
 
-        drawString(tabTitle, Config.FONT_COLOR, (int) (pos.x + size.y / 2 - getFontHeight(fontSize) / 2), (int) (pos.y + size.y / 2 - getFontHeight(fontSize) / 2), fontSize);
+        renderer.drawString(tabTitle, Config.FONT_COLOR, (int) Math.round(pos.x + size.y / 2 - getFontHeight(fontSize) / 2), (int) Math.round(pos.y + size.y / 2 - getFontHeight(fontSize) / 2), fontSize);
 
         if(extended)
         {
             Vector2f p1 = new Vector2f(pos.x + size.x - size.y * 0.35f, pos.y + size.y * 0.25f);
             Vector2f p2 = new Vector2f(p1.x - size.y / 2f, p1.y);
             Vector2f p3 = new Vector2f(p1.x - size.y / 4f, pos.y + size.y * 0.75f);
-            drawTriangle(p1, p2, p3, Config.FONT_COLOR);
+            renderer.drawTriangle(loader, p1, p2, p3, Config.FONT_COLOR);
 
             drawElements(mouseInput, overOther);
         }
@@ -344,14 +371,37 @@ public class DropDownTab extends Element{
             Vector2f p1 = new Vector2f(pos.x + size.x - size.y * 0.35f, pos.y + size.y / 2f);
             Vector2f p2 = new Vector2f(p1.x - size.y / 2f, pos.y + size.y * 0.25f);
             Vector2f p3 = new Vector2f(p1.x - size.y / 2f, pos.y + size.y * 0.75f);
-            drawTriangle(p1, p2, p3, Config.FONT_COLOR);
+            renderer.drawTriangle(loader, p1, p2, p3, Config.FONT_COLOR);
         }
+    }
+    @Override
+    public void resize() {
+        super.resize();
+
+        for(Element e : tabElements)
+            e.resize();
+
+        float yOffset = 0;
+        if (extended)
+            yOffset = updateElements(yOffset);
+        refreshOutline(yOffset);
+    }
+
+    public void refreshOutline(float yOffset)
+    {
+        if(outlineSelection != null)
+            this.outlineSelection.cleanup();
+        if(outlineElement != null)
+            this.outlineElement.cleanup();
+
+        this.outlineSelection = LineStrip.processVerts(LineStrip.getRectangle(size), loader, window);
+        this.outlineElement = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(size.x, (int) Math.round(2f + yOffset)), LineStrip.UP), loader, window);
     }
 
     public void drawBackdrop(float yOffset)
     {
-        drawRect((int) pos.x, (int) (pos.y + size.y), (int) size.x, (int) (2f + yOffset), Config.PRIMARY_COLOR);
-        drawRectOutline((int) pos.x, (int) (pos.y + size.y), (int) size.x, (int) (2f + yOffset), Config.SECONDARY_COLOR, false, LineStrip.UP);
+        renderer.drawRect((int) Math.round(pos.x), (int) Math.round(pos.y + size.y), (int) Math.round(size.x), (int) Math.round(2f + yOffset), Config.PRIMARY_COLOR);
+        renderer.drawRectOutline(new Vector2f(pos.x, pos.y + size.y), outlineElement, Config.SECONDARY_COLOR, false);
     }
 
     public void drawElements(MouseInput mouseInput, boolean overOther)
@@ -463,41 +513,120 @@ public class DropDownTab extends Element{
 
         if(extended)
         {
-            boolean foundNext = false;
-
             for(int i = 0; i < tabElements.size(); i++)
             {
                 Element element = tabElements.get(i);
+                element.onKey(key, scancode, action, mods);
 
-                if(key == GLFW.GLFW_KEY_TAB && action == GLFW.GLFW_PRESS && (element instanceof Textbox || element instanceof LabeledTextbox || element instanceof Textarea))
-                {
-                    if(element.isFocused() && !foundNext)
-                    {
+                if (key == GLFW.GLFW_KEY_TAB && action == GLFW.GLFW_PRESS) {
+                    if (element.isFocused()) {
+
                         element.setFocused(false);
 
-                        int o = i + 1;
-
-                        while(!foundNext)
+                        Element nextElement = findNextFocusableElement(i + 1);
+                        if(nextElement != null)
+                            nextElement.setFocused(true);
+                        break;
+                    }
+                    else if(element instanceof Panel)
+                    {
+                        Element e = findNextFocusedElement((Panel) element);
+                        if(e == null)
                         {
-                            if(o == tabElements.size())
-                                o = 0;
-
-                            Element nelement = tabElements.get(o);
-
-                            if(nelement instanceof Textbox || nelement instanceof LabeledTextbox || nelement instanceof Textarea)
-                            {
-                                nelement.setFocused(true);
-                                foundNext = true;
-                            }
-
-                            o++;
+                            Element nextElement = findNextFocusableElement(i + 1);
+                            nextElement.setFocused(true);
+                            break;
                         }
                     }
                 }
-
-                element.onKey(key, scancode, action, mods);
             }
         }
+    }
+
+    private Element findNextFocusedElement(Panel panel)
+    {
+        for(int i = 0; i < panel.elements.size(); i++)
+        {
+            Element element = panel.elements.get(i).element;
+            if (element.isFocused()) {
+
+                element.setFocused(false);
+
+                Element nextElement = findNextFocusableElementInPanel(panel, i + 1);
+
+                if(nextElement != null)
+                    nextElement.setFocused(true);
+
+                return nextElement;
+            }
+            else if(element instanceof Panel)
+            {
+                Element e = findNextFocusedElement((Panel) element);
+
+                if(e == null)
+                    return findNextFocusableElementInPanel(panel);
+            }
+        }
+        return new Element();
+    }
+
+    private Element findNextFocusableElement(int startIndex) {
+        for (int i = startIndex; i < tabElements.size(); i++) {
+            Element element = tabElements.get(i);
+
+            if (element instanceof Panel) {
+                Element nestedElement = findNextFocusableElementInPanel((Panel) element);
+                if (nestedElement != null) {
+                    return nestedElement;
+                }
+            }
+
+            if (element instanceof Textbox || element instanceof Textarea) {
+                return element;
+            }
+        }
+
+        if(startIndex != 0)
+            return findNextFocusableElement(0);
+        else return null;
+    }
+
+    private Element findNextFocusableElementInPanel(Panel panel) {
+        for (Panel.PanelElement panelElement : panel.elements) {
+            Element nestedElement = panelElement.element;
+
+            if (nestedElement instanceof Panel) {
+                Element result = findNextFocusableElementInPanel((Panel) nestedElement);
+                if (result != null) {
+                    return result;
+                }
+            }
+
+            if (nestedElement instanceof Textbox || nestedElement instanceof Textarea) {
+                return nestedElement;
+            }
+        }
+
+        return null;
+    }
+
+    private Element findNextFocusableElementInPanel(Panel panel, int startIndex) {
+        for (int i = startIndex; i < panel.elements.size(); i++) {
+            Element nestedElement = panel.elements.get(i).element;
+
+            if (nestedElement instanceof Panel) {
+                Element result = findNextFocusableElementInPanel((Panel) nestedElement);
+                if (result != null) {
+                    return result;
+                }
+            }
+
+            if (nestedElement instanceof Textbox || nestedElement instanceof Textarea) {
+                return nestedElement;
+            }
+        }
+
+        return null;
     }
 
     @Override
@@ -508,6 +637,11 @@ public class DropDownTab extends Element{
             if(button == GLFW.GLFW_MOUSE_BUTTON_2 && action == GLFW.GLFW_PRESS)
             {
                 extended = !extended;
+
+                float yOffset = 0;
+                if (extended)
+                    yOffset = updateElements(yOffset);
+                refreshOutline(yOffset);
 
                 if(!extended)
                     for(Element element : tabElements)
@@ -545,229 +679,24 @@ public class DropDownTab extends Element{
         return extended && focused;
     }
 
-    public static class LabeledTextbox extends Element
-    {
-        String label = "";
-        public Textbox textbox;
-        int fontSize;
-
-        public LabeledTextbox(String label, String id, Vector2f pos, Vector2f size, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window)
-        {
-            this.id = id;
-            this.pos = pos;
-            this.size = size;
-            this.fontSize = fontSize;
-            this.renderer = renderer;
-            this.loader = loader;
-            this.window = window;
-
-            LabeledTextbox these = this;
-            this.textbox = new Textbox(id, pos, size, fontSize, renderer, loader, window)
-            {
-                @Override
-                public Color textColor() {
-                    return these.textColor();
-                }
-            };
-            this.label = label;
-        }
-
-        @Override
-        public void draw(MouseInput mouseInput, boolean overElement) {
-            super.draw(mouseInput, overElement);
-
-            drawString(label, textColor(), (int) (pos.x + size.y / 2 - getFontHeight(fontSize) / 2), (int) (pos.y + size.y / 2 - getFontHeight(fontSize) / 2), fontSize);
-            textbox.pos = new Vector2f(pos.x + 5*(Math.round((getStringWidth(label, fontSize))/5)), pos.y);
-            textbox.size = new Vector2f(size.x - 5*(Math.round((getStringWidth(label, fontSize))/5)), size.y);
-            textbox.draw(mouseInput, overElement);
-        }
-
-        @Override
-        public void onKey(int key, int scancode, int action, int mods) {
-            super.onKey(key, scancode, action, mods);
-
-            textbox.onKey(key, scancode, action, mods);
-        }
-
-        @Override
-        public void onChar(int codePoint, int modifiers) {
-            super.onChar(codePoint, modifiers);
-
-            textbox.onChar(codePoint, modifiers);
-        }
-
-        @Override
-        public void onClick(Vector2d pos, int button, int action, int mods, boolean overElement) {
-            super.onClick(pos, button, action, mods, overElement);
-
-            textbox.onClick(pos, button, action, mods, overElement);
-        }
-
-        public Color textColor()
-        {
-            return Config.FONT_COLOR;
-        }
-
-        @Override
-        public boolean isFocused() {
-            return textbox.isFocused();
-        }
-
-        @Override
-        public void setFocused(boolean focused) {
-            this.textbox.setFocused(focused);
-            super.setFocused(focused);
-        }
-    }
-
-    public static class LabeledButton extends Element
-    {
-        String label = "";
-        public Button button;
-        int fontSize;
-
-        public LabeledButton(String label, String id, String buttonText, Vector2f pos, Vector2f size, int fontSize, Button button, RenderMan renderer, ObjectLoader loader, WindowMan window)
-        {
-            this.id = id;
-            this.pos = pos;
-            this.size = size;
-            this.fontSize = fontSize;
-            this.renderer = renderer;
-            this.loader = loader;
-            this.window = window;
-            button.id = id;
-            button.buttonText = buttonText;
-            button.pos = pos;
-            button.size = size;
-            button.fontSize = fontSize;
-            button.renderer = renderer;
-            button.loader = loader;
-            button.window = window;
-            this.button = button;
-            this.label = label;
-        }
-
-        @Override
-        public void draw(MouseInput mouseInput, boolean overElement) {
-            super.draw(mouseInput, overElement);
-
-            drawString(label, Config.FONT_COLOR, (int) (pos.x + size.y / 2 - getFontHeight(fontSize) / 2), (int) (pos.y + size.y / 2 - getFontHeight(fontSize) / 2), fontSize);
-            button.pos = new Vector2f(pos.x + 5 * (Math.round((getStringWidth(label, fontSize))/5)), pos.y);
-            button.size = new Vector2f(size.x - 5 * (Math.round((getStringWidth(label, fontSize))/5)), size.y);
-            button.draw(mouseInput, overElement);
-        }
-
-        @Override
-        public void onKey(int key, int scancode, int action, int mods) {
-            super.onKey(key, scancode, action, mods);
-
-            button.onKey(key, scancode, action, mods);
-        }
-
-        @Override
-        public void onChar(int codePoint, int modifiers) {
-            super.onChar(codePoint, modifiers);
-
-            button.onChar(codePoint, modifiers);
-        }
-
-        @Override
-        public void onClick(Vector2d pos, int button, int action, int mods, boolean overElement) {
-            super.onClick(pos, button, action, mods, overElement);
-
-            this.button.onClick(pos, button, action, mods, overElement);
-        }
-    }
-
-    public static class LabeledSlider extends Element
-    {
-        String label = "";
-        public Slider slider;
-        int fontSize;
-
-        public LabeledSlider(String label, String id, Vector2f pos, Vector2f size, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window)
-        {
-            this.id = id;
-            this.pos = pos;
-            this.size = size;
-            this.fontSize = fontSize;
-            this.renderer = renderer;
-            this.loader = loader;
-            this.window = window;
-            this.slider = new Slider(id, pos, size, renderer, loader, window);
-            this.label = label;
-        }
-
-        public LabeledSlider(String label, String id, Vector2f pos, Vector2f size, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window, float sliderPos, float min, float max)
-        {
-            this.id = id;
-            this.pos = pos;
-            this.size = size;
-            this.fontSize = fontSize;
-            this.renderer = renderer;
-            this.loader = loader;
-            this.slider = new Slider(id, pos, size, renderer, loader, window, sliderPos, min, max);
-            this.label = label;
-        }
-
-        @Override
-        public void draw(MouseInput mouseInput, boolean overElement) {
-            super.draw(mouseInput, overElement);
-
-            drawString(label, Config.FONT_COLOR, (int) (pos.x + size.y / 2 - getFontHeight(fontSize) / 2), (int) (pos.y + size.y / 2 - getFontHeight(fontSize) / 2), fontSize);
-            slider.pos = new Vector2f(pos.x + 5*(Math.round((getStringWidth(label, fontSize))/5)), pos.y);
-            slider.size = new Vector2f(size.x - 5*(Math.round((getStringWidth(label, fontSize))/5)), size.y);
-            slider.draw(mouseInput, overElement);
-        }
-
-        @Override
-        public void onKey(int key, int scancode, int action, int mods) {
-            super.onKey(key, scancode, action, mods);
-
-            slider.onKey(key, scancode, action, mods);
-        }
-
-        @Override
-        public void onChar(int codePoint, int modifiers) {
-            super.onChar(codePoint, modifiers);
-
-            slider.onChar(codePoint, modifiers);
-        }
-
-        @Override
-        public void onClick(Vector2d pos, int button, int action, int mods, boolean overElement) {
-            super.onClick(pos, button, action, mods, overElement);
-
-            this.slider.onClick(pos, button, action, mods, overElement);
-        }
-
-        @Override
-        public void setFocused(boolean focused) {
-            slider.setFocused(focused);
-            super.setFocused(focused);
-        }
-    }
-
     public static class StringElement extends  Element
     {
         public String string = "";
         int fontSize;
 
-        public StringElement(String id, String string, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window)
+        public StringElement(String id, String string, int fontSize, RenderMan renderer)
         {
             this.string = string;
             this.id = id;
             this.fontSize = fontSize;
             this.renderer = renderer;
-            this.loader = loader;
-            this.window = window;
         }
 
         @Override
         public void draw(MouseInput mouseInput, boolean overElement) {
             super.draw(mouseInput, overElement);
 
-            try{drawString(string, Config.FONT_COLOR, (int) (pos.x + size.y / 2 - getFontHeight(fontSize) / 2), (int) (pos.y + size.y / 2 - getFontHeight(fontSize) / 2), fontSize);}catch (Exception e){}
+            try{renderer.drawString(string, Config.FONT_COLOR, (int) Math.round(pos.x + size.y / 2 - getFontHeight(fontSize) / 2), (int) Math.round(pos.y + size.y / 2 - getFontHeight(fontSize) / 2), fontSize);}catch (Exception e){}
         }
     }
 
@@ -796,8 +725,8 @@ public class DropDownTab extends Element{
         public void draw(MouseInput mouseInput, boolean overElement) {
             super.draw(mouseInput, overElement);
 
-            drawRect((int) pos.x, (int) pos.y, (int) size.x, (int) size.y, Config.PRIMARY_COLOR);
-            drawRectOutline((int) pos.x, (int) pos.y, (int) size.x, (int) size.y, Config.SECONDARY_COLOR, false);
+            renderer.drawRect((int) Math.round(pos.x), (int) Math.round(pos.y), (int) Math.round(size.x), (int) Math.round(size.y), Config.PRIMARY_COLOR);
+//            renderer.drawRectOutline(pos, size, Config.SECONDARY_COLOR, false);
         }
     }
 }

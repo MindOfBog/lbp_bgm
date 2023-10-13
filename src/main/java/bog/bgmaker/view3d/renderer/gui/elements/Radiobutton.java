@@ -21,12 +21,12 @@ public class Radiobutton extends Checkbox{
     public void draw(MouseInput mouseInput, boolean overElement) {
         hovering = isMouseOverElement(mouseInput) && !overElement;
 
-        drawCircle(new Vector2f((pos.x + (size.y * 0.10f)/2) + (size.y * 0.90f) / 2f, (pos.y + (size.y * 0.10f)/2) + (size.y * 0.90f) / 2f), (size.y * 0.90f) / 2f, 16, isMouseOverElement(mouseInput) ? Config.INTERFACE_SECONDARY_COLOR : Config.INTERFACE_PRIMARY_COLOR);
+        renderer.drawCircle(loader, new Vector2f((pos.x + (size.y * 0.10f)/2) + (size.y * 0.90f) / 2f, (pos.y + (size.y * 0.10f)/2) + (size.y * 0.90f) / 2f), (size.y * 0.90f) / 2f, 16, isMouseOverElement(mouseInput) ? Config.INTERFACE_SECONDARY_COLOR : Config.INTERFACE_PRIMARY_COLOR);
 
         if(isChecked)
-            drawCircle(new Vector2f((pos.x + (size.y * 0.10f)/2) + (size.y * 0.90f) / 2f, (pos.y + (size.y * 0.10f)/2) + (size.y * 0.90f) / 2f), (size.y * 0.90f) / 5f, 16, Config.FONT_COLOR);
+            renderer.drawCircle(loader, new Vector2f((pos.x + (size.y * 0.10f)/2) + (size.y * 0.90f) / 2f, (pos.y + (size.y * 0.10f)/2) + (size.y * 0.90f) / 2f), (size.y * 0.90f) / 5f, 16, Config.FONT_COLOR);
 
-        drawString(text, Config.FONT_COLOR, (int) (pos.x + (size.y * 0.90f) * 1.25f), (int) (pos.y + size.y / 2 - getFontHeight(fontSize) / 2), fontSize);
+        renderer.drawString(text, Config.FONT_COLOR, (int) (pos.x + (size.y * 0.90f) * 1.25f), (int) (pos.y + size.y / 2 - getFontHeight(fontSize) / 2), fontSize);
     }
 
     public Radiobutton checked()

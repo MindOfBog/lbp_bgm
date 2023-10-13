@@ -1,10 +1,12 @@
 package bog.bgmaker.view3d.renderer.gui;
 
 import bog.bgmaker.view3d.ObjectLoader;
+import bog.bgmaker.view3d.core.Model;
 import bog.bgmaker.view3d.managers.MouseInput;
 import bog.bgmaker.view3d.managers.RenderMan;
 import bog.bgmaker.view3d.managers.WindowMan;
 import bog.bgmaker.view3d.renderer.gui.elements.Button;
+import bog.bgmaker.view3d.renderer.gui.ingredients.LineStrip;
 import bog.bgmaker.view3d.utils.MousePicker;
 import bog.bgmaker.view3d.utils.Utils;
 import org.joml.Vector2f;
@@ -19,12 +21,19 @@ public abstract class GuiKeybind extends GuiScreen{
 
     int currentKey;
     int fontSize;
+    Model outlineRect;
+    Model outlineRect1;
+    int prevFontSize;
 
     public GuiKeybind(int key, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window)
     {
         super(renderer, loader, window);
+        outlineRect = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(200, (getFontHeight(fontSize) / 2 + 33) * 2)), loader, window);
+        outlineRect1 = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(190, 20)), loader, window);
+
         this.currentKey = key;
         this.fontSize = fontSize;
+        this.prevFontSize = fontSize;
         this.guiElements.add(new Button("save", "Save", new Vector2f(window.width/2 - 95, window.height / 2 - getFontHeight(fontSize) / 2 + 15), new Vector2f(90, 20), fontSize, renderer, loader, window) {
 
             @Override
@@ -62,13 +71,20 @@ public abstract class GuiKeybind extends GuiScreen{
     public void draw(MouseInput mouseInput) {
         this.previousScreen.draw(new MouseInput(null));
 
-        drawRect(window.width/2 - 100, window.height/2 + (getFontHeight(fontSize) / 2 - 10 - 45), 200, (getFontHeight(fontSize) / 2 + 33) * 2, new Color(0, 0, 0, 0.5f));
-        drawRect(window.width / 2 - 95, window.height / 2 - getFontHeight(fontSize) / 2 - 10, 190, 20, new Color(0, 0, 0, 0.5f));
-        drawRectOutline(window.width/2 - 100, window.height/2 + (getFontHeight(fontSize) / 2 - 10 - 45), 200, (getFontHeight(fontSize) / 2 + 33) * 2, new Color(0, 0, 0, 0.5f), false);
-        drawRectOutline(window.width / 2 - 95, window.height / 2 - getFontHeight(fontSize) / 2 - 10, 190, 20, new Color(0, 0, 0, 0.5f), false);
+    if(prevFontSize != fontSize)
+        {
+            outlineRect.cleanup();
+            outlineRect = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(200, (getFontHeight(fontSize) / 2 + 33) * 2)), loader, window);
+            prevFontSize = fontSize;
+        }
+
+        renderer.drawRect(window.width/2 - 100, window.height/2 + (getFontHeight(fontSize) / 2 - 10 - 45), 200, (getFontHeight(fontSize) / 2 + 33) * 2, new Color(0, 0, 0, 0.5f));
+        renderer.drawRect(window.width / 2 - 95, window.height / 2 - getFontHeight(fontSize) / 2 - 10, 190, 20, new Color(0, 0, 0, 0.5f));
+        renderer.drawRectOutline(new Vector2f(window.width/2 - 100, window.height/2 + (getFontHeight(fontSize) / 2 - 10 - 45)), outlineRect, new Color(0, 0, 0, 0.5f), false);
+        renderer.drawRectOutline(new Vector2f(window.width / 2 - 95, window.height / 2 - getFontHeight(fontSize) / 2 - 10), outlineRect1, new Color(0, 0, 0, 0.5f), false);
         String key = Utils.getKeyName(currentKey).toUpperCase();
-        drawString(key, Color.white, window.width / 2 - getStringWidth(key, fontSize) / 2, window.height / 2 - getFontHeight(fontSize), fontSize);
-        drawString("Select any key:", Color.white, window.width / 2 - 94, window.height / 2 + (getFontHeight(fontSize) / 2 - 5 - 42), fontSize);
+        renderer.drawString(key, Color.white, window.width / 2 - getStringWidth(key, fontSize) / 2, window.height / 2 - getFontHeight(fontSize), fontSize);
+        renderer.drawString("Select any key:", Color.white, window.width / 2 - 94, window.height / 2 + (getFontHeight(fontSize) / 2 - 5 - 42), fontSize);
 
         super.draw(mouseInput);
     }

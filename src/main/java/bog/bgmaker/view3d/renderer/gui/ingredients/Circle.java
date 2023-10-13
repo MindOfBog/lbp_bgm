@@ -27,12 +27,12 @@ public class Circle extends TriFan{
             verts[i * 2 + 1] = 2f * (1f - ((center.y + (radius * (float) Math.sin(i * (Math.PI * 2d) / triangleAmount))) / window.height)) - 1f;
         }
 
+        this.staticVAO = false;
+        this.staticVBO = false;
+
         this.model = loader.loadModel(verts);
         this.hasTexCoords = false;
         this.color = color;
-
-        this.staticVAO = staticVs;
-        this.staticVBO = staticVs;
     }
 
 }

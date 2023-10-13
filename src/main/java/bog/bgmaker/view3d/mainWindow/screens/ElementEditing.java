@@ -1,6 +1,6 @@
 package bog.bgmaker.view3d.mainWindow.screens;
 
-import bog.bgmaker.view3d.core.Material;
+import bog.bgmaker.view3d.core.Model;
 import bog.bgmaker.view3d.core.Transformation3D;
 import bog.bgmaker.view3d.core.types.Entity;
 import bog.bgmaker.view3d.core.types.MaterialPrimitive;
@@ -9,13 +9,13 @@ import bog.bgmaker.view3d.core.types.WorldAudio;
 import bog.bgmaker.view3d.mainWindow.LoadedData;
 import bog.bgmaker.view3d.mainWindow.View3D;
 import bog.bgmaker.view3d.managers.MouseInput;
-import bog.bgmaker.view3d.managers.WindowMan;
 import bog.bgmaker.view3d.renderer.gui.GuiScreen;
 import bog.bgmaker.view3d.renderer.gui.elements.Button;
 import bog.bgmaker.view3d.renderer.gui.elements.*;
 import bog.bgmaker.view3d.renderer.gui.elements.Checkbox;
+import bog.bgmaker.view3d.renderer.gui.elements.Panel;
+import bog.bgmaker.view3d.renderer.gui.ingredients.LineStrip;
 import bog.bgmaker.view3d.utils.Config;
-import bog.bgmaker.view3d.utils.MousePicker;
 import bog.bgmaker.view3d.utils.Utils;
 import common.FileChooser;
 import cwlib.enums.Part;
@@ -42,7 +42,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Vector;
 
 /**
  * @author Bog
@@ -67,7 +66,8 @@ public class ElementEditing extends GuiScreen {
     public Element loadedEntitiesHitbox;
     public ButtonList loadedEntities;
     public Button loadPlanElements;
-    public DropDownTab.LabeledTextbox loadedEntitiesSearch;
+    public Textbox loadedEntitiesSearch;
+    public Textbox availableAssetsSearch;
     public Button clearAllEntites;
     public Button deleteSelectedEntities;
     public Button sortEntityList;
@@ -75,6 +75,13 @@ public class ElementEditing extends GuiScreen {
     public ButtonImage rotate;
     public ButtonImage scale;
     public ButtonImage materialEdit;
+
+    public Textbox positionX;
+    public Textbox positionY;
+    public Textbox positionZ;
+    public Textbox selectionPositionX;
+    public Textbox selectionPositionY;
+    public Textbox selectionPositionZ;
 
     public void init() {
         elementTool = new Transformation3D.Tool(mainView.loader);
@@ -84,22 +91,44 @@ public class ElementEditing extends GuiScreen {
             public void secondThread() {
                 super.secondThread();
 
-                Vector2f camX = setTextboxValueFloat(((DropDownTab.LabeledTextbox) this.tabElements.get(0)).textbox, mainView.camera.pos.x);
+                Vector2f camX = setTextboxValueFloat(positionX, mainView.camera.pos.x);
                 if (camX.y == 1)
                     mainView.camera.pos.x = camX.x;
-                Vector2f camY = setTextboxValueFloat(((DropDownTab.LabeledTextbox) this.tabElements.get(1)).textbox, mainView.camera.pos.y);
+                Vector2f camY = setTextboxValueFloat(positionY, mainView.camera.pos.y);
                 if (camY.y == 1)
                     mainView.camera.pos.y = camY.x;
-                Vector2f camZ = setTextboxValueFloat(((DropDownTab.LabeledTextbox) this.tabElements.get(2)).textbox, mainView.camera.pos.z);
+                Vector2f camZ = setTextboxValueFloat(positionZ, mainView.camera.pos.z);
                 if (camZ.y == 1)
                     mainView.camera.pos.z = camZ.x;
             }
         };
-        camPos.addLabeledTextbox("x", "X:  ", true, false, false);
-        camPos.addLabeledTextbox("y", "Y:  ", true, false, false);
-        camPos.addLabeledTextbox("z", "Z:  ", true, false, false);
-
+        Panel xPos = camPos.addPanel("x");
+        xPos.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("xstr", "X:", 10, mainView.renderer), 0.1f));
+        positionX = new Textbox("xtex", new Vector2f(), new Vector2f(), 10, mainView.renderer, mainView.loader, mainView.window);
+        positionX.noLetters().noOthers();
+        xPos.elements.add(new Panel.PanelElement(positionX, 0.9f));
+        Panel yPos = camPos.addPanel("y");
+        yPos.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("ystr", "Y:", 10, mainView.renderer), 0.1f));
+        positionY = new Textbox("ytex", new Vector2f(), new Vector2f(), 10, mainView.renderer, mainView.loader, mainView.window);
+        positionY.noLetters().noOthers();
+        yPos.elements.add(new Panel.PanelElement(positionY, 0.9f));
+        Panel zPos = camPos.addPanel("z");
+        zPos.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("zstr", "Z:", 10, mainView.renderer), 0.1f));
+        positionZ = new Textbox("ztex", new Vector2f(), new Vector2f(), 10, mainView.renderer, mainView.loader, mainView.window);
+        positionZ.noLetters().noOthers();
+        zPos.elements.add(new Panel.PanelElement(positionZ, 0.9f));
         currentSelection = new DropDownTab("currentSelection", "Current Selection", new Vector2f(521, 39), new Vector2f(200, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window) {
+
+            @Override
+            public void draw(MouseInput mouseInput, boolean overOther) {
+                super.draw(mouseInput, overOther);
+                if(shouldResize)
+                {
+                    resize();
+                    shouldResize = false;
+                }
+            }
+
             @Override
             public void secondThread() {
                 super.secondThread();
@@ -295,16 +324,23 @@ public class ElementEditing extends GuiScreen {
                 }
 
                 Vector3f selectedPos = mainView.getSelectedPosition();
-                Vector2f posX = setTextboxValueFloat(((DropDownTab.LabeledTextbox) this.tabElements.get(3)).textbox, selectedPos.x);
-                Vector2f posY = setTextboxValueFloat(((DropDownTab.LabeledTextbox) this.tabElements.get(4)).textbox, selectedPos.y);
-                Vector2f posZ = setTextboxValueFloat(((DropDownTab.LabeledTextbox) this.tabElements.get(5)).textbox, selectedPos.z);
+                Vector2f posX = setTextboxValueFloat(selectionPositionX, selectedPos.x);
+                Vector2f posY = setTextboxValueFloat(selectionPositionY, selectedPos.y);
+                Vector2f posZ = setTextboxValueFloat(selectionPositionZ, selectedPos.z);
                 if (posX.y == 1 || posY.y == 1 || posZ.y == 1)
                     mainView.setSelectedPosition(new Vector3f(posX.y == 1 ? posX.x : selectedPos.x, posY.y == 1 ? posY.x : selectedPos.y, posZ.y == 1 ? posZ.x : selectedPos.z));
+
+                shouldResize = true;
             }
+
+            boolean shouldResize = false;
         };
         currentSelection.addString("", "Name:");
         currentSelection.addTextbox("name");
-        currentSelection.addLabeledButton("pos", "Position:  ", "Go To", new bog.bgmaker.view3d.renderer.gui.elements.Button() {
+
+        Panel positionPanel = currentSelection.addPanel("positionPanel");
+        positionPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Position:", 10, mainView.renderer), 0.525f));
+        positionPanel.elements.add(new Panel.PanelElement(new Button("goto", "Go To", new Vector2f(), new Vector2f(), 10, mainView.renderer, mainView.loader, mainView.window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if (button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS) {
@@ -313,64 +349,107 @@ public class ElementEditing extends GuiScreen {
                         mainView.camera.pos = cpos;
                 }
             }
-        });
-        currentSelection.addLabeledTextbox("posX", "X:  ", true, false, false);
-        currentSelection.addLabeledTextbox("posY", "Y:  ", true, false, false);
-        currentSelection.addLabeledTextbox("posZ", "Z:  ", true, false, false);
+        }, 0.475f));
+
+        Panel xPosSel = currentSelection.addPanel("x");
+        xPosSel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("xstr", "X:", 10, mainView.renderer), 0.1f));
+        selectionPositionX = new Textbox("xtex", new Vector2f(), new Vector2f(), 10, mainView.renderer, mainView.loader, mainView.window);
+        selectionPositionX.noLetters().noOthers();
+        xPosSel.elements.add(new Panel.PanelElement(selectionPositionX, 0.9f));
+        Panel yPosSel = currentSelection.addPanel("y");
+        yPosSel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("ystr", "Y:", 10, mainView.renderer), 0.1f));
+        selectionPositionY = new Textbox("ytex", new Vector2f(), new Vector2f(), 10, mainView.renderer, mainView.loader, mainView.window);
+        selectionPositionY.noLetters().noOthers();
+        yPosSel.elements.add(new Panel.PanelElement(selectionPositionY, 0.9f));
+        Panel zPosSel = currentSelection.addPanel("z");
+        zPosSel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("zstr", "Z:", 10, mainView.renderer), 0.1f));
+        selectionPositionZ = new Textbox("ztex", new Vector2f(), new Vector2f(), 10, mainView.renderer, mainView.loader, mainView.window);
+        selectionPositionZ.noLetters().noOthers();
+        zPosSel.elements.add(new Panel.PanelElement(selectionPositionZ, 0.9f));
 
         fileLoading = new DropDownTab("fileLoading", "File Loading", new Vector2f(7, 39 + camPos.getFullHeight() + 7), new Vector2f(200, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window);
         fileLoading.addCheckbox("legacyFileLoading", "Legacy file dialogue");
         fileLoading.addButton("Load .MAP", new bog.bgmaker.view3d.renderer.gui.elements.Button("map") {
             @Override
             public void clickedButton(int button, int action, int mods) {
-                if (button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS) {
-                    LoadedData.MAP = null;
-                    try {
-                        File map = FileChooser.openFile(null, "map", false, false)[0];
-                        LoadedData.MAP = new FileDB(map);
-                    } catch (Exception ex) {ex.printStackTrace();}
+                Thread fileThread = new Thread() {
+                    public void run() {
+                        try
+                        {
+                            if (button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS) {
+                                LoadedData.MAP = null;
+                                try {
+                                    File map = FileChooser.openFile(null, "map", false, false)[0];
+                                    LoadedData.MAP = new FileDB(map);
+                                } catch (Exception ex) {ex.printStackTrace();}
 
-                    mainView.setupList();
-                }
+                                mainView.setupList();
+                            }
+                        } catch(Exception v) {
+                            v.printStackTrace();
+                        }
+                    }
+                };
+                fileThread.start();
             }
         });
         fileLoading.addButton("Load .FARCs", new bog.bgmaker.view3d.renderer.gui.elements.Button("farc") {
             @Override
             public void clickedButton(int button, int action, int mods) {
-                if (button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS) {
-                    LoadedData.FARCs.clear();
-                    File[] farcs = FileChooser.openFiles("farc");
-                    if (farcs != null) {
-                        if (farcs.length != 0)
-                            for (File farc : farcs)
-                            {
-                                FileArchive archive = null;
+                Thread fileThread = new Thread() {
+                    public void run() {
+                        try
+                        {
+                            if (button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS) {
+                                LoadedData.FARCs.clear();
+                                File[] farcs = FileChooser.openFiles("farc");
+                                if (farcs != null) {
+                                    if (farcs.length != 0)
+                                        for (File farc : farcs)
+                                        {
+                                            FileArchive archive = null;
 
-                                try {
-                                    archive = new FileArchive(farc);
-                                } catch (SerializationException ex) {ex.printStackTrace();}
+                                            try {
+                                                archive = new FileArchive(farc);
+                                            } catch (SerializationException ex) {ex.printStackTrace();}
 
-                                if (archive != null)
-                                    LoadedData.FARCs.add(archive);
+                                            if (archive != null)
+                                                LoadedData.FARCs.add(archive);
+                                        }
+                                } else return;
+
+                                mainView.setupList();
                             }
-                    } else return;
-
-                    mainView.setupList();
-                }
+                        } catch(Exception v) {
+                            v.printStackTrace();
+                        }
+                    }
+                };
+                fileThread.start();
             }
         });
         fileLoading.addButton("Load BIG Profile", new bog.bgmaker.view3d.renderer.gui.elements.Button("bigfart") {
             @Override
             public void clickedButton(int button, int action, int mods) {
-                if (button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS) {
-                    LoadedData.BIGFART = null;
-                    try {
-                        File fart = FileChooser.openFile(null, null, false, false)[0];
-                        LoadedData.BIGFART = new BigSave(fart);
-                    } catch (Exception ex) {ex.printStackTrace();}
+                Thread fileThread = new Thread() {
+                    public void run() {
+                        try
+                        {
+                            if (button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS) {
+                                LoadedData.BIGFART = null;
+                                try {
+                                    File fart = FileChooser.openFile(null, null, false, false)[0];
+                                    LoadedData.BIGFART = new BigSave(fart);
+                                } catch (Exception ex) {ex.printStackTrace();}
 
-                    mainView.setupList();
-                }
+                                mainView.setupList();
+                            }
+                        } catch(Exception v) {
+                            v.printStackTrace();
+                        }
+                    }
+                };
+                fileThread.start();
             }
         });
 
@@ -386,7 +465,10 @@ public class ElementEditing extends GuiScreen {
         });
 
         availableAssets = new DropDownTab("availableModels", "Available assets", new Vector2f(214, 39), new Vector2f(300, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window);
-        availableAssets.addLabeledTextbox("availableEntitiesSearch", "Search:  ");
+        Panel assetsPanel = availableAssets.addPanel("loadedEntitiesSearchPanel");
+        assetsPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Search:", 10, mainView.renderer), 0.25f));
+        availableAssetsSearch = new Textbox("availableAssetsSearch", new Vector2f(), new Vector2f(), 10, mainView.renderer, mainView.loader, mainView.window);
+        assetsPanel.elements.add(new Panel.PanelElement(availableAssetsSearch, 0.75f));
 
         assetList = new ButtonList("availableModelsList", mainView.entries, new Vector2f(), new Vector2f(), 10, mainView.renderer, mainView.loader, mainView.window) {
 
@@ -498,18 +580,14 @@ public class ElementEditing extends GuiScreen {
                 return entry.getName();
             }
 
-            Textbox searchTextbox;
-
             @Override
             public boolean searchFilter(Object object, int index) {
                 FileEntry entry = (FileEntry) object;
 
                 try {
-                    if (searchTextbox == null)
-                        searchTextbox = ((DropDownTab.LabeledTextbox) availableAssets.tabElements.get(0)).textbox;
 
                     if (entry.getPath().endsWith("mol") || entry.getPath().endsWith("gmat") || entry.getPath().endsWith("gmt")) {
-                        String text = searchTextbox.getText();
+                        String text = availableAssetsSearch.getText();
 
                         if (text.isBlank() || text.isEmpty() || text.equalsIgnoreCase("") || text.equalsIgnoreCase(" "))
                             return true;
@@ -638,16 +716,11 @@ public class ElementEditing extends GuiScreen {
                 return ((Entity) object).entityName;
             }
 
-            Textbox searchTextbox;
-
             @Override
             public boolean searchFilter(Object object, int index) {
 
                 try {
-                    if (searchTextbox == null)
-                        searchTextbox = loadedEntitiesSearch.textbox;
-
-                    String text = searchTextbox.getText();
+                    String text = loadedEntitiesSearch.getText();
 
                     if (text.isBlank() || text.isEmpty() || text.equalsIgnoreCase("") || text.equalsIgnoreCase(" "))
                         return true;
@@ -674,12 +747,17 @@ public class ElementEditing extends GuiScreen {
             @Override
             public void drawButton(int posY, float scrollY, float scrollHeight, int height, Object object, int i) {
                 super.drawButton(posY, scrollY, scrollHeight, height, object, i);
-                endScissor();
-                startScissor((int) pos.x - height, (int) scrollY, (int) size.x + 2 + height, (int) java.lang.Math.ceil(scrollHeight));
+                renderer.endScissor();
+                renderer.startScissor((int) pos.x - height, (int) scrollY, (int) size.x + 2 + height, (int) java.lang.Math.ceil(scrollHeight));
                 Entity entity = (Entity) object;
-                drawRect((int)pos.x - height + 2, posY, height, height, buttonColor(object, i));
-                drawImageStatic(entity.getType() == 0 ? mainView.modelIcon : entity.getType() == 1 ? mainView.materialIcon : entity.getType() == 2 ? mainView.lightIcon : mainView.audioIcon, (int)pos.x - height + 2, posY, height, height);
-                drawRectOutline((int)pos.x - height + 2, posY, height, height, buttonColor2(object, i), false);
+                renderer.drawRect((int)pos.x - height + 2, posY, height, height, buttonColor(object, i));
+                renderer.drawImageStatic(entity.getType() == 0 ? mainView.modelIcon : entity.getType() == 1 ? mainView.materialIcon : entity.getType() == 2 ? mainView.lightIcon : mainView.audioIcon, (int)pos.x - height + 2, posY, height, height);
+                renderer.drawRectOutline(new Vector2f(pos.x - height + 2, posY), outlineButton, buttonColor2(object, i), false);
+            }
+
+            public Model getOutlineButton(int height)
+            {
+                return LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(height)), loader, window);
             }
 
             @Override
@@ -742,14 +820,26 @@ public class ElementEditing extends GuiScreen {
                 this.pos.x = mainView.window.width - 303;
             }
         };
-        loadedEntitiesSearch = new DropDownTab.LabeledTextbox("Search:  ", "loadedEntitiesSearch", new Vector2f(mainView.window.width - 303, (2 + getFontHeight(10) * 1.25f) + 2), new Vector2f(301, getFontHeight(10) * 1.25f), 10, mainView.renderer, mainView.loader, mainView.window) {
+        Panel loadedSearchPanel = new Panel(
+                new Vector2f(mainView.window.width - 303, (4 + getFontHeight(10) * 1.25f)),
+                new Vector2f(301, getFontHeight(10) * 1.25f),
+                mainView.renderer)
+        {
             @Override
             public void secondThread() {
                 super.secondThread();
-
-                this.pos.x = mainView.window.width - 303;
+                if(this.pos != null)
+                {
+                    this.pos.y = (4 + getFontHeight(10) * 1.25f);
+                    this.pos.x = mainView.window.width - 303;
+                }
             }
         };
+        loadedSearchPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Search:", 10, mainView.renderer), 0.25f));
+        loadedEntitiesSearch = new Textbox("loadedEntitiesSearch", new Vector2f(), new Vector2f(), 10, mainView.renderer, mainView.loader, mainView.window);
+        loadedSearchPanel.elements.add(new Panel.PanelElement(loadedEntitiesSearch, 0.75f));
+        guiElements.add(loadedSearchPanel);
+
         clearAllEntites = new Button("clearAllEntities", "Clear all", new Vector2f(), new Vector2f(99f, getFontHeight(10) * 1.25f), 10, mainView.renderer, mainView.loader, mainView.window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
@@ -951,6 +1041,39 @@ public class ElementEditing extends GuiScreen {
             {
                 hasSelection = true;
                 selectedAmount++;
+
+//                TODO if(entity.getType() == 0)
+//                {
+//                    Mesh mesh = (Mesh)entity;
+//
+//                    if(mesh.skeleton != null)
+//                        for(Bone bone : mesh.skeleton)
+//                        {
+//                            Matrix4f boneMat = new Matrix4f(entity.transformation);
+//
+//                            Bone parent = bone.parent;
+//                            ArrayList<Bone> parents = new ArrayList<>();
+//
+//                            while(parent != null)
+//                            {
+//                                parents.add(parent);
+//                                parent = parent.parent;
+//                            }
+//
+//                            for(int i = parents.size() - 1; i >= 0; i--)
+//                            {
+//                                Bone b = parents.get(i);
+//
+//                                if(b.parent == null)
+//                                    boneMat.mul(b.invSkinPoseMatrix);
+//                                else
+//                                    parentMat = new Matrix4f(boneTransform).mul(parentMat);
+//                            }
+//                            boneMat.mul(bone.invSkinPoseMatrix);
+//
+//                            mainView.renderer.processThroughWallEntity(new Entity(mainView.bone, boneMat, mainView.loader));
+//                        }
+//                }
             }
 
         if(hasSelection)
@@ -1334,8 +1457,8 @@ public class ElementEditing extends GuiScreen {
                 scale.isClicked,
                 mainView.crosshair, mainView.window, mainView.loader, mainView.renderer, mouseInput);
 
-        drawRect(mainView.window.width - 305, 0, 305, mainView.window.height, Config.PRIMARY_COLOR);
-        drawLine(new Vector2i(mainView.window.width - 304, 0), new Vector2i(mainView.window.width - 304, mainView.window.height), Config.SECONDARY_COLOR, false);
+        mainView.renderer.drawRect(mainView.window.width - 305, 0, 305, mainView.window.height, Config.PRIMARY_COLOR);
+        mainView.renderer.drawLine(mainView.loader, new Vector2i(mainView.window.width - 304, 0), new Vector2i(mainView.window.width - 304, mainView.window.height), Config.SECONDARY_COLOR, false);
 
         super.draw(mouseInput);
     }

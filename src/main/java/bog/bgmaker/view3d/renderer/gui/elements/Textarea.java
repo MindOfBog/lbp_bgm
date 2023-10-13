@@ -1,10 +1,13 @@
 package bog.bgmaker.view3d.renderer.gui.elements;
 
 import bog.bgmaker.view3d.ObjectLoader;
+import bog.bgmaker.view3d.core.Model;
 import bog.bgmaker.view3d.managers.MouseInput;
 import bog.bgmaker.view3d.managers.RenderMan;
 import bog.bgmaker.view3d.managers.WindowMan;
+import bog.bgmaker.view3d.renderer.gui.ingredients.LineStrip;
 import bog.bgmaker.view3d.utils.Config;
+import bog.bgmaker.view3d.utils.Consts;
 import org.joml.Vector2d;
 import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
@@ -22,11 +25,15 @@ public class Textarea extends Element{
     private String text = "";
     int fontSize;
 
+    Vector2f prevSize;
+    Model outlineRect;
     public Textarea(String id, Vector2f pos, Vector2f size, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window)
     {
         this.id = id;
         this.pos = pos;
         this.size = size;
+        this.prevSize = size;
+        this.outlineRect = LineStrip.processVerts(LineStrip.getRectangle(size), loader, window);
         this.fontSize = fontSize;
         this.renderer = renderer;
         this.loader = loader;
@@ -43,8 +50,14 @@ public class Textarea extends Element{
     public void draw(MouseInput mouseInput, boolean overOther) {
         super.draw(mouseInput, overOther);
 
-        startScissor((int)pos.x, (int)pos.y, (int)size.x, (int)size.y);
-        drawRect((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, isMouseOverElement(mouseInput) && !overOther || this.isFocused() ? Config.INTERFACE_SECONDARY_COLOR : Config.INTERFACE_PRIMARY_COLOR);
+        if(size.x != prevSize.x || size.y != prevSize.y)
+        {
+            refreshOutline();
+            prevSize = size;
+        }
+
+        renderer.startScissor((int)pos.x, (int)pos.y, (int)size.x, (int)size.y);
+        renderer.drawRect((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, isMouseOverElement(mouseInput) && !overOther || this.isFocused() ? Config.INTERFACE_SECONDARY_COLOR : Config.INTERFACE_PRIMARY_COLOR);
 
         float xScroll = 0;
         float yScroll = 0;
@@ -103,7 +116,7 @@ public class Textarea extends Element{
 
             if((int)(pos.y + getFontHeight(fontSize) / 2 + (getFontHeight(fontSize) + 2) * o - yScroll) > pos.y - getFontHeight(fontSize) &&
                     (int)(pos.y + getFontHeight(fontSize) / 2 + (getFontHeight(fontSize) + 2) * o - yScroll) + getFontHeight(fontSize) < pos.y + size.y + getFontHeight(fontSize))
-                drawString(line, Config.FONT_COLOR, (int)(pos.x + xScroll + getFontHeight(fontSize) / 2), (int)(pos.y + getFontHeight(fontSize) / 2 + (getFontHeight(fontSize) + 2) * o - yScroll), fontSize, begin, end);
+                renderer.drawString(line, Config.FONT_COLOR, (int)(pos.x + xScroll + getFontHeight(fontSize) / 2), (int)(pos.y + getFontHeight(fontSize) / 2 + (getFontHeight(fontSize) + 2) * o - yScroll), fontSize, begin, end);
 
             try {
                 int curSel = currentSelection - currentLength;
@@ -148,13 +161,13 @@ public class Textarea extends Element{
                 if(hasSelected && width >= 0)
                     if((int)(pos.y + getFontHeight(fontSize) / 2 + (getFontHeight(fontSize) + 2) * o - yScroll) > pos.y - getFontHeight(fontSize) &&
                             (int)(pos.y + getFontHeight(fontSize) / 2 + (getFontHeight(fontSize) + 2) * o - yScroll) + getFontHeight(fontSize) < pos.y + size.y + getFontHeight(fontSize))
-                        drawRect(x, (int) (pos1[1] - 1 + (getFontHeight(fontSize) + 2) * o), width, getFontHeight(fontSize) + 2, new Color(0f, 0f, 1f, 0.5f));
+                        renderer.drawRect(x, (int) (pos1[1] - 1 + (getFontHeight(fontSize) + 2) * o), width, getFontHeight(fontSize) + 2, new Color(0f, 0f, 1f, 0.5f));
 
-                if(350 > System.currentTimeMillis() % 500 && isFocused())
+                if(500 > (System.currentTimeMillis() - Consts.startMillis) % 1000 && isFocused())
                     if(currentSelection - currentLength == line.length())
-                        drawString("_", Config.FONT_COLOR, (int) (pos.x + xScroll + getStringWidth(line, fontSize) + 1 + getFontHeight(fontSize)/2), (int) (pos.y + getFontHeight(fontSize)/2 + (getFontHeight(fontSize) + 2) * o - yScroll), fontSize);
+                        renderer.drawString("_", Config.FONT_COLOR, (int) (pos.x + xScroll + getStringWidth(line, fontSize) + 1 + getFontHeight(fontSize)/2), (int) (pos.y + getFontHeight(fontSize)/2 + (getFontHeight(fontSize) + 2) * o - yScroll), fontSize);
                     else if(currentSelection - currentLength >= 0 && currentSelection - currentLength <= line.length())
-                        drawRect((int) (xScroll + pos.x + getStringWidth(line.substring(0, curSel), fontSize) + getFontHeight(fontSize)/2), (int) (pos.y + getFontHeight(fontSize)/2 - 1 + (getFontHeight(fontSize) + 2) * o - yScroll), 1, (int) (getFontHeight(fontSize)), Config.FONT_COLOR);
+                        renderer.drawRect((int) (xScroll + pos.x + getStringWidth(line.substring(0, curSel), fontSize) + getFontHeight(fontSize)/2), (int) (pos.y + getFontHeight(fontSize)/2 - 1 + (getFontHeight(fontSize) + 2) * o - yScroll), 1, (int) (getFontHeight(fontSize)), Config.FONT_COLOR);
 
             }catch(Exception e)
             {
@@ -164,9 +177,20 @@ public class Textarea extends Element{
             }
             currentLength += line.length() + 1;
         }
-        drawRectOutline((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, isMouseOverElement(mouseInput) && !overOther || this.isFocused() ? Config.INTERFACE_SECONDARY_COLOR2 : Config.INTERFACE_PRIMARY_COLOR2, false);
-        endScissor();
+        renderer.drawRectOutline(pos, outlineRect, isMouseOverElement(mouseInput) && !overOther || this.isFocused() ? Config.INTERFACE_SECONDARY_COLOR2 : Config.INTERFACE_PRIMARY_COLOR2, false);
+        renderer.endScissor();
 
+    }
+    @Override
+    public void resize() {
+        super.resize();
+        refreshOutline();
+    }
+    public void refreshOutline()
+    {
+        if(this.outlineRect != null)
+            this.outlineRect.cleanup();
+        this.outlineRect = LineStrip.processVerts(LineStrip.getRectangle(size), loader, window);
     }
     @Override
     public void onClick(Vector2d pos, int button, int action, int mods, boolean overOther) {
@@ -612,6 +636,13 @@ public class Textarea extends Element{
         }
 
         super.onChar(codePoint, modifiers);
+    }
+
+    @Override
+    public void setFocused(boolean focused) {
+        super.setFocused(focused);
+        if(focused)
+            Consts.startMillis = System.currentTimeMillis();
     }
 
     public void setText(String text)

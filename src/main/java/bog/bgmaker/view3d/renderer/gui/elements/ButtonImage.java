@@ -2,9 +2,11 @@ package bog.bgmaker.view3d.renderer.gui.elements;
 
 import bog.bgmaker.Main;
 import bog.bgmaker.view3d.ObjectLoader;
+import bog.bgmaker.view3d.core.Model;
 import bog.bgmaker.view3d.managers.MouseInput;
 import bog.bgmaker.view3d.managers.RenderMan;
 import bog.bgmaker.view3d.managers.WindowMan;
+import bog.bgmaker.view3d.renderer.gui.ingredients.LineStrip;
 import bog.bgmaker.view3d.utils.Config;
 import org.joml.Vector2d;
 import org.joml.Vector2f;
@@ -22,11 +24,16 @@ public abstract class ButtonImage extends Element{
     public int buttonImage;
     public boolean isClicked = false;
 
+    Vector2f prevSize;
+    Model outlineRect;
+
     public ButtonImage(String id, String imagePath, Vector2f pos, Vector2f size, RenderMan renderer, ObjectLoader loader, WindowMan window)
     {
         this.id = id;
         this.pos = pos;
         this.size = size;
+        this.prevSize = size;
+        this.outlineRect = LineStrip.processVerts(LineStrip.getRectangle(size), loader, window);
         this.renderer = renderer;
         this.loader = loader;
         this.window = window;
@@ -44,6 +51,12 @@ public abstract class ButtonImage extends Element{
     @Override
     public void draw(MouseInput mouseInput, boolean overOther) {
         super.draw(mouseInput, overOther);
+
+        if(size.x != prevSize.x || size.y != prevSize.y)
+        {
+            refreshOutline();
+            prevSize = size;
+        }
 
         if(!isMouseOverElement(mouseInput) || overOther)
             setClicked(false);
@@ -63,11 +76,15 @@ public abstract class ButtonImage extends Element{
             c2 = Config.INTERFACE_TERTIARY_COLOR2;
         }
 
-        drawRect((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, c);
-        drawImageStatic(buttonImage, (int)pos.x, (int)pos.y, (int)size.x, (int)size.y);
-        drawRectOutline((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, c2, false);
+        renderer.drawRect((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, c);
+        renderer.drawImageStatic(buttonImage, (int)pos.x, (int)pos.y, (int)size.x, (int)size.y);
+        renderer.drawRectOutline(pos, outlineRect, c2, false);
     }
-
+    @Override
+    public void resize() {
+        super.resize();
+        refreshOutline();
+    }
     public void setClicked(boolean clicked) {
         isClicked = clicked;
     }
@@ -91,4 +108,11 @@ public abstract class ButtonImage extends Element{
     }
 
     public abstract void clickedButton(int button, int action, int mods);
+
+    public void refreshOutline()
+    {
+        if(this.outlineRect != null)
+            this.outlineRect.cleanup();
+        this.outlineRect = LineStrip.processVerts(LineStrip.getRectangle(size), loader, window);
+    }
 }

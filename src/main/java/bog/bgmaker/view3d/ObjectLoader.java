@@ -461,6 +461,19 @@ public class ObjectLoader {
         return new Model(vao, vbos, vertices.length/2);
     }
 
+    public Model loadModel(int[] verts, float[] textureCoords)
+    {
+        int vao = createVAO();
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, verts[0]);
+        GL20.glVertexAttribPointer(0, 2, GL11.GL_FLOAT, false, 0, 0);
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+        int[] vbos = new int[]{
+                verts[0],
+                storeDataInAttribList(1, 2, textureCoords)};
+        unbind();
+        return new Model(vao, vbos, verts[1]/2);
+    }
+
     public int loadTexture(String filename) throws Exception
     {
         int width, height;

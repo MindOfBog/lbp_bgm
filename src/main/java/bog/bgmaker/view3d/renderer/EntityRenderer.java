@@ -11,6 +11,7 @@ import bog.bgmaker.view3d.managers.MouseInput;
 import bog.bgmaker.view3d.managers.RenderMan;
 import bog.bgmaker.view3d.managers.ShaderMan;
 import bog.bgmaker.view3d.managers.WindowMan;
+import bog.bgmaker.view3d.renderer.gui.GuiRenderer;
 import bog.bgmaker.view3d.renderer.gui.ingredients.Quad;
 import bog.bgmaker.view3d.renderer.gui.ingredients.TriStrip;
 import bog.bgmaker.view3d.utils.Config;
@@ -33,7 +34,7 @@ import java.util.*;
 public class EntityRenderer implements IRenderer{
 
     ShaderMan shader;
-    ShaderMan solidShader;
+    public ShaderMan solidShader;
     ShaderMan shaderMousePick;
     ShaderMan shaderOutlineVertical;
     ShaderMan shaderOutlineHorizontal;
@@ -185,6 +186,7 @@ public class EntityRenderer implements IRenderer{
         shaderOutlineVertical.link();
         shaderOutlineVertical.createUniform("transformationMatrix");
         shaderOutlineVertical.createUniform("originalTexture");
+        shaderOutlineVertical.createUniform("inputTexture");
         shaderOutlineVertical.createUniform("target");
         shaderOutlineVertical.createUniform("radius");
         shaderOutlineVertical.createUniform("color");
@@ -196,6 +198,7 @@ public class EntityRenderer implements IRenderer{
         shaderOutlineHorizontal.link();
         shaderOutlineHorizontal.createUniform("transformationMatrix");
         shaderOutlineHorizontal.createUniform("originalTexture");
+        shaderOutlineHorizontal.createUniform("inputTexture");
         shaderOutlineHorizontal.createUniform("target");
         shaderOutlineHorizontal.createUniform("radius");
         shaderOutlineHorizontal.createUniform("color");
@@ -204,15 +207,19 @@ public class EntityRenderer implements IRenderer{
 
         GL11.glEnable(GL11.GL_LINE_SMOOTH);
 
-        outlineFB = initFrameBuffer();
-        outlineCT = initColorTex();
-        mouseFB = initFrameBufferINT();
-        mouseCT = initColorTexINT();
-        mouseDT = initDepthTex();
+        outlineFB = RenderMan.initFrameBuffer();
+        outlineCT = RenderMan.initColorTex(window);
+        outlineFB2 = RenderMan.initFrameBuffer();
+        outlineCT2 = RenderMan.initColorTex(window);
+        mouseFB = RenderMan.initFrameBufferINT();
+        mouseCT = RenderMan.initColorTexINT(window);
+        mouseDT = RenderMan.initDepthTex(window);
     }
 
     int outlineFB = -1;
     int outlineCT = -1;
+    int outlineFB2 = -1;
+    int outlineCT2 = -1;
     int mouseFB = -1;
     int mouseCT = -1;
     int mouseDT = -1;
@@ -222,10 +229,12 @@ public class EntityRenderer implements IRenderer{
         GL11.glDeleteTextures(new int[]{outlineCT, mouseCT, mouseDT});
         GL11.glViewport(0, 0, window.width, window.height);
         GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, outlineFB);
-        outlineCT = initColorTex();
+        outlineCT = RenderMan.initColorTex(window);
+        GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, outlineFB2);
+        outlineCT2 = RenderMan.initColorTex(window);
         GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, mouseFB);
-        mouseCT = initColorTexINT();
-        mouseDT = initDepthTex();
+        mouseCT = RenderMan.initColorTexINT(window);
+        mouseDT = RenderMan.initDepthTex(window);
     }
 
     @Override
@@ -233,9 +242,9 @@ public class EntityRenderer implements IRenderer{
     {
         Matrix4f projection = window.updateProjectionMatrix();
 
-        bindFrameBuffer(mouseFB);
-        bindColorTex(mouseCT);
-        bindDepthTex(mouseDT);
+        RenderMan.bindFrameBuffer(mouseFB);
+        RenderMan.bindColorTex(mouseCT);
+        RenderMan.bindDepthTex(mouseDT);
 
         shaderMousePick.bind();
         shaderMousePick.setUniform("projectionMatrix", projection);
@@ -382,7 +391,7 @@ public class EntityRenderer implements IRenderer{
             }catch (Exception e){}
         }
 
-        bindFrameBuffer(mouseFB);
+        RenderMan.bindFrameBuffer(mouseFB);
         GL11.glClearColor(0,0,0,0);
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
         unbindFrameBuffer();
@@ -519,8 +528,11 @@ public class EntityRenderer implements IRenderer{
             lastShader.bind();
         }
 
-        bindFrameBuffer(outlineFB);
-        bindColorTex(outlineCT);
+        RenderMan.bindFrameBuffer(outlineFB);
+        RenderMan.bindColorTex(outlineCT);
+
+        GL11.glClearColor(0,0,0,0);
+        GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
 
         for(int i : selInd)
             try
@@ -553,37 +565,15 @@ public class EntityRenderer implements IRenderer{
 
         if(outline)
         {
-            GL11.glEnable(GL11.GL_STENCIL_TEST);
-            GL11.glStencilOp(GL11.GL_REPLACE, GL11.GL_REPLACE, GL11.GL_REPLACE);
-            GL11.glStencilFunc(GL11.GL_ALWAYS, 1, 0xff);
-            GL11.glStencilMask(0xff);
-
-            GL11.glColorMask(false, false, false, false);
-
-            //render FBO for stencil
-            drawOutline(outlineFB, outlineCT, shaderOutlineVertical, lastShader, true, 1, 0, Config.OUTLINE_COLOR);
-
-            GL11.glColorMask(true, true, true, true);
-
-            GL11.glStencilFunc(GL11.GL_NOTEQUAL, 1, 0xff);
-            GL11.glStencilMask(0x00);
-            GL11.glDisable(GL11.GL_DEPTH_TEST);
-            GL11.glStencilOp(GL11.GL_KEEP, GL11.GL_KEEP, GL11.GL_KEEP);
-
             int radius = Math.round((Config.OUTLINE_DISTANCE * 2f - 1f) * 10f);
 
-            bindFrameBuffer(outlineFB);
-            drawOutline(outlineFB, outlineCT, shaderOutlineVertical, lastShader, false, window.height, radius, Config.OUTLINE_COLOR);
-            unbindFrameBuffer();
-            drawOutline(outlineFB, outlineCT, shaderOutlineHorizontal, lastShader, false, window.width, radius, Config.OUTLINE_COLOR);
-
-            bindFrameBuffer(outlineFB);
+            RenderMan.bindFrameBuffer(outlineFB2);
+            RenderMan.bindColorTex(outlineCT2);
             GL11.glClearColor(0,0,0,0);
             GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
+            drawOutline(outlineCT, -1, shaderOutlineVertical, lastShader, false, window.height, radius, Config.OUTLINE_COLOR);
             unbindFrameBuffer();
-
-            GL11.glStencilMask(0xff);
-            GL11.glStencilFunc(GL11.GL_ALWAYS, 0, 0xff);
+            drawOutline(outlineCT2, outlineCT, shaderOutlineHorizontal, lastShader, false, window.width, radius, Config.OUTLINE_COLOR);
         }
 
         GL11.glEnable(GL11.GL_DEPTH_TEST);
@@ -649,7 +639,7 @@ public class EntityRenderer implements IRenderer{
 
                         unbind();
                     }
-                }catch (Exception e){System.err.println("Failed rendering throughwall-entity " + i + ".");}
+                }catch (Exception e){System.err.println("Failed rendering throughwall-entity " + i + ".");e.printStackTrace();}
 
         throughWallEntities.clear();
         lastShader.unbind();
@@ -782,7 +772,7 @@ public class EntityRenderer implements IRenderer{
                 material.customShader.cleanup();
     }
 
-    private void drawOutline(int frameBuffer, int colorTexture, ShaderMan outlineShader, ShaderMan prevShader, boolean stipple, float target, int radius, Color color)
+    private void drawOutline(int originalTexture, int inputTexture, ShaderMan outlineShader, ShaderMan prevShader, boolean stipple, float target, int radius, Color color)
     {
         prevShader.unbind();
         outlineShader.bind();
@@ -793,45 +783,32 @@ public class EntityRenderer implements IRenderer{
             GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         }
 
-        Quad outlineFBO = new Quad(loader, colorTexture, new Vector2f(), new Vector2f(window.width, window.height));
-
-        GL30.glBindVertexArray(outlineFBO.model.vao);
+        GL30.glBindVertexArray(GuiRenderer.defaultQuad.vao);
         GL20.glEnableVertexAttribArray(0);
 
-        if(outlineFBO.hasTexCoords)
-            GL20.glEnableVertexAttribArray(1);
-
         GL13.glActiveTexture(GL13.GL_TEXTURE0);
-        GL11.glBindTexture(GL11.GL_TEXTURE_2D, outlineFBO.texture);
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, originalTexture);
+
+        if(inputTexture != -1)
+        {
+            GL13.glActiveTexture(GL13.GL_TEXTURE1);
+            GL11.glBindTexture(GL11.GL_TEXTURE_2D, inputTexture);
+        }
 
         outlineShader.setUniform("originalTexture", 0);
+        outlineShader.setUniform("inputTexture", 1);
         outlineShader.setUniform("target", target);
         outlineShader.setUniform("radius", radius);
         outlineShader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(
-                new Vector2f(outlineFBO.pos.x / (window.width/2f) - 1 + outlineFBO.scale.x / window.width, outlineFBO.pos.y / (window.height/2f) - 1 + outlineFBO.scale.y / window.height),
-                new Vector2f(outlineFBO.scale.x / window.width, outlineFBO.scale.y / window.height)));
+                new Vector2f(),
+                new Vector2f(1)
+        ));
 
         outlineShader.setUniform("color", new Vector3f(color.getRed() / 255f,color.getGreen() / 255f,color.getBlue() / 255f));
         outlineShader.setUniform("stipple", stipple);
         outlineShader.setUniform("hasColor", true);
 
-        GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, outlineFBO.model.vertexCount);
-
-        if(!outlineFBO.staticVAO)
-        {
-            int vao = ((TriStrip)outlineFBO).model.vao;
-            GL30.glDeleteVertexArrays(vao);
-            loader.vaos.remove((Object)vao);
-        }
-        if(!outlineFBO.staticVBO)
-        {
-            int[] vbos = ((TriStrip)outlineFBO).model.vbos;
-            for(int vbo : vbos)
-            {
-                GL30.glDeleteBuffers(vbo);
-                loader.vbos.remove((Object)vbo);
-            }
-        }
+        GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, GuiRenderer.defaultQuad.vertexCount);
 
         if(!stipple)
         {
@@ -842,90 +819,8 @@ public class EntityRenderer implements IRenderer{
         prevShader.bind();
     }
 
-    private int initFrameBuffer()
-    {
-        int frameBuffer = GL30.glGenFramebuffers();
-        GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, frameBuffer);
-        GL11.glDrawBuffer(GL30.GL_COLOR_ATTACHMENT0);
-        GL30.glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, frameBuffer);
-
-        return frameBuffer;
-    }
-
-    private void bindFrameBuffer(int frameBuffer)
-    {
-        GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, frameBuffer);
-        GL11.glDrawBuffer(GL30.GL_COLOR_ATTACHMENT0);
-        GL30.glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, frameBuffer);
-    }
-
-    private int initColorTex()
-    {
-        int colorTexture = GL11.glGenTextures();
-        GL11.glBindTexture(GL11.GL_TEXTURE_2D, colorTexture);
-        GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA8, window.width, window.height, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, (ByteBuffer) null);
-        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
-        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
-        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
-        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
-        GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT0, GL11.GL_TEXTURE_2D, colorTexture, 0);
-        return colorTexture;
-    }
-
-    private void bindColorTex(int colorTexture)
-    {
-        GL11.glBindTexture(GL11.GL_TEXTURE_2D, colorTexture);
-        GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT0, GL11.GL_TEXTURE_2D, colorTexture, 0);
-    }
-
-    private void bindDepthTex(int mouseDepthTexture)
-    {
-        GL11.glBindTexture(GL11.GL_TEXTURE_2D, mouseDepthTexture);
-        GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_DEPTH_ATTACHMENT, GL11.GL_TEXTURE_2D, mouseDepthTexture, 0);
-    }
-
-    private int initFrameBufferINT()
-    {
-        int frameBuffer = GL30.glGenFramebuffers();
-        GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, frameBuffer);
-        GL11.glDrawBuffer(GL30.GL_COLOR_ATTACHMENT0);
-
-        return frameBuffer;
-    }
-
-    private int initColorTexINT()
-    {
-        int colorTexture = GL11.glGenTextures();
-        GL11.glBindTexture(GL11.GL_TEXTURE_2D, colorTexture);
-        GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL30.GL_RGB32I, window.width, window.height, 0, GL30.GL_RGB_INTEGER, GL11.GL_INT, (ByteBuffer) null);
-        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
-        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
-        GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT0, GL11.GL_TEXTURE_2D, colorTexture, 0);
-        return colorTexture;
-    }
-
-    private int initDepthTex()
-    {
-        int mouseDepthTexture = GL11.glGenTextures();
-        GL11.glBindTexture(GL11.GL_TEXTURE_2D, mouseDepthTexture);
-        GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_DEPTH_COMPONENT, window.width, window.height, 0, GL11.GL_DEPTH_COMPONENT, GL11.GL_FLOAT, (ByteBuffer) null);
-        GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_DEPTH_ATTACHMENT, GL11.GL_TEXTURE_2D, mouseDepthTexture, 0);
-        return mouseDT;
-    }
-
-    private void unbindFrameBuffer()
+    public void unbindFrameBuffer()
     {
         GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, 0);
-    }
-
-    private static class TempEntity
-    {
-        public Entity entity;
-        public Model model;
-
-        public TempEntity(Entity entity, Model model) {
-            this.entity = entity;
-            this.model = model;
-        }
     }
 }

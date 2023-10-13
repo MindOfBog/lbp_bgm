@@ -8,7 +8,6 @@ import java.awt.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -16,11 +15,6 @@ import java.util.Scanner;
  * @author Bog
  */
 public class Config {
-
-    public static long NANOSECOND = 1000000000L;
-    public static float NaNf = Float.intBitsToFloat(0x7fc00000);
-    public static double NaNd = Double.longBitsToDouble(0x7ff8000000000000L);
-
 
     public static String TITLE = "LBP Background Maker";
     public static float FOV = (float) Math.toRadians(63);
@@ -33,6 +27,7 @@ public class Config {
     public static Vector3f AMBIENT_LIGHT = new Vector3f(1f, 1f, 1f);
     public static float SPECULAR_POWER = 10f;
     public static float FRAMERATE = 120;
+    public static int AA_SAMPLES = 4;
     public static float OUTLINE_DISTANCE = 0.6f;
     public static Color OUTLINE_COLOR = new Color(252, 173, 3);
     public static Color BORDER_COLOR_1 = new Color(156, 0, 0, 166);

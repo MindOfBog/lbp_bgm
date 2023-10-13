@@ -576,4 +576,27 @@ public class Utils {
         return hex.length() == 1 ? "0" + hex : hex;
     }
 
+    public static int parseInt(String i)
+    {
+        try
+        {
+            return Math.round(parseFloat(i));
+        }catch (Exception e)
+        {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+    public static float parseFloat(String f)
+    {
+        try
+        {
+            return Float.parseFloat(f);
+        }catch (Exception e)
+        {
+            e.printStackTrace();
+            return 0;
+        }
+    }
 }

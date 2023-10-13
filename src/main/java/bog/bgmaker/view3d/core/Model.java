@@ -1,5 +1,7 @@
 package bog.bgmaker.view3d.core;
 
+import org.lwjgl.opengl.GL30;
+
 /**
  * @author Bog
  */
@@ -53,6 +55,12 @@ public class Model {
         vertexCount = model.vertexCount;
         material = model.material;
         indicesArr = model.indicesArr;
+    }
+
+    public void cleanup()
+    {
+        GL30.glDeleteVertexArrays(vao);
+        GL30.glDeleteBuffers(vbos);
     }
 
 //    public Vector3f rayIntersectModel(Vector3f ray, Vector3f origin)

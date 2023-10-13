@@ -5,8 +5,8 @@ package bog.bgmaker.view3d.renderer.gui.ingredients;
  */
 public abstract class Drawable {
 
-    public boolean staticVAO;
-    public boolean staticVBO;
+    public boolean staticVAO = true;
+    public boolean staticVBO = true;
 
     public abstract int getType();
 

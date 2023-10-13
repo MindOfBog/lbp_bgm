@@ -21,5 +21,4 @@ void main(void){
         blurTextureCoords[i + radius].x = coord.x;
         blurTextureCoords[i + radius].y = coord.y;
     }
-
 }

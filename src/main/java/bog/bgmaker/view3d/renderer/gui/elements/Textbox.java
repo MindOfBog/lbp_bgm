@@ -1,10 +1,14 @@
 package bog.bgmaker.view3d.renderer.gui.elements;
 
 import bog.bgmaker.view3d.ObjectLoader;
+import bog.bgmaker.view3d.core.Model;
 import bog.bgmaker.view3d.managers.MouseInput;
 import bog.bgmaker.view3d.managers.RenderMan;
 import bog.bgmaker.view3d.managers.WindowMan;
+import bog.bgmaker.view3d.renderer.gui.ingredients.LineStrip;
 import bog.bgmaker.view3d.utils.Config;
+import bog.bgmaker.view3d.utils.Consts;
+import bog.bgmaker.view3d.utils.Utils;
 import org.joml.Vector2d;
 import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
@@ -25,6 +29,11 @@ public class Textbox extends Element{
     boolean letters = true;
     boolean others = true;
 
+    Vector2f prevSize;
+    Model outlineRect;
+
+    float[] numberLimits = new float[0];
+
     public Textbox(String id, Vector2f pos, Vector2f size, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window)
     {
         this.id = id;
@@ -34,12 +43,6 @@ public class Textbox extends Element{
         this.renderer = renderer;
         this.loader = loader;
         this.window = window;
-    }
-
-    public Textbox text(String text)
-    {
-        this.text = text;
-        return this;
     }
 
     public Textbox noNumbers()
@@ -58,12 +61,24 @@ public class Textbox extends Element{
         return this;
     }
 
+    public Textbox numberLimits(float min, float max)
+    {
+        this.numberLimits = new float[]{min, max};
+        return this;
+    }
+
     @Override
     public void draw(MouseInput mouseInput, boolean overOther) {
         super.draw(mouseInput, overOther);
 
-        startScissor((int)pos.x, (int)pos.y, (int)size.x, (int)size.y);
-        drawRect((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, isMouseOverElement(mouseInput) && !overOther || this.isFocused() ? Config.INTERFACE_SECONDARY_COLOR : Config.INTERFACE_PRIMARY_COLOR);
+        if(prevSize == null || size.x != prevSize.x || size.y != prevSize.y)
+        {
+            refreshOutline();
+            prevSize = size;
+        }
+
+        renderer.startScissor((int) Math.round(pos.x), (int) Math.round(pos.y), (int) Math.round(size.x), (int) Math.round(size.y));
+        renderer.drawRect((int) Math.round(pos.x), (int) Math.round(pos.y), (int) Math.round(size.x), (int) Math.round(size.y), isMouseOverElement(mouseInput) && !overOther || this.isFocused() ? Config.INTERFACE_SECONDARY_COLOR : Config.INTERFACE_PRIMARY_COLOR);
 
         float xScroll = 0;
         if(!this.isFocused())
@@ -75,11 +90,12 @@ public class Textbox extends Element{
         boolean bool = false;
 
         try {
-            if (currentSelection == text.length() && getStringWidth(text + ((currentSelection == text.length()) ? "_" : "|"), fontSize) > this.size.x - (this.size.y / 2 - getFontHeight(fontSize) / 2) * 2)
-                xScroll = -(getStringWidth((text + ((currentSelection == text.length()) ? "_" : "|")), fontSize) - this.size.x + (this.size.y / 2 - getFontHeight(fontSize) / 2) * 2);
+            String cursor = this.isFocused() ? currentSelection == text.length() ? "_" : "|" : "";
+            if (currentSelection == text.length() && getStringWidth(text + cursor, fontSize) > this.size.x - (this.size.y / 2 - getFontHeight(fontSize) / 2) * 2)
+                xScroll = -(getStringWidth(text + cursor, fontSize) - this.size.x + (this.size.y / 2 - getFontHeight(fontSize) / 2) * 2);
 
-            else if (getStringWidth((text.substring(0, currentSelection) + ((currentSelection == text.length()) ? "_" : "|")), fontSize) > this.size.x - (this.size.y / 2 - getFontHeight(fontSize) / 2) * 2)
-                xScroll = -(getStringWidth(text.substring(0, currentSelection) + ((currentSelection == text.length()) ? "_" : "|"), fontSize) - this.size.x + (this.size.y / 2 - getFontHeight(fontSize) / 2) * 2);
+            else if (getStringWidth((text.substring(0, currentSelection) + cursor), fontSize) > this.size.x - (this.size.y / 2 - getFontHeight(fontSize) / 2) * 2)
+                xScroll = -(getStringWidth(text.substring(0, currentSelection) + cursor, fontSize) - this.size.x + (this.size.y / 2 - getFontHeight(fontSize) / 2) * 2);
         }catch(Exception e){}
 
         int begin = 0;
@@ -89,20 +105,20 @@ public class Textbox extends Element{
         {
             try
             {
-                if((int)(pos.x + xScroll + this.size.y / 2 - getFontHeight(fontSize) / 2) + getStringWidth(text.substring(0, i), fontSize) < pos.x)
+                if((int) Math.round(pos.x + xScroll + this.size.y / 2 - getFontHeight(fontSize) / 2) + getStringWidth(text.substring(0, i), fontSize) < pos.x)
                     begin = i;
 
-                if((int)(pos.x + xScroll + this.size.y / 2 - getFontHeight(fontSize) / 2) + getStringWidth(text.substring(0, i + 1), fontSize) < pos.x + size.x)
+                if((int) Math.round(pos.x + xScroll + this.size.y / 2 - getFontHeight(fontSize) / 2) + getStringWidth(text.substring(0, i + 1), fontSize) < pos.x + size.x)
                     end = i + 1;
             }catch (Exception e){}
         }
 
-        drawString(text, textColor(), (int)(pos.x + xScroll + this.size.y / 2 - getFontHeight(fontSize) / 2), (int)(pos.y + this.size.y / 2 - getFontHeight(fontSize) / 2), fontSize, begin, end);
+        renderer.drawString(text, textColor(), (int) Math.round(pos.x + xScroll + this.size.y / 2 - getFontHeight(fontSize) / 2), (int) Math.round(pos.y + this.size.y / 2 - getFontHeight(fontSize) / 2), fontSize, begin, end);
 
         try {
-            if( 350 > System.currentTimeMillis() % 500 && isFocused())
+            if(500 > (System.currentTimeMillis() - Consts.startMillis) % 1000 && isFocused())
                 if(currentSelection == text.length())
-                    drawString("_", textColor(), (int) (pos.x + xScroll + getStringWidth(text, fontSize) + 1 + this.size.y/2 - getFontHeight(fontSize)/2), (int) (pos.y + this.size.y/2 - getFontHeight(fontSize)/2), fontSize);
+                    renderer.drawString("_", textColor(), (int) Math.round(pos.x + xScroll + getStringWidth(text, fontSize) + 1 + this.size.y/2 - getFontHeight(fontSize)/2), (int) Math.round(pos.y + this.size.y/2 - getFontHeight(fontSize)/2), fontSize);
                 else
                 {
                     bool = true;
@@ -110,19 +126,19 @@ public class Textbox extends Element{
 
             float[] pos1 = {pos.x + xScroll + this.size.y/2 - getFontHeight(fontSize)/2, pos.y + this.size.y/2 - getFontHeight(fontSize)/2};
 
-            int x = (int) (pos1[0] + getStringWidth(text.substring(0, selectedText[0]), fontSize));
+            int x = (int) Math.round(pos1[0] + getStringWidth(text.substring(0, selectedText[0]), fontSize));
             int diff = 0;
             if(x < pos.x)
             {
-                diff = x - (int) pos.x;
-                x = (int) pos.x;
+                diff = x - (int) Math.round(pos.x);
+                x = (int) Math.round(pos.x);
             }
 
-            int width = (int) (getStringWidth(text.substring(selectedText[0], selectedText[1]), fontSize) + 1 + diff);
+            int width = (int) Math.round(getStringWidth(text.substring(selectedText[0], selectedText[1]), fontSize) + 1 + diff);
             if(x + width > pos.x + size.x)
-                width = (int) (pos.x + size.x - x);
+                width = (int) Math.round(pos.x + size.x - x);
 
-            drawRect(x, (int) (pos1[1] - 1), width, getFontHeight(fontSize) + 2, new Color(0f, 0f, 1f, 0.5f));
+            renderer.drawRect(x, (int) Math.round(pos1[1] - 1), width, getFontHeight(fontSize) + 2, new Color(0f, 0f, 1f, 0.5f));
 
         }catch(Exception e)
         {
@@ -134,13 +150,23 @@ public class Textbox extends Element{
         {
             try
             {
-                drawRect((int) (xScroll + pos.x + getStringWidth(text.substring(0, currentSelection), fontSize) + this.size.y/2 - getFontHeight(fontSize)/2), (int) (pos.y + this.size.y/2 - getFontHeight(fontSize)/2 - 1), 1, (int) (getFontHeight(fontSize)), textColor());
+                renderer.drawRect((int) Math.round(xScroll + pos.x + getStringWidth(text.substring(0, currentSelection), fontSize) + this.size.y/2 - getFontHeight(fontSize)/2), (int) Math.round(pos.y + this.size.y/2 - getFontHeight(fontSize)/2 - 1), 1, (int) Math.round(getFontHeight(fontSize)), textColor());
             }catch (Exception e){}
         }
-        drawRectOutline((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, isMouseOverElement(mouseInput) && !overOther || this.isFocused() ? Config.INTERFACE_SECONDARY_COLOR2 : Config.INTERFACE_PRIMARY_COLOR2, false);
-        endScissor();
+        renderer.drawRectOutline(new Vector2f((int) Math.round(pos.x), (int) Math.round(pos.y)), outlineRect, isMouseOverElement(mouseInput) && !overOther || this.isFocused() ? Config.INTERFACE_SECONDARY_COLOR2 : Config.INTERFACE_PRIMARY_COLOR2, false);
+        renderer.endScissor();
     }
-
+    @Override
+    public void resize() {
+        super.resize();
+        refreshOutline();
+    }
+    public void refreshOutline()
+    {
+        if(this.outlineRect != null)
+            this.outlineRect.cleanup();
+        this.outlineRect = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f((int) Math.round(size.x), (int) Math.round(size.y))), loader, window);
+    }
     @Override
     public void onClick(Vector2d pos, int button, int action, int mods, boolean overOther) {
 
@@ -153,11 +179,12 @@ public class Textbox extends Element{
                 float xScroll = 0;
 
                 try {
-                    if(currentSelection == text.length() && getStringWidth(text + ((currentSelection == text.length()) ? "_" : "|"), fontSize) > this.size.x - (this.size.y/2 - getFontHeight(fontSize)/2) * 2)
-                        xScroll = -(getStringWidth(text + ((currentSelection == text.length()) ? "_" : "|"), fontSize) - this.size.x + (this.size.y/2 - getFontHeight(fontSize)/2) * 2);
+                    String cursor = this.isFocused() ? currentSelection == text.length() ? "_" : "|" : "";
+                    if(currentSelection == text.length() && getStringWidth(text + cursor, fontSize) > this.size.x - (this.size.y/2 - getFontHeight(fontSize)/2) * 2)
+                        xScroll = -(getStringWidth(text + cursor, fontSize) - this.size.x + (this.size.y/2 - getFontHeight(fontSize)/2) * 2);
 
-                    else if(getStringWidth(text.substring(0, currentSelection) + ((currentSelection == text.length()) ? "_" : "|"), fontSize) > this.size.x - (this.size.y/2 - getFontHeight(fontSize)/2) * 2)
-                        xScroll = -(getStringWidth(text.substring(0, currentSelection) + ((currentSelection == text.length()) ? "_" : "|"), fontSize) - this.size.x + (this.size.y/2 - getFontHeight(fontSize)/2) * 2);
+                    else if(getStringWidth(text.substring(0, currentSelection) + cursor, fontSize) > this.size.x - (this.size.y/2 - getFontHeight(fontSize)/2) * 2)
+                        xScroll = -(getStringWidth(text.substring(0, currentSelection) + cursor, fontSize) - this.size.x + (this.size.y/2 - getFontHeight(fontSize)/2) * 2);
                 }catch(Exception e){}
 
                 for(int i = 0; i <= text.length(); i++)
@@ -453,6 +480,19 @@ public class Textbox extends Element{
                 currentSelection = text.length();
         }
 
+        if(numberLimits.length == 2)
+        {
+            float min = numberLimits[0];
+            float max = numberLimits[1];
+
+            float number = Utils.parseFloat(text);
+
+            if(number > max)
+                text = number % 1 == 0 ? Integer.toString((int) max) : Float.toString(max);
+            if(number < min)
+                text = number % 1 == 0 ? Integer.toString((int) min) : Float.toString(min);
+        }
+
         super.onKey(key, scancode, action, mods);
     }
 
@@ -499,11 +539,30 @@ public class Textbox extends Element{
                 }
             }
 
+            if(numberLimits.length == 2)
+            {
+                float min = numberLimits[0];
+                float max = numberLimits[1];
+
+                float number = Utils.parseFloat(text);
+
+                if(number > max)
+                    text = number % 1 == 0 ? Integer.toString((int) max) : Float.toString(max);
+                if(number < min)
+                    text = number % 1 == 0 ? Integer.toString((int) min) : Float.toString(min);
+            }
+
             if (!bool)
                 currentSelection = text.length();
         }
-
         super.onChar(codePoint, modifiers);
+    }
+
+    @Override
+    public void setFocused(boolean focused) {
+        super.setFocused(focused);
+        if(focused)
+            Consts.startMillis = System.currentTimeMillis();
     }
 
     public Color textColor()

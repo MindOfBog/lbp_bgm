@@ -87,7 +87,7 @@ public class MaterialEditing extends GuiScreen {
                     screenPositions.put(screenPosition, i);
 
                     if(screenPosition.z == 0)
-                        drawString("" + i, Color.white, (int) screenPosition.x + 8, (int) screenPosition.y + 8, 10);
+                    mainView.renderer.drawString("" + i, Color.white, (int) screenPosition.x + 8, (int) screenPosition.y + 8, 10);
                 }
 
                 boolean overOther = false;
@@ -123,9 +123,9 @@ public class MaterialEditing extends GuiScreen {
                         else
                         {
                             if(material.selectedVertices.contains(screenPositions.get(positions.get(i))))
-                                drawImageStatic(cornerEdit, (int)(screenPoint.x - 7.5f), (int)(screenPoint.y - 7.5f), 15, 15, new Color(0.25f, 0.063f, 0.63f));
+                                mainView.renderer.drawImageStatic(cornerEdit, (int)(screenPoint.x - 7.5f), (int)(screenPoint.y - 7.5f), 15, 15, new Color(0.25f, 0.063f, 0.63f));
                             else
-                                drawImageStatic(cornerEdit, (int)(screenPoint.x - 7.5f), (int)(screenPoint.y - 7.5f), 15, 15);
+                                mainView.renderer.drawImageStatic(cornerEdit, (int)(screenPoint.x - 7.5f), (int)(screenPoint.y - 7.5f), 15, 15);
                         }
                     }
                 }
@@ -133,7 +133,7 @@ public class MaterialEditing extends GuiScreen {
                 if(material.closest != -1)
                 {
                     int closest = screenPositions.get(positions.get(material.closest));
-                    drawImageStatic(cornerEdit, (int) (positions.get(material.closest).x - 7.5f), (int) (positions.get(material.closest).y - 7.5f), 15, 15, material.selectedVertices.contains(closest) ? new Color(0f, 0f, 1f).darker() : new Color(0, 0, 0));
+                    mainView.renderer.drawImageStatic(cornerEdit, (int) (positions.get(material.closest).x - 7.5f), (int) (positions.get(material.closest).y - 7.5f), 15, 15, material.selectedVertices.contains(closest) ? new Color(0f, 0f, 1f).darker() : new Color(0, 0, 0));
                     material.closest = closest;
                 }
 

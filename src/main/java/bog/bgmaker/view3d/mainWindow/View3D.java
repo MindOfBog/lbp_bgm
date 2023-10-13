@@ -20,10 +20,10 @@ import bog.bgmaker.view3d.renderer.gui.elements.Checkbox;
 import bog.bgmaker.view3d.renderer.gui.elements.*;
 import bog.bgmaker.view3d.renderer.gui.font.FontRenderer;
 import bog.bgmaker.view3d.renderer.gui.ingredients.*;
-import bog.bgmaker.view3d.renderer.gui.ingredients.Triangle;
 import bog.bgmaker.view3d.utils.CWLibUtils.LevelSettingsUtils;
 import bog.bgmaker.view3d.utils.CWLibUtils.SkeletonUtils;
 import bog.bgmaker.view3d.utils.Config;
+import bog.bgmaker.view3d.utils.Consts;
 import bog.bgmaker.view3d.utils.MousePicker;
 import bog.bgmaker.view3d.utils.Utils;
 import cwlib.enums.*;
@@ -53,7 +53,6 @@ import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
-import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.*;
 
@@ -84,6 +83,8 @@ public class View3D implements ILogic {
 
     GuiScreen currentScreen;
     GuiScreen overrideScreen;
+
+    Model fpsOutlineRect;
     public View3D(WindowMan window)
     {
         this.window = window;
@@ -100,6 +101,7 @@ public class View3D implements ILogic {
 
     @Override
     public void init() throws Exception {
+        fpsOutlineRect = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(150, 25)), loader, window);
         renderer.init(this.loader);
         FontRenderer.init(this.loader);
         Transformation3D.init(this.loader);
@@ -151,7 +153,8 @@ public class View3D implements ILogic {
             BORDERS.add(new Entity(borders3, new Vector3f(21219f, 1557f, -790f + -400f * layer), new Vector3f(0, 0, 0), new Vector3f(1f, 1f, 1f), loader));
 
         bone = loader.loadOBJModel("/models/bone.obj");
-        bone.material = new Material(Color.blue, 0f);
+        bone.material = new Material(Color.white, 0f);
+        //bone.material.customShader = renderer.entityRenderer.solidShader;
 
         pod = loader.loadOBJModel("/models/pod.obj");
         pod.material = new Material(new Texture[]{new Texture(loader.loadTexture(ImageIO.read(Main.class.getResourceAsStream("/textures/pod.png")), GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR))});
@@ -249,7 +252,7 @@ public class View3D implements ILogic {
 
         Vector3f sunPos = camera.worldToScreenPointF(pos, window);
         if(sunPos.z == 0)
-            drawImageStatic(sun, (int) (sunPos.x - 17.5f), (int) (sunPos.y - 17.5f), 35, 35);
+            renderer.drawImageStatic(sun, (int) (sunPos.x - 17.5f), (int) (sunPos.y - 17.5f), 35, 35);
 
         for(int ent = 0; ent < entities.size(); ent++)
         {
@@ -421,9 +424,7 @@ public class View3D implements ILogic {
                 Config.CAMERA_MOVE_SPEED = 1;
             Config.CAMERA_MOVE_SPEED = yOffset > 0 ? Config.CAMERA_MOVE_SPEED * 1.2f : Config.CAMERA_MOVE_SPEED * 0.8f;
             Config.CAMERA_MOVE_SPEED = yOffset > 0 ? Math.ceil(Config.CAMERA_MOVE_SPEED) : Math.floor(Config.CAMERA_MOVE_SPEED);
-            DropDownTab settings = ((Settings) Settings).rendererSettings;
-            Textbox speed = ((DropDownTab.LabeledTextbox) settings.tabElements.get(3)).textbox;
-            speed.text(Float.toString(Config.CAMERA_MOVE_SPEED));
+            ((Settings) Settings).moveSpeed.setText(Float.toString(Config.CAMERA_MOVE_SPEED));
         }
     }
 
@@ -443,8 +444,22 @@ public class View3D implements ILogic {
 
         if(window.resize)
         {
-            renderer.entityRenderer.resize();
+            renderer.resize();
             window.resize = false;
+            for(Element e : ElementEditing.guiElements)
+                e.resize();
+            for(Element e : LevelSettingsEditing.guiElements)
+                e.resize();
+            for(Element e : MaterialEditing.guiElements)
+                e.resize();
+            for(Element e : Export.guiElements)
+                e.resize();
+            for(Element e : Settings.guiElements)
+                e.resize();
+            if(fpsOutlineRect != null)
+                fpsOutlineRect.cleanup();
+            fpsOutlineRect = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(150, 25)), loader, window);
+            ((Export)Export).resize();
         }
 
         renderer.render(camera, mouseInput);
@@ -595,9 +610,10 @@ public class View3D implements ILogic {
 
     private void drawUI(MouseInput mouseInput) {
 
-        drawRect(7, 7, 150, 25, Config.INTERFACE_PRIMARY_COLOR);
-        drawRectOutline(7, 7, 150, 25, Config.INTERFACE_PRIMARY_COLOR2, false);
-        drawString("FPS: " + EngineMan.avgFPS, Config.FONT_COLOR, 85 - (getStringWidth("FPS: " + EngineMan.avgFPS, 10) / 2), 12, 10);
+        renderer.drawRect(7, 7, 150, 25, Config.INTERFACE_PRIMARY_COLOR);
+        renderer.drawRectOutline(new Vector2f(7, 7), fpsOutlineRect, Config.INTERFACE_PRIMARY_COLOR2, false);
+        String performance = "FPS: " + EngineMan.avgFPS;
+        renderer.drawString(performance, Config.FONT_COLOR, 85 - (getStringWidth(performance, 10) / 2), 12, 10);
 //        drawString("entRen ent: " + renderer.entityRenderer.entities.size(), Config.FONT_COLOR, 10, 32, 10);
 //        drawString("entRen dir L: " + renderer.entityRenderer.directionalLights.size(), Config.FONT_COLOR, 10, 42, 10);
 //        drawString("entRen poi L: " + renderer.entityRenderer.pointLights.size(), Config.FONT_COLOR, 10, 52, 10);
@@ -616,44 +632,44 @@ public class View3D implements ILogic {
 
             if (vao)
             {
-                drawRect(10 - 3, 20 - 3 + ((getFontHeight(10) + 2) + 3) * l, getStringWidth("VAOs: " + loader.vaos.size(), 10) + 6, (getFontHeight(10) + 2) + 3, new Color(0f, 0f, 0f, 0.5f));
-                drawString("VAOs: " + loader.vaos.size(), Config.FONT_COLOR, 10, 20 + ((getFontHeight(10) + 2) + 3) * l, 10);
+                renderer.drawRect(10 - 3, 20 - 3 + ((getFontHeight(10) + 2) + 3) * l, getStringWidth("VAOs: " + loader.vaos.size(), 10) + 6, (getFontHeight(10) + 2) + 3, new Color(0f, 0f, 0f, 0.5f));
+                renderer.drawString("VAOs: " + loader.vaos.size(), Config.FONT_COLOR, 10, 20 + ((getFontHeight(10) + 2) + 3) * l, 10);
                 l++;
             }
             if (vbo)
             {
-                drawRect(10 - 3, 20 - 3 + ((getFontHeight(10) + 2) + 3) * l, getStringWidth("VBOs: " + loader.vbos.size(), 10) + 6, (getFontHeight(10) + 2) + 3, new Color(0f, 0f, 0f, 0.5f));
-                drawString("VBOs: " + loader.vbos.size(), Config.FONT_COLOR, 10, 20 + ((getFontHeight(10) + 2) + 3) * l, 10);
+                renderer.drawRect(10 - 3, 20 - 3 + ((getFontHeight(10) + 2) + 3) * l, getStringWidth("VBOs: " + loader.vbos.size(), 10) + 6, (getFontHeight(10) + 2) + 3, new Color(0f, 0f, 0f, 0.5f));
+                renderer.drawString("VBOs: " + loader.vbos.size(), Config.FONT_COLOR, 10, 20 + ((getFontHeight(10) + 2) + 3) * l, 10);
                 l++;
             }
             if (tex)
             {
-                drawRect(10 - 3, 20 - 3 + ((getFontHeight(10) + 2) + 3) * l, getStringWidth("Textures: " + loader.textures.size(), 10) + 6, (getFontHeight(10) + 2) + 3, new Color(0f, 0f, 0f, 0.5f));
-                drawString("Textures: " + loader.textures.size(), Config.FONT_COLOR, 10, 20 + ((getFontHeight(10) + 2) + 3) * l, 10);
+                renderer.drawRect(10 - 3, 20 - 3 + ((getFontHeight(10) + 2) + 3) * l, getStringWidth("Textures: " + loader.textures.size(), 10) + 6, (getFontHeight(10) + 2) + 3, new Color(0f, 0f, 0f, 0.5f));
+                renderer.drawString("Textures: " + loader.textures.size(), Config.FONT_COLOR, 10, 20 + ((getFontHeight(10) + 2) + 3) * l, 10);
                 l++;
             }
 
             //GLScissor Test
             if (scissor)
             {
-                startScissor(20, 50, 120 - 20, 150 - 50);
-                drawRect(0, 0, window.width, window.height, Color.red);
-                startScissor(30, 60, 110 - 30, 140 - 60);
-                drawRect(0, 0, window.width, window.height, Color.green);
-                startScissor(40, 70, 100 - 40, 130 - 70);
-                drawRect(0, 0, window.width, window.height, Color.blue);
+                renderer.startScissor(20, 50, 120 - 20, 150 - 50);
+                renderer.drawRect(0, 0, window.width, window.height, Color.red);
+                renderer.startScissor(30, 60, 110 - 30, 140 - 60);
+                renderer.drawRect(0, 0, window.width, window.height, Color.green);
+                renderer.startScissor(40, 70, 100 - 40, 130 - 70);
+                renderer.drawRect(0, 0, window.width, window.height, Color.blue);
 
-                startScissor(50, 80, 60 - 50, 90 - 80);
-                drawRect(0, 0, window.width, window.height, Color.cyan);
-                endScissor();
+                renderer.startScissor(50, 80, 60 - 50, 90 - 80);
+                renderer.drawRect(0, 0, window.width, window.height, Color.cyan);
+                renderer.endScissor();
 
-                startScissor(70, 80, 80 - 70, 90 - 80);
-                drawRect(0, 0, window.width, window.height, Color.orange);
-                endScissor();
+                renderer.startScissor(70, 80, 80 - 70, 90 - 80);
+                renderer.drawRect(0, 0, window.width, window.height, Color.orange);
+                renderer.endScissor();
 
-                endScissor();
-                endScissor();
-                endScissor();
+                renderer.endScissor();
+                renderer.endScissor();
+                renderer.endScissor();
             }
         }
 
@@ -673,17 +689,17 @@ public class View3D implements ILogic {
             out = Math.clamp(0f, 1f, out);
 
             if (out != 0) {
-                drawRect(0, 0, window.width, window.height, new Color(1f, 1f, 1f, out));
-                drawImageStatic(this.logo, window.width / 2 - 461 / 2, window.height / 2 - 461 / 2, 461, 461);
-                drawRect(0, 0, window.width, window.height, new Color(1f, 1f, 1f, in));
+                renderer.drawRect(0, 0, window.width, window.height, new Color(1f, 1f, 1f, out));
+                renderer.drawImageStatic(this.logo, window.width / 2 - 461 / 2, window.height / 2 - 461 / 2, 461, 461);
+                renderer.drawRect(0, 0, window.width, window.height, new Color(1f, 1f, 1f, in));
             } else introPlayed = true;
         }
 
         if(shadingMenu)
         {
-            drawCircle(shadingPos, (getStringWidth("Shading", 10) / 2) * 1.15f, 20, Config.INTERFACE_PRIMARY_COLOR);
-            drawCircle(shadingPos, (getStringWidth("Shading", 10) / 2) * 1.35f, 20, Config.INTERFACE_PRIMARY_COLOR);
-            drawString("Shading", Config.FONT_COLOR, (int) (shadingPos.x - getStringWidth("Shading", 10) / 2), (int) (shadingPos.y - getFontHeight(10) / 2), 10);
+            renderer.drawCircle(loader, shadingPos, (getStringWidth("Shading", 10) / 2) * 1.15f, 20, Config.INTERFACE_PRIMARY_COLOR);
+            renderer.drawCircle(loader, shadingPos, (getStringWidth("Shading", 10) / 2) * 1.35f, 20, Config.INTERFACE_PRIMARY_COLOR);
+            renderer.drawString("Shading", Config.FONT_COLOR, (int) (shadingPos.x - getStringWidth("Shading", 10) / 2), (int) (shadingPos.y - getFontHeight(10) / 2), 10);
 
             solidShading.pos.x = shadingPos.x + 50;
             materialShading.pos.x = shadingPos.x - 50 - materialShading.size.x;
@@ -741,81 +757,81 @@ public class View3D implements ILogic {
 
         return null;
     }
-
-    private void drawLine(Vector2i pos1, Vector2i pos2, boolean smooth)
-    {
-        renderer.processGuiElement(new Line(pos1, pos2, loader, window, smooth, false));
-    }
-
-    private void drawLine(Vector2i pos1, Vector2i pos2, boolean smooth, Color color)
-    {
-        renderer.processGuiElement(new Line(pos1, pos2, color, loader, window, smooth,false));
-    }
-
-    private void drawImage(String path, float x, float y, float width, float height)
-    {
-        renderer.processGuiElement(new Quad(loader, path, new Vector2f(x, y), new Vector2f(width, height)));
-    }
-
-    private void drawImage(BufferedImage image, float x, float y, float width, float height)
-    {
-        renderer.processGuiElement(new Quad(loader, image, new Vector2f(x, y), new Vector2f(width, height)));
-    }
-
-    private void drawImage(int image, float x, float y, float width, float height)
-    {
-        renderer.processGuiElement(new Quad(loader, image, new Vector2f(x, y), new Vector2f(width, height)));
-    }
-
-    private void drawImageStatic(int image, float x, float y, float width, float height)
-    {
-        renderer.processGuiElement(new Quad(loader, image, new Vector2f(x, y), new Vector2f(width, height)).staticTexture());
-    }
-
-    public void drawRect(int x, int y, int width, int height, Color color)
-    {
-        renderer.processGuiElement(new Quad(loader, color, new Vector2f(x, y), new Vector2f(width, height)));
-    }
-
-    private void drawRectOutline(int x, int y, int width, int height, Color color, boolean smooth)
-    {
-        renderer.processGuiElement(LineStrip.lineRectangle(new Vector2f(x, y), new Vector2f(width, height), color, loader, window, smooth, false));
-    }
-
-    private void drawRectOutline(int x, int y, int width, int height, Color color, boolean smooth, int openSide)
-    {
-        renderer.processGuiElement(LineStrip.lineRectangle(new Vector2f(x, y), new Vector2f(width, height), color, loader, window, smooth, false, openSide));
-    }
-
-    private void drawTriangle(Vector2f p1, Vector2f p2, Vector2f p3, Color color)
-    {
-        renderer.processGuiElement(new Triangle(loader, window, color, p1, p2, p3, false));
-    }
-
-    private void drawCircle(Vector2f center, float radius, int tris, Color color)
-    {
-        renderer.processGuiElement(new Circle(loader, window, color, center, radius, tris, false));
-    }
-
-    private void drawString(String text, Color color, int x, int y, int size)
-    {
-        FontRenderer.drawString(renderer, text, x, y, size, color, 0, text.length());
-    }
-
-    private void startScissor(Vector2i pos, Vector2i size)
-    {
-        renderer.processGuiElement(Scissor.start(pos, size));
-    }
-
-    private void startScissor(int x, int y, int width, int height)
-    {
-        renderer.processGuiElement(Scissor.start(new Vector2i(x, y), new Vector2i(width, height)));
-    }
-
-    private void endScissor()
-    {
-        renderer.processGuiElement(Scissor.end());
-    }
+//
+//    private void drawLine(Vector2i pos1, Vector2i pos2, boolean smooth)
+//    {
+//        renderer.processGuiElement(new Line(pos1, pos2, loader, window, smooth, false));
+//    }
+//
+//    private void drawLine(Vector2i pos1, Vector2i pos2, boolean smooth, Color color)
+//    {
+//        renderer.processGuiElement(new Line(pos1, pos2, color, loader, window, smooth,false));
+//    }
+//
+//    private void drawImage(String path, float x, float y, float width, float height)
+//    {
+//        renderer.processGuiElement(new Quad(loader, path, new Vector2f(x, y), new Vector2f(width, height)));
+//    }
+//
+//    private void drawImage(BufferedImage image, float x, float y, float width, float height)
+//    {
+//        renderer.processGuiElement(new Quad(loader, image, new Vector2f(x, y), new Vector2f(width, height)));
+//    }
+//
+//    private void drawImage(int image, float x, float y, float width, float height)
+//    {
+//        renderer.processGuiElement(new Quad(loader, image, new Vector2f(x, y), new Vector2f(width, height)));
+//    }
+//
+//    private void drawImageStatic(int image, float x, float y, float width, float height)
+//    {
+//        renderer.processGuiElement(new Quad(loader, image, new Vector2f(x, y), new Vector2f(width, height)).staticTexture());
+//    }
+//
+//    public void drawRect(int x, int y, int width, int height, Color color)
+//    {
+//        renderer.processGuiElement(new Quad(loader, color, new Vector2f(x, y), new Vector2f(width, height)));
+//    }
+//
+//    private void drawRectOutline(int x, int y, int width, int height, Color color, boolean smooth)
+//    {
+//        renderer.processGuiElement(LineStrip.lineRectangle(new Vector2f(x, y), new Vector2f(width, height), color, loader, window, smooth, false));
+//    }
+//
+//    private void drawRectOutline(int x, int y, int width, int height, Color color, boolean smooth, int openSide)
+//    {
+//        renderer.processGuiElement(LineStrip.lineRectangle(new Vector2f(x, y), new Vector2f(width, height), color, loader, window, smooth, false, openSide));
+//    }
+//
+//    private void drawTriangle(Vector2f p1, Vector2f p2, Vector2f p3, Color color)
+//    {
+//        renderer.processGuiElement(new Triangle(loader, window, color, p1, p2, p3, false));
+//    }
+//
+//    private void drawCircle(Vector2f center, float radius, int tris, Color color)
+//    {
+//        renderer.processGuiElement(new Circle(loader, window, color, center, radius, tris, false));
+//    }
+//
+//    private void drawString(String text, Color color, int x, int y, int size)
+//    {
+//        FontRenderer.drawString(renderer, text, x, y, size, color, 0, text.length());
+//    }
+//
+//    private void startScissor(Vector2i pos, Vector2i size)
+//    {
+//        renderer.processGuiElement(Scissor.start(pos, size));
+//    }
+//
+//    private void startScissor(int x, int y, int width, int height)
+//    {
+//        renderer.processGuiElement(Scissor.start(new Vector2i(x, y), new Vector2i(width, height)));
+//    }
+//
+//    private void endScissor()
+//    {
+//        renderer.processGuiElement(Scissor.end());
+//    }
 
     private int getStringWidth(String text, int size)
     {
@@ -1079,7 +1095,7 @@ public class View3D implements ILogic {
 
         }
 
-        return new Vector3f(Config.NaNf, Config.NaNf, Config.NaNf);
+        return new Vector3f(Consts.NaNf, Consts.NaNf, Consts.NaNf);
     }
 
     public String getSelectedMeshDescriptor()
@@ -1264,7 +1280,7 @@ public class View3D implements ILogic {
             }
         }
 
-        return Config.NaNf;
+        return Consts.NaNf;
     }
 
     public float getSelectedBevelSize()
@@ -1300,7 +1316,7 @@ public class View3D implements ILogic {
             }
         }
 
-        return Config.NaNf;
+        return Consts.NaNf;
     }
 
     public String getSelectedSoundName()
@@ -1372,7 +1388,7 @@ public class View3D implements ILogic {
             }
         }
 
-        return Config.NaNf;
+        return Consts.NaNf;
     }
 
     public float getSelectedSoundPitch()
@@ -1408,7 +1424,7 @@ public class View3D implements ILogic {
             }
         }
 
-        return Config.NaNf;
+        return Consts.NaNf;
     }
 
     public String getSelectedName()

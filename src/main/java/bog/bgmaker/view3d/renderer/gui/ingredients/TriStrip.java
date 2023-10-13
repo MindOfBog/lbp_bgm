@@ -15,7 +15,6 @@ public class TriStrip extends Drawable{
     public boolean hasTexCoords;
     public int texture = -1;
     public Vector2f pos, scale;
-    ObjectLoader loader;
     public boolean staticTexture = false;
     public Color color = null;
     public boolean smoothstep = false;

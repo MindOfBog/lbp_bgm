@@ -2,6 +2,7 @@ package bog.bgmaker.view3d.renderer.gui.font;
 
 import bog.bgmaker.view3d.ObjectLoader;
 import bog.bgmaker.view3d.managers.RenderMan;
+import bog.bgmaker.view3d.renderer.gui.GuiRenderer;
 import bog.bgmaker.view3d.renderer.gui.ingredients.Quad;
 import bog.bgmaker.view3d.utils.Utils;
 import org.joml.Vector2f;
@@ -57,7 +58,7 @@ public class FontRenderer {
                         if(maxHeight < character.height + character.yoffset)
                             maxHeight = character.height + character.yoffset;
 
-                        font.glyphs.put(character.id, loader.loadModel(new float[]{-1, 1, -1, -1, 1, 1, 1, -1}, new float[]{minX, maxY, minX, minY, maxX, maxY, maxX, minY}));
+                        font.glyphs.put(character.id, loader.loadModel(new int[]{GuiRenderer.defaultQuad.vbos[0], 8}, new float[]{minX, maxY, minX, minY, maxX, maxY, maxX, minY}));
                     }
 
                     font.height = maxHeight;
@@ -86,7 +87,11 @@ public class FontRenderer {
             else
             {
                 if(i >= begin && i <= end)
-                    renderer.processGuiElement(new Quad(loader, font.textureID, new Vector2f(x + xPos + character.xoffset * ((float) size / 50f), y + (character.height) * ((float) size / 50f) + character.yoffset * ((float) size / 50f)), new Vector2f((float) character.width * ((float) size / 50f), ((float) -character.height) * ((float) size / 50f)), font.glyphs.get(character.id), color, true).staticTexture().smoothstep());
+                {
+                    Vector2f pos = new Vector2f(x + xPos + character.xoffset * ((float) size / 50f), y + (character.height) * ((float) size / 50f) + character.yoffset * ((float) size / 50f));
+                    Vector2f scale = new Vector2f((float) character.width * ((float) size / 50f), ((float) -character.height) * ((float) size / 50f));
+                    renderer.processGuiElement(new Quad(font.glyphs.get(character.id), font.textureID, pos, scale, color).staticTexture().smoothstep());
+                }
                 xPos += character.xadvance * ((float) size / 50f);
             }
         }

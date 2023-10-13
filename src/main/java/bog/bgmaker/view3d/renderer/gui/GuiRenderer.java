@@ -21,7 +21,7 @@ import java.util.ArrayList;
  * @author Bog
  */
 public class GuiRenderer {
-    private final ShaderMan shader;
+    public ShaderMan shader;
     WindowMan window;
     static Model defaultQuad(ObjectLoader loader)
     {
@@ -80,8 +80,11 @@ public class GuiRenderer {
                         if(element.hasTexCoords)
                             GL20.glEnableVertexAttribArray(1);
 
-                        GL13.glActiveTexture(GL13.GL_TEXTURE0);
-                        GL11.glBindTexture(GL11.GL_TEXTURE_2D, element.texture);
+                        if(element.texture != -1)
+                        {
+                            GL13.glActiveTexture(GL13.GL_TEXTURE0);
+                            GL11.glBindTexture(GL11.GL_TEXTURE_2D, element.texture);
+                        }
 
                         shader.setUniform("hasCoords", element.hasTexCoords);
                         shader.setUniform("guiTexture", 0);
@@ -100,10 +103,7 @@ public class GuiRenderer {
                         if(!element.staticTexture)
                         {
                             if(loader.textures.contains(element.texture))
-                                for(int i = 0; i < loader.textures.size(); i++)
-                                    if(loader.textures.get(i) == element.texture)
-                                        loader.textures.remove(i);
-
+                                loader.textures.remove((Object)element.texture);
                             GL11.glDeleteTextures(element.texture);
                         }
 
@@ -138,11 +138,12 @@ public class GuiRenderer {
 
                         if(!element.staticTexture)
                         {
+//                            if(loader.textures.contains(element.texture))
+//                                for(int i = 0; i < loader.textures.size(); i++)
+//                                    if(loader.textures.get(i) == element.texture)
+//                                        loader.textures.remove(i);
                             if(loader.textures.contains(element.texture))
-                                for(int i = 0; i < loader.textures.size(); i++)
-                                    if(loader.textures.get(i) == element.texture)
-                                        loader.textures.remove(i);
-
+                                loader.textures.remove((Object)element.texture);
                             GL11.glDeleteTextures(element.texture);
                         }
 
@@ -185,7 +186,8 @@ public class GuiRenderer {
                         shader.setUniform("color", element.color);
                         shader.setUniform("hasCoords", false);
                         shader.setUniform("guiTexture", 0);
-                        shader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(new Vector2f(0, 0), new Vector2f(1, 1)));
+                        shader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(
+                                new Vector2f(element.pos.x / (window.width/2f), (-element.pos.y) / (window.height/2f)), new Vector2f(1, 1)));
                         shader.setUniform("hasColor", 2);
 
                         if(!element.smooth)
@@ -300,11 +302,9 @@ public class GuiRenderer {
         if(!element.staticVBO)
         {
             int[] vbos = element instanceof TriStrip ? ((TriStrip)element).model.vbos : element instanceof TriFan ? ((TriFan)element).model.vbos : element instanceof Line ? ((Line)element).model.vbos : ((LineStrip)element).model.vbos;
+            GL30.glDeleteBuffers(vbos);
             for(int vbo : vbos)
-            {
-                GL30.glDeleteBuffers(vbo);
                 loader.vbos.remove((Object)vbo);
-            }
         }
     }
 }
