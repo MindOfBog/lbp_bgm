@@ -106,6 +106,8 @@ public class Config {
         builtString += "POD_HELPER:" + POD_HELPER + ";";
         builtString += "FONT_HEADER:" + FONT_HEADER + ";";
         builtString += "FONT_TEXT:" + FONT_TEXT + ";";
+        builtString += "CURSOR:" + CURSOR + ";";
+        builtString += "CURSOR_SCALE:" + CURSOR_SCALE + ";";
 
         return builtString;
     }
@@ -193,6 +195,8 @@ public class Config {
                         case "POD_HELPER" : POD_HELPER = Boolean.parseBoolean(data); break;
                         case "FONT_HEADER" : FONT_HEADER = data; break;
                         case "FONT_TEXT" : FONT_TEXT = data; break;
+                        case "CURSOR" : CURSOR = data; break;
+                        case "CURSOR_SCALE" : CURSOR_SCALE = Float.parseFloat(data); break;
                     }
                 }
 
@@ -538,6 +542,22 @@ public class Config {
                         break loop;
                     }
                     break;
+                case 39:
+                    if(!((String)o).equalsIgnoreCase(CURSOR))
+                    {
+                        hasChanged = true;
+                        updateVariables();
+                        break loop;
+                    }
+                    break;
+                case 40:
+                    if(!o.equals(CURSOR_SCALE))
+                    {
+                        hasChanged = true;
+                        updateVariables();
+                        break loop;
+                    }
+                    break;
             }
         }
         if(variables.size() == 0)
@@ -587,5 +607,7 @@ public class Config {
         variables.add(POD_HELPER);
         variables.add(FONT_HEADER);
         variables.add(FONT_TEXT);
+        variables.add(CURSOR);
+        variables.add(CURSOR_SCALE);
     }
 }
