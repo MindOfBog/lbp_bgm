@@ -5,9 +5,11 @@ import bog.bgmaker.view3d.core.Model;
 import bog.bgmaker.view3d.managers.MouseInput;
 import bog.bgmaker.view3d.managers.RenderMan;
 import bog.bgmaker.view3d.managers.WindowMan;
+import bog.bgmaker.view3d.renderer.gui.cursor.ECursor;
 import bog.bgmaker.view3d.renderer.gui.ingredients.LineStrip;
 import bog.bgmaker.view3d.utils.Config;
 import bog.bgmaker.view3d.utils.Consts;
+import bog.bgmaker.view3d.utils.Cursors;
 import bog.bgmaker.view3d.utils.Utils;
 import org.joml.Vector2d;
 import org.joml.Vector2f;
@@ -164,7 +166,7 @@ public class Textbox extends Element{
     public void refreshOutline()
     {
         if(this.outlineRect != null)
-            this.outlineRect.cleanup();
+            this.outlineRect.cleanup(loader);
         this.outlineRect = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f((int) Math.round(size.x), (int) Math.round(size.y))), loader, window);
     }
     @Override
@@ -579,5 +581,10 @@ public class Textbox extends Element{
     public String getText()
     {
         return this.text;
+    }
+
+    @Override
+    public void hoverCursor() {
+        Cursors.setCursor(ECursor.xterm);
     }
 }

@@ -5,10 +5,12 @@ import bog.bgmaker.view3d.core.Model;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -22,22 +24,17 @@ public class FNT {
     public chars chars;
     public ArrayList<character> characters;
 
-    public String path;
     public BufferedImage map;
     public int textureID;
     public HashMap<Integer, Model> glyphs;
     public int height = 0;
 
-    public FNT(FNT.info info, FNT.common common, FNT.page page, FNT.chars chars, ArrayList<character> characters, String path) {
+    public FNT(FNT.info info, FNT.common common, FNT.page page, FNT.chars chars, ArrayList<character> characters) {
         this.info = info;
         this.common = common;
         this.page = page;
         this.chars = chars;
         this.characters = characters;
-        this.path = path;
-        try {
-            this.map = ImageIO.read(FNT.class.getResourceAsStream(path.substring(0, path.lastIndexOf("/") + 1) + page.file));
-        } catch (Exception e) {e.printStackTrace();}
     }
     public character getChar(int c)
     {
@@ -48,9 +45,9 @@ public class FNT {
         }
         return null;
     }
-    public static FNT readFNT(String path)
+    public static FNT readFNT(InputStream stream)
     {
-        BufferedReader FNT = new BufferedReader(new InputStreamReader(FNT.class.getResourceAsStream(path)));
+        BufferedReader FNT = new BufferedReader(new InputStreamReader(stream));
         List<String> lines = FNT.lines().collect(Collectors.toList());
 
         info info = new info();
@@ -61,8 +58,16 @@ public class FNT {
 
         for(String line : lines)
         {
-            //line.trim().replaceAll("\\s+", " ");
-            String[] part = line.split(" ");
+            String[] quotes = line.split("\"");
+            String newLine = "";
+            for(int q = 0; q < quotes.length; q++)
+            {
+                if (q % 2 != 0)
+                    quotes[q] = "\"" + quotes[q].replaceAll(" ", String.valueOf((char)0x0D9E)) + "\"";
+                newLine += quotes[q];
+            }
+
+            String[] part = newLine.split(" ");
 
             if(part[0].equalsIgnoreCase("info"))
             {
@@ -71,7 +76,10 @@ public class FNT {
                     String[] var = part[i].split("=");
 
                     if(var[0].equalsIgnoreCase("face"))
+                    {
                         info.face = var[1].substring(1, var[1].length() - 1);
+                        info.face = info.face.replaceAll(String.valueOf((char)0x0D9E), " ");
+                    }
                     else if(var[0].equalsIgnoreCase("size"))
                         info.size = Integer.parseInt(var[1]);
                     else if(var[0].equalsIgnoreCase("bold"))
@@ -135,7 +143,10 @@ public class FNT {
                     if (var[0].equalsIgnoreCase("id"))
                         page.id = Integer.parseInt(var[1]);
                     else if (var[0].equalsIgnoreCase("file"))
+                    {
                         page.file = var[1].substring(1, var[1].length() - 1);
+                        page.file = page.file.replaceAll(String.valueOf((char)0x0D9E), " ");
+                    }
                 }
             }
             else if(part[0].equalsIgnoreCase("chars"))
@@ -182,7 +193,7 @@ public class FNT {
             }
         }
 
-        return new FNT(info, common, page, chars, characters, path);
+        return new FNT(info, common, page, chars, characters);
     }
     public static class info
     {

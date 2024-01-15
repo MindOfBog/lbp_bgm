@@ -432,7 +432,7 @@ public class Toolkit extends javax.swing.JFrame {
                     case FONTFACE: {
                         Swing.createMenuItem(
                             "PNG",
-                            "Export all font glyphs as a PNG",
+                            "Export all fonts glyphs as a PNG",
                             ExportCallbacks::exportFont, 
                             this.exportGroup
                         );

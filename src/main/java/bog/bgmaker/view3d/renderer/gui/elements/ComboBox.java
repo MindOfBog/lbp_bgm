@@ -5,8 +5,10 @@ import bog.bgmaker.view3d.core.Model;
 import bog.bgmaker.view3d.managers.MouseInput;
 import bog.bgmaker.view3d.managers.RenderMan;
 import bog.bgmaker.view3d.managers.WindowMan;
+import bog.bgmaker.view3d.renderer.gui.cursor.ECursor;
 import bog.bgmaker.view3d.renderer.gui.ingredients.LineStrip;
 import bog.bgmaker.view3d.utils.Config;
+import bog.bgmaker.view3d.utils.Cursors;
 import org.joml.Vector2d;
 import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
@@ -19,7 +21,7 @@ import java.util.ArrayList;
  */
 public class ComboBox extends Element{
 
-    String tabTitle = "";
+    public String tabTitle = "";
     public ArrayList<Element> comboElements;
     public int fontSize;
     boolean extended = false;
@@ -197,17 +199,9 @@ public class ComboBox extends Element{
     public void draw(MouseInput mouseInput, boolean overOther) {
         super.draw(mouseInput, overOther);
 
-        if (!renderer.window.isMinimized) {
-            if (this.pos.x < 0)
-                this.pos.x = 0;
-            if (this.pos.y < 0)
-                this.pos.y = 0;
-
-            if (this.pos.x + this.size.x > renderer.window.width)
-                this.pos.x = renderer.window.width - this.size.x;
-            if (this.pos.y + this.size.y > renderer.window.height)
-                this.pos.y = renderer.window.height - this.size.y;
-        }
+        hovering = isMouseOverTab(mouseInput) && !overOther;
+        if(hovering)
+            hoverCursor();
 
         float yOffset = 0;
 
@@ -220,15 +214,14 @@ public class ComboBox extends Element{
             this.prevSize = size;
         }
 
-        renderer.drawRect((int) pos.x, (int) pos.y, (int) size.x, (int) size.y, (mouseInput.rightButtonPress && isMouseOverTab(mouseInput)) ? Config.INTERFACE_TERTIARY_COLOR : (isMouseOverTab(mouseInput) && !overOther ? Config.INTERFACE_SECONDARY_COLOR : Config.INTERFACE_PRIMARY_COLOR));
-        renderer.drawRectOutline(new Vector2f(pos.x, pos.y), outlineElement, (mouseInput.rightButtonPress && isMouseOverTab(mouseInput)) ? Config.INTERFACE_TERTIARY_COLOR2 : (isMouseOverTab(mouseInput) && !overOther ? Config.INTERFACE_SECONDARY_COLOR2 : Config.INTERFACE_PRIMARY_COLOR2), false);
+        drawBackdrop(yOffset);
 
-        if (extended)
-        {
-            drawBackdrop(yOffset);
-        }
+        renderer.drawRect((int) pos.x, (int) pos.y, (int) size.x, (int) size.y, ((mouseInput.rightButtonPress || mouseInput.leftButtonPress) && hovering) ? Config.INTERFACE_TERTIARY_COLOR : (hovering ? Config.INTERFACE_SECONDARY_COLOR : Config.INTERFACE_PRIMARY_COLOR));
+        renderer.drawRectOutline(new Vector2f(pos.x, pos.y), outlineSelection, ((mouseInput.rightButtonPress || mouseInput.leftButtonPress) && hovering) ? Config.INTERFACE_TERTIARY_COLOR2 : (hovering ? Config.INTERFACE_SECONDARY_COLOR2 : Config.INTERFACE_PRIMARY_COLOR2), false);
 
+        renderer.startScissor((int) pos.x, (int) pos.y, (int) (size.x - size.y), (int) size.y);
         renderer.drawString(tabTitle, Config.FONT_COLOR, (int) (pos.x + size.y / 2 - getFontHeight(fontSize) / 2), (int) (pos.y + size.y / 2 - getFontHeight(fontSize) / 2), fontSize);
+        renderer.endScissor();
 
         if(extended)
         {
@@ -251,6 +244,9 @@ public class ComboBox extends Element{
     public void resize() {
         super.resize();
 
+        for(Element e : comboElements)
+            e.resize();
+
         float yOffset = 0;
         if (extended)
             yOffset = updateElements(yOffset);
@@ -260,17 +256,32 @@ public class ComboBox extends Element{
     public void refreshOutline(float yOffset)
     {
         if(outlineSelection != null)
-            this.outlineSelection.cleanup();
+            this.outlineSelection.cleanup(loader);
         if(outlineElement != null)
-            this.outlineElement.cleanup();
-        this.outlineSelection = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f((int) size.x, (int) (2f + yOffset)), LineStrip.UP), loader, window);
-        this.outlineElement = LineStrip.processVerts(LineStrip.getRectangle(size), loader, window);
+            this.outlineElement.cleanup(loader);
+        this.outlineSelection = LineStrip.processVerts(LineStrip.getRectangle(size), loader, window);
+        this.outlineElement = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(size.x, (int) Math.round(2f + yOffset))), loader, window);
     }
 
     public void drawBackdrop(float yOffset)
     {
-        renderer.drawRect((int) pos.x, (int) (pos.y + size.y), (int) size.x, (int) (2f + yOffset), Config.PRIMARY_COLOR);
-        renderer.drawRectOutline(new Vector2f(pos.x, pos.y + size.y), outlineSelection, Config.SECONDARY_COLOR, false);
+        int x = (int) Math.round(pos.x + size.x + size.y / 2);
+        int y = (int) Math.round(pos.y);
+        int xSize = (int) Math.round(size.x);
+        int ySize = (int) Math.round((extended ? 2f : 0f) + yOffset);
+
+        renderer.doBlur(1.0025f, x, y, xSize, ySize);
+        renderer.doBlur(2, x, y, xSize, ySize);
+        renderer.doBlur(3, x, y, xSize, ySize);
+        renderer.doBlur(2, x, y, xSize, ySize);
+        renderer.doBlur(1.5f, x, y, xSize, ySize);
+        renderer.doBlur(1.25f, x, y, xSize, ySize);
+
+        if (extended)
+        {
+            renderer.drawRect(x, (int) Math.round(pos.y), xSize, (int) Math.round(2f + yOffset), Config.PRIMARY_COLOR);
+            renderer.drawRectOutline(new Vector2f(x, pos.y), outlineElement, Config.SECONDARY_COLOR, false);
+        }
     }
 
     public void drawElements(MouseInput mouseInput, boolean overOther)
@@ -286,7 +297,7 @@ public class ComboBox extends Element{
     {
         for (int i = 0; i < comboElements.size(); i++) {
             Element element = comboElements.get(i);
-            element.pos = new Vector2f(pos.x + (element instanceof ButtonList ? 0 : 2), pos.y + size.y + 2 + yOffset);
+            element.pos = new Vector2f(pos.x + (element instanceof ButtonList ? 0 : 2) + size.x + size.y / 2, pos.y + 2 + yOffset);
 
             if (element.size == null)
                 element.size = new Vector2f(size.x - (element instanceof ButtonList ? 0 : 4), getFontHeight(fontSize) + 4);
@@ -352,7 +363,19 @@ public class ComboBox extends Element{
                 }
         }catch (Exception e){}
 
-        return mousePos.x > pos.x && mousePos.y > pos.y && mousePos.x < pos.x + size.x && mousePos.y < pos.y + size.y + (extended ? 2 + yOffset : 0);
+        int x = (int) Math.round(pos.x + size.x + size.y / 2);
+        int y = (int) Math.round(pos.y);
+        int xSize = (int) Math.round(size.x);
+        int ySize = (int) Math.round((extended ? 2f : 0f) + yOffset);
+
+        boolean overElement = mousePos.x > x && mousePos.y > y && mousePos.x < x + xSize && mousePos.y < y + ySize;
+
+        if(extended)
+            for(Element e : comboElements)
+                if(e.isMouseOverElement(mousePos))
+                    overElement = true;
+
+        return overElement;
     }
 
     @Override
@@ -367,7 +390,7 @@ public class ComboBox extends Element{
                 element.onKey(key, scancode, action, mods);
 
                 if (key == GLFW.GLFW_KEY_TAB && action == GLFW.GLFW_PRESS) {
-                    if (element.isFocused()) {
+                    if (element.isFocused() && (element instanceof Textbox || element instanceof Textarea)) {
 
                         element.setFocused(false);
 
@@ -396,7 +419,7 @@ public class ComboBox extends Element{
         for(int i = 0; i < panel.elements.size(); i++)
         {
             Element element = panel.elements.get(i).element;
-            if (element.isFocused()) {
+            if (element.isFocused() && (element instanceof Textbox || element instanceof Textarea)) {
 
                 element.setFocused(false);
 
@@ -480,15 +503,25 @@ public class ComboBox extends Element{
     @Override
     public void onClick(Vector2d pos, int button, int action, int mods, boolean overOther) {
 
+        if(!isMouseOverTab(pos) && !isMouseOverElement(pos))
+            this.extended = false;
+
         if(isMouseOverTab(pos) && !overOther)
         {
-            if(button == GLFW.GLFW_MOUSE_BUTTON_2 && action == GLFW.GLFW_PRESS)
+            if((button == GLFW.GLFW_MOUSE_BUTTON_2 || button == GLFW.GLFW_MOUSE_BUTTON_1)&& action == GLFW.GLFW_PRESS)
             {
                 extended = !extended;
 
                 if(!extended)
                     for(Element element : comboElements)
                         element.setFocused(false);
+                else
+                {
+                    float yOffset = 0;
+                    if (extended)
+                        yOffset = updateElements(yOffset);
+                    refreshOutline(yOffset);
+                }
             }
         }
 
@@ -507,5 +540,10 @@ public class ComboBox extends Element{
                 focused = true;
 
         return extended && focused;
+    }
+
+    @Override
+    public void hoverCursor() {
+        Cursors.setCursor(ECursor.hand2);
     }
 }

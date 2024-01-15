@@ -1,5 +1,6 @@
 package bog.bgmaker.view3d.utils;
 
+import bog.bgmaker.view3d.managers.InputMan;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.lwjgl.glfw.GLFW;
@@ -46,15 +47,20 @@ public class Config {
     public static Color INTERFACE_TERTIARY_COLOR = new Color(100, 100, 100, 210);
     public static Color INTERFACE_TERTIARY_COLOR2 = new Color(100, 100, 100, 255);
     public static boolean MATERIAL_PREVIEW_SHADING = true;
-    public static int KEY_FORWARD = GLFW.GLFW_KEY_W;
-    public static int KEY_LEFT = GLFW.GLFW_KEY_A;
-    public static int KEY_BACK = GLFW.GLFW_KEY_S;
-    public static int KEY_RIGHT = GLFW.GLFW_KEY_D;
-    public static int KEY_UP = GLFW.GLFW_KEY_SPACE;
-    public static int KEY_DOWN = GLFW.GLFW_KEY_LEFT_SHIFT;
-    public static int KEY_SHADING = GLFW.GLFW_KEY_Z;
+    public static InputMan FORWARD = new InputMan(GLFW.GLFW_KEY_W, false);
+    public static InputMan LEFT = new InputMan(GLFW.GLFW_KEY_A, false);
+    public static InputMan BACK = new InputMan(GLFW.GLFW_KEY_S, false);
+    public static InputMan RIGHT = new InputMan(GLFW.GLFW_KEY_D, false);
+    public static InputMan UP = new InputMan(GLFW.GLFW_KEY_SPACE, false);
+    public static InputMan DOWN = new InputMan(GLFW.GLFW_KEY_LEFT_SHIFT, false);
+    public static InputMan SHADING = new InputMan(GLFW.GLFW_KEY_Z, false);
+    public static InputMan CAMERA = new InputMan(GLFW.GLFW_MOUSE_BUTTON_MIDDLE, true);
     public static boolean LEVEL_BORDERS = true;
     public static boolean POD_HELPER = false;
+    public static String FONT_HEADER = "Arial";
+    public static String FONT_TEXT = "Arial";
+    public static String CURSOR = "Adwaita";
+    public static float CURSOR_SCALE = 1f;
 
     private static String buildSettings()
     {
@@ -88,15 +94,18 @@ public class Config {
         builtString += "INTERFACE_TERTIARY_COLOR:" + INTERFACE_TERTIARY_COLOR.getRed() + "," + INTERFACE_TERTIARY_COLOR.getGreen() + "," + INTERFACE_TERTIARY_COLOR.getBlue() + "," + INTERFACE_TERTIARY_COLOR.getAlpha() + ";";
         builtString += "INTERFACE_TERTIARY_COLOR2:" + INTERFACE_TERTIARY_COLOR2.getRed() + "," + INTERFACE_TERTIARY_COLOR2.getGreen() + "," + INTERFACE_TERTIARY_COLOR2.getBlue() + "," + INTERFACE_TERTIARY_COLOR2.getAlpha() + ";";
         builtString += "MATERIAL_PREVIEW_SHADING:" + MATERIAL_PREVIEW_SHADING + ";";
-        builtString += "KEY_FORWARD:" + KEY_FORWARD + ";";
-        builtString += "KEY_LEFT:" + KEY_LEFT + ";";
-        builtString += "KEY_BACK:" + KEY_BACK + ";";
-        builtString += "KEY_RIGHT:" + KEY_RIGHT + ";";
-        builtString += "KEY_UP:" + KEY_UP + ";";
-        builtString += "KEY_DOWN:" + KEY_DOWN + ";";
-        builtString += "KEY_SHADING:" + KEY_SHADING + ";";
+        builtString += "FORWARD:" + FORWARD.mouse + "," + FORWARD.key + ";";
+        builtString += "LEFT:" + LEFT.mouse + "," + LEFT.key + ";";
+        builtString += "BACK:" + BACK.mouse + "," + BACK.key + ";";
+        builtString += "RIGHT:" + RIGHT.mouse + "," + RIGHT.key + ";";
+        builtString += "UP:" + UP.mouse + "," + UP.key + ";";
+        builtString += "DOWN:" + DOWN.mouse + "," + DOWN.key + ";";
+        builtString += "SHADING:" + SHADING.mouse + "," + SHADING.key + ";";
+        builtString += "CAMERA:" + CAMERA.mouse + "," + CAMERA.key + ";";
         builtString += "LEVEL_BORDERS:" + LEVEL_BORDERS + ";";
         builtString += "POD_HELPER:" + POD_HELPER + ";";
+        builtString += "FONT_HEADER:" + FONT_HEADER + ";";
+        builtString += "FONT_TEXT:" + FONT_TEXT + ";";
 
         return builtString;
     }
@@ -104,11 +113,9 @@ public class Config {
     private static File getConfig()
     {
         try {
-            String path = (Config.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getPath();
-            path = path.substring(0, path.lastIndexOf("/"));
-            path += "/config.bgm";
 
-            File config = new File(path);
+            File jarFile = new File(Utils.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
+            File config = new File(jarFile.getParentFile(), "config.bgm");
 
             try {
                 Scanner scanner = new Scanner(config);
@@ -174,15 +181,18 @@ public class Config {
                         case "INTERFACE_TERTIARY_COLOR" : INTERFACE_TERTIARY_COLOR = new Color(Integer.parseInt(d[0]), Integer.parseInt(d[1]), Integer.parseInt(d[2]), Integer.parseInt(d[3])); break;
                         case "INTERFACE_TERTIARY_COLOR2" : INTERFACE_TERTIARY_COLOR2 = new Color(Integer.parseInt(d[0]), Integer.parseInt(d[1]), Integer.parseInt(d[2]), Integer.parseInt(d[3])); break;
                         case "MATERIAL_PREVIEW_SHADING" : MATERIAL_PREVIEW_SHADING = Boolean.parseBoolean(data); break;
-                        case "KEY_FORWARD" : KEY_FORWARD = Integer.parseInt(data); break;
-                        case "KEY_LEFT" : KEY_LEFT = Integer.parseInt(data); break;
-                        case "KEY_BACK" : KEY_BACK = Integer.parseInt(data); break;
-                        case "KEY_RIGHT" : KEY_RIGHT = Integer.parseInt(data); break;
-                        case "KEY_UP" : KEY_UP = Integer.parseInt(data); break;
-                        case "KEY_DOWN" : KEY_DOWN = Integer.parseInt(data); break;
-                        case "KEY_SHADING" : KEY_SHADING = Integer.parseInt(data); break;
+                        case "FORWARD" : FORWARD = new InputMan(Integer.parseInt(d[1]), Boolean.parseBoolean(d[0])); break;
+                        case "LEFT" : LEFT = new InputMan(Integer.parseInt(d[1]), Boolean.parseBoolean(d[0])); break;
+                        case "BACK" : BACK = new InputMan(Integer.parseInt(d[1]), Boolean.parseBoolean(d[0])); break;
+                        case "RIGHT" : RIGHT = new InputMan(Integer.parseInt(d[1]), Boolean.parseBoolean(d[0])); break;
+                        case "UP" : UP = new InputMan(Integer.parseInt(d[1]), Boolean.parseBoolean(d[0])); break;
+                        case "DOWN" : DOWN = new InputMan(Integer.parseInt(d[1]), Boolean.parseBoolean(d[0])); break;
+                        case "SHADING" : SHADING = new InputMan(Integer.parseInt(d[1]), Boolean.parseBoolean(d[0])); break;
+                        case "CAMERA" : CAMERA = new InputMan(Integer.parseInt(d[1]), Boolean.parseBoolean(d[0])); break;
                         case "LEVEL_BORDERS" : LEVEL_BORDERS = Boolean.parseBoolean(data); break;
                         case "POD_HELPER" : POD_HELPER = Boolean.parseBoolean(data); break;
+                        case "FONT_HEADER" : FONT_HEADER = data; break;
+                        case "FONT_TEXT" : FONT_TEXT = data; break;
                     }
                 }
 
@@ -441,7 +451,7 @@ public class Config {
                     }
                     break;
                 case 28:
-                    if(!o.equals(KEY_FORWARD))
+                    if(!o.equals(FORWARD))
                     {
                         hasChanged = true;
                         updateVariables();
@@ -449,7 +459,7 @@ public class Config {
                     }
                     break;
                 case 29:
-                    if(!o.equals(KEY_LEFT))
+                    if(!o.equals(LEFT))
                     {
                         hasChanged = true;
                         updateVariables();
@@ -457,7 +467,7 @@ public class Config {
                     }
                     break;
                 case 30:
-                    if(!o.equals(KEY_BACK))
+                    if(!o.equals(BACK))
                     {
                         hasChanged = true;
                         updateVariables();
@@ -465,7 +475,7 @@ public class Config {
                     }
                     break;
                 case 31:
-                    if(!o.equals(KEY_RIGHT))
+                    if(!o.equals(RIGHT))
                     {
                         hasChanged = true;
                         updateVariables();
@@ -473,7 +483,7 @@ public class Config {
                     }
                     break;
                 case 32:
-                    if(!o.equals(KEY_UP))
+                    if(!o.equals(UP))
                     {
                         hasChanged = true;
                         updateVariables();
@@ -481,7 +491,7 @@ public class Config {
                     }
                     break;
                 case 33:
-                    if(!o.equals(KEY_DOWN))
+                    if(!o.equals(DOWN))
                     {
                         hasChanged = true;
                         updateVariables();
@@ -489,7 +499,7 @@ public class Config {
                     }
                     break;
                 case 34:
-                    if(!o.equals(KEY_SHADING))
+                    if(!o.equals(SHADING))
                     {
                         hasChanged = true;
                         updateVariables();
@@ -506,6 +516,22 @@ public class Config {
                     break;
                 case 36:
                     if(!o.equals(POD_HELPER))
+                    {
+                        hasChanged = true;
+                        updateVariables();
+                        break loop;
+                    }
+                    break;
+                case 37:
+                    if(!((String)o).equalsIgnoreCase(FONT_HEADER))
+                    {
+                        hasChanged = true;
+                        updateVariables();
+                        break loop;
+                    }
+                    break;
+                case 38:
+                    if(!((String)o).equalsIgnoreCase(FONT_TEXT))
                     {
                         hasChanged = true;
                         updateVariables();
@@ -550,14 +576,16 @@ public class Config {
         variables.add(INTERFACE_TERTIARY_COLOR);
         variables.add(INTERFACE_TERTIARY_COLOR2);
         variables.add(MATERIAL_PREVIEW_SHADING);
-        variables.add(KEY_FORWARD);
-        variables.add(KEY_LEFT);
-        variables.add(KEY_BACK);
-        variables.add(KEY_RIGHT);
-        variables.add(KEY_UP);
-        variables.add(KEY_DOWN);
-        variables.add(KEY_SHADING);
+        variables.add(FORWARD);
+        variables.add(LEFT);
+        variables.add(BACK);
+        variables.add(RIGHT);
+        variables.add(UP);
+        variables.add(DOWN);
+        variables.add(SHADING);
         variables.add(LEVEL_BORDERS);
         variables.add(POD_HELPER);
+        variables.add(FONT_HEADER);
+        variables.add(FONT_TEXT);
     }
 }

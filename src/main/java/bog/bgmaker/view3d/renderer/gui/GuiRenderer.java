@@ -9,6 +9,8 @@ import bog.bgmaker.view3d.renderer.gui.ingredients.*;
 import bog.bgmaker.view3d.utils.Transformation;
 import bog.bgmaker.view3d.utils.Utils;
 import org.joml.Vector2f;
+import org.joml.Vector2i;
+import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
@@ -46,9 +48,11 @@ public class GuiRenderer {
         shader.createUniform("transformationMatrix");
         shader.createUniform("guiTexture");
         shader.createUniform("hasCoords");
+        shader.createUniform("circle");
         shader.createUniform("hasColor");
         shader.createUniform("color");
         shader.createUniform("smoothst");
+        shader.createUniform("alpha");
 
         line = loader.loadModel(new float[]{0f, 0f, 100f, 100f});
         defaultQuad = defaultQuad(loader);
@@ -56,7 +60,7 @@ public class GuiRenderer {
 
     public ArrayList<Drawable> elements = new ArrayList<>();
 
-    public void render()
+    public void render(int screenTexture, int blurBuffer, int blurTexture, int blurDepth)
     {
         shader.bind();
 
@@ -274,6 +278,57 @@ public class GuiRenderer {
                         }
                     }
                     break;
+                case 5: //CIRCLE
+                    {
+                        TriStrip element = (TriStrip) drawable;
+                        GL30.glBindVertexArray(element.model.vao);
+                        GL20.glEnableVertexAttribArray(0);
+
+                        if(element.hasTexCoords)
+                            GL20.glEnableVertexAttribArray(1);
+
+                        if(element.texture != -1)
+                        {
+                            GL13.glActiveTexture(GL13.GL_TEXTURE0);
+                            GL11.glBindTexture(GL11.GL_TEXTURE_2D, element.texture);
+                        }
+
+                        shader.setUniform("hasCoords", element.hasTexCoords);
+                        shader.setUniform("circle", ((Circle) drawable).circle);
+                        shader.setUniform("guiTexture", 0);
+                        shader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(
+                                new Vector2f(element.pos.x / (window.width/2f) - 1 + element.scale.x / window.width, (-element.pos.y) / (window.height/2f) + 1 - element.scale.y / window.height),
+                                new Vector2f(element.scale.x / window.width, element.scale.y / window.height)));
+
+                        if(element.color != null)
+                            shader.setUniform("color", new Vector4f(element.color.getRed() / 255f, element.color.getGreen() / 255f, element.color.getBlue() / 255f, element.color.getAlpha() / 255f));
+
+                        shader.setUniform("hasColor", element.color == null ? 0 : element.texture != -1 ? 1 : 2);
+                        shader.setUniform("smoothst", element.smoothstep);
+
+                        GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, element.model.vertexCount);
+
+                        if(!element.staticTexture)
+                        {
+                            if(loader.textures.contains(element.texture))
+                                loader.textures.remove((Object)element.texture);
+                            GL11.glDeleteTextures(element.texture);
+                        }
+
+                        shader.setUniform("circle", new Vector4f(-1));
+
+                        clearElement(element);
+                    }
+                    break;
+                case 6: //BLUR
+                    {
+                        Blur blur = (Blur)drawable;
+                        if(blur.start)
+                            startBlur(screenTexture, blurBuffer, blurTexture, blurDepth, blur.amount);
+                        else
+                            endBlur(blurTexture, blur.amount);
+                    }
+                    break;
             }
 
         GL11.glEnable(GL11.GL_DEPTH_TEST);
@@ -306,5 +361,65 @@ public class GuiRenderer {
             for(int vbo : vbos)
                 loader.vbos.remove((Object)vbo);
         }
+    }
+
+    private void startBlur(int screenTexture, int blurBuffer, int blurTexture, int blurDepth, float amount)
+    {
+        RenderMan.bindFrameBuffer(blurBuffer);
+        RenderMan.bindColorTex(blurTexture);
+        RenderMan.bindDepthTex(blurDepth);
+        RenderMan.clear();
+
+        GL30.glBindVertexArray(GuiRenderer.defaultQuad.vao);
+        GL20.glEnableVertexAttribArray(0);
+
+        GL13.glActiveTexture(GL13.GL_TEXTURE0);
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, screenTexture);
+
+        shader.setUniform("hasCoords", false);
+        shader.setUniform("guiTexture", 0);
+        shader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(
+                new Vector2f(1f / amount, 1f / amount),
+                new Vector2f(1f / amount, -(1f / amount))
+        ));
+        shader.setUniform("hasColor", 0);
+        shader.setUniform("smoothst", false);
+
+        GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, GuiRenderer.defaultQuad.vertexCount);
+
+        GL20.glDisableVertexAttribArray(0);
+        GL30.glBindVertexArray(0);
+
+        unbindFrameBuffer();
+    }
+
+    public void endBlur(int blurTexture, float amount)
+    {
+        GL30.glBindVertexArray(GuiRenderer.defaultQuad.vao);
+        GL20.glEnableVertexAttribArray(0);
+
+        GL13.glActiveTexture(GL13.GL_TEXTURE0);
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, blurTexture);
+
+        shader.setUniform("hasCoords", false);
+        shader.setUniform("guiTexture", 0);
+        shader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(
+                new Vector2f(-1f),
+                new Vector2f(amount, -amount)
+        ));
+        shader.setUniform("hasColor", 0);
+        shader.setUniform("smoothst", false);
+
+        shader.setUniform("alpha", true);
+        GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, GuiRenderer.defaultQuad.vertexCount);
+        shader.setUniform("alpha", false);
+
+        GL20.glDisableVertexAttribArray(0);
+        GL30.glBindVertexArray(0);
+    }
+
+    public void unbindFrameBuffer()
+    {
+        GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, 0);
     }
 }

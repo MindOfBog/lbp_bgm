@@ -14,18 +14,17 @@ import bog.bgmaker.view3d.managers.EngineMan;
 import bog.bgmaker.view3d.managers.MouseInput;
 import bog.bgmaker.view3d.managers.RenderMan;
 import bog.bgmaker.view3d.managers.WindowMan;
+import bog.bgmaker.view3d.renderer.gui.GuiKeybind;
 import bog.bgmaker.view3d.renderer.gui.GuiScreen;
+import bog.bgmaker.view3d.renderer.gui.cursor.ECursor;
 import bog.bgmaker.view3d.renderer.gui.elements.Button;
 import bog.bgmaker.view3d.renderer.gui.elements.Checkbox;
 import bog.bgmaker.view3d.renderer.gui.elements.*;
 import bog.bgmaker.view3d.renderer.gui.font.FontRenderer;
 import bog.bgmaker.view3d.renderer.gui.ingredients.*;
+import bog.bgmaker.view3d.utils.*;
 import bog.bgmaker.view3d.utils.CWLibUtils.LevelSettingsUtils;
 import bog.bgmaker.view3d.utils.CWLibUtils.SkeletonUtils;
-import bog.bgmaker.view3d.utils.Config;
-import bog.bgmaker.view3d.utils.Consts;
-import bog.bgmaker.view3d.utils.MousePicker;
-import bog.bgmaker.view3d.utils.Utils;
 import cwlib.enums.*;
 import cwlib.resources.RMesh;
 import cwlib.resources.RPlan;
@@ -81,7 +80,7 @@ public class View3D implements ILogic {
 
     public ArrayList<FileEntry> entries;
 
-    GuiScreen currentScreen;
+    public GuiScreen currentScreen;
     GuiScreen overrideScreen;
 
     Model fpsOutlineRect;
@@ -188,6 +187,9 @@ public class View3D implements ILogic {
         if(!elementFocused && !overElement)
             camera.movePos((cameraInc.x * Config.CAMERA_MOVE_SPEED) / (EngineMan.fps == 0 ? 60 : EngineMan.fps), (cameraInc.y * Config.CAMERA_MOVE_SPEED) / (EngineMan.fps == 0 ? 60 : EngineMan.fps), (cameraInc.z * Config.CAMERA_MOVE_SPEED) / (EngineMan.fps == 0 ? 60 : EngineMan.fps));
 
+        if(!overElement)
+            Cursors.setCursor(ECursor.left_ptr);
+
         this.mouseInput = mouseInput;
 
         boolean hasSelection = false;
@@ -213,7 +215,7 @@ public class View3D implements ILogic {
 
         Vector3f screenPos = camera.worldToScreenPointF(getSelectedPosition(), window);
 
-        if(mouseInput.middleButtonPress && !overElement && introPlayed)
+        if(Config.CAMERA.isPressed(window, mouseInput) && !overElement && introPlayed)
         {
             if(camera.getWrappedRotation().x > -90 && camera.getWrappedRotation().x < 90)
                 camera.moveRot(mouseInput.displayVec.x * Config.MOUSE_SENS, mouseInput.displayVec.y * Config.MOUSE_SENS, 0);
@@ -299,8 +301,61 @@ public class View3D implements ILogic {
         if(!introPlayed)
             return;
 
-        if(!overrideScreen.onClick(mouseInput, button, action, mods))
-            currentScreen.onClick(mouseInput, button, action, mods);
+        boolean elementFocused = overrideScreen.onClick(mouseInput, button, action, mods);
+        if(!elementFocused)
+            elementFocused = currentScreen.onClick(mouseInput, button, action, mods);
+
+        if(!elementFocused)
+        {
+            if(Config.SHADING.isButton(button) && action == GLFW.GLFW_PRESS)
+            {
+                shadingMenu = true;
+                shadingPos.x = (float) mouseInput.currentPos.x;
+                shadingPos.y = (float) mouseInput.currentPos.y;
+            }
+            else if(Config.SHADING.isButton(button) && action == GLFW.GLFW_RELEASE)
+                shadingMenu = false;
+        }
+
+        if(!window.isKeyPressed(GLFW.GLFW_KEY_LEFT_CONTROL))
+        {
+            if (action == GLFW.GLFW_PRESS)
+            {
+                if(Config.FORWARD.isButton(button))
+                    cameraInc.z = Config.BACK.isPressed(window, mouseInput) ? 0 : -1;
+                if(Config.LEFT.isButton(button))
+                    cameraInc.x = Config.RIGHT.isPressed(window, mouseInput) ? 0 : -1;
+                if(Config.BACK.isButton(button))
+                    cameraInc.z = Config.FORWARD.isPressed(window, mouseInput) ? 0 : 1;
+                if(Config.RIGHT.isButton(button))
+                    cameraInc.x = Config.LEFT.isPressed(window, mouseInput) ? 0 : 1;
+                if(Config.UP.isButton(button))
+                    cameraInc.y = Config.DOWN.isPressed(window, mouseInput) ? 0 : 1;
+                if(Config.DOWN.isButton(button))
+                    cameraInc.y = Config.UP.isPressed(window, mouseInput) ? 0 : -1;
+            }
+            else if (action == GLFW.GLFW_RELEASE)
+            {
+                if(Config.FORWARD.isButton(button))
+                    cameraInc.z = Config.BACK.isPressed(window, mouseInput) ? 1 : 0;
+                if(Config.BACK.isButton(button))
+                    cameraInc.z = Config.FORWARD.isPressed(window, mouseInput) ? -1 : 0;
+                if(Config.LEFT.isButton(button))
+                    cameraInc.x = Config.RIGHT.isPressed(window, mouseInput) ? 1 : 0;
+                if(Config.RIGHT.isButton(button))
+                    cameraInc.x = Config.LEFT.isPressed(window, mouseInput) ? -1 : 0;
+                if(Config.UP.isButton(button))
+                    cameraInc.y = Config.DOWN.isPressed(window, mouseInput) ? -1 : 0;
+                if(Config.DOWN.isButton(button))
+                    cameraInc.y = Config.UP.isPressed(window, mouseInput) ? 1 : 0;
+            }
+        }
+        else
+        {
+            cameraInc.x = 0;
+            cameraInc.y = 0;
+            cameraInc.z = 0;
+        }
     }
 
     boolean shadingMenu = false;
@@ -320,13 +375,13 @@ public class View3D implements ILogic {
 
         if(!elementFocused)
         {
-            if(key == Config.KEY_SHADING && action == GLFW.GLFW_PRESS)
+            if(Config.SHADING.isKey(key) && action == GLFW.GLFW_PRESS)
             {
                 shadingMenu = true;
                 shadingPos.x = (float) mouseInput.currentPos.x;
                 shadingPos.y = (float) mouseInput.currentPos.y;
             }
-            else if(key == Config.KEY_SHADING && action == GLFW.GLFW_RELEASE)
+            else if(Config.SHADING.isKey(key) && action == GLFW.GLFW_RELEASE)
                 shadingMenu = false;
         }
 
@@ -334,18 +389,18 @@ public class View3D implements ILogic {
         {
             if (action == 1)
             {
-                if(key == Config.KEY_FORWARD)
-                    cameraInc.z = window.isKeyPressed(Config.KEY_BACK) ? 0 : -1;
-                if(key == Config.KEY_LEFT)
-                    cameraInc.x = window.isKeyPressed(Config.KEY_RIGHT) ? 0 : -1;
-                if(key == Config.KEY_BACK)
-                    cameraInc.z = window.isKeyPressed(Config.KEY_FORWARD) ? 0 : 1;
-                if(key == Config.KEY_RIGHT)
-                    cameraInc.x = window.isKeyPressed(Config.KEY_LEFT) ? 0 : 1;
-                if(key == Config.KEY_UP)
-                    cameraInc.y = window.isKeyPressed(Config.KEY_DOWN) ? 0 : 1;
-                if(key == Config.KEY_DOWN)
-                    cameraInc.y = window.isKeyPressed(Config.KEY_UP) ? 0 : -1;
+                if(Config.FORWARD.isKey(key))
+                    cameraInc.z = Config.BACK.isPressed(window, mouseInput) ? 0 : -1;
+                if(Config.LEFT.isKey(key))
+                    cameraInc.x = Config.RIGHT.isPressed(window, mouseInput) ? 0 : -1;
+                if(Config.BACK.isKey(key))
+                    cameraInc.z = Config.FORWARD.isPressed(window, mouseInput) ? 0 : 1;
+                if(Config.RIGHT.isKey(key))
+                    cameraInc.x = Config.LEFT.isPressed(window, mouseInput) ? 0 : 1;
+                if(Config.UP.isKey(key))
+                    cameraInc.y = Config.DOWN.isPressed(window, mouseInput) ? 0 : 1;
+                if(Config.DOWN.isKey(key))
+                    cameraInc.y = Config.UP.isPressed(window, mouseInput) ? 0 : -1;
                 if((key == GLFW.GLFW_KEY_DELETE || key == GLFW.GLFW_KEY_BACKSPACE) && !elementFocused)
                 {
                     for (int i = entities.size() - 1; i >= 0; i--)
@@ -355,25 +410,25 @@ public class View3D implements ILogic {
             }
             else if (action == 0)
             {
-                if(key == Config.KEY_FORWARD)
-                    cameraInc.z = window.isKeyPressed(Config.KEY_BACK) ? 1 : 0;
-                if(key == Config.KEY_BACK)
-                    cameraInc.z = window.isKeyPressed(Config.KEY_FORWARD) ? -1 : 0;
-                if(key == Config.KEY_LEFT)
-                    cameraInc.x = window.isKeyPressed(Config.KEY_RIGHT) ? 1 : 0;
-                if(key == Config.KEY_RIGHT)
-                    cameraInc.x = window.isKeyPressed(Config.KEY_LEFT) ? -1 : 0;
-                if(key == Config.KEY_UP)
-                    cameraInc.y = window.isKeyPressed(Config.KEY_DOWN) ? -1 : 0;
-                if(key == Config.KEY_DOWN)
-                    cameraInc.y = window.isKeyPressed(Config.KEY_UP) ? 1 : 0;
+                if(Config.FORWARD.isKey(key))
+                    cameraInc.z = Config.BACK.isPressed(window, mouseInput) ? 1 : 0;
+                if(Config.BACK.isKey(key))
+                    cameraInc.z = Config.FORWARD.isPressed(window, mouseInput) ? -1 : 0;
+                if(Config.LEFT.isKey(key))
+                    cameraInc.x = Config.RIGHT.isPressed(window, mouseInput) ? 1 : 0;
+                if(Config.RIGHT.isKey(key))
+                    cameraInc.x = Config.LEFT.isPressed(window, mouseInput) ? -1 : 0;
+                if(Config.UP.isKey(key))
+                    cameraInc.y = Config.DOWN.isPressed(window, mouseInput) ? -1 : 0;
+                if(Config.DOWN.isKey(key))
+                    cameraInc.y = Config.UP.isPressed(window, mouseInput) ? 1 : 0;
             }
         }
-        else if(key == GLFW.GLFW_KEY_LEFT_CONTROL && action == 0)
+        else if(key == GLFW.GLFW_KEY_LEFT_CONTROL && action == GLFW.GLFW_RELEASE)
         {
-            cameraInc.x = window.isKeyPressed(Config.KEY_RIGHT) ? 1 : window.isKeyPressed(Config.KEY_LEFT) ? -1 : 0;
-            cameraInc.y = window.isKeyPressed(Config.KEY_DOWN) ? -1 : window.isKeyPressed(Config.KEY_UP) ? 1 : 0;
-            cameraInc.z = window.isKeyPressed(Config.KEY_BACK) ? 1 : window.isKeyPressed(Config.KEY_FORWARD) ? -1 : 0;
+            cameraInc.x = Config.RIGHT.isPressed(window, mouseInput) ? 1 : Config.LEFT.isPressed(window, mouseInput) ? -1 : 0;
+            cameraInc.y = Config.DOWN.isPressed(window, mouseInput) ? -1 : Config.UP.isPressed(window, mouseInput) ? 1 : 0;
+            cameraInc.z = Config.BACK.isPressed(window, mouseInput) ? 1 : Config.FORWARD.isPressed(window, mouseInput) ? -1 : 0;
         }
         else
         {
@@ -457,12 +512,14 @@ public class View3D implements ILogic {
             for(Element e : Settings.guiElements)
                 e.resize();
             if(fpsOutlineRect != null)
-                fpsOutlineRect.cleanup();
+                fpsOutlineRect.cleanup(loader);
             fpsOutlineRect = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(150, 25)), loader, window);
             ((Export)Export).resize();
+            if(currentScreen instanceof GuiKeybind)
+                ((GuiKeybind)currentScreen).resize();
         }
 
-        renderer.render(camera, mouseInput);
+        renderer.render(mouseInput, this);
     }
 
     @Override
@@ -683,6 +740,7 @@ public class View3D implements ILogic {
 
         if(!introPlayed)
         {
+            Cursors.setCursor(ECursor.left_ptr_watch);
             mouseInput.currentPos = prev;
             float out = 3f - (System.currentTimeMillis() - initMillis) / 1300f;
             float in = Math.clamp(0f, 1f, out - 1.5f);
@@ -697,8 +755,8 @@ public class View3D implements ILogic {
 
         if(shadingMenu)
         {
-            renderer.drawCircle(loader, shadingPos, (getStringWidth("Shading", 10) / 2) * 1.15f, 20, Config.INTERFACE_PRIMARY_COLOR);
             renderer.drawCircle(loader, shadingPos, (getStringWidth("Shading", 10) / 2) * 1.35f, 20, Config.INTERFACE_PRIMARY_COLOR);
+            renderer.drawCircleOutline(loader, shadingPos, (getStringWidth("Shading", 10) / 2) * 1.35f, 20, Config.INTERFACE_PRIMARY_COLOR2);
             renderer.drawString("Shading", Config.FONT_COLOR, (int) (shadingPos.x - getStringWidth("Shading", 10) / 2), (int) (shadingPos.y - getFontHeight(10) / 2), 10);
 
             solidShading.pos.x = shadingPos.x + 50;
@@ -810,7 +868,7 @@ public class View3D implements ILogic {
 //
 //    private void drawCircle(Vector2f center, float radius, int tris, Color color)
 //    {
-//        renderer.processGuiElement(new Circle(loader, window, color, center, radius, tris, false));
+//        renderer.processGuiElement(new get(loader, window, color, center, radius, tris, false));
 //    }
 //
 //    private void drawString(String text, Color color, int x, int y, int size)

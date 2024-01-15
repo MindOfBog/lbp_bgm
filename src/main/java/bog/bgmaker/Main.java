@@ -4,12 +4,20 @@ import bog.bgmaker.view3d.mainWindow.LoadedData;
 import bog.bgmaker.view3d.mainWindow.View3D;
 import bog.bgmaker.view3d.managers.EngineMan;
 import bog.bgmaker.view3d.managers.WindowMan;
+import bog.bgmaker.view3d.renderer.gui.cursor.Cursor;
+import bog.bgmaker.view3d.renderer.gui.font.FNT;
+import bog.bgmaker.view3d.renderer.gui.font.FontRenderer;
 import bog.bgmaker.view3d.utils.Config;
+import bog.bgmaker.view3d.utils.Cursors;
 import com.github.weisj.darklaf.LafManager;
 import com.github.weisj.darklaf.theme.DarculaTheme;
+import org.lwjgl.glfw.GLFW;
 
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 
 /**
  * @author Bog
@@ -33,11 +41,14 @@ public class Main {
         engine = new EngineMan();
         debug = args.length > 0 && args[0].equalsIgnoreCase("debug");
 
+        Cursors.loadCursors();
+
         LoadedData.loadedModels = new HashMap<>();
         LoadedData.loadedSingleModels = new HashMap<>();
         LoadedData.loadedGfxMaterials = new HashMap<>();
         LoadedData.loadedTextures = new HashMap<>();
         LoadedData.FARCs = new ArrayList<>();
+
         secondaryThread = new Thread() {
             long lastMillis = 0;
             long lastMillis2 = 0;

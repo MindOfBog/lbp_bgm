@@ -3,6 +3,7 @@ package bog.bgmaker.view3d.managers;
 import bog.bgmaker.Main;
 import bog.bgmaker.view3d.ObjectLoader;
 import bog.bgmaker.view3d.utils.Config;
+import bog.bgmaker.view3d.utils.Cursors;
 import org.joml.Matrix4f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -63,6 +64,8 @@ public class WindowMan {
         }
 
         window = GLFW.glfwCreateWindow(width, height, title, MemoryUtil.NULL, MemoryUtil.NULL);
+
+        Cursors.updateCursors();
 
         if(window == MemoryUtil.NULL)
             throw new RuntimeException("Failed to create GLFW window.");

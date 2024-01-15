@@ -2,13 +2,19 @@ package bog.bgmaker.view3d.mainWindow.screens;
 
 import bog.bgmaker.Main;
 import bog.bgmaker.view3d.mainWindow.View3D;
+import bog.bgmaker.view3d.managers.InputMan;
+import bog.bgmaker.view3d.managers.MouseInput;
 import bog.bgmaker.view3d.renderer.gui.GuiKeybind;
 import bog.bgmaker.view3d.renderer.gui.GuiScreen;
+import bog.bgmaker.view3d.renderer.gui.cursor.Cursor;
 import bog.bgmaker.view3d.renderer.gui.elements.*;
 import bog.bgmaker.view3d.renderer.gui.elements.Button;
 import bog.bgmaker.view3d.renderer.gui.elements.Checkbox;
 import bog.bgmaker.view3d.renderer.gui.elements.Panel;
+import bog.bgmaker.view3d.renderer.gui.font.FNT;
+import bog.bgmaker.view3d.renderer.gui.font.FontRenderer;
 import bog.bgmaker.view3d.utils.Config;
+import bog.bgmaker.view3d.utils.Cursors;
 import bog.bgmaker.view3d.utils.Utils;
 import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
@@ -103,6 +109,8 @@ public class Settings extends GuiScreen{
     public Textbox interfaceTertiaryColor2G;
     public Textbox interfaceTertiaryColor2B;
     public Textbox interfaceTertiaryColor2A;
+
+    Textbox cursorSize;
     public Slider fov;
     public Checkbox culling;
     public Slider outlineSize;
@@ -145,7 +153,7 @@ public class Settings extends GuiScreen{
         zNearPanel.elements.add(new Panel.PanelElement(zNear, 0.475f));
 
         Panel zFarPanel = rendererSettings.addPanel("zFarPanel");
-        zFarPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Z Near:", 10, mainView.renderer), 0.525f));
+        zFarPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Z Far:", 10, mainView.renderer), 0.525f));
         zFar = new Textbox("", new Vector2f(), new Vector2f(), 10, mainView.renderer, mainView.loader, mainView.window);
         zFar.noLetters().noOthers();
         zFar.setText(Float.toString(Config.Z_FAR));
@@ -585,25 +593,186 @@ public class Settings extends GuiScreen{
             panel.elements.add(new Panel.PanelElement(interfaceTertiaryColor2A, textboxsize));
         }
 
+        Panel headerPanel = guiSettings.addPanel("headerPanel");
+        headerPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Header:", 10, mainView.renderer), 0.35f));
+
+        ComboBox headerCombo = new ComboBox("", Config.FONT_HEADER, new Vector2f(), new Vector2f(), 10, mainView.renderer, mainView.loader, mainView.window);
+        ButtonList headerList = new ButtonList("", FontRenderer.Fonts, new Vector2f(), new Vector2f(), 10, mainView.renderer, mainView.loader, mainView.window) {
+            @Override
+            public void clickedButton(Object object, int index, int button, int action, int mods) {
+                if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
+                    FontRenderer.headerFont = index;
+                Config.FONT_HEADER = FontRenderer.Fonts.get(index).info.face;
+                headerCombo.tabTitle = Config.FONT_HEADER;
+            }
+
+            @Override
+            public void hoveringButton(Object object, int index) {
+                hovering = index;
+            }
+
+            int hovering = -1;
+
+            @Override
+            public void draw(MouseInput mouseInput, boolean overElement) {
+                hovering = -1;
+                super.draw(mouseInput, overElement);
+            }
+
+            @Override
+            public boolean isHighlighted(Object object, int index) {
+                return hovering == index;
+            }
+
+            @Override
+            public boolean isSelected(Object object, int index) {
+                return FontRenderer.headerFont == index;
+            }
+
+            @Override
+            public String buttonText(Object object, int index) {
+                FNT font = (FNT) object;
+                return font.info.face;
+            }
+
+            @Override
+            public boolean searchFilter(Object object, int index) {
+                return true;
+            }
+        };
+        headerCombo.addList("headerList", headerList, 80);
+
+        headerPanel.elements.add(new Panel.PanelElement(headerCombo, 0.65f));
+
+        Panel textPanel = guiSettings.addPanel("textPanel");
+        textPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Text:", 10, mainView.renderer), 0.35f));
+
+        ComboBox textCombo = new ComboBox("", Config.FONT_TEXT, new Vector2f(), new Vector2f(), 10, mainView.renderer, mainView.loader, mainView.window);
+        ButtonList textList = new ButtonList("", FontRenderer.Fonts, new Vector2f(), new Vector2f(), 10, mainView.renderer, mainView.loader, mainView.window) {
+            @Override
+            public void clickedButton(Object object, int index, int button, int action, int mods) {
+                if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
+                    FontRenderer.textFont = index;
+                Config.FONT_TEXT = FontRenderer.Fonts.get(index).info.face;
+                textCombo.tabTitle = Config.FONT_TEXT;
+            }
+
+            @Override
+            public void hoveringButton(Object object, int index) {
+                hovering = index;
+            }
+
+            int hovering = -1;
+
+            @Override
+            public void draw(MouseInput mouseInput, boolean overElement) {
+                hovering = -1;
+                super.draw(mouseInput, overElement);
+            }
+
+            @Override
+            public boolean isHighlighted(Object object, int index) {
+                return hovering == index;
+            }
+
+            @Override
+            public boolean isSelected(Object object, int index) {
+                return FontRenderer.textFont == index;
+            }
+
+            @Override
+            public String buttonText(Object object, int index) {
+                FNT font = (FNT) object;
+                return font.info.face;
+            }
+
+            @Override
+            public boolean searchFilter(Object object, int index) {
+                return true;
+            }
+        };
+        textCombo.addList("textList", textList, 80);
+
+        textPanel.elements.add(new Panel.PanelElement(textCombo, 0.65f));
+
+        Panel cursorPanel = guiSettings.addPanel("cursorPanel");
+        cursorPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Cursor:", 10, mainView.renderer), 0.35f));
+
+        ComboBox cursorCombo = new ComboBox("", Config.CURSOR, new Vector2f(), new Vector2f(), 10, mainView.renderer, mainView.loader, mainView.window);
+        ButtonList cursorList = new ButtonList("", Cursors.loadedCursors, new Vector2f(), new Vector2f(), 10, mainView.renderer, mainView.loader, mainView.window) {
+            @Override
+            public void clickedButton(Object object, int index, int button, int action, int mods) {
+                if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
+                    Cursors.activeCursor = index;
+                Config.CURSOR = Cursors.loadedCursors.get(index).name;
+                cursorCombo.tabTitle = Config.CURSOR;
+            }
+
+            @Override
+            public void hoveringButton(Object object, int index) {
+                hovering = index;
+            }
+
+            int hovering = -1;
+
+            @Override
+            public void draw(MouseInput mouseInput, boolean overElement) {
+                hovering = -1;
+                super.draw(mouseInput, overElement);
+            }
+
+            @Override
+            public boolean isHighlighted(Object object, int index) {
+                return hovering == index;
+            }
+
+            @Override
+            public boolean isSelected(Object object, int index) {
+                return Cursors.activeCursor == index;
+            }
+
+            @Override
+            public String buttonText(Object object, int index) {
+                Cursor cursor = (Cursor) object;
+                return cursor.name;
+            }
+
+            @Override
+            public boolean searchFilter(Object object, int index) {
+                return true;
+            }
+        };
+        cursorCombo.addList("cursorList", cursorList, 80);
+
+        cursorPanel.elements.add(new Panel.PanelElement(cursorCombo, 0.65f));
+
+        Panel cursorSizePanel = guiSettings.addPanel("cursorSizePanel");
+        cursorSizePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Size:", 10, mainView.renderer), 0.35f));
+        cursorSize = new Textbox("", new Vector2f(), new Vector2f(), 10, mainView.renderer, mainView.loader, mainView.window);
+        cursorSize.setText("" + Config.CURSOR_SCALE);
+        cursorSizePanel.elements.add(new Panel.PanelElement(cursorSize, 0.65f));
+
         controls = new DropDownTab("controls", "Controls", new Vector2f(7, 39 + 14 + rendererSettings.getFullHeight() + guiSettings.getFullHeight()), new Vector2f(200, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window).closed();
 
         float buttonWidth = 0.62f;
 
         Panel forwardPanel = controls.addPanel("forwardPanel");
         forwardPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Forward:", 10, mainView.renderer), 1f - buttonWidth));
-        Button forward = new Button("", Utils.getKeyName(Config.KEY_FORWARD).toUpperCase(), new Vector2f(), new Vector2f(), 10, mainView.renderer, mainView.loader, mainView.window)
+        Button forward = new Button("", Config.FORWARD.inputName(), new Vector2f(), new Vector2f(), 10, mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public void clickedButton(int button, int action, int mods) {
+
+                if(!isClicked)
+                    return;
+
                 Button btn = this;
-                mainView.setCurrentScreen(new GuiKeybind(Config.KEY_FORWARD, 10, renderer, loader, mainView.window) {
+                mainView.setCurrentScreen(new GuiKeybind(Config.FORWARD, 10, renderer, loader, mainView.window) {
                     @Override
-                    public void keybind(int key) {
-                        Config.KEY_FORWARD = key;
-                        if(Config.KEY_FORWARD != GLFW.GLFW_KEY_UNKNOWN)
-                            btn.buttonText = Utils.getKeyName(key).toUpperCase();
-                        else
-                            btn.buttonText = "NONE";
+                    public void keybind(InputMan currentKey) {
+                        Config.FORWARD.key = currentKey.key;
+                        Config.FORWARD.mouse = currentKey.mouse;
+                        btn.buttonText = Config.FORWARD.inputName();
 
                         if(btn.buttonText == null)
                             btn.buttonText = "error";
@@ -620,19 +789,19 @@ public class Settings extends GuiScreen{
 
         Panel backPanel = controls.addPanel("backPanel");
         backPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Back:", 10, mainView.renderer), 1f - buttonWidth));
-        Button back = new Button("", Utils.getKeyName(Config.KEY_BACK).toUpperCase(), new Vector2f(), new Vector2f(), 10, mainView.renderer, mainView.loader, mainView.window)
+        Button back = new Button("", Config.BACK.inputName(), new Vector2f(), new Vector2f(), 10, mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public void clickedButton(int button, int action, int mods) {
+                if(!isClicked)
+                    return;
                 Button btn = this;
-                mainView.setCurrentScreen(new GuiKeybind(Config.KEY_BACK, 10, renderer, loader, mainView.window) {
+                mainView.setCurrentScreen(new GuiKeybind(Config.BACK, 10, renderer, loader, mainView.window) {
                     @Override
-                    public void keybind(int key) {
-                        Config.KEY_BACK = key;
-                        if(Config.KEY_BACK != GLFW.GLFW_KEY_UNKNOWN)
-                            btn.buttonText = Utils.getKeyName(key).toUpperCase();
-                        else
-                            btn.buttonText = "NONE";
+                    public void keybind(InputMan currentKey) {
+                        Config.BACK.key = currentKey.key;
+                        Config.BACK.mouse = currentKey.mouse;
+                        btn.buttonText = Config.BACK.inputName();
 
                         if(btn.buttonText == null)
                             btn.buttonText = "error";
@@ -649,19 +818,19 @@ public class Settings extends GuiScreen{
 
         Panel leftPanel = controls.addPanel("leftPanel");
         leftPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Left:", 10, mainView.renderer), 1f - buttonWidth));
-        Button left = new Button("", Utils.getKeyName(Config.KEY_LEFT).toUpperCase(), new Vector2f(), new Vector2f(), 10, mainView.renderer, mainView.loader, mainView.window)
+        Button left = new Button("", Config.LEFT.inputName(), new Vector2f(), new Vector2f(), 10, mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public void clickedButton(int button, int action, int mods) {
+                if(!isClicked)
+                    return;
                 Button btn = this;
-                mainView.setCurrentScreen(new GuiKeybind(Config.KEY_LEFT, 10, renderer, loader, mainView.window) {
+                mainView.setCurrentScreen(new GuiKeybind(Config.LEFT, 10, renderer, loader, mainView.window) {
                     @Override
-                    public void keybind(int key) {
-                        Config.KEY_LEFT = key;
-                        if(Config.KEY_LEFT != GLFW.GLFW_KEY_UNKNOWN)
-                            btn.buttonText = Utils.getKeyName(key).toUpperCase();
-                        else
-                            btn.buttonText = "NONE";
+                    public void keybind(InputMan currentKey) {
+                        Config.LEFT.key = currentKey.key;
+                        Config.LEFT.mouse = currentKey.mouse;
+                        btn.buttonText = Config.LEFT.inputName();
 
                         if(btn.buttonText == null)
                             btn.buttonText = "error";
@@ -678,19 +847,19 @@ public class Settings extends GuiScreen{
 
         Panel rightPanel = controls.addPanel("rightPanel");
         rightPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Right:", 10, mainView.renderer), 1f - buttonWidth));
-        Button right = new Button("", Utils.getKeyName(Config.KEY_RIGHT).toUpperCase(), new Vector2f(), new Vector2f(), 10, mainView.renderer, mainView.loader, mainView.window)
+        Button right = new Button("", Config.RIGHT.inputName(), new Vector2f(), new Vector2f(), 10, mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public void clickedButton(int button, int action, int mods) {
+                if(!isClicked)
+                    return;
                 Button btn = this;
-                mainView.setCurrentScreen(new GuiKeybind(Config.KEY_RIGHT, 10, renderer, loader, mainView.window) {
+                mainView.setCurrentScreen(new GuiKeybind(Config.RIGHT, 10, renderer, loader, mainView.window) {
                     @Override
-                    public void keybind(int key) {
-                        Config.KEY_RIGHT = key;
-                        if(Config.KEY_RIGHT != GLFW.GLFW_KEY_UNKNOWN)
-                            btn.buttonText = Utils.getKeyName(key).toUpperCase();
-                        else
-                            btn.buttonText = "NONE";
+                    public void keybind(InputMan currentKey) {
+                        Config.RIGHT.key = currentKey.key;
+                        Config.RIGHT.mouse = currentKey.mouse;
+                        btn.buttonText = Config.RIGHT.inputName();
 
                         if(btn.buttonText == null)
                             btn.buttonText = "error";
@@ -707,19 +876,19 @@ public class Settings extends GuiScreen{
 
         Panel upPanel = controls.addPanel("upPanel");
         upPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Up:", 10, mainView.renderer), 1f - buttonWidth));
-        Button up = new Button("", Utils.getKeyName(Config.KEY_UP).toUpperCase(), new Vector2f(), new Vector2f(), 10, mainView.renderer, mainView.loader, mainView.window)
+        Button up = new Button("", Config.UP.inputName(), new Vector2f(), new Vector2f(), 10, mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public void clickedButton(int button, int action, int mods) {
+                if(!isClicked)
+                    return;
                 Button btn = this;
-                mainView.setCurrentScreen(new GuiKeybind(Config.KEY_UP, 10, renderer, loader, mainView.window) {
+                mainView.setCurrentScreen(new GuiKeybind(Config.UP, 10, renderer, loader, mainView.window) {
                     @Override
-                    public void keybind(int key) {
-                        Config.KEY_UP = key;
-                        if(Config.KEY_UP != GLFW.GLFW_KEY_UNKNOWN)
-                            btn.buttonText = Utils.getKeyName(key).toUpperCase();
-                        else
-                            btn.buttonText = "NONE";
+                    public void keybind(InputMan currentKey) {
+                        Config.UP.key = currentKey.key;
+                        Config.UP.mouse = currentKey.mouse;
+                        btn.buttonText = Config.UP.inputName();
 
                         if(btn.buttonText == null)
                             btn.buttonText = "error";
@@ -736,19 +905,19 @@ public class Settings extends GuiScreen{
 
         Panel downPanel = controls.addPanel("downPanel");
         downPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Down:", 10, mainView.renderer), 1f - buttonWidth));
-        Button down = new Button("", Utils.getKeyName(Config.KEY_DOWN).toUpperCase(), new Vector2f(), new Vector2f(), 10, mainView.renderer, mainView.loader, mainView.window)
+        Button down = new Button("", Config.DOWN.inputName(), new Vector2f(), new Vector2f(), 10, mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public void clickedButton(int button, int action, int mods) {
+                if(!isClicked)
+                    return;
                 Button btn = this;
-                mainView.setCurrentScreen(new GuiKeybind(Config.KEY_DOWN, 10, renderer, loader, mainView.window) {
+                mainView.setCurrentScreen(new GuiKeybind(Config.DOWN, 10, renderer, loader, mainView.window) {
                     @Override
-                    public void keybind(int key) {
-                        Config.KEY_DOWN = key;
-                        if(Config.KEY_DOWN != GLFW.GLFW_KEY_UNKNOWN)
-                            btn.buttonText = Utils.getKeyName(key).toUpperCase();
-                        else
-                            btn.buttonText = "NONE";
+                    public void keybind(InputMan currentKey) {
+                        Config.DOWN.key = currentKey.key;
+                        Config.DOWN.mouse = currentKey.mouse;
+                        btn.buttonText = Config.DOWN.inputName();
 
                         if(btn.buttonText == null)
                             btn.buttonText = "error";
@@ -765,19 +934,19 @@ public class Settings extends GuiScreen{
 
         Panel shadingPanel = controls.addPanel("shadingPanel");
         shadingPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Shading:", 10, mainView.renderer), 1f - buttonWidth));
-        Button shading = new Button("", Utils.getKeyName(Config.KEY_SHADING).toUpperCase(), new Vector2f(), new Vector2f(), 10, mainView.renderer, mainView.loader, mainView.window)
+        Button shading = new Button("", Config.SHADING.inputName(), new Vector2f(), new Vector2f(), 10, mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public void clickedButton(int button, int action, int mods) {
+                if(!isClicked)
+                    return;
                 Button btn = this;
-                mainView.setCurrentScreen(new GuiKeybind(Config.KEY_SHADING, 10, renderer, loader, mainView.window) {
+                mainView.setCurrentScreen(new GuiKeybind(Config.SHADING, 10, renderer, loader, mainView.window) {
                     @Override
-                    public void keybind(int key) {
-                        Config.KEY_SHADING = key;
-                        if(Config.KEY_SHADING != GLFW.GLFW_KEY_UNKNOWN)
-                            btn.buttonText = Utils.getKeyName(key).toUpperCase();
-                        else
-                            btn.buttonText = "NONE";
+                    public void keybind(InputMan currentKey) {
+                        Config.SHADING.key = currentKey.key;
+                        Config.SHADING.mouse = currentKey.mouse;
+                        btn.buttonText = Config.SHADING.inputName();
 
                         if(btn.buttonText == null)
                             btn.buttonText = "error";
@@ -791,6 +960,35 @@ public class Settings extends GuiScreen{
             }
         };
         shadingPanel.elements.add(new Panel.PanelElement(shading, buttonWidth));
+
+        Panel cameraPanel = controls.addPanel("cameraPanel");
+        cameraPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Camera:", 10, mainView.renderer), 1f - buttonWidth));
+        Button camera = new Button("", Config.CAMERA.inputName(), new Vector2f(), new Vector2f(), 10, mainView.renderer, mainView.loader, mainView.window)
+        {
+            @Override
+            public void clickedButton(int button, int action, int mods) {
+                if(!isClicked)
+                    return;
+                Button btn = this;
+                mainView.setCurrentScreen(new GuiKeybind(Config.CAMERA, 10, renderer, loader, mainView.window) {
+                    @Override
+                    public void keybind(InputMan currentKey) {
+                        Config.CAMERA.key = currentKey.key;
+                        Config.CAMERA.mouse = currentKey.mouse;
+                        btn.buttonText = Config.CAMERA.inputName();
+
+                        if(btn.buttonText == null)
+                            btn.buttonText = "error";
+                    }
+
+                    @Override
+                    public void returnPreviousScreen() {
+                        mainView.returnToPreviousScreen();
+                    }
+                });
+            }
+        };
+        cameraPanel.elements.add(new Panel.PanelElement(camera, buttonWidth));
 
         this.guiElements.add(rendererSettings);
         this.guiElements.add(guiSettings);
@@ -1064,6 +1262,20 @@ public class Settings extends GuiScreen{
             if(colorA != null)
                 a = Utils.parseInt(colorA);
             Config.INTERFACE_TERTIARY_COLOR2 = new Color(r, g, b, a);
+        }
+        {
+            float cursorSize = Utils.parseFloat(this.cursorSize.getText());
+
+            if(cursorSize == 0)
+            {
+                cursorSize = 1;
+
+                if(!this.cursorSize.isFocused())
+                    this.cursorSize.setText("1");
+            }
+
+            Config.CURSOR_SCALE = cursorSize;
+            Cursors.updateCursors();
         }
     }
 

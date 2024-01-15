@@ -200,6 +200,14 @@ public class Export extends GuiScreen {
 
     @Override
     public void draw(MouseInput mouseInput) {
+
+        mainView.renderer.doBlur(1.0025f, mainView.window.width / 2 - 200, mainView.window.height / 2 - 112, 400, 223);
+        mainView.renderer.doBlur(2, mainView.window.width / 2 - 200, mainView.window.height / 2 - 112, 400, 223);
+        mainView.renderer.doBlur(3, mainView.window.width / 2 - 200, mainView.window.height / 2 - 112, 400, 223);
+        mainView.renderer.doBlur(2, mainView.window.width / 2 - 200, mainView.window.height / 2 - 112, 400, 223);
+        mainView.renderer.doBlur(1.5f, mainView.window.width / 2 - 200, mainView.window.height / 2 - 112, 400, 223);
+        mainView.renderer.doBlur(1.25f, mainView.window.width / 2 - 200, mainView.window.height / 2 - 112, 400, 223);
+
         mainView.renderer.drawRect(mainView.window.width / 2 - 200, mainView.window.height / 2 - 112, 400, 223, Config.PRIMARY_COLOR);
         mainView.renderer.drawRectOutline(new Vector2f(mainView.window.width / 2 - 200, mainView.window.height / 2 - 112), outlineRect, Config.SECONDARY_COLOR, false);
         mainView.renderer.drawString("Title:", Config.FONT_COLOR, mainView.window.width / 2 - 193, mainView.window.height / 2 - 107 + (getFontHeight(10) + 4) / 2 - getFontHeight(10) / 2, 10);
@@ -213,7 +221,7 @@ public class Export extends GuiScreen {
     public void resize()
     {
         if(this.outlineRect != null)
-            outlineRect.cleanup();
+            outlineRect.cleanup(creator.loader);
         outlineRect = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(400, 223)), mainView.loader, mainView.window);
     }
 }

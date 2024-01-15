@@ -82,7 +82,7 @@ public class GuiScreen {
     {
         boolean overElement = false;
         for(Element element : guiElements)
-            if(element.isMouseOverElement(new Vector2f((float) mouseInput.currentPos.x, (float) mouseInput.currentPos.y)))
+            if(element.isMouseOverElement(mouseInput.currentPos))
                 overElement = true;
         return overElement;
     }
@@ -145,7 +145,7 @@ public class GuiScreen {
         for(int i = 0; i < panel.elements.size(); i++)
         {
             Element element = panel.elements.get(i).element;
-            if (element.isFocused()) {
+            if (element.isFocused() && (element instanceof Textbox || element instanceof Textarea)) {
 
                 element.setFocused(false);
 

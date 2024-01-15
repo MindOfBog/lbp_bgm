@@ -5,8 +5,10 @@ import bog.bgmaker.view3d.core.Model;
 import bog.bgmaker.view3d.managers.MouseInput;
 import bog.bgmaker.view3d.managers.RenderMan;
 import bog.bgmaker.view3d.managers.WindowMan;
+import bog.bgmaker.view3d.renderer.gui.cursor.ECursor;
 import bog.bgmaker.view3d.renderer.gui.ingredients.LineStrip;
 import bog.bgmaker.view3d.utils.Config;
+import bog.bgmaker.view3d.utils.Cursors;
 import org.joml.Vector2d;
 import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
@@ -54,8 +56,8 @@ public class Checkbox extends Element{
             prevSize = size;
         }
 
-        renderer.drawRect(Math.round(pos.x + (size.y * 0.10f)/2), Math.round(pos.y + (size.y * 0.10f)/2), Math.round(size.y * 0.85f), Math.round(size.y * 0.85f), isMouseOverElement(mouseInput) ? Config.INTERFACE_SECONDARY_COLOR : Config.INTERFACE_PRIMARY_COLOR);
-        renderer.drawRectOutline(new Vector2f(Math.round(pos.x + (size.y * 0.10f)/2), Math.round(pos.y + (size.y * 0.10f)/2)), outlineRect, isMouseOverElement(mouseInput) ? Config.INTERFACE_SECONDARY_COLOR2 : Config.INTERFACE_PRIMARY_COLOR2, false);
+        renderer.drawRect(Math.round(pos.x + (size.y * 0.10f)/2), Math.round(pos.y + (size.y * 0.10f)/2), Math.round(size.y * 0.85f), Math.round(size.y * 0.85f), isMouseOverElement(mouseInput) && !overElement ? Config.INTERFACE_SECONDARY_COLOR : Config.INTERFACE_PRIMARY_COLOR);
+        renderer.drawRectOutline(new Vector2f(Math.round(pos.x + (size.y * 0.10f)/2), Math.round(pos.y + (size.y * 0.10f)/2)), outlineRect, isMouseOverElement(mouseInput) && !overElement ? Config.INTERFACE_SECONDARY_COLOR2 : Config.INTERFACE_PRIMARY_COLOR2, false);
 
         if(isChecked)
             renderer.drawRect(Math.round(pos.x + (size.y * 0.85f * 0.275f)), Math.round(pos.y + (size.y * 0.85f * 0.275f)), Math.round(size.y * 0.85f * 0.45f), Math.round(size.y * 0.85f * 0.45f), Config.FONT_COLOR);
@@ -72,14 +74,19 @@ public class Checkbox extends Element{
     public void onClick(Vector2d pos, int button, int action, int mods, boolean overElement) {
         super.onClick(pos, button, action, mods, overElement);
 
-        if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos))
+        if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
             this.isChecked = !this.isChecked;
     }
 
     public void refreshOutline()
     {
         if(this.outlineRect != null)
-            this.outlineRect.cleanup();
+            this.outlineRect.cleanup(loader);
         this.outlineRect = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(Math.round(size.y * 0.85f), Math.round(size.y * 0.85f))), loader, window);
+    }
+
+    @Override
+    public void hoverCursor() {
+        Cursors.setCursor(ECursor.hand2);
     }
 }

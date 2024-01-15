@@ -69,6 +69,18 @@ public class Panel extends Element{
     }
 
     @Override
+    public boolean isMouseOverElement(Vector2f mousePos) {
+
+        boolean overElement = pos != null && mousePos.x > pos.x && mousePos.y > pos.y && mousePos.x < pos.x + size.x && mousePos.y < pos.y + size.y;
+
+        for(PanelElement e : elements)
+            if(e.element.isMouseOverElement(mousePos))
+                overElement = true;
+
+        return overElement;
+    }
+
+    @Override
     public void secondThread() {
         super.secondThread();
 
@@ -110,7 +122,13 @@ public class Panel extends Element{
 
     @Override
     public boolean isFocused() {
-        return super.isFocused();
+
+        boolean focused = super.isFocused();
+        for(PanelElement element : elements)
+            if(element.element.isFocused())
+                focused = true;
+
+        return focused;
     }
 
     public static class PanelElement

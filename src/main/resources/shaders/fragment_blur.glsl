@@ -6,37 +6,29 @@ in vec2 blurTextureCoords[25];
 
 uniform sampler2D originalTexture;
 uniform sampler2D inputTexture;
-uniform vec3 color;
+uniform bool hasInput;
+uniform vec4 color;
 uniform bool hasColor;
-uniform bool stipple;
 uniform int radius;
-
-const mat4 thresholdMatrix = mat4(
-    1, 9, 3, 11,
-    13, 5, 15, 7,
-    4, 12, 2, 10,
-    16, 8, 14, 6);
 
 void main(){
 
-    if(texture(inputTexture, vec2(blurTextureCoords[radius])).a != 0)
+    vec2 currentCoords = vec2(blurTextureCoords[radius]);
+
+    if(hasInput && texture(inputTexture, currentCoords).a != 0)
     {
         discard;
     }
 
-	out_Color = vec4(0.0);
+	out_Color = vec4(1.0, 1.0, 1.0, 0.0);
 
 	for(int i = -radius; i <= radius; i++)
-	    out_Color += texture(originalTexture, vec2(blurTextureCoords[i + radius]));
-
-//    out_Color.a = 1 - (out_Color.a * texture(inputTexture, vec2(blurTextureCoords[radius])).a);
-
-    ivec2 coord = ivec2(gl_FragCoord.xy);
-    float threshold = thresholdMatrix[coord.x % 4][coord.y % 4] / 17.0;
-
-    if(out_Color.a > 0)
     {
-        out_Color.a = min(out_Color.a * 2, 1.0);
+        vec2 coords = vec2(blurTextureCoords[i + radius]);
+        if(texture(originalTexture, coords).a != 0)
+        {
+            out_Color.a = hasColor ? color.a : 1.0;
+        }
     }
 
     if(hasColor)
@@ -44,10 +36,5 @@ void main(){
         out_Color.r = color.r;
         out_Color.g = color.g;
         out_Color.b = color.b;
-    }
-
-    if(threshold > out_Color.a && stipple)
-    {
-        discard;
     }
 }

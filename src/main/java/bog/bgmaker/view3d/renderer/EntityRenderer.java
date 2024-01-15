@@ -7,6 +7,8 @@ import bog.bgmaker.view3d.core.*;
 import bog.bgmaker.view3d.core.types.Entity;
 import bog.bgmaker.view3d.core.types.Mesh;
 import bog.bgmaker.view3d.mainWindow.LoadedData;
+import bog.bgmaker.view3d.mainWindow.View3D;
+import bog.bgmaker.view3d.mainWindow.screens.ElementEditing;
 import bog.bgmaker.view3d.managers.MouseInput;
 import bog.bgmaker.view3d.managers.RenderMan;
 import bog.bgmaker.view3d.managers.ShaderMan;
@@ -190,8 +192,8 @@ public class EntityRenderer implements IRenderer{
         shaderOutlineVertical.createUniform("target");
         shaderOutlineVertical.createUniform("radius");
         shaderOutlineVertical.createUniform("color");
-        shaderOutlineVertical.createUniform("stipple");
         shaderOutlineVertical.createUniform("hasColor");
+        shaderOutlineVertical.createUniform("hasInput");
 
         shaderOutlineHorizontal.createFragmentShader(Utils.loadResource("/shaders/fragment_blur.glsl"));
         shaderOutlineHorizontal.createVertexShader(Utils.loadResource("/shaders/vertex_blur_hor.glsl"));
@@ -202,15 +204,17 @@ public class EntityRenderer implements IRenderer{
         shaderOutlineHorizontal.createUniform("target");
         shaderOutlineHorizontal.createUniform("radius");
         shaderOutlineHorizontal.createUniform("color");
-        shaderOutlineHorizontal.createUniform("stipple");
         shaderOutlineHorizontal.createUniform("hasColor");
+        shaderOutlineHorizontal.createUniform("hasInput");
 
         GL11.glEnable(GL11.GL_LINE_SMOOTH);
 
         outlineFB = RenderMan.initFrameBuffer();
         outlineCT = RenderMan.initColorTex(window);
+        outlineDT = RenderMan.initDepthTex(window);
         outlineFB2 = RenderMan.initFrameBuffer();
         outlineCT2 = RenderMan.initColorTex(window);
+        outlineDT2 = RenderMan.initDepthTex(window);
         mouseFB = RenderMan.initFrameBufferINT();
         mouseCT = RenderMan.initColorTexINT(window);
         mouseDT = RenderMan.initDepthTex(window);
@@ -218,15 +222,17 @@ public class EntityRenderer implements IRenderer{
 
     int outlineFB = -1;
     int outlineCT = -1;
+    int outlineDT = -1;
     int outlineFB2 = -1;
     int outlineCT2 = -1;
+    int outlineDT2 = -1;
     int mouseFB = -1;
     int mouseCT = -1;
     int mouseDT = -1;
 
     public void resize()
     {
-        GL11.glDeleteTextures(new int[]{outlineCT, mouseCT, mouseDT});
+        GL11.glDeleteTextures(new int[]{outlineCT, mouseCT, mouseDT, outlineDT, outlineDT2});
         GL11.glViewport(0, 0, window.width, window.height);
         GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, outlineFB);
         outlineCT = RenderMan.initColorTex(window);
@@ -235,13 +241,15 @@ public class EntityRenderer implements IRenderer{
         GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, mouseFB);
         mouseCT = RenderMan.initColorTexINT(window);
         mouseDT = RenderMan.initDepthTex(window);
+        outlineDT = RenderMan.initDepthTex(window);
+        outlineDT2 = RenderMan.initDepthTex(window);
     }
 
     @Override
-    public void render(Camera camera, MouseInput mouseInput)
+    public void render(MouseInput mouseInput, View3D mainView)
     {
         Matrix4f projection = window.updateProjectionMatrix();
-
+        Camera camera = mainView.camera;
         RenderMan.bindFrameBuffer(mouseFB);
         RenderMan.bindColorTex(mouseCT);
         RenderMan.bindDepthTex(mouseDT);
@@ -528,53 +536,59 @@ public class EntityRenderer implements IRenderer{
             lastShader.bind();
         }
 
-        RenderMan.bindFrameBuffer(outlineFB);
-        RenderMan.bindColorTex(outlineCT);
-
-        GL11.glClearColor(0,0,0,0);
-        GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
-
-        for(int i : selInd)
-            try
-            {
-                Entity entity = entities.get(i);
-                ArrayList<Model> models = new ArrayList<>();
-
-                if(entity instanceof Mesh)
-                    models.add(((Mesh) entity).singleMesh);
-                else
-                    models = entity.getModel();
-
-                if(models != null)
-                    for(Model model : models)
-                        if (model != null)
-                        {
-                            boolean hasBones = entity instanceof Mesh ? ((Mesh) entity).skeleton != null : false;
-                            bindNoCullColor(model, hasBones);
-                            lastShader.setUniform("material", noCol);
-                            prepare(entity, camera, lastShader, model);
-                            lastShader.setUniform("bones", hasBones ? ((Mesh) entity).skeleton : null);
-                            lastShader.setUniform("hasBones", hasBones);
-                            //render entities to outline to FBO
-                            GL11.glDrawElements(GL11.GL_TRIANGLES, model.vertexCount, GL11.GL_UNSIGNED_INT, 0L);
-                        }
-            }catch (Exception e){System.err.println("Failed rendering entity " + i + ".");e.printStackTrace();}
-        unbindFrameBuffer();
-
-        GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
+        if(!(mainView.currentScreen instanceof ElementEditing))
+            outline = false;
 
         if(outline)
         {
-            int radius = Math.round((Config.OUTLINE_DISTANCE * 2f - 1f) * 10f);
+            RenderMan.bindFrameBuffer(outlineFB);
+            RenderMan.bindColorTex(outlineCT);
+            RenderMan.bindDepthTex(outlineDT);
 
-            RenderMan.bindFrameBuffer(outlineFB2);
-            RenderMan.bindColorTex(outlineCT2);
             GL11.glClearColor(0,0,0,0);
             GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
-            drawOutline(outlineCT, -1, shaderOutlineVertical, lastShader, false, window.height, radius, Config.OUTLINE_COLOR);
+            GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
+
+            for(int i : selInd)
+                try
+                {
+                    Entity entity = entities.get(i);
+                    ArrayList<Model> models = new ArrayList<>();
+
+                    if(entity instanceof Mesh)
+                        models.add(((Mesh) entity).singleMesh);
+                    else
+                        models = entity.getModel();
+
+                    if(models != null)
+                        for(Model model : models)
+                            if (model != null)
+                            {
+                                boolean hasBones = entity instanceof Mesh ? ((Mesh) entity).skeleton != null : false;
+                                bindNoCullColor(model, hasBones);
+                                lastShader.setUniform("material", noCol);
+                                prepare(entity, camera, lastShader, model);
+                                lastShader.setUniform("bones", hasBones ? ((Mesh) entity).skeleton : null);
+                                lastShader.setUniform("hasBones", hasBones);
+                                //render entities to outline FBO
+
+                                GL11.glDrawElements(GL11.GL_TRIANGLES, model.vertexCount, GL11.GL_UNSIGNED_INT, 0L);
+                            }
+                }catch (Exception e){System.err.println("Failed rendering entity " + i + ".");e.printStackTrace();}
+
+            int radius = Math.round((Config.OUTLINE_DISTANCE * 2f - 1f) * 10f);
+            RenderMan.bindFrameBuffer(outlineFB2);
+            RenderMan.bindColorTex(outlineCT2);
+            RenderMan.bindDepthTex(outlineDT2);
+            GL11.glClearColor(0,0,0,0);
+            GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
+            GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
+            drawOutline(outlineCT, -1, shaderOutlineVertical, lastShader, window.height, radius, Config.OUTLINE_COLOR);
             unbindFrameBuffer();
-            drawOutline(outlineCT2, outlineCT, shaderOutlineHorizontal, lastShader, false, window.width, radius, Config.OUTLINE_COLOR);
+            GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
+            drawOutline(outlineCT2, outlineCT, shaderOutlineHorizontal, lastShader, window.width, radius, Config.OUTLINE_COLOR);
         }
+
 
         GL11.glEnable(GL11.GL_DEPTH_TEST);
 
@@ -772,16 +786,13 @@ public class EntityRenderer implements IRenderer{
                 material.customShader.cleanup();
     }
 
-    private void drawOutline(int originalTexture, int inputTexture, ShaderMan outlineShader, ShaderMan prevShader, boolean stipple, float target, int radius, Color color)
+    private void drawOutline(int originalTexture, int inputTexture, ShaderMan outlineShader, ShaderMan prevShader, float target, int radius, Color color)
     {
         prevShader.unbind();
         outlineShader.bind();
 
-        if(!stipple)
-        {
-            GL11.glEnable(GL11.GL_BLEND);
-            GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-        }
+        GL11.glEnable(GL11.GL_BLEND);
+        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 
         GL30.glBindVertexArray(GuiRenderer.defaultQuad.vao);
         GL20.glEnableVertexAttribArray(0);
@@ -799,21 +810,18 @@ public class EntityRenderer implements IRenderer{
         outlineShader.setUniform("inputTexture", 1);
         outlineShader.setUniform("target", target);
         outlineShader.setUniform("radius", radius);
+        outlineShader.setUniform("hasInput", inputTexture != -1);
         outlineShader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(
                 new Vector2f(),
                 new Vector2f(1)
         ));
 
-        outlineShader.setUniform("color", new Vector3f(color.getRed() / 255f,color.getGreen() / 255f,color.getBlue() / 255f));
-        outlineShader.setUniform("stipple", stipple);
+        outlineShader.setUniform("color", new Vector4f(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, color.getAlpha() / 255f));
         outlineShader.setUniform("hasColor", true);
 
         GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, GuiRenderer.defaultQuad.vertexCount);
 
-        if(!stipple)
-        {
-            GL11.glDisable(GL11.GL_BLEND);
-        }
+        GL11.glDisable(GL11.GL_BLEND);
 
         outlineShader.unbind();
         prevShader.bind();

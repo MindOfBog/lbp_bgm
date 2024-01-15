@@ -5,8 +5,10 @@ import bog.bgmaker.view3d.core.Model;
 import bog.bgmaker.view3d.managers.MouseInput;
 import bog.bgmaker.view3d.managers.RenderMan;
 import bog.bgmaker.view3d.managers.WindowMan;
+import bog.bgmaker.view3d.renderer.gui.cursor.ECursor;
 import bog.bgmaker.view3d.renderer.gui.ingredients.LineStrip;
 import bog.bgmaker.view3d.utils.Config;
+import bog.bgmaker.view3d.utils.Cursors;
 import org.joml.Vector2d;
 import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
@@ -313,6 +315,12 @@ public class DropDownTab extends Element{
         if (dragging) {
             this.pos.x = ((float) mouseInput.currentPos.x) - dragOffset.x;
             this.pos.y = ((float) mouseInput.currentPos.y) - dragOffset.y;
+            Cursors.setCursor(ECursor.grabbing);
+        }
+        else
+        {
+            if(isMouseOverTab(mouseInput) && !overOther)
+                Cursors.setCursor(ECursor.hand2);
         }
 
         if (!renderer.window.isMinimized) {
@@ -338,13 +346,9 @@ public class DropDownTab extends Element{
             prevSize = size;
         }
 
+        drawBackdrop(yOffset);
         renderer.drawRect((int) Math.round(pos.x), (int) Math.round(pos.y), (int) Math.round(size.x), (int) Math.round(size.y), dragging || (mouseInput.rightButtonPress && isMouseOverTab(mouseInput)) ? Config.INTERFACE_TERTIARY_COLOR : (isMouseOverTab(mouseInput) && !overOther ? Config.INTERFACE_SECONDARY_COLOR : Config.INTERFACE_PRIMARY_COLOR));
         renderer.drawRectOutline(pos, outlineSelection, dragging || (mouseInput.rightButtonPress && isMouseOverTab(mouseInput)) ? Config.INTERFACE_TERTIARY_COLOR2 : (isMouseOverTab(mouseInput) && !overOther ? Config.INTERFACE_SECONDARY_COLOR2 : Config.INTERFACE_PRIMARY_COLOR2), false);
-
-        if (extended)
-        {
-            drawBackdrop(yOffset);
-        }
 
         if(extended && (resizeX || resizeY))
         {
@@ -355,7 +359,9 @@ public class DropDownTab extends Element{
 //            drawTriangle(p1, p2, p3, mouseInTriangle ? Color.blue : new Color(0f, 0f, 0f, 0.5f));
         }
 
-        renderer.drawString(tabTitle, Config.FONT_COLOR, (int) Math.round(pos.x + size.y / 2 - getFontHeight(fontSize) / 2), (int) Math.round(pos.y + size.y / 2 - getFontHeight(fontSize) / 2), fontSize);
+        renderer.startScissor((int) pos.x, (int) pos.y, (int) (size.x - size.y), (int) size.y);
+        renderer.drawHeader(tabTitle, Config.FONT_COLOR, (int) Math.round(pos.x + size.y / 2 - getFontHeight(fontSize) / 2), (int) Math.round(pos.y + size.y / 2 - getFontHeight(fontSize) / 2), fontSize);
+        renderer.endScissor();
 
         if(extended)
         {
@@ -390,9 +396,9 @@ public class DropDownTab extends Element{
     public void refreshOutline(float yOffset)
     {
         if(outlineSelection != null)
-            this.outlineSelection.cleanup();
+            this.outlineSelection.cleanup(loader);
         if(outlineElement != null)
-            this.outlineElement.cleanup();
+            this.outlineElement.cleanup(loader);
 
         this.outlineSelection = LineStrip.processVerts(LineStrip.getRectangle(size), loader, window);
         this.outlineElement = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(size.x, (int) Math.round(2f + yOffset)), LineStrip.UP), loader, window);
@@ -400,8 +406,28 @@ public class DropDownTab extends Element{
 
     public void drawBackdrop(float yOffset)
     {
-        renderer.drawRect((int) Math.round(pos.x), (int) Math.round(pos.y + size.y), (int) Math.round(size.x), (int) Math.round(2f + yOffset), Config.PRIMARY_COLOR);
-        renderer.drawRectOutline(new Vector2f(pos.x, pos.y + size.y), outlineElement, Config.SECONDARY_COLOR, false);
+        int x = (int) Math.round(pos.x);
+        int y = (int) Math.round(pos.y);
+        int xSize = (int) Math.round(size.x);
+        int ySize = (int) Math.round((extended ? 2f : 0f) + yOffset + size.y);
+        if(Config.PRIMARY_COLOR.getAlpha() < 253 ||
+                Config.INTERFACE_TERTIARY_COLOR.getAlpha() < 253 ||
+                Config.INTERFACE_SECONDARY_COLOR.getAlpha() < 253 ||
+                Config.INTERFACE_PRIMARY_COLOR.getAlpha() < 253)
+        {
+            renderer.doBlur(1.0025f, x, y, xSize, ySize);
+            renderer.doBlur(2, x, y, xSize, ySize);
+            renderer.doBlur(3, x, y, xSize, ySize);
+            renderer.doBlur(2, x, y, xSize, ySize);
+            renderer.doBlur(1.5f, x, y, xSize, ySize);
+            renderer.doBlur(1.25f, x, y, xSize, ySize);
+        }
+
+        if (extended)
+        {
+            renderer.drawRect(x, (int) Math.round(pos.y + size.y), xSize, (int) Math.round(2f + yOffset), Config.PRIMARY_COLOR);
+            renderer.drawRectOutline(new Vector2f(pos.x, pos.y + size.y), outlineElement, Config.SECONDARY_COLOR, false);
+        }
     }
 
     public void drawElements(MouseInput mouseInput, boolean overOther)
@@ -490,6 +516,7 @@ public class DropDownTab extends Element{
     {
         return isMouseOverTab(mouseInput.currentPos);
     }
+
     @Override
     public boolean isMouseOverElement(Vector2f mousePos) {
         float yOffset = 0;
@@ -504,7 +531,14 @@ public class DropDownTab extends Element{
                 }
         }catch (Exception e){}
 
-        return mousePos.x > pos.x && mousePos.y > pos.y && mousePos.x < pos.x + size.x && mousePos.y < pos.y + size.y + (extended ? 2 + yOffset : 0);
+        boolean overElement = mousePos.x > pos.x && mousePos.y > pos.y && mousePos.x < pos.x + size.x && mousePos.y < pos.y + size.y + (extended ? 2 + yOffset : 0);
+
+        if(extended)
+            for(Element e : tabElements)
+                if(e.isMouseOverElement(mousePos))
+                    overElement = true;
+
+        return overElement;
     }
 
     @Override
@@ -519,7 +553,7 @@ public class DropDownTab extends Element{
                 element.onKey(key, scancode, action, mods);
 
                 if (key == GLFW.GLFW_KEY_TAB && action == GLFW.GLFW_PRESS) {
-                    if (element.isFocused()) {
+                    if (element.isFocused() && (element instanceof Textbox || element instanceof Textarea)) {
 
                         element.setFocused(false);
 
@@ -548,11 +582,10 @@ public class DropDownTab extends Element{
         for(int i = 0; i < panel.elements.size(); i++)
         {
             Element element = panel.elements.get(i).element;
-            if (element.isFocused()) {
+            if (element.isFocused() && (element instanceof Textbox || element instanceof Textarea)) {
+                Element nextElement = findNextFocusableElementInPanel(panel, i + 1);
 
                 element.setFocused(false);
-
-                Element nextElement = findNextFocusableElementInPanel(panel, i + 1);
 
                 if(nextElement != null)
                     nextElement.setFocused(true);

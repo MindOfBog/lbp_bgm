@@ -7,14 +7,15 @@ import bog.bgmaker.view3d.core.Model;
 import bog.bgmaker.view3d.core.PointLight;
 import bog.bgmaker.view3d.core.SpotLight;
 import bog.bgmaker.view3d.core.types.Entity;
+import bog.bgmaker.view3d.mainWindow.View3D;
 import bog.bgmaker.view3d.renderer.EntityRenderer;
 import bog.bgmaker.view3d.renderer.gui.GuiRenderer;
+import bog.bgmaker.view3d.renderer.gui.font.FNT;
 import bog.bgmaker.view3d.renderer.gui.font.FontRenderer;
 import bog.bgmaker.view3d.renderer.gui.ingredients.*;
 import bog.bgmaker.view3d.utils.Transformation;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
-import org.joml.Vector4f;
 import org.lwjgl.opengl.*;
 
 import java.awt.*;
@@ -47,40 +48,64 @@ public class RenderMan {
             }
         };
         entityRenderer.init();
-        guiRenderer = new GuiRenderer(loader, this.window);
+        guiRenderer = new GuiRenderer(loader, this.window)
+        {
+            @Override
+            public void unbindFrameBuffer() {
+                bindFrameBuffer(screenBuffer);
+                bindColorTex(screenTexture);
+                bindDepthTex(screenDepth);
+            }
+        };
         guiRenderer.init();
         screenBuffer = initFrameBuffer();
         screenTexture = initColorTex(window);
         screenDepth = initDepthTex(window);
+
+        blurBuffer = initFrameBuffer();
+        blurTexture = initColorTex(window);
+        blurDepth = initDepthTex(window);
     }
 
     int screenBuffer = -1;
     int screenTexture = -1;
     int screenDepth = -1;
 
+    int blurBuffer = -1;
+    int blurTexture = -1;
+    int blurDepth = -1;
+
     public void resize()
     {
         entityRenderer.resize();
-        GL11.glDeleteTextures(new int[]{screenTexture, screenDepth});
+        GL11.glDeleteTextures(new int[]{screenTexture, screenDepth, blurTexture, blurDepth});
         GL11.glViewport(0, 0, window.width, window.height);
         GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, screenBuffer);
         screenTexture = initColorTex(window);
         screenDepth = initDepthTex(window);
+        blurTexture = initColorTex(window);
+        blurDepth = initDepthTex(window);
     }
 
-    public void render(Camera camera, MouseInput mouseInput)
+    public void render(MouseInput mouseInput, View3D mainView)
     {
+        clear();
+        bindFrameBuffer(blurBuffer);
+        bindColorTex(blurTexture);
+        bindDepthTex(blurDepth);
         clear();
         bindFrameBuffer(screenBuffer);
         bindColorTex(screenTexture);
         bindDepthTex(screenDepth);
         clear();
-        entityRenderer.render(camera, mouseInput);
-        guiRenderer.render();
-        unbindFrameBuffer();
+        entityRenderer.render(mouseInput, mainView);
+        guiRenderer.render(screenTexture, blurBuffer, blurTexture, blurDepth);
 
         ShaderMan shader = guiRenderer.shader;
         shader.bind();
+
+        unbindFrameBuffer();
+
         GL30.glBindVertexArray(GuiRenderer.defaultQuad.vao);
         GL20.glEnableVertexAttribArray(0);
 
@@ -214,17 +239,27 @@ public class RenderMan {
 
     public void drawCircle(ObjectLoader loader, Vector2f center, float radius, int tris, Color color)
     {
-        this.processGuiElement(new Circle(loader, window, color, center, radius, tris, false));
+        this.processGuiElement(Circle.get(loader, window, color, center, radius, false));
+    }
+
+    public void drawCircleOutline(ObjectLoader loader, Vector2f center, float radius, int tris, Color color)
+    {
+        this.processGuiElement(Circle.get(loader, window, color, center, radius, true));
     }
 
     public void drawString(String text, Color color, int x, int y, int size)
     {
-        FontRenderer.drawString(this, text, x, y, size, color, 0, text.length());
+        FontRenderer.drawString(this, text, x, y, size, color, 0, text.length(), FontRenderer.Fonts.get(FontRenderer.textFont));
     }
 
     public void drawString(String text, Color color, int x, int y, int size, int begin, int end)
     {
-        FontRenderer.drawString(this, text, x, y, size, color, begin, end);
+        FontRenderer.drawString(this, text, x, y, size, color, begin, end, FontRenderer.Fonts.get(FontRenderer.textFont));
+    }
+
+    public void drawHeader(String text, Color color, int x, int y, int size)
+    {
+        FontRenderer.drawString(this, text, x, y, size, color, 0, text.length(), FontRenderer.Fonts.get(FontRenderer.headerFont));
     }
 
     public void startScissor(Vector2i pos, Vector2i size)
@@ -240,6 +275,30 @@ public class RenderMan {
     public void endScissor()
     {
         this.processGuiElement(Scissor.end());
+    }
+
+    public void startBlur(float amount)
+    {
+        this.processGuiElement(new Blur(amount, true));
+    }
+
+    public void endBlur(float amount)
+    {
+        this.processGuiElement(new Blur(amount, false));
+    }
+
+    public void doBlur(float amount)
+    {
+        this.startBlur(amount);
+        this.endBlur(amount);
+    }
+
+    public void doBlur(float amount, int x, int y, int width, int height)
+    {
+        this.startBlur(amount);
+        this.startScissor(x, y, width, height);
+        this.endBlur(amount);
+        this.endScissor();
     }
 
     public static int initFrameBuffer()

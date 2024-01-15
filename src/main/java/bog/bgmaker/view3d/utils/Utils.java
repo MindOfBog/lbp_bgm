@@ -4,6 +4,8 @@ import bog.bgmaker.view3d.ObjectLoader;
 import bog.bgmaker.view3d.core.Material;
 import bog.bgmaker.view3d.core.Model;
 import bog.bgmaker.view3d.core.Triangle;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
 import org.joml.Vector3f;
@@ -13,6 +15,7 @@ import org.lwjgl.system.MemoryUtil;
 import javax.crypto.*;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.PBEParameterSpec;
+import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.RescaleOp;
@@ -23,6 +26,8 @@ import java.net.URLDecoder;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -35,6 +40,7 @@ import java.util.List;
 import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.stream.Collectors;
 
 /**
  * @author Bog
@@ -358,7 +364,30 @@ public class Utils {
         return plainStr;
     }
 
-    public static List<String> getFilenames(String directoryName) throws URISyntaxException, UnsupportedEncodingException, IOException {
+    public static ArrayList<String> getFilesInFileDir(String directoryName) {
+        try {
+            File jarFile = new File(Utils.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
+            File dir = new File(directoryName);
+            File directory = dir.isAbsolute() ? dir : new File(jarFile.getParentFile(), directoryName);
+
+            if (!directory.isDirectory())
+                return null;
+
+            Collection<Path> files = Files.list(Paths.get(directory.getPath())).collect(Collectors.toList());
+
+            ArrayList<String> out = new ArrayList();
+
+            for(Path f : files)
+                out.add(f.toString());
+
+            return out;
+        } catch (URISyntaxException | IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static List<String> getFilesInJar(String directoryName) throws URISyntaxException, UnsupportedEncodingException, IOException {
         List<String> filenames = new ArrayList<>();
 
         URL url = Thread.currentThread().getContextClassLoader().getResource(directoryName);
@@ -369,7 +398,7 @@ public class Utils {
                     File[] files = file.listFiles();
                     if (files != null) {
                         for (File filename : files) {
-                            filenames.add(filename.toString());
+                            filenames.add(directoryName + "/" + filename.getName());
                         }
                     }
                 }
@@ -382,7 +411,9 @@ public class Utils {
                     while (entries.hasMoreElements()) {
                         JarEntry entry = entries.nextElement();
                         String name = entry.getName();
-                        if (name.startsWith(dirname) && !dirname.equals(name)) {
+                        if(name.endsWith("/"))
+                            name = name.substring(0, name.length() - 1);
+                        if (name.startsWith(dirname) && !name.equals(dirname) && !name.substring(dirname.length()).contains("/")) {
                             URL resource = Thread.currentThread().getContextClassLoader().getResource(name);
                             filenames.add(resource.toString());
                         }
@@ -394,13 +425,12 @@ public class Utils {
     }
 
     private static HashMap<String, Integer> keymap;
-
     public static String getKeyName(int key)
     {
         if(keymap == null)
         {
             keymap = new HashMap<>();
-            keymap.put("none", -1);
+            keymap.put("None", -1);
             keymap.put("0", 48);
             keymap.put("1", 49);
             keymap.put("2", 50);
@@ -411,122 +441,143 @@ public class Utils {
             keymap.put("7", 55);
             keymap.put("8", 56);
             keymap.put("9", 57);
-            keymap.put("a", 65);
-            keymap.put("b", 66);
-            keymap.put("c", 67);
-            keymap.put("d", 68);
-            keymap.put("e", 69);
-            keymap.put("f", 70);
-            keymap.put("g", 71);
-            keymap.put("h", 72);
-            keymap.put("i", 73);
-            keymap.put("j", 74);
-            keymap.put("k", 75);
-            keymap.put("l", 76);
-            keymap.put("m", 77);
-            keymap.put("n", 78);
-            keymap.put("o", 79);
-            keymap.put("p", 80);
-            keymap.put("q", 81);
-            keymap.put("r", 82);
-            keymap.put("s", 83);
-            keymap.put("t", 84);
-            keymap.put("u", 85);
-            keymap.put("v", 86);
-            keymap.put("w", 87);
-            keymap.put("x", 88);
-            keymap.put("y", 89);
-            keymap.put("z", 90);
-            keymap.put("f1", 290);
-            keymap.put("f2", 291);
-            keymap.put("f3", 292);
-            keymap.put("f4", 293);
-            keymap.put("f5", 294);
-            keymap.put("f6", 295);
-            keymap.put("f7", 296);
-            keymap.put("f8", 297);
-            keymap.put("f9", 298);
-            keymap.put("f10", 299);
-            keymap.put("f11", 300);
-            keymap.put("f12", 301);
-            keymap.put("f13", 302);
-            keymap.put("f14", 303);
-            keymap.put("f15", 304);
-            keymap.put("f16", 305);
-            keymap.put("f17", 306);
-            keymap.put("f18", 307);
-            keymap.put("f19", 308);
-            keymap.put("f20", 309);
-            keymap.put("f21", 310);
-            keymap.put("f22", 311);
-            keymap.put("f23", 312);
-            keymap.put("f24", 313);
-            keymap.put("f25", 314);
-            keymap.put("num lock", 282);
-            keymap.put("keypad 0", 320);
-            keymap.put("keypad 1", 321);
-            keymap.put("keypad 2", 322);
-            keymap.put("keypad 3", 323);
-            keymap.put("keypad 4", 324);
-            keymap.put("keypad 5", 325);
-            keymap.put("keypad 6", 326);
-            keymap.put("keypad 7", 327);
-            keymap.put("keypad 8", 328);
-            keymap.put("keypad 9", 329);
-            keymap.put("keypad add", 334);
-            keymap.put("keypad decimal", 330);
-            keymap.put("keypad enter", 335);
-            keymap.put("keypad equal", 336);
-            keymap.put("keypad multiply", 332);
-            keymap.put("keypad divide", 331);
-            keymap.put("keypad subtract", 333);
-            keymap.put("down", 264);
-            keymap.put("left", 263);
-            keymap.put("right", 262);
-            keymap.put("up", 265);
-            keymap.put("apostrophe", 39);
-            keymap.put("backslash", 92);
-            keymap.put("comma", 44);
-            keymap.put("equal", 61);
-            keymap.put("grave accent", 96);
-            keymap.put("left bracket", 91);
-            keymap.put("minus", 45);
-            keymap.put("period", 46);
-            keymap.put("right bracket", 93);
-            keymap.put("semicolon", 59);
-            keymap.put("slash", 47);
-            keymap.put("space", 32);
-            keymap.put("tab", 258);
-            keymap.put("left alt", 342);
-            keymap.put("left control", 341);
-            keymap.put("left shift", 340);
-            keymap.put("left win", 343);
-            keymap.put("right alt", 346);
-            keymap.put("right control", 345);
-            keymap.put("right shift", 344);
-            keymap.put("right win", 347);
-            keymap.put("enter", 257);
-            keymap.put("escape", 256);
-            keymap.put("backspace", 259);
-            keymap.put("delete", 261);
-            keymap.put("end", 269);
-            keymap.put("home", 268);
-            keymap.put("insert", 260);
-            keymap.put("page down", 267);
-            keymap.put("page up", 266);
-            keymap.put("caps lock", 280);
-            keymap.put("pause", 284);
-            keymap.put("scroll lock", 281);
-            keymap.put("menu", 348);
-            keymap.put("print screen", 283);
-            keymap.put("world 1", 161);
-            keymap.put("world 2", 162);
+            keymap.put("A", 65);
+            keymap.put("B", 66);
+            keymap.put("C", 67);
+            keymap.put("D", 68);
+            keymap.put("E", 69);
+            keymap.put("F", 70);
+            keymap.put("G", 71);
+            keymap.put("H", 72);
+            keymap.put("I", 73);
+            keymap.put("J", 74);
+            keymap.put("K", 75);
+            keymap.put("L", 76);
+            keymap.put("M", 77);
+            keymap.put("N", 78);
+            keymap.put("O", 79);
+            keymap.put("P", 80);
+            keymap.put("Q", 81);
+            keymap.put("R", 82);
+            keymap.put("S", 83);
+            keymap.put("T", 84);
+            keymap.put("U", 85);
+            keymap.put("V", 86);
+            keymap.put("W", 87);
+            keymap.put("X", 88);
+            keymap.put("Y", 89);
+            keymap.put("Z", 90);
+            keymap.put("F1", 290);
+            keymap.put("F2", 291);
+            keymap.put("F3", 292);
+            keymap.put("F4", 293);
+            keymap.put("F5", 294);
+            keymap.put("F6", 295);
+            keymap.put("F7", 296);
+            keymap.put("F8", 297);
+            keymap.put("F9", 298);
+            keymap.put("F10", 299);
+            keymap.put("F11", 300);
+            keymap.put("F12", 301);
+            keymap.put("F13", 302);
+            keymap.put("F14", 303);
+            keymap.put("F15", 304);
+            keymap.put("F16", 305);
+            keymap.put("F17", 306);
+            keymap.put("F18", 307);
+            keymap.put("F19", 308);
+            keymap.put("F20", 309);
+            keymap.put("F21", 310);
+            keymap.put("F22", 311);
+            keymap.put("F23", 312);
+            keymap.put("F24", 313);
+            keymap.put("F25", 314);
+            keymap.put("Num Lock", 282);
+            keymap.put("Keypad 0", 320);
+            keymap.put("Keypad 1", 321);
+            keymap.put("Keypad 2", 322);
+            keymap.put("Keypad 3", 323);
+            keymap.put("Keypad 4", 324);
+            keymap.put("Keypad 5", 325);
+            keymap.put("Keypad 6", 326);
+            keymap.put("Keypad 7", 327);
+            keymap.put("Keypad 8", 328);
+            keymap.put("Keypad 9", 329);
+            keymap.put("Keypad Add", 334);
+            keymap.put("Keypad Decimal", 330);
+            keymap.put("Keypad Enter", 335);
+            keymap.put("Keypad Equal", 336);
+            keymap.put("Keypad Multiply", 332);
+            keymap.put("Keypad Divide", 331);
+            keymap.put("Keypad Subtract", 333);
+            keymap.put("Down", 264);
+            keymap.put("Left", 263);
+            keymap.put("Right", 262);
+            keymap.put("Up", 265);
+            keymap.put("Apostrophe", 39);
+            keymap.put("Backslash", 92);
+            keymap.put("Comma", 44);
+            keymap.put("Equal", 61);
+            keymap.put("Grave Accent", 96);
+            keymap.put("Left Bracket", 91);
+            keymap.put("Minus", 45);
+            keymap.put("Period", 46);
+            keymap.put("Right Bracket", 93);
+            keymap.put("Semicolon", 59);
+            keymap.put("Slash", 47);
+            keymap.put("Space", 32);
+            keymap.put("Tab", 258);
+            keymap.put("Left Alt", 342);
+            keymap.put("Left Control", 341);
+            keymap.put("Left Shift", 340);
+            keymap.put("Left Win", 343);
+            keymap.put("Right Alt", 346);
+            keymap.put("Right Control", 345);
+            keymap.put("Right Shift", 344);
+            keymap.put("Right Win", 347);
+            keymap.put("Enter", 257);
+            keymap.put("Escape", 256);
+            keymap.put("Backspace", 259);
+            keymap.put("Delete", 261);
+            keymap.put("End", 269);
+            keymap.put("Home", 268);
+            keymap.put("Insert", 260);
+            keymap.put("Page Down", 267);
+            keymap.put("Page Up", 266);
+            keymap.put("Caps Lock", 280);
+            keymap.put("Pause", 284);
+            keymap.put("Scroll Lock", 281);
+            keymap.put("Menu", 348);
+            keymap.put("Print Screen", 283);
         }
 
         for(String keyName : keymap.keySet())
             if(keymap.get(keyName) == key)
                 return keyName;
-        return "none";
+        return "None";
+    }
+
+    private static HashMap<String, Integer> buttonmap;
+    public static String getMouseButtonName(int button)
+    {
+        if(buttonmap == null)
+        {
+            buttonmap = new HashMap<>();
+            buttonmap.put("None", -1);
+            buttonmap.put("Left Mouse", 0);
+            buttonmap.put("Right Mouse", 1);
+            buttonmap.put("Middle Mouse", 2);
+            buttonmap.put("Mouse 4", 3);
+            buttonmap.put("Mouse 5", 4);
+            buttonmap.put("Mouse 6", 5);
+            buttonmap.put("Mouse 7", 6);
+            buttonmap.put("Mouse 8", 7);
+        }
+
+        for(String buttonName : buttonmap.keySet())
+            if(buttonmap.get(buttonName) == button)
+                return buttonName;
+        return "None";
     }
 
     public static Color parseHexColor(String hex)
@@ -598,5 +649,49 @@ public class Utils {
             e.printStackTrace();
             return 0;
         }
+    }
+
+    public static BufferedImage toBufferedImage(Image img)
+    {
+        if (img instanceof BufferedImage)
+        {
+            return (BufferedImage) img;
+        }
+
+        BufferedImage bimage = new BufferedImage(img.getWidth(null), img.getHeight(null), BufferedImage.TYPE_INT_ARGB);
+
+        Graphics2D bGr = bimage.createGraphics();
+        bGr.drawImage(img, 0, 0, null);
+        bGr.dispose();
+
+        return bimage;
+    }
+
+    public static Vector2f getClosestPointOnLine(Vector2f a, Vector2f b, Vector2f p)
+    {
+        Vector2f a_to_p = new Vector2f(p.x - a.x, p.y - a.y);
+        Vector2f a_to_b = new Vector2f(b.x - a.x, b.y - a.y);
+
+        double atb2 = Math.pow(a_to_b.x, 2) + Math.pow(a_to_b.y, 2);
+
+        float atp_dot_atb = a_to_p.x * a_to_b.x + a_to_p.y * a_to_b.y;
+
+        double t = atp_dot_atb / atb2;
+
+        Vector2f point = new Vector2f((float) (a.x + a_to_b.x * t), (float) (a.y + a_to_b.y * t));
+
+        float p2a = point.distance(a);
+        float p2b = point.distance(b);
+        float b2a = b.distance(a);
+
+        if(b2a < p2a || b2a < p2b)
+        {
+            if(p2a < p2b)
+                point = a;
+            else
+                point = b;
+        }
+
+        return point;
     }
 }

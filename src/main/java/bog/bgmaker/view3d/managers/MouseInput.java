@@ -16,7 +16,9 @@ public class MouseInput {
     public Vector2d previousPos, currentPos;
     public Vector2f displayVec;
 
-    public boolean inWindow = false, leftButtonPress = false, middleButtonPress = false, rightButtonPress = false;
+    public boolean inWindow = false,
+            leftButtonPress = false, middleButtonPress = false, rightButtonPress = false,
+            mouse4Press = false, mouse5Press = false, mouse6Press = false, mouse7Press = false, mouse8Press = false;
 
     ILogic viewLogic;
 
@@ -50,12 +52,22 @@ public class MouseInput {
                 leftButtonPress = button == GLFW.GLFW_MOUSE_BUTTON_1 ? true : leftButtonPress;
                 rightButtonPress = button == GLFW.GLFW_MOUSE_BUTTON_2 ? true : rightButtonPress;
                 middleButtonPress = button == GLFW.GLFW_MOUSE_BUTTON_3 ? true : middleButtonPress;
+                mouse4Press = button == GLFW.GLFW_MOUSE_BUTTON_4 ? true : mouse4Press;
+                mouse5Press = button == GLFW.GLFW_MOUSE_BUTTON_5 ? true : mouse5Press;
+                mouse6Press = button == GLFW.GLFW_MOUSE_BUTTON_6 ? true : mouse6Press;
+                mouse7Press = button == GLFW.GLFW_MOUSE_BUTTON_7 ? true : mouse7Press;
+                mouse8Press = button == GLFW.GLFW_MOUSE_BUTTON_8 ? true : mouse8Press;
             }
             else if(action == GLFW.GLFW_RELEASE)
             {
                 leftButtonPress = button == GLFW.GLFW_MOUSE_BUTTON_1 ? false : leftButtonPress;
                 rightButtonPress = button == GLFW.GLFW_MOUSE_BUTTON_2 ? false : rightButtonPress;
                 middleButtonPress = button == GLFW.GLFW_MOUSE_BUTTON_3 ? false : middleButtonPress;
+                mouse4Press = button == GLFW.GLFW_MOUSE_BUTTON_4 ? false : mouse4Press;
+                mouse5Press = button == GLFW.GLFW_MOUSE_BUTTON_5 ? false : mouse5Press;
+                mouse6Press = button == GLFW.GLFW_MOUSE_BUTTON_6 ? false : mouse6Press;
+                mouse7Press = button == GLFW.GLFW_MOUSE_BUTTON_7 ? false : mouse7Press;
+                mouse8Press = button == GLFW.GLFW_MOUSE_BUTTON_8 ? false : mouse8Press;
             }
 
             onMouseClick(button, action, mods);

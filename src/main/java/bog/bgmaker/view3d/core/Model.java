@@ -1,5 +1,6 @@
 package bog.bgmaker.view3d.core;
 
+import bog.bgmaker.view3d.ObjectLoader;
 import org.lwjgl.opengl.GL30;
 
 /**
@@ -57,37 +58,14 @@ public class Model {
         indicesArr = model.indicesArr;
     }
 
-    public void cleanup()
+    public void cleanup(ObjectLoader loader)
     {
+        loader.vaos.remove((Object)vao);
+
+        for(int vbo : vbos)
+            loader.vbos.remove((Object)vbo);
+
         GL30.glDeleteVertexArrays(vao);
         GL30.glDeleteBuffers(vbos);
     }
-
-//    public Vector3f rayIntersectModel(Vector3f ray, Vector3f origin)
-//    {
-//        for(Triangle triangle : triangles)
-//        {
-//            Vector3f v0v1 = triangle.p2.sub(triangle.p1, new Vector3f());
-//            Vector3f v0v2 = triangle.p3.sub(triangle.p1, new Vector3f());
-//            Vector3f N = v0v1.cross(v0v2, new Vector3f());
-//            float area2 = N.length();
-//
-//            triangle = new Triangle(triangle);
-//
-//            float D = -(N.x * triangle.p1.x + N.y * triangle.p1.y + N.z * triangle.p1.z);
-//            float t = (-(N.dot(origin) + D)) / N.dot(ray);
-//            Vector3f P = origin.add(ray.mul(t, new Vector3f()), new Vector3f());
-//
-//            Vector3f edge0 = triangle.p2.sub(triangle.p1, new Vector3f());
-//            Vector3f edge1 = triangle.p3.sub(triangle.p2, new Vector3f());
-//            Vector3f edge2 = triangle.p1.sub(triangle.p3, new Vector3f());
-//            Vector3f C0 = P.sub(triangle.p1, new Vector3f());
-//            Vector3f C1 = P.sub(triangle.p2, new Vector3f());
-//            Vector3f C2 = P.sub(triangle.p3, new Vector3f());
-//            if (N.dot(edge0.cross(C0, new Vector3f())) > 0 &&
-//                    N.dot(edge1.cross(C1, new Vector3f())) > 0 &&
-//                    N.dot(edge2.cross(C2, new Vector3f())) > 0) return P;
-//        }
-//        return null;
-//    }
 }

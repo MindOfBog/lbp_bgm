@@ -747,17 +747,26 @@ public class ElementEditing extends GuiScreen {
             @Override
             public void drawButton(int posY, float scrollY, float scrollHeight, int height, Object object, int i) {
                 super.drawButton(posY, scrollY, scrollHeight, height, object, i);
+
+                if(model == null)
+                    model = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(height)), loader, window);
+
                 renderer.endScissor();
                 renderer.startScissor((int) pos.x - height, (int) scrollY, (int) size.x + 2 + height, (int) java.lang.Math.ceil(scrollHeight));
                 Entity entity = (Entity) object;
                 renderer.drawRect((int)pos.x - height + 2, posY, height, height, buttonColor(object, i));
                 renderer.drawImageStatic(entity.getType() == 0 ? mainView.modelIcon : entity.getType() == 1 ? mainView.materialIcon : entity.getType() == 2 ? mainView.lightIcon : mainView.audioIcon, (int)pos.x - height + 2, posY, height, height);
-                renderer.drawRectOutline(new Vector2f(pos.x - height + 2, posY), outlineButton, buttonColor2(object, i), false);
+                renderer.drawRectOutline(new Vector2f(pos.x - height + 2, posY), model, buttonColor2(object, i), false);
             }
 
-            public Model getOutlineButton(int height)
-            {
-                return LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(height)), loader, window);
+            Model model;
+
+            @Override
+            public void refreshOutline(int height) {
+                super.refreshOutline(height);
+                if(model != null)
+                    model.cleanup(loader);
+                model = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(height)), loader, window);
             }
 
             @Override
@@ -838,7 +847,6 @@ public class ElementEditing extends GuiScreen {
         loadedSearchPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Search:", 10, mainView.renderer), 0.25f));
         loadedEntitiesSearch = new Textbox("loadedEntitiesSearch", new Vector2f(), new Vector2f(), 10, mainView.renderer, mainView.loader, mainView.window);
         loadedSearchPanel.elements.add(new Panel.PanelElement(loadedEntitiesSearch, 0.75f));
-        guiElements.add(loadedSearchPanel);
 
         clearAllEntites = new Button("clearAllEntities", "Clear all", new Vector2f(), new Vector2f(99f, getFontHeight(10) * 1.25f), 10, mainView.renderer, mainView.loader, mainView.window) {
             @Override
@@ -1005,6 +1013,8 @@ public class ElementEditing extends GuiScreen {
                 }
             }
         };
+
+        this.guiElements.add(loadedSearchPanel);
 
         this.guiElements.add(loadedEntitiesHitbox);
         this.guiElements.add(loadedEntities);
@@ -1457,6 +1467,12 @@ public class ElementEditing extends GuiScreen {
                 scale.isClicked,
                 mainView.crosshair, mainView.window, mainView.loader, mainView.renderer, mouseInput);
 
+        mainView.renderer.doBlur(1.0025f, mainView.window.width - 305, 0, 305, mainView.window.height);
+        mainView.renderer.doBlur(2, mainView.window.width - 305, 0, 305, mainView.window.height);
+        mainView.renderer.doBlur(3, mainView.window.width - 305, 0, 305, mainView.window.height);
+        mainView.renderer.doBlur(2, mainView.window.width - 305, 0, 305, mainView.window.height);
+        mainView.renderer.doBlur(1.5f, mainView.window.width - 305, 0, 305, mainView.window.height);
+        mainView.renderer.doBlur(1.25f, mainView.window.width - 305, 0, 305, mainView.window.height);
         mainView.renderer.drawRect(mainView.window.width - 305, 0, 305, mainView.window.height, Config.PRIMARY_COLOR);
         mainView.renderer.drawLine(mainView.loader, new Vector2i(mainView.window.width - 304, 0), new Vector2i(mainView.window.width - 304, mainView.window.height), Config.SECONDARY_COLOR, false);
 

@@ -5,12 +5,16 @@ import bog.bgmaker.view3d.core.Model;
 import bog.bgmaker.view3d.managers.MouseInput;
 import bog.bgmaker.view3d.managers.RenderMan;
 import bog.bgmaker.view3d.managers.WindowMan;
+import bog.bgmaker.view3d.renderer.gui.cursor.ECursor;
 import bog.bgmaker.view3d.renderer.gui.ingredients.LineStrip;
 import bog.bgmaker.view3d.utils.Config;
+import bog.bgmaker.view3d.utils.Cursors;
 import org.joml.Math;
 import org.joml.Vector2d;
 import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
+
+import java.awt.*;
 
 /**
  * @author Bog
@@ -68,8 +72,17 @@ public class Slider extends Element{
             sliderPosition = Math.clamp(0, 100, sliderPosition);
         }
 
-        renderer.drawRect((int) pos.x, (int) (pos.y + size.y/2f - size.y * 0.1f), (int) size.x, (int) (size.y * 0.2f), Config.INTERFACE_PRIMARY_COLOR);
-        renderer.drawRectOutline(new Vector2f((int) pos.x, (int) (pos.y + size.y/2f - size.y * 0.1f)), outlineRect, Config.INTERFACE_PRIMARY_COLOR2, false);
+        Color c = Config.INTERFACE_PRIMARY_COLOR;
+        Color c2 = Config.INTERFACE_PRIMARY_COLOR2;
+
+        if(hovering || isSliding)
+        {
+            c = Config.INTERFACE_SECONDARY_COLOR;
+            c2 = Config.INTERFACE_SECONDARY_COLOR2;
+        }
+
+        renderer.drawRect((int) pos.x, (int) (pos.y + size.y/2f - size.y * 0.1f), (int) size.x, (int) (size.y * 0.2f), c);
+        renderer.drawRectOutline(new Vector2f((int) pos.x, (int) (pos.y + size.y/2f - size.y * 0.1f)), outlineRect, c2, false);
         renderer.drawRect((int) (pos.x + (sliderPosition * ((size.x - size.y * 0.1f)/100))), (int) (pos.y), (int) (size.y * 0.2f), (int) size.y, Config.FONT_COLOR);
 
     }
@@ -81,7 +94,7 @@ public class Slider extends Element{
     public void refreshOutline()
     {
         if(this.outlineRect != null)
-            this.outlineRect.cleanup();
+            this.outlineRect.cleanup(loader);
         this.outlineRect = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f((int) size.x, (int) (size.y * 0.2f))), loader, window);
     }
     @Override
@@ -112,5 +125,10 @@ public class Slider extends Element{
         super.setFocused(focused);
         if(!focused)
             isSliding = false;
+    }
+
+    @Override
+    public void hoverCursor() {
+        Cursors.setCursor(ECursor.hand2);
     }
 }

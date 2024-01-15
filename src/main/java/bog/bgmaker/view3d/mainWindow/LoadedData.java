@@ -13,6 +13,7 @@ import cwlib.resources.RMesh;
 import cwlib.resources.RTexture;
 import cwlib.structs.gmat.MaterialBox;
 import cwlib.structs.gmat.MaterialWire;
+import cwlib.structs.texture.CellGcmTexture;
 import cwlib.types.Resource;
 import cwlib.types.archives.FileArchive;
 import cwlib.types.data.ResourceDescriptor;
@@ -26,6 +27,7 @@ import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -157,8 +159,7 @@ public class LoadedData {
                 if (material != null) {
                     int output = material.getOutputBox();
                     MaterialBox outBox = material.getBoxConnectedToPort(output, 0);
-
-                    String sh = buildColor(outBox, material, textures, colors, loader);
+                    String sh = buildColor(outBox, material, textures, colors, loader)[0];
 
                     shaderColor = sh == null ? null : "ambientC = vec4(" + sh + ");" +
                             "        if(highlightMode == 1)" +
@@ -255,7 +256,7 @@ public class LoadedData {
             return LoadedData.loadedGfxMaterials.get(matDescriptor);
     }
 
-    private static String buildColor(MaterialBox box, RGfxMaterial material, ArrayList<Texture> textures, ArrayList<Vector4f> colors, ObjectLoader loader) throws Exception {
+    private static String[] buildColor(MaterialBox box, RGfxMaterial material, ArrayList<Texture> textures, ArrayList<Vector4f> colors, ObjectLoader loader) throws Exception {
         if(textures == null)
             textures = new ArrayList<>();
         if(colors == null)
@@ -269,31 +270,47 @@ public class LoadedData {
             case BoxType.MULTIPLY:
             {
                 MaterialBox[] connectedBoxes = material.getBoxesConnected(box);
-                String in1 = buildColor(connectedBoxes[0], material, textures, colors, loader);
-                String in2 = buildColor(connectedBoxes[1], material, textures, colors, loader);
+                String[] in1 = buildColor(connectedBoxes[0], material, textures, colors, loader);
+                String[] in2 = buildColor(connectedBoxes[1], material, textures, colors, loader);
 
-                return "(" + in1 + " * " + in2 + ")";
+                boolean isBump = Boolean.parseBoolean(in1[1]) & Boolean.parseBoolean(in2[1]);
+
+                String color1 = Boolean.parseBoolean(in1[1]) ? "vec4(" + in1[0] + ".xyz, 1.0)" : in1[0];
+                String color2 = Boolean.parseBoolean(in2[1]) ? "vec4(" + in2[0] + ".xyz, 1.0)" : in2[0];
+
+                return new String[]{"(" + color1 + " * " + color2 + ")", Boolean.toString(isBump)};
             }
             case BoxType.ADD:
             {
                 MaterialBox[] connectedBoxes = material.getBoxesConnected(box);
-                String in1 = buildColor(connectedBoxes[0], material, textures, colors, loader);
-                String in2 = buildColor(connectedBoxes[1], material, textures, colors, loader);
+                String[] in1 = buildColor(connectedBoxes[0], material, textures, colors, loader);
+                String[] in2 = buildColor(connectedBoxes[1], material, textures, colors, loader);
 
-                return "(" + in1 + " + " + in2 + ")";
+                boolean isBump = Boolean.parseBoolean(in1[1]) & Boolean.parseBoolean(in2[1]);
+
+                String color1 = Boolean.parseBoolean(in1[1]) ? "vec4(" + in1[0] + ".xyz, 1.0)" : in1[0];
+                String color2 = Boolean.parseBoolean(in2[1]) ? "vec4(" + in2[0] + ".xyz, 1.0)" : in2[0];
+
+                return new String[]{"(" + color1 + " + " + color2 + ")", Boolean.toString(isBump)};
             }
 //            case BoxType.MULTIPLY_ADD:
 //            {
 //                MaterialBox[] connectedBoxes = material.getBoxesConnected(box);
 //                System.out.println("muladd: " + connectedBoxes.length);
-//                return "";
+//                return new String[]{"", "false"};
 //            }
             case BoxType.MIX:
             {
                 MaterialBox[] connectedBoxes = material.getBoxesConnected(box);
-                String in1 = buildColor(connectedBoxes[0], material, textures, colors, loader);
-                String in2 = buildColor(connectedBoxes[1], material, textures, colors, loader);
-                return "(mix(" + in1 + ", " + in2 + ", 0.5))";
+                String[] in1 = buildColor(connectedBoxes[0], material, textures, colors, loader);
+                String[] in2 = buildColor(connectedBoxes[1], material, textures, colors, loader);
+
+                boolean isBump = Boolean.parseBoolean(in1[1]) & Boolean.parseBoolean(in2[1]);
+
+                String color1 = Boolean.parseBoolean(in1[1]) ? "vec4(" + in1[0] + ".xyz, 1.0)" : in1[0];
+                String color2 = Boolean.parseBoolean(in2[1]) ? "vec4(" + in2[0] + ".xyz, 1.0)" : in2[0];
+
+                return new String[]{"(mix(" + color1 + ", " + color2 + ", 0.5))", Boolean.toString(isBump)};
             }
 //            case BoxType.BLEND:
 //                System.out.println("BLEND");
@@ -307,15 +324,44 @@ public class LoadedData {
                         Float.intBitsToFloat((int) box.getParameters()[1]),
                         Float.intBitsToFloat((int) box.getParameters()[2]),
                         Float.intBitsToFloat((int) box.getParameters()[3])));
-                return "vec4(material.ambient[" + (colors.size() - 1) + "])";
+                return new String[]{"vec4(material.ambient[" + (colors.size() - 1) + "])", "false"};
             }
             case BoxType.TEXTURE_SAMPLE:
             default:
                 Texture tex = new Texture(missingTexture.id);
 
+                if (material.textures[box.getParameters()[5]] == null)
+                {
+                    System.err.println("Failed loading Texture: descriptor null");
+                }
+
+                boolean isBump = false;
+
+                byte[] data = extract(material.textures[box.getParameters()[5]]);
+                BufferedImage texture = null;
+                if (data == null)
+                {
+                    System.err.println("Failed loading Texture: extracted data null");
+                }
+                else
+                    try {
+                        RTexture resource = new RTexture(new Resource(data));
+                        CellGcmTexture t = resource.getInfo();
+                        if(t != null)
+                            isBump = t.isBumpTexture();
+                        texture = resource.getImage();
+                    }
+                    catch (Exception e) { e.printStackTrace(); }
+
                 try
                 {
-                    tex = getTexture(material.textures[box.getParameters()[5]], loader);
+                    if(loadedTextures.containsKey(material.textures[box.getParameters()[5]]))
+                        tex = loadedTextures.get(material.textures[box.getParameters()[5]]);
+                    else
+                    {
+                        tex = new Texture(loader.loadTexture(texture, GL11.GL_LINEAR_MIPMAP_NEAREST, GL11.GL_LINEAR));
+                        loadedTextures.put(material.textures[box.getParameters()[5]], tex);
+                    }
                 }catch (Exception e){}
 
                 if(tex != null)
@@ -329,7 +375,7 @@ public class LoadedData {
                 if(box.type == BoxType.TEXTURE_SAMPLE && box.getParameters()[4] == 1)
                     UV0 = false;
 
-                return "vec4(texture2D(textureSampler[" + (textures.size() - 1) + "], " + (UV0 ? "vec2(fragTextureCoord.x, fragTextureCoord.y)" : "vec2(fragTextureCoord.z, fragTextureCoord.w)") + "))";
+                return new String[]{"vec4(texture(textureSampler[" + (textures.size() - 1) + "], " + (UV0 ? "vec2(fragTextureCoord.x, fragTextureCoord.y)" : "vec2(fragTextureCoord.z, fragTextureCoord.w)") + "))", Boolean.toString(isBump)};
         }
     }
 

@@ -1,8 +1,10 @@
 package bog.bgmaker.view3d.managers;
 
 import bog.bgmaker.view3d.ILogic;
+import bog.bgmaker.view3d.renderer.gui.cursor.ECursor;
 import bog.bgmaker.view3d.utils.Config;
 import bog.bgmaker.view3d.utils.Consts;
+import bog.bgmaker.view3d.utils.Cursors;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 
@@ -91,6 +93,8 @@ public class EngineMan {
                 update();
                 render();
             }
+
+            Cursors.updateCursor(window);
         }
         cleanup();
     }

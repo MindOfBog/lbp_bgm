@@ -5,9 +5,11 @@ import bog.bgmaker.view3d.core.Model;
 import bog.bgmaker.view3d.managers.MouseInput;
 import bog.bgmaker.view3d.managers.RenderMan;
 import bog.bgmaker.view3d.managers.WindowMan;
+import bog.bgmaker.view3d.renderer.gui.cursor.ECursor;
 import bog.bgmaker.view3d.renderer.gui.ingredients.LineStrip;
 import bog.bgmaker.view3d.renderer.gui.ingredients.Quad;
 import bog.bgmaker.view3d.utils.Config;
+import bog.bgmaker.view3d.utils.Cursors;
 import org.joml.Vector2d;
 import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
@@ -139,7 +141,10 @@ public abstract class ButtonList<T> extends Element{
 
                         if(mouseInput.currentPos.x >= posX && mouseInput.currentPos.x <= posX + width &&
                                 mouseInput.currentPos.y >= posY && mouseInput.currentPos.y <= posY + height)
+                        {
                             hoveringButton(object, i);
+                            Cursors.setCursor(ECursor.hand2);
+                        }
                     }
                 drawButton(posY, scrollY, scrollHeight, height, object, i);
             }
@@ -229,10 +234,10 @@ public abstract class ButtonList<T> extends Element{
 
     public void drawButton(int posY, float scrollY, float scrollHeight, int height, T object, int i)
     {
-        renderer.startScissor((int)pos.x + 4, posY, (int)(size.x - 6f - size.x * 0.05f), (int) height);
-        renderer.drawRect((int)pos.x + 4, posY, (int)(size.x - 6f - size.x * 0.05f), (int) height, !(isHighlighted(object, i) || isSelected(object, i)) ? buttonColor(object, i) : (isSelected(object, i) ? buttonColorSelected(object, i) : buttonColorHighlighted(object, i)));
-        renderer.drawString(buttonText(object, i), textColor(object, i), (int)(pos.x + (size.x - size.x * 0.05f) / 2f - getStringWidth(buttonText(object, i), fontSize) / 2), posY + height / 2 - getFontHeight(fontSize) / 2, fontSize);
-        renderer.drawRectOutline(new Vector2f(pos.x + 4, posY), outlineButton, !(isHighlighted(object, i) || isSelected(object, i)) ? buttonColor2(object, i) : (isSelected(object, i) ? buttonColorSelected2(object, i) : buttonColorHighlighted2(object, i)), false);
+        renderer.startScissor(Math.round(pos.x + 4), Math.round(posY), Math.round(size.x - 6f - size.x * 0.05f), Math.round(height));
+        renderer.drawRect(Math.round(pos.x + 4), Math.round(posY), Math.round(size.x - 6f - size.x * 0.05f), Math.round(height), !(isHighlighted(object, i) || isSelected(object, i)) ? buttonColor(object, i) : (isSelected(object, i) ? buttonColorSelected(object, i) : buttonColorHighlighted(object, i)));
+        renderer.drawString(buttonText(object, i), textColor(object, i), Math.round(pos.x + (size.x - size.x * 0.05f) / 2f - getStringWidth(buttonText(object, i), fontSize) / 2), Math.round(posY + height / 2 - getFontHeight(fontSize) / 2), fontSize);
+        renderer.drawRectOutline(new Vector2f(Math.round(pos.x + 4), Math.round(posY)), outlineButton, !(isHighlighted(object, i) || isSelected(object, i)) ? buttonColor2(object, i) : (isSelected(object, i) ? buttonColorSelected2(object, i) : buttonColorHighlighted2(object, i)), false);
         renderer.endScissor();
     }
     public int buttonHeight()
@@ -246,9 +251,9 @@ public abstract class ButtonList<T> extends Element{
     public void refreshOutline(int height)
     {
         if(outlineScrollbar != null)
-            this.outlineScrollbar.cleanup();
+            this.outlineScrollbar.cleanup(loader);
         if(outlineButton != null)
-            this.outlineButton.cleanup();
+            this.outlineButton.cleanup(loader);
         this.outlineScrollbar = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(3, (int) size.y)), loader, window);
         this.outlineButton = getOutlineButton(height);
     }

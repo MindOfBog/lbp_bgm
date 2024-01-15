@@ -1048,6 +1048,12 @@ public class LevelSettingsEditing extends GuiScreen {
     @Override
     public void draw(MouseInput mouseInput) {
 
+        mainView.renderer.doBlur(1.0025f, mainView.window.width - 305, 0, 305, mainView.window.height);
+        mainView.renderer.doBlur(2, mainView.window.width - 305, 0, 305, mainView.window.height);
+        mainView.renderer.doBlur(3, mainView.window.width - 305, 0, 305, mainView.window.height);
+        mainView.renderer.doBlur(2, mainView.window.width - 305, 0, 305, mainView.window.height);
+        mainView.renderer.doBlur(1.5f, mainView.window.width - 305, 0, 305, mainView.window.height);
+        mainView.renderer.doBlur(1.25f, mainView.window.width - 305, 0, 305, mainView.window.height);
         mainView.renderer.drawRect(mainView.window.width - 305, 0, 305, mainView.window.height, Config.PRIMARY_COLOR);
         mainView.renderer.drawLine(mainView.loader, new Vector2i(mainView.window.width - 304, 0), new Vector2i(mainView.window.width - 304, mainView.window.height), Config.SECONDARY_COLOR, false);
         mainView.renderer.drawString("Sun Position:", Config.FONT_COLOR, mainView.window.width - 302, 3, 10);

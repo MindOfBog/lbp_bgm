@@ -188,7 +188,7 @@ public class Transformation3D{
                 this.currentPosition = currentPosition;
                 screenPos = view.camera.worldToScreenPointF(this.currentPosition, view.window);
 
-                if(screenPos.z == 0)
+                if(screenPos != null && screenPos.z == 0)
                 {
                     mi.currentPos = new Vector2d(screenPos.x, screenPos.y);
                     MousePicker posPicker = new MousePicker(mi, view.window);

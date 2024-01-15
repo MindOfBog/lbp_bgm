@@ -4,14 +4,11 @@ import bog.bgmaker.view3d.ObjectLoader;
 import bog.bgmaker.view3d.managers.MouseInput;
 import bog.bgmaker.view3d.managers.RenderMan;
 import bog.bgmaker.view3d.managers.WindowMan;
+import bog.bgmaker.view3d.renderer.gui.cursor.ECursor;
 import bog.bgmaker.view3d.renderer.gui.font.FontRenderer;
-import bog.bgmaker.view3d.renderer.gui.ingredients.*;
+import bog.bgmaker.view3d.utils.Cursors;
 import org.joml.Vector2d;
 import org.joml.Vector2f;
-import org.joml.Vector2i;
-
-import java.awt.*;
-import java.awt.image.BufferedImage;
 
 /**
  * @author Bog
@@ -34,14 +31,23 @@ public class Element {
     public void draw(MouseInput mouseInput, boolean overElement)
     {
         hovering = isMouseOverElement(mouseInput) && !overElement;
+        if(hovering)
+            hoverCursor();
     }
     public void resize(){}
 
     public void secondThread(){}
 
+    public void hoverCursor()
+    {
+        Cursors.setCursor(ECursor.left_ptr);
+    }
+
     public boolean isMouseOverElement(Vector2f mousePos)
     {
-        try{return mousePos.x > pos.x && mousePos.y > pos.y && mousePos.x < pos.x + size.x && mousePos.y < pos.y + size.y;}catch (Exception e){}
+        try{
+            return mousePos.x > pos.x && mousePos.y > pos.y && mousePos.x < pos.x + size.x && mousePos.y < pos.y + size.y;
+        }catch (Exception e){}
         return false;
     }
 
