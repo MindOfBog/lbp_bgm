@@ -1263,20 +1263,20 @@ public class Settings extends GuiScreen{
                 a = Utils.parseInt(colorA);
             Config.INTERFACE_TERTIARY_COLOR2 = new Color(r, g, b, a);
         }
+
+        float cursorSize = Utils.parseFloat(this.cursorSize.getText());
+        if(cursorSize == 0)
         {
-            float cursorSize = Utils.parseFloat(this.cursorSize.getText());
+            cursorSize = 1;
 
-            if(cursorSize == 0)
-            {
-                cursorSize = 1;
+            if(!this.cursorSize.isFocused())
+                this.cursorSize.setText("1");
+        }
 
-                if(!this.cursorSize.isFocused())
-                    this.cursorSize.setText("1");
-            }
-
+        if(Config.CURSOR_SCALE != cursorSize)
+        {
             Config.CURSOR_SCALE = cursorSize;
             Cursors.updateCursors();
         }
     }
-
 }
