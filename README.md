@@ -1,4 +1,5 @@
-# <img src="./src/main/resources/textures/icon.svg" width="100" style="max-width:100%; vertical-align:middle"> LBP Background Maker
+# LBP Background Maker
+<img src="./src/main/resources/textures/icon.svg" height="100">
 
 A 3D Renderer/Tool that runs on OpenGL, written in Java. It lets you construct any in world asset for all main 3 LittleBigPlanet games.
 
