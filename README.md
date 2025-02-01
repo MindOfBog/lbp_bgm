@@ -23,3 +23,7 @@ JRE 11 or up needed to run.
 # Thanks
 Special thanks to Ennuo, the legend, for helping out a lot in the making of this tool. It wouldn't have been possible without him.
 CWLib does the heavy lifting when It comes to dealing with LBP files: https://github.com/ennuo/toolkit/tree/cwlib
+
+<img src="./screenshots/DaVinci.png" height="200">
+
+<img src="./screenshots/Metro.png" height="200">
