@@ -69,7 +69,6 @@ public class Thing implements Serializable {
     @SuppressWarnings("unchecked")
     @Override public Thing serialize(Serializer serializer, Serializable structure) {
         Thing thing = (structure == null) ? new Thing() : (Thing) structure;
-
         Revision revision = serializer.getRevision();
         int version = revision.getVersion();
         int subVersion = revision.getSubVersion();
@@ -266,7 +265,7 @@ public class Thing implements Serializable {
 
     @SuppressWarnings("unchecked")
     public <T extends Serializable> T getPart(Part part) { return (T) this.parts[part.getIndex()]; }
-    public <T extends Serializable> void setPart(Part part, T value) { this.parts[part.getIndex()] = value; }
+    public <T extends Serializable> Thing setPart(Part part, T value) { this.parts[part.getIndex()] = value; return this;}
     public boolean hasPart(Part part) { return this.parts[part.getIndex()] != null; }
 
     @Override public int getAllocatedSize() {  return BASE_ALLOCATION_SIZE;  }

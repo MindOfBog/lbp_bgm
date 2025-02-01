@@ -1,18 +1,20 @@
-#version 400 core
+#version 330 core
 
 in vec4 fragTextureCoord;
 in vec3 fragNormal;
 in vec3 fragPos;
 in vec3 fragTang;
 in vec3 fragBitTang;
+flat in int fragGmat;
+in vec4 viewPosition;
 
 out vec4 fragmentColor;
 
 struct Material
 {
-    vec4 ambient[25];
-    vec4 diffuse[25];
-    vec4 specular[25];
+    vec4 ambient;
+    vec4 diffuse;
+    vec4 specular;
     int hasTexture;
     float reflectance;
 };
@@ -38,8 +40,12 @@ struct SpotLight
     float cutoff;
 };
 
-uniform sampler2D textureSampler[25];
-uniform int samplerCount;
+uniform bool preview;
+uniform sampler2D textureSampler[32];
+uniform ivec2 gmatMAP[100];
+uniform int gmatCount;
+uniform vec4 thingColor;
+
 uniform vec3 ambientLight;
 uniform Material material;
 uniform int highlightMode;
@@ -56,6 +62,14 @@ uniform mat4 transformationMatrix;
 uniform mat4 projectionMatrix;
 uniform mat4 viewMatrix;
 
+uniform vec4 rimColor;
+uniform vec4 rimColor2;
+uniform float fogNear;
+uniform float fogFar;
+
+uniform vec3 camPos;
+uniform vec3 sunPos;
+
 const mat4 thresholdMatrix = mat4(
     1, 9, 3, 11,
     13, 5, 15, 7,
@@ -66,14 +80,20 @@ vec4 ambientC;
 vec4 diffuseC;
 vec4 specularC;
 
+void cullBackFace()
+{
+    if(!gl_FrontFacing)
+        discard;
+}
+
 vec4 calcLightColor(vec3 light_color, float light_intensity, vec3 to_light_dir)
 {
-    float diffuseFactor = max(dot(normalize(fragNormal), to_light_dir), 0.2);
+    float diffuseFactor = max(dot(normalize(gl_FrontFacing ? fragNormal : -fragNormal), to_light_dir), 0.2);
     vec4 diffuseColor = diffuseC * vec4(light_color, 1.0) * light_intensity * diffuseFactor;
 
     vec3 camera_direction = normalize(-fragPos);
     vec3 from_light_dir = -to_light_dir;
-    vec3 reflectedLight = normalize(reflect(from_light_dir, normalize(fragNormal)));
+    vec3 reflectedLight = normalize(reflect(from_light_dir, normalize(gl_FrontFacing ? fragNormal : -fragNormal)));
     float specularFactor = max(dot(reflectedLight, camera_direction), 0.0);
     specularFactor = pow(specularFactor, specularPower);
     vec4 specularColor = specularC * light_intensity * specularFactor * material.reflectance * vec4(light_color, 1.0);
@@ -121,36 +141,48 @@ vec4 calcDirectionalLight(DirectionalLight light)
     return calcLightColor(light.color, light.intensity, normalize(light.direction));
 }
 
+int getGmatIndex(int gmat)
+{
+    for(int i = 0; i < gmatCount; i++)
+        if(gmatMAP[i].x == gmat)
+            return i;
+    return 0;
+}
+
+vec3 reinhardToneMapping(vec3 color, float exposure) {
+    return color * (exposure / (color + vec3(1.0)));
+}
+
 void setupColors()
 {
-    //%&AMBIENTC
+    bool custom = false;
 
-    for(int i = 0; i < 25; i++)
-        if (texture(textureSampler[i], fragTextureCoord.xy).x == -5 && material.specular[i].x == -5 && material.diffuse[i].x == -5 && material.ambient[i].x == -5)
-            discard;
+    //%&AMBIENTC
 
     ambientC.r = min(ambientC.r, 1.0);
     ambientC.g = min(ambientC.g, 1.0);
     ambientC.b = min(ambientC.b, 1.0);
     ambientC.a = min(ambientC.a, 1.0);
 
-    if(ambientC.a < 0.4)
+    float minAlpha = 0.25;
+
+    if(ambientC.a < minAlpha)
     {
-        ambientC.a = 0.4;
+        ambientC.a = preview ? 0 : minAlpha;
         ambientC.r = 0;
         ambientC.g = 0;
         ambientC.b = 0;
     }
-    if(diffuseC.a < 0.4)
+    if(diffuseC.a < minAlpha)
     {
-        diffuseC.a = 0.4;
+        diffuseC.a = preview ? 0 : minAlpha;
         diffuseC.r = 0;
         diffuseC.g = 0;
         diffuseC.b = 0;
     }
-    if(specularC.a < 0.4)
+    if(specularC.a < minAlpha)
     {
-        specularC.a = 0.4;
+        specularC.a = preview ? 0 : minAlpha;
         specularC.r = 0;
         specularC.g = 0;
         specularC.b = 0;
@@ -170,33 +202,50 @@ void main()
     setupColors();
 
     vec3 translation = vec3(transformationMatrix[0][3], transformationMatrix[1][3], transformationMatrix[2][3]);
-    vec4 diffuseSpecularComp = vec4(0,0,0,0);
+    vec4 diffuseSpecularComp = vec4(0.0,0.0,0.0,0.0);
 
     for(int i = 0; i < directionalLightsSize; i++)
     {
-        if(directionalLights[i].intensity > 0)
+        if(directionalLights[i].intensity > 0.0)
         {
             diffuseSpecularComp += calcDirectionalLight(directionalLights[i]);
         }
     }
     for(int i = 0; i < pointLightsSize; i++)
     {
-        if(pointLights[i].intensity > 0)
+        if(pointLights[i].intensity > 0.0)
         {
             diffuseSpecularComp += calcPointLight(pointLights[i]);
         }
     }
     for(int i = 0; i < spotLightsSize; i++)
     {
-        if(spotLights[i].pl.intensity > 0)
+        if(spotLights[i].pl.intensity > 0.0)
         {
             diffuseSpecularComp += calcSpotLight(spotLights[i]);
         }
     }
 
-    fragmentColor = ambientC * vec4(ambientLight, 1) + diffuseSpecularComp;
-    fragmentColor.r = min(fragmentColor.r, 1.0);
-    fragmentColor.g = min(fragmentColor.g, 1.0);
-    fragmentColor.b = min(fragmentColor.b, 1.0);
-    fragmentColor.a = min(fragmentColor.a, 1.0);
+    vec3 viewNormal = (viewMatrix * vec4(gl_FrontFacing ? fragNormal : -fragNormal, 0.0)).xyz;
+    float rim = pow(1.0 + dot(viewNormal, normalize(viewPosition.xyz)), 3.5f);
+    float rim1 = rim * (dot(normalize(sunPos - fragPos), vec3(viewMatrix[0][2], viewMatrix[1][2], viewMatrix[2][2])));
+    float rim2 = rim * (dot(normalize(fragPos - sunPos), vec3(viewMatrix[0][2], viewMatrix[1][2], viewMatrix[2][2])));
+    rim1 *= 0.275f;
+    rim2 *= 0.275f;
+
+    vec3 rimFinal1 = clamp(vec3(rimColor.rgb * rim1 * rimColor.a), 0.0, 1.0);
+    vec3 rimFinal2 = clamp(vec3(rimColor2.rgb * rim2 * rimColor2.a), 0.0, 1.0);
+
+    float camToPixelDist = length(fragPos - camPos);
+    float fogRange = fogFar - fogNear;
+    float fogDist = fogFar - camToPixelDist;
+    float fogFactor = clamp(fogDist / fogRange, 0.0f, 1.0f);
+
+    fragmentColor = ambientC * vec4(ambientLight, 1.0f) + diffuseSpecularComp;
+    fragmentColor.r = fragmentColor.r + rimFinal1.r + rimFinal2.r;
+    fragmentColor.g = fragmentColor.g + rimFinal1.g + rimFinal2.g;
+    fragmentColor.b = fragmentColor.b + rimFinal1.b + rimFinal2.b;
+    fragmentColor.a = (fogFar == -1 && fogNear == -1) || !preview ? 1.0f : fogFactor;
+
+    fragmentColor = clamp(fragmentColor, 0.0, 1.0);
 }

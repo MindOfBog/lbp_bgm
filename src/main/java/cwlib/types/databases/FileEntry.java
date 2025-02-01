@@ -50,6 +50,9 @@ public abstract class FileEntry {
      */
     private Object[] resources = new Object[ResourceKeys.MAX_ENTRIES];
 
+    public String translation;
+    public long translatedFor = -1;
+
     /**
      * Creates a FileEntry using default parameters for FileDB.
      * If one wants to create an entry in a database, they should refer to FileDB.newFileEntry instead.

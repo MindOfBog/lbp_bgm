@@ -1,10 +1,12 @@
 # LBP Background Maker
-A 3D Renderer/Tool that runs on OpenGL, written in Java. It lets you construct backgrounds that can be used in the main 3 LittleBigPlanet games.
+A 3D Renderer/Tool that runs on OpenGL, written in Java. It lets you construct any in world asset for all main 3 LittleBigPlanet games.
 
 JRE 11 or up needed to run.
 
 # How to use
-Load game files, click asset from the list, profit.
+- Load game files under the Archive tab
+- Create your assets under the Scene tab
+- Export your creation under the Export tab as a Plan or Level
 
 # Controls
 - WASD - move

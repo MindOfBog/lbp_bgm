@@ -21,7 +21,6 @@ public class PTrigger implements Serializable {
     @GsonRevision(min=0x1d5)
     public boolean allZLayers;
 
-
     @GsonRevision(min=0x19b)
     public float hysteresisMultiplier;
     @GsonRevision(min=0x19b)

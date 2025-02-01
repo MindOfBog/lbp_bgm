@@ -54,7 +54,7 @@ public class PShape implements Serializable {
     /**
      * Brightness of the color of the shape.
      */
-    @GsonRevision(min=0x301) public float brightness;
+    @GsonRevision(min=0x301) public float brightness = 1f;
 
     public float bevelSize = 10.0f;
 
@@ -62,8 +62,8 @@ public class PShape implements Serializable {
 
     @GsonRevision(min=0x303) public int behavior;
 
-    @GsonRevision(min=0x303) public int colorOff;
-    @GsonRevision(min=0x303) public float brightnessOff;
+    @GsonRevision(min=0x303) public int colorOff = 0xFFFFFFFF;
+    @GsonRevision(min=0x303) public float brightnessOff = 1f;
 
     @GsonRevision(max=0x306) public byte interactPlayMode, interactEditMode = 1;
 
@@ -79,7 +79,7 @@ public class PShape implements Serializable {
 
     @GsonRevision(min=0x3bd) public byte stickiness, grabbability, grabFilter;
 
-    @GsonRevision(min=0x3c1) public byte colorOpacity, colorOffOpacity;
+    @GsonRevision(min=0x3c1) public byte colorOpacity = Byte.MAX_VALUE, colorOffOpacity = Byte.MAX_VALUE;
 
     @GsonRevision(lbp3=true,min=0x12c) public byte colorShininess;
 
@@ -109,7 +109,7 @@ public class PShape implements Serializable {
     @GsonRevision(branch=0x4431, min=0x5f) public float zBiasVita;
     @GsonRevision(branch=0x4431, min=0x7a) public boolean touchWhenInvisible;
 
-    public PShape() {};
+    public PShape() {}
     public PShape(Vector3f[] vertices) {
         this.polygon.vertices = vertices;
         this.polygon.loops = new int[] { vertices.length };

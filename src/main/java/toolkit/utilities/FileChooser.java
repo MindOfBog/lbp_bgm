@@ -4,6 +4,7 @@ import java.io.File;
 import java.nio.file.Paths;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
+
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 
@@ -60,7 +61,7 @@ public class FileChooser {
         if (name != null)
             name = getHomePath(name);
         File[] files = null;
-        if (Config.instance.useLegacyFileDialogue)
+        if (bog.lbpas.view3d.utils.Config.LEGACY_FD)
             return openFileLegacy(name, extensions, saveFile, multiple);
         try (MemoryStack stack = stackPush()) {
             PointerBuffer patterns = null;

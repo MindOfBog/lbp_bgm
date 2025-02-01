@@ -6,12 +6,15 @@ layout(location = 2) in vec3 normal;
 layout(location = 3) in ivec4 joints;
 layout(location = 4) in vec4 weights;
 layout(location = 5) in vec3 tangent;
+layout(location = 6) in int gmat;
 
 out vec4 fragTextureCoord;
 out vec3 fragNormal;
 out vec3 fragPos;
 out vec3 fragTang;
 out vec3 fragBitTang;
+flat out int fragGmat;
+out vec4 viewPosition;
 
 uniform mat4 transformationMatrix;
 uniform mat4 projectionMatrix;
@@ -24,6 +27,8 @@ uniform bool hasBones;
 void main() {
     mat4 modelMatrix = transformationMatrix;
 
+    fragGmat = gmat;
+
     if (hasBones) {
         mat4 boneTransform = mat4(0.0);
         for (int i = 0; i < 4; ++i) {
@@ -35,7 +40,7 @@ void main() {
     vec4 worldPosition = modelMatrix * vec4(position, 1.0);
     worldPosition.xyz += triangleOffset * normal;
 
-    vec4 viewPosition = viewMatrix * worldPosition;
+    viewPosition = viewMatrix * worldPosition;
 
     fragTextureCoord = textureCoord;
     fragNormal = normalize(mat3(transpose(inverse(modelMatrix))) * normal);

@@ -3,11 +3,11 @@ package editor.gl;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import io.github.earcut4j.Earcut;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 import cwlib.structs.things.components.shapes.Polygon;
-import earcut4j.Earcut;
 
 /**
  * This class's functionality is pretty much taken from https://github.com/cellomonster/craftplane/tree/master/craftplane

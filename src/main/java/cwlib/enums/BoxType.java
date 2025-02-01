@@ -24,4 +24,6 @@ public class BoxType {
     // 17, something with fur
     // 18 ??? 
     public static final int EXPONENT = 19;
+
+
 }

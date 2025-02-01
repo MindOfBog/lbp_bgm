@@ -16,7 +16,7 @@ public enum InventorySortMode implements ValueEnum<Integer> {
     CREATOR(10);
 
     private final int value;
-    private InventorySortMode(int value) {
+    InventorySortMode(int value) {
         this.value = value;
     }
 

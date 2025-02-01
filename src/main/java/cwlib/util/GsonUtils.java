@@ -33,7 +33,7 @@ public final class GsonUtils {
      * Default GSON serializer object with type-adapters
      * pre-set.
      */
-    private static final Gson GSON = new GsonBuilder()
+    public static final Gson GSON = new GsonBuilder()
         .setPrettyPrinting()
         .serializeSpecialFloatingPointValues()
         .enableComplexMapKeySerialization()

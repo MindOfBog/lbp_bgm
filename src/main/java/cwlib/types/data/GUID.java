@@ -17,11 +17,19 @@ public final class GUID {
      * max value should be reflected as such.
      */
     private final static long MAX_VALUE = 4_294_967_295L;
-    private final long value;
+    private long value;
 
     public GUID(long value) {
         if (value > GUID.MAX_VALUE || value <= 0)
             throw new IllegalArgumentException("GUID can only be between 0 and 4294967295");
+        this.value = value;
+    }
+
+    public GUID() {
+    }
+
+    public void bypassValueConstraints(long value)
+    {
         this.value = value;
     }
 

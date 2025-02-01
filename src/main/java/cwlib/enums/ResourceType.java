@@ -131,6 +131,26 @@ public enum ResourceType implements ValueEnum<Integer> {
         }
         return ResourceType.INVALID;
     }
+
+    /**
+     * Attempts to get a valid ResourceType from the file extension.
+     * @param path file path
+     * @return Resource type
+     */
+    public static ResourceType fromExtension(String path) {
+
+        int ind = path.lastIndexOf(".");
+        if(ind == -1)
+            ind = 0;
+
+        String extension = path.toLowerCase().substring(ind);
+        for (ResourceType type : ResourceType.values()) {
+            if (type.extension == null) continue;
+            if (type.extension.equals(extension))
+                return type;
+        }
+        return ResourceType.INVALID;
+    }
     
     /**
      * Attempts to get a valid ResourceType from the value index.

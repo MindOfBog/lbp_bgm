@@ -1,12 +1,13 @@
 package common;
 
-import bog.bgmaker.Main;
+import bog.lbpas.view3d.utils.Config;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.io.File;
+import java.nio.file.FileSystemException;
 import java.nio.file.Paths;
 
 import static org.lwjgl.system.MemoryStack.stackPush;
@@ -19,17 +20,17 @@ public class FileChooser {
         return Paths.get(System.getProperty("user.home"), "Documents", name.replaceAll("[\\\\/:*?\"\'<>|]", "")).toAbsolutePath().toString();
     }
 
-    public static File openFile(String name, String ext, boolean saveFile) {
+    public static File openFile(String name, String ext, boolean saveFile) throws Exception {
         File[] files = openFile(name, ext, saveFile, false);
         if (files == null) return null;
         return files[0];
     }
 
-    public static File[] openFiles(String name, String ext) {
+    public static File[] openFiles(String name, String ext) throws Exception {
         return openFile(name, ext, false, true);
     }
 
-    public static File[] openFiles(String ext) {
+    public static File[] openFiles(String ext) throws Exception {
         return openFile(null, ext, false, true);
     }
 
@@ -53,14 +54,14 @@ public class FileChooser {
     }
 
 
-    public static File[] openFile(String name, String ext, boolean saveFile, boolean multiple) {
+    public static File[] openFile(String name, String ext, boolean saveFile, boolean multiple) throws Exception {
         String[] extensions = new String[0];
         if (ext != null)
             extensions = ext.split(",");
         if (name != null)
             name = getHomePath(name);
         File[] files;
-        if (Main.view.legacyFileDialogue())
+        if (Config.LEGACY_FD)
             return openFileLegacy(name, extensions, saveFile, multiple);
         try (MemoryStack stack = stackPush()) {
             PointerBuffer patterns = null;
@@ -76,22 +77,19 @@ public class FileChooser {
                 String path = tinyfd_saveFileDialog("Save", name, patterns, "");
                 if (path != null) paths = path.split("\\|");
                 else {
-                    System.out.println("File operation was cancelled by user.");
-                    return null;
+                    throw(new FileSystemException("File operation was cancelled by user."));
                 }
             }
             else {
                 String path = tinyfd_openFileDialog("Open File(s)", name, patterns, null, multiple);
                 if (path != null) paths = path.split("\\|");
                 else {
-                    System.out.println("File operation was cancelled by user.");
-                    return null;
+                    throw(new FileSystemException("File operation was cancelled by user."));
                 }
             }
 
             if (paths.length == 0) {
-                System.out.println("File operation was cancelled by user.");
-                return null;
+                throw(new FileSystemException("File operation was cancelled by user."));
             }
 
             files = new File[paths.length];
@@ -130,7 +128,7 @@ public class FileChooser {
     public static String openDirectory() {
         System.out.println("Waiting for user to select directory...");
         String directory = null;
-        if (Main.view.legacyFileDialogue())
+        if (Config.LEGACY_FD)
             directory = openDirectoryLegacy();
         else directory = tinyfd_selectFolderDialog("Select folder", "");
         if (directory == null)

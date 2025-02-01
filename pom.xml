@@ -146,7 +146,7 @@
             <configuration>
                <archive>
                   <manifest>
-                     <mainClass>bog.bgmaker.Main</mainClass>
+                     <mainClass>bog.lbpas.Main</mainClass>
                   </manifest>
                </archive>
                <descriptorRefs>
@@ -244,11 +244,6 @@
          <groupId>de.javagl</groupId>
          <artifactId>jgltf-model</artifactId>
          <version>2.0.3</version>
-      </dependency>
-      <dependency>
-         <groupId>io.github.earcut4j</groupId>
-         <artifactId>earcut4j</artifactId>
-         <version>2.2.2</version>
       </dependency>
       <dependency>
          <groupId>com.jgoodies</groupId>

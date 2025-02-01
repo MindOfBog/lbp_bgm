@@ -1,5 +1,6 @@
 package cwlib.enums;
 
+import bog.lbpas.view3d.utils.Utils;
 import cwlib.types.data.Revision;
 import java.util.EnumSet;
 
@@ -67,6 +68,19 @@ public enum InventoryObjectType {
     private InventoryObjectType(int value, int flags) {
         this.value = value;
         this.flags = flags;
+    }
+
+    public byte getGameVersion()
+    {
+        boolean isLBP1 = Utils.isBitwiseBool(flags, GameVersion.LBP1);
+        boolean isLBP2 = Utils.isBitwiseBool(flags, GameVersion.LBP2);
+        boolean isLBP3 = Utils.isBitwiseBool(flags, GameVersion.LBP3);
+
+        if(isLBP2 && !isLBP1)
+            return 2;
+        else if(isLBP3 && !isLBP1 && !isLBP2)
+            return 3;
+        return 1;
     }
     
     public static int getFlags(EnumSet<InventoryObjectType> set) {

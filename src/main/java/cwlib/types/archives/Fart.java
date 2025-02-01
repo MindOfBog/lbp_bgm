@@ -4,6 +4,7 @@ import cwlib.enums.ArchiveType;
 import cwlib.io.Serializable;
 import cwlib.io.streams.MemoryOutputStream;
 import cwlib.types.Resource;
+import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.SHA1;
 
 import java.io.File;
@@ -84,6 +85,22 @@ public abstract class Fart implements Iterable<Fat> {
         return null;
     }
 
+    /** same as above but with custom read length */
+
+    public byte[] extract(SHA1 sha1, int length) {
+        if (sha1 == null)
+            throw new NullPointerException("Can't search for null hash in archive!");
+
+        // Grab the resource from the queue if it exists
+        if (this.queue.containsKey(sha1))
+            return this.queue.get(sha1);
+
+        if (this.lookup.containsKey(sha1))
+            return this.extract(this.lookup.get(sha1), length);
+
+        return null;
+    }
+
     /**
      * Extracts a resource via a FAT entry.
      * @param fat FAT row to extract
@@ -102,6 +119,21 @@ public abstract class Fart implements Iterable<Fat> {
         } catch (IOException ex) { return null; }
     }
 
+    /** same as above but with custom read length */
+
+    public byte[] extract(Fat fat, int length) {
+        if (fat == null)
+            throw new NullPointerException("Can\'t search for null entry in archive!");
+        if (fat.getFileArchive() != this)
+            throw new IllegalArgumentException("This entry does not belong to this archive!");
+        try (RandomAccessFile archive = new RandomAccessFile(this.file.getAbsolutePath(), "r")) {
+            byte[] buffer = new byte[length];
+            archive.seek(fat.getOffset());
+            archive.read(buffer);
+            return buffer;
+        } catch (IOException ex) { return null; }
+    }
+
     /**
      * Checks if a hash exists in the archive.
      * @param sha1 Hash to query
@@ -110,7 +142,8 @@ public abstract class Fart implements Iterable<Fat> {
     public boolean exists(SHA1 sha1) { 
         if (sha1 == null)
             throw new NullPointerException("Can't search for null hash in archive!");
-        return this.lookup.containsKey(sha1) || this.queue.containsKey(sha1); 
+
+        return this.lookup.containsKey(sha1) || this.queue.containsKey(sha1);
     }
 
     /**
@@ -246,6 +279,11 @@ public abstract class Fart implements Iterable<Fat> {
      * @return Number of entries.
      */
     public int getEntryCount() { return this.entries.length; }
+
+    public Fat[] getEntries()
+    {
+        return entries;
+    }
 
     @Override public Iterator<Fat> iterator() {
         return Arrays.stream(this.entries).iterator();

@@ -4,7 +4,12 @@ import com.google.gson.annotations.JsonAdapter;
 import cwlib.enums.ResourceFlags;
 import cwlib.enums.ResourceType;
 import cwlib.io.gson.ResourceSerializer;
+import cwlib.types.archives.Fart;
+import cwlib.types.databases.FileEntry;
+import cwlib.types.save.BigSave;
 import cwlib.util.Strings;
+
+import java.nio.charset.StandardCharsets;
 
 /**
  * Represents references to resources in either
@@ -83,6 +88,39 @@ public final class ResourceDescriptor {
         this.guid = guid;
         this.sha1 = SHA1.EMPTY.equals(sha1) ? null : sha1;
         this.type = type;
+        this.flags = ResourceFlags.NONE;
+    }
+
+    /**
+     * Constructs a ResourceReference with SHA1, GUID, and type from a FileEntry.
+     * @param entry FileEntry of the resource from a MAP or other database
+     * @param archive Fart archive in which resource is located
+     */
+
+    public ResourceDescriptor(FileEntry entry, Fart archive)
+    {
+        Object key = entry.getKey();
+        this.guid = key != null && key instanceof GUID ? (GUID) key : null;
+        this.sha1 = entry.getSHA1();
+        this.type = ResourceType.fromMagic(new String(archive.extract(entry.getSHA1(), 3), StandardCharsets.UTF_8));
+        this.flags = ResourceFlags.NONE;
+    }
+
+    public ResourceDescriptor(FileEntry entry, BigSave archive)
+    {
+        Object key = entry.getKey();
+        this.guid = key != null && key instanceof GUID ? (GUID) key : null;
+        this.sha1 = entry.getSHA1();
+        this.type = ResourceType.fromMagic(new String(archive.archive.extract(entry.getSHA1(), 3), StandardCharsets.UTF_8));
+        this.flags = ResourceFlags.NONE;
+    }
+
+    public ResourceDescriptor(FileEntry entry)
+    {
+        Object key = entry.getKey();
+        this.guid = key != null && key instanceof GUID ? (GUID) key : null;
+        this.sha1 = entry.getSHA1();
+        this.type = ResourceType.fromExtension(entry.getPath());
         this.flags = ResourceFlags.NONE;
     }
 

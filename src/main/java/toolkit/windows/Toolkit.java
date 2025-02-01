@@ -73,7 +73,7 @@ public class Toolkit extends javax.swing.JFrame {
         Toolkit.INSTANCE = this;
         
         this.initComponents();
-        this.setIconImage(new ImageIcon(getClass().getResource("/icon.png")).getImage());
+//        this.setIconImage(new ImageIcon(getClass().getResource("/icon.png")).getImage());
         
         EasterEgg.initialize(this);
 
