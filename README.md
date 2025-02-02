@@ -1,4 +1,4 @@
-# LBP Background Maker
+# LBP Asset Studio
 <img src="./src/main/resources/textures/icon.svg" height="100">
 
 A 3D Renderer/Tool that runs on OpenGL, written in Java. It lets you construct any in world asset for all main 3 LittleBigPlanet games.
