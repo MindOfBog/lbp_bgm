@@ -223,13 +223,7 @@ public class Utils {
 
     public static float round(float value, int decimals)
     {
-        String dec = "###.#";
-        for(int i = 1; i < decimals; i++)
-            dec += "#";
-
-        DecimalFormat df = new DecimalFormat(dec);
-
-        return Float.parseFloat(df.format(value));
+        return (float) (Math.round(value * Math.pow(10, decimals)) / Math.pow(10, decimals));
     }
 
     public static double round(double value, int decimals)
