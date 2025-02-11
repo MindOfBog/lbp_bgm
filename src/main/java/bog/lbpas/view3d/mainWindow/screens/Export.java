@@ -21,6 +21,7 @@ import cwlib.structs.things.Thing;
 import cwlib.structs.things.components.script.FieldLayoutDetails;
 import cwlib.structs.things.components.script.InstanceLayout;
 import cwlib.structs.things.components.script.ScriptInstance;
+import cwlib.structs.things.components.script.ScriptObject;
 import cwlib.structs.things.parts.*;
 import cwlib.types.Resource;
 import cwlib.types.data.*;
@@ -145,7 +146,6 @@ public class Export extends GuiScreen {
     {
         worldThing = new Thing();
         worldThing.UID = -1;
-
 
         presetLevel();
 
@@ -952,10 +952,11 @@ public class Export extends GuiScreen {
         Panel metadataPanel = planExport.addPanel("metadataPanel");
         metadataPanel.size.y = 35;
 
-        Button importMetadata = new Button("importMetadata", "Import Metadata", new Vector2f(), new Vector2f(), 10, renderer, loader, window) {
+        Button importMetadata = new Button("importMetadataPlan", "Import Metadata", new Vector2f(), new Vector2f(), 10, renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
-
+                if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
+                    importMetadataPlan();
             }
         };
 
@@ -967,16 +968,36 @@ public class Export extends GuiScreen {
             }
         };
 
+        templateMetadata.addButton("obj", "Object", new Button() {
+            @Override
+            public void clickedButton(int button, int action, int mods) {
+                presetObjectPlan();
+            }
+        });
+        templateMetadata.addButton("mat", "Material", new Button() {
+            @Override
+            public void clickedButton(int button, int action, int mods) {
+                presetMaterialPlan();
+            }
+        });
         templateMetadata.addButton("bg", "Background", new Button() {
             @Override
             public void clickedButton(int button, int action, int mods) {
-
+                presetBGPlan();
             }
         });
-        templateMetadata.addButton("cos", "Costume", new Button() {
+        templateMetadata.addButton("bgPod", "BG (Pod|LBP2+)", new Button() {
             @Override
             public void clickedButton(int button, int action, int mods) {
-
+                presetBGPlan();
+                restrictedPod.isChecked = true;
+            }
+        });
+        templateMetadata.addButton("bgLevel", "BG (Level|LBP2+)", new Button() {
+            @Override
+            public void clickedButton(int button, int action, int mods) {
+                presetBGPlan();
+                restrictedLevel.isChecked = true;
             }
         });
 
@@ -1314,7 +1335,8 @@ public class Export extends GuiScreen {
         Button importMetadataBin = new Button("importMetadataBin", "Import Metadata", new Vector2f(), new Vector2f(), 10, renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
-
+                if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
+                    importMetadataBin();
             }
         };
 
@@ -1842,10 +1864,10 @@ public class Export extends GuiScreen {
             field.instanceOffset = 36;
             field.arrayBaseMachineType = MachineType.VOID;
             field.type = ScriptObjectType.NULL;
-            field.value = new FieldLayoutDetails();
-            ((FieldLayoutDetails) field.value).type = ScriptObjectType.INSTANCE;
-            ((FieldLayoutDetails) field.value).value = new ScriptInstance();
-            ((ScriptInstance)((FieldLayoutDetails) field.value).value).script = new ResourceDescriptor(60292l, ResourceType.SCRIPT);
+            field.value = new ScriptObject();
+            ((ScriptObject) field.value).type = ScriptObjectType.INSTANCE;
+            ((ScriptObject) field.value).value = new ScriptInstance();
+            ((ScriptInstance)((ScriptObject) field.value).value).script = new ResourceDescriptor(60292l, ResourceType.SCRIPT);
             script.instance.instanceLayout.fields.add(field);
         }
         {
@@ -1857,9 +1879,9 @@ public class Export extends GuiScreen {
             field.instanceOffset = 40;
             field.arrayBaseMachineType = MachineType.SAFE_PTR;
             field.type = ScriptObjectType.NULL;
-            field.value = new FieldLayoutDetails();
-            ((FieldLayoutDetails)field.value).type = ScriptObjectType.ARRAY_SAFE_PTR;
-            ((FieldLayoutDetails)field.value).value = new Object[]{};
+            field.value = new ScriptObject();
+            ((ScriptObject)field.value).type = ScriptObjectType.ARRAY_SAFE_PTR;
+            ((ScriptObject)field.value).value = new Thing[]{};
 
             script.instance.instanceLayout.fields.add(field);
         }
@@ -1895,5 +1917,217 @@ public class Export extends GuiScreen {
         worldThing.setPart(Part.METADATA, metadata);
 
         worldThing.setPart(Part.SCRIPT, script);
+    }
+
+    private void presetBGPlan()
+    {
+        used.isChecked = false;
+        hiddenItem.isChecked = false;
+        restrictedLevel.isChecked = false;
+        restrictedPod.isChecked = false;
+        disableLoopPreview.isChecked = false;
+
+        for(Checkbox c : typePlan)
+            if(c.id.equalsIgnoreCase(InventoryObjectType.BACKGROUND.name()))
+                c.isChecked = true;
+            else
+                c.isChecked = false;
+
+        madeByAnyRBPlan.isChecked = false;
+        madeByOthersRBPlan.isChecked = false;
+        madeByMeRBPlan.isChecked = false;
+
+        earthRBPlan.isChecked = false;
+        moonRBPlan.isChecked = false;
+        adventureRBPlan.isChecked = false;
+        externalRBPlan.isChecked = false;
+
+        nonSackboyRBPlan.isChecked = false;
+        giantRBPlan.isChecked = false;
+        dwarfRBPlan.isChecked = false;
+        birdRBPlan.isChecked = false;
+        quadRBPlan.isChecked = false;
+    }
+
+    private void presetObjectPlan()
+    {
+        used.isChecked = false;
+        hiddenItem.isChecked = false;
+        restrictedLevel.isChecked = false;
+        restrictedPod.isChecked = false;
+        disableLoopPreview.isChecked = false;
+
+        for(Checkbox c : typePlan)
+            if(c.id.equalsIgnoreCase(InventoryObjectType.READYMADE.name()))
+                c.isChecked = true;
+            else
+                c.isChecked = false;
+
+        madeByAnyRBPlan.isChecked = false;
+        madeByOthersRBPlan.isChecked = false;
+        madeByMeRBPlan.isChecked = false;
+
+        earthRBPlan.isChecked = false;
+        moonRBPlan.isChecked = false;
+        adventureRBPlan.isChecked = false;
+        externalRBPlan.isChecked = false;
+
+        nonSackboyRBPlan.isChecked = false;
+        giantRBPlan.isChecked = false;
+        dwarfRBPlan.isChecked = false;
+        birdRBPlan.isChecked = false;
+        quadRBPlan.isChecked = false;
+    }
+
+    private void presetMaterialPlan()
+    {
+        used.isChecked = false;
+        hiddenItem.isChecked = false;
+        restrictedLevel.isChecked = false;
+        restrictedPod.isChecked = false;
+        disableLoopPreview.isChecked = false;
+
+        for(Checkbox c : typePlan)
+            if(c.id.equalsIgnoreCase(InventoryObjectType.PRIMITIVE_MATERIAL.name()))
+                c.isChecked = true;
+            else
+                c.isChecked = false;
+
+        madeByAnyRBPlan.isChecked = false;
+        madeByOthersRBPlan.isChecked = false;
+        madeByMeRBPlan.isChecked = false;
+
+        earthRBPlan.isChecked = false;
+        moonRBPlan.isChecked = false;
+        adventureRBPlan.isChecked = false;
+        externalRBPlan.isChecked = false;
+
+        nonSackboyRBPlan.isChecked = false;
+        giantRBPlan.isChecked = false;
+        dwarfRBPlan.isChecked = false;
+        birdRBPlan.isChecked = false;
+        quadRBPlan.isChecked = false;
+    }
+
+    private void importMetadataBin()
+    {
+        RLevel lvl = null;
+        String name = "level.bin";
+
+        try
+        {
+            File file = FileChooser.openFile(null, "bin,lvl", false);
+
+            if(file != null)
+            {
+                name = file.getName();
+                lvl = new Resource(file.getAbsolutePath()).loadResource(RLevel.class);
+            }
+        }catch (NullPointerException e)
+        {
+            print.stackTrace(e);
+            mainView.pushError("File/Resource Error", print.stackTraceAsString(e));
+        }
+
+        if(lvl != null)
+        {
+            if(lvl.world != null)
+                for(Part part : Part.values())
+                    worldThing.setPart(part, lvl.world.getPart(part));
+        }
+    }
+
+    private void importMetadataPlan()
+    {
+        RPlan pln = null;
+        String name = "some_kind_of_.plan";
+
+        try
+        {
+            File file = FileChooser.openFile(null, "plan,pln", false);
+
+            if(file != null)
+            {
+                name = file.getName();
+                pln = new Resource(file.getAbsolutePath()).loadResource(RPlan.class);
+            }
+        }catch (NullPointerException e)
+        {
+            print.stackTrace(e);
+            mainView.pushError("File/Resource Error", print.stackTraceAsString(e));
+        }
+
+        if(pln != null)
+        {
+            if(pln.inventoryData.userCreatedDetails != null)
+            {
+                userCreatedNamePlan.setText(pln.inventoryData.userCreatedDetails.name);
+                userCreatedDescriptionPlan.setText(pln.inventoryData.userCreatedDetails.description);
+            }
+            titleKeyPlan.setText(String.valueOf(pln.inventoryData.titleKey));
+            descriptionKeyPlan.setText(String.valueOf(pln.inventoryData.descriptionKey));
+            creatorPlan.setText(pln.inventoryData.creator.toString());
+            creatorHistoryListPlan = new ArrayList<String>(List.of(pln.inventoryData.creationHistory.creators));
+            iconPlan.setText(pln.inventoryData.icon.toString());
+            allowEmitPlan.isChecked = pln.inventoryData.allowEmit || Utils.isBitwiseBool(pln.inventoryData.flags, InventoryItemFlags.ALLOW_EMIT);
+            shareablePlan.isChecked = pln.inventoryData.shareable;
+            copyrightPlan.isChecked = pln.inventoryData.copyright || Utils.isBitwiseBool(pln.inventoryData.flags, InventoryItemFlags.COPYRIGHT);
+            categoryPlan.setText(String.valueOf(pln.inventoryData.category));
+            categoryTagPlan.setText(pln.inventoryData.categoryTag);
+            categoryIndexPlan.setText(String.valueOf(pln.inventoryData.categoryIndex));
+            locationPlan.setText(String.valueOf(pln.inventoryData.location));
+            locationTagPlan.setText(pln.inventoryData.locationTag);
+            locationIndexPlan.setText(String.valueOf(pln.inventoryData.locationIndex));
+
+            for(Checkbox c : typePlan)
+                c.isChecked = pln.inventoryData.type.contains(InventoryObjectType.valueOf(c.id));
+
+            try {
+                for(Element e : subTypeList.elements)
+                    if(e instanceof Checkbox)
+                        ((Checkbox)e).isChecked = Utils.isBitwiseBool(pln.inventoryData.subType, InventoryObjectSubType.class.getDeclaredField(e.id).getInt(new InventoryObjectSubType()));
+            } catch (Exception ex) {print.error(ex);}
+
+            used.isChecked = Utils.isBitwiseBool(pln.inventoryData.flags, InventoryItemFlags.USED);
+            hiddenItem.isChecked = Utils.isBitwiseBool(pln.inventoryData.flags, InventoryItemFlags.HIDDEN_ITEM);
+            restrictedLevel.isChecked = Utils.isBitwiseBool(pln.inventoryData.flags, InventoryItemFlags.RESTRICTED_LEVEL);
+            restrictedPod.isChecked = Utils.isBitwiseBool(pln.inventoryData.flags, InventoryItemFlags.RESTRICTED_POD);
+            disableLoopPreview.isChecked = Utils.isBitwiseBool(pln.inventoryData.flags, InventoryItemFlags.DISABLE_LOOP_PREVIEW);
+
+            toolTypePln = pln.inventoryData.toolType;
+
+            numUsesPlan.setText(String.valueOf(pln.inventoryData.numUses));
+            lastUsedPlan.setText(String.valueOf(pln.inventoryData.lastUsed));
+            fluffCostPlan.setText(String.valueOf(pln.inventoryData.fluffCost));
+            makeSizeProportionalPlan.isChecked = pln.inventoryData.makeSizeProportional;
+            primaryIndexPlan.setText(String.valueOf(pln.inventoryData.primaryIndex));
+            translationTagPlan.setText(pln.inventoryData.translationTag);
+
+            Vector4f color = Colors.RGBA32.toVector(pln.inventoryData.colour);
+            rColorPlan.setText(String.valueOf(Math.round(color.x * 255f)));
+            gColorPlan.setText(String.valueOf(Math.round(color.y * 255f)));
+            bColorPlan.setText(String.valueOf(Math.round(color.z * 255f)));
+            aColorPlan.setText(String.valueOf(Math.round(color.w * 255f)));
+
+            if(pln.inventoryData.highlightSound != null)
+                highlightSoundPlan.setText(pln.inventoryData.highlightSound.toString());
+
+            if(pln.inventoryData.dateAdded != 0)
+            {
+                Date date = new Date(pln.inventoryData.dateAdded / 1000);
+                dateAddedDayPlan.setText(String.valueOf(date.getDate()));
+                dateAddedMonthPlan.setText(String.valueOf(date.getMonth()));
+                dateAddedYearPlan.setText(String.valueOf(date.getYear()));
+                dateAddedHourPlan.setText(String.valueOf(date.getHours()));
+                dateAddedMinutePlan.setText(String.valueOf(date.getMinutes()));
+                dateAddedSecondPlan.setText(String.valueOf(date.getSeconds()));
+            }
+
+            namePlan.setText(name);
+
+            compressionFlagsIntPlan.isChecked = Utils.isBitwiseBool(pln.compressionFlags, CompressionFlags.USE_COMPRESSED_INTEGERS);
+            compressionFlagsVecPlan.isChecked = Utils.isBitwiseBool(pln.compressionFlags, CompressionFlags.USE_COMPRESSED_VECTORS);
+            compressionFlagsMatPlan.isChecked = Utils.isBitwiseBool(pln.compressionFlags, CompressionFlags.USE_COMPRESSED_MATRICES);
+        }
     }
 }

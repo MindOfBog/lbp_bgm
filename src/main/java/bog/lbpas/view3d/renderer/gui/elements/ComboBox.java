@@ -733,7 +733,7 @@ public class ComboBox extends Element{
     @Override
     public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overOther) {
 
-        if(((!isMouseOverElement(pos) && autoCollapse) || (!autoCollapse && overOther)) && action != GLFW.GLFW_RELEASE)
+        if((!isMouseOverElement(pos) && autoCollapse) || (!autoCollapse && overOther))
         {
             this.extended = false;
             for(Element e : comboElements)

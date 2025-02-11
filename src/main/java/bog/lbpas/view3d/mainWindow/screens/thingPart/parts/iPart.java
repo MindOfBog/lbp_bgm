@@ -2,10 +2,12 @@ package bog.lbpas.view3d.mainWindow.screens.thingPart.parts;
 
 import bog.lbpas.view3d.mainWindow.ConstantTextures;
 import bog.lbpas.view3d.mainWindow.View3D;
+import bog.lbpas.view3d.managers.MouseInput;
 import bog.lbpas.view3d.renderer.gui.elements.*;
 import cwlib.enums.Part;
 import cwlib.io.Serializable;
 import cwlib.structs.things.Thing;
+import org.joml.Vector2d;
 import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
 
@@ -34,6 +36,19 @@ public abstract class iPart {
             @Override
             public int[] getParentTransform() {
                 return new int[]{Math.round(tab.pos.x), Math.round(tab.pos.y), Math.round(tab.size.x)};
+            }
+
+            @Override
+            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overOther) {
+
+                if(action == GLFW.GLFW_RELEASE && !isMouseOverElement(pos) && tab.isMouseOverElement(pos))
+                {
+                    this.extended = false;
+                    for(Element e : comboElements)
+                        e.setFocused(false);
+                }
+
+                super.onClick(mouseInput, pos, button, action, mods, overOther);
             }
         };
         partPanel = new Panel(new Vector2f(0, panelHeight), view.renderer);

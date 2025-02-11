@@ -53,4 +53,12 @@ public class print {
 //            ourCause.printEnclosedStackTrace(s, trace, CAUSE_CAPTION, "", dejaVu);
     }
 
+    public static String stackTraceAsString(Exception e)
+    {
+        String error = e.toString();
+        StackTraceElement[] trace = e.getStackTrace();
+        for (StackTraceElement traceElement : trace)
+            error += "\nat " + traceElement;
+        return error;
+    }
 }

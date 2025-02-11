@@ -31,7 +31,7 @@ public class FilePicker {
 
                 LoadedData.shouldSetupList = true;
             } catch (Exception ex) {
-                mainView.pushWarning("File Loading", ex.getMessage());
+//                mainView.pushWarning("File Loading", ex.getMessage());
             }
             loadMap = false;
         }
@@ -52,7 +52,7 @@ public class FilePicker {
 
                 LoadedData.shouldSetupList = true;
             } catch (Exception ex) {
-                mainView.pushWarning("File Loading", ex.getMessage());
+//                mainView.pushWarning("File Loading", ex.getMessage());
             }
 
             loadFarc = false;
@@ -70,7 +70,7 @@ public class FilePicker {
 
                 LoadedData.shouldSetupList = true;
             } catch(Exception ex) {
-                mainView.pushWarning("File Loading", ex.getMessage());
+//                mainView.pushWarning("File Loading", ex.getMessage());
             }
 
             loadFart = false;

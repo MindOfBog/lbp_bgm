@@ -228,13 +228,7 @@ public class Utils {
 
     public static double round(double value, int decimals)
     {
-        String dec = "###.#";
-        for(int i = 1; i < decimals; i++)
-            dec += "#";
-
-        DecimalFormat df = new DecimalFormat(dec);
-
-        return Double.parseDouble(df.format(value));
+        return (double) (Math.round(value * Math.pow(10, decimals)) / Math.pow(10, decimals));
     }
 
     public static BufferedImage drawStringLegacy(String text, Color color, int size) {

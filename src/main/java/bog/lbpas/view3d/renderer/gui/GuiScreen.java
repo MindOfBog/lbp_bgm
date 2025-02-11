@@ -245,7 +245,6 @@ public class GuiScreen {
 
             if(element instanceof DropDownTab &&
                     (button == GLFW.GLFW_MOUSE_BUTTON_1 || button == GLFW.GLFW_MOUSE_BUTTON_2) &&
-                    action == GLFW.GLFW_PRESS &&
                     (((DropDownTab)element).isMouseOverTab(mouseInput) || ((DropDownTab)element).isMouseOverElement(mouseInput)) &&
                     !overOther)
                 movetoEnd.put(i, element);

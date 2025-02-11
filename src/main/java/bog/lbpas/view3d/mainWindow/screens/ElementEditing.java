@@ -70,9 +70,6 @@ public class ElementEditing extends GuiScreen {
     public Checkbox filterMaterials;
     public Checkbox filterPlans;
     public Checkbox filterLevels;
-    public Checkbox filterTextures;
-    public Checkbox filterSounds;
-    public Checkbox filterLights;
 
     public Element loadedEntitiesHitbox;
     public ButtonList loadedEntities;
@@ -496,9 +493,6 @@ public class ElementEditing extends GuiScreen {
         filterLevels = filters.addCheckbox("filterLevels", "Levels", true);
         filterMeshes = filters.addCheckbox("filterMeshes", "Meshes", true);
         filterMaterials = filters.addCheckbox("filterMaterials", "Materials", true);
-        filterTextures = filters.addCheckbox("filterTextures", "Textures", false);
-        filterSounds = filters.addCheckbox("filterSounds", "Sounds", false);
-        filterLights = filters.addCheckbox("filterLights", "Lights", false);
         assetsPanel.elements.add(new Panel.PanelElement(filters, 0.3f));
 
         assetList = new ButtonList("availableModelsList", LoadedData.digestedEntries, new Vector2f(), new Vector2f(), 10, renderer, loader, window) {
@@ -748,8 +742,7 @@ public class ElementEditing extends GuiScreen {
                     if ((descriptor.getType().getValue() == ResourceType.MESH.getValue() && filterMeshes.isChecked) ||
                             (descriptor.getType().getValue() == ResourceType.GFX_MATERIAL.getValue() && filterMaterials.isChecked) ||
                             (descriptor.getType().getValue() == ResourceType.PLAN.getValue() && filterPlans.isChecked) ||
-                            (descriptor.getType().getValue() == ResourceType.LEVEL.getValue() && filterLevels.isChecked) ||
-                            (descriptor.getType().getValue() == ResourceType.TEXTURE.getValue() && filterTextures.isChecked)) {
+                            (descriptor.getType().getValue() == ResourceType.LEVEL.getValue() && filterLevels.isChecked)) {
                         String text = availableAssetsSearch.getText();
 
                         if (text.isBlank() || text.isEmpty() || text.equalsIgnoreCase("") || text.equalsIgnoreCase(" "))
@@ -1007,15 +1000,14 @@ public class ElementEditing extends GuiScreen {
                 mainView.deleteEntity(index);
             }
         }.deletable().draggable();
-        loadPlanElements = new Button("loadPlanElements", "Load elements from .PLAN/.BIN", new Vector2f(window.width - 303, 23), new Vector2f(301, getFontHeight(10) * 1.25f), 10, renderer, loader, window) {
+        loadPlanElements = new Button("loadPlanElements", "Load elements from PLAN/LEVEL", new Vector2f(window.width - 303, 23), new Vector2f(301, getFontHeight(10) * 1.25f), 10, renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if (button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS) {
                     File file = null;
                     try {
-                        file = FileChooser.openFile(null, "plan,bin", false, false)[0];
-                    } catch (Exception e) {
-                    }
+                        file = FileChooser.openFile(null, "plan,pln,bin,lvl", false, false)[0];
+                    } catch (Exception e) {}
 
                     if (file == null || !file.exists()) return;
 
@@ -1835,10 +1827,10 @@ public class ElementEditing extends GuiScreen {
             }
         }
 
-        if(key == GLFW.GLFW_KEY_O && action == GLFW.GLFW_PRESS)
-            for(Entity e : mainView.things)
-                if(e.selected)
-                    ((bog.lbpas.view3d.core.types.Thing) e).exportModelOBJ();
+//        if(key == GLFW.GLFW_KEY_O && action == GLFW.GLFW_PRESS)//todo
+//            for(Entity e : mainView.things)
+//                if(e.selected)
+//                    ((bog.lbpas.view3d.core.types.Thing) e).exportModelOBJ();
 
         return elementFocused;
     }
