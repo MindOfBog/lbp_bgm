@@ -173,7 +173,7 @@ public class WindowMan {
 
     public void update()
     {
-        setWindowSize(1920, 1080);
+//        setWindowSize(1920, 1080);
 
         GLFW.glfwSwapBuffers(window);
         GLFW.glfwPollEvents();

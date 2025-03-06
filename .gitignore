@@ -23,3 +23,8 @@
 hs_err_pid*
 /toolkit/target/*
 /target/*
+
+/shelf/
+/workspace.xml
+/discord.xml
+/out/*

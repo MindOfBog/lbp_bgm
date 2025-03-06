@@ -1,8 +1,8 @@
 <component name="ArtifactManager">
-  <artifact type="jar" name="bgmaker:jar">
-    <output-path>$PROJECT_DIR$/out/artifacts/bgmaker_jar</output-path>
-    <root id="archive" name="bgmaker.jar">
-      <element id="module-output" name="bgmaker" />
+  <artifact type="jar" name="LBP Asset Studio:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/build</output-path>
+    <root id="archive" name="LBP Asset Studio.jar">
+      <element id="module-output" name="asset studio" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/lwjgl/lwjgl-assimp/3.3.2/lwjgl-assimp-3.3.2.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/lwjgl/lwjgl-yoga/3.3.2/lwjgl-yoga-3.3.2-natives-windows.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/lwjgl/lwjgl-nanovg/3.3.2/lwjgl-nanovg-3.3.2-natives-windows.jar" path-in-jar="/" />
