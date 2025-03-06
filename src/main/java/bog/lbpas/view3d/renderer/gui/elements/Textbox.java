@@ -46,6 +46,17 @@ public class Textbox extends Element{
         this.window = window;
     }
 
+    public Textbox(String id, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window)
+    {
+        this.id = id;
+        this.pos = new Vector2f();
+        this.size = new Vector2f();
+        this.fontSize = fontSize;
+        this.renderer = renderer;
+        this.loader = loader;
+        this.window = window;
+    }
+
     public Textbox noNumbers()
     {
         this.numbers = false;
@@ -640,6 +651,11 @@ public class Textbox extends Element{
             }
 
         return new Vector2i(0, 0);
+    }
+
+    public Vector2i setTextboxValueInt(float value)
+    {
+        return setTextboxValueInt(Math.round(value));
     }
 
     public String setTextboxValueString(String value)

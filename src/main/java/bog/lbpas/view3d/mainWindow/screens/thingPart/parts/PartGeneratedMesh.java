@@ -313,7 +313,7 @@ public abstract class PartGeneratedMesh extends iPart {
 
                 if(gmt != null) {
                     gmesh.gfxMaterial = null;
-                    try{gmesh.gfxMaterial = new ResourceDescriptor(gmt, ResourceType.GFX_MATERIAL);}catch (Exception e){}
+                    try{gmesh.gfxMaterial = new ResourceDescriptor(gmt.trim(), ResourceType.GFX_MATERIAL);}catch (Exception e){}
 
                     if((gmesh.gfxMaterial.isGUID() && gmesh.gfxMaterial.getGUID().getValue() != prevGuidGFX) ||
                             (gmesh.gfxMaterial.isHash() && !gmesh.gfxMaterial.getSHA1().toString().equalsIgnoreCase(prevSHA1GFX)))
@@ -325,7 +325,7 @@ public abstract class PartGeneratedMesh extends iPart {
 
                 if(bev != null) {
                     gmesh.bevel = null;
-                    try{gmesh.bevel = new ResourceDescriptor(bev, ResourceType.BEVEL);}catch (Exception e){}
+                    try{gmesh.bevel = new ResourceDescriptor(bev.trim(), ResourceType.BEVEL);}catch (Exception e){}
 
                     if((gmesh.bevel.isGUID() && gmesh.bevel.getGUID().getValue() != prevGuidBev) ||
                             (gmesh.bevel.isHash() && !gmesh.bevel.getSHA1().toString().equalsIgnoreCase(prevSHA1Bev)))

@@ -4,10 +4,11 @@ import bog.lbpas.view3d.mainWindow.LoadedData;
 import bog.lbpas.view3d.mainWindow.View3D;
 import bog.lbpas.view3d.managers.EngineMan;
 import bog.lbpas.view3d.managers.WindowMan;
-import bog.lbpas.view3d.utils.Config;
-import bog.lbpas.view3d.utils.Cursors;
-import bog.lbpas.view3d.utils.FilePicker;
-import bog.lbpas.view3d.utils.print;
+import bog.lbpas.view3d.utils.*;
+import cwlib.enums.Part;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL20;
+import org.lwjgl.opengl.GL30;
 
 /**
  * @author Bog
@@ -26,13 +27,29 @@ public class Main {
     public static void main(String args[]) {
 
         Config.init();
-
-        window = new WindowMan(Config.TITLE, 1280, 720);
+        window = new WindowMan(Consts.TITLE, Config.WINDOW_WIDTH, Config.WINDOW_HEIGHT, 1050,650);
         Cursors.loadCursors();
         window.init();
+        if(Config.WINDOW_MAXIMIZED)
+            window.maximize();
+
         view = new View3D(window);
         engine = new EngineMan();
         debug = args.length > 0 && args[0].equalsIgnoreCase("debug");
+
+        if(debug)
+        {
+            print.neutral("GL_VENDOR [" + GL11.glGetString(GL11.GL_VENDOR) + "]");
+            print.neutral("GL_VERSION [" + GL11.glGetString(GL11.GL_VERSION) + "]");
+
+            int[] minorVer = new int[1];
+            GL30.glGetIntegerv(GL30.GL_MINOR_VERSION, minorVer);
+            int[] majorVer = new int[1];
+            GL30.glGetIntegerv(GL30.GL_MAJOR_VERSION, majorVer);
+
+            print.neutral("GL_MINOR_VERSION [" + minorVer[0] + "]");
+            print.neutral("GL_MAJOR_VERSION [" + majorVer[0] + "]");
+        }
 
         secondaryThread = new Thread() {
             long lastMillis = 0;
@@ -55,7 +72,7 @@ public class Main {
                         }
                     }
                 } catch(Exception v) {
-                    v.printStackTrace();
+                    print.stackTrace(v);
                     System.exit(-1);
                 }
             }
@@ -78,7 +95,7 @@ public class Main {
                             lastMillis = System.currentTimeMillis();
                         }
                     } catch(Exception v) {
-                        v.printStackTrace();
+                        print.stackTrace(v);
                         System.exit(-1);
                     }
                 }
@@ -89,14 +106,20 @@ public class Main {
 
         entryDigesionThread = new Thread() {
 
+            long lastMillis = 0;
+
             public void run() {
                 while (true)
                 {
                     try
                     {
-                        LoadedData.setupList();
+                        if(System.currentTimeMillis() - lastMillis > 500)
+                        {
+                            LoadedData.setupList();
+                            lastMillis = System.currentTimeMillis();
+                        }
                     } catch(Exception v) {
-                        v.printStackTrace();
+                        print.stackTrace(v);
                         System.exit(-1);
                     }
                 }
@@ -114,6 +137,5 @@ public class Main {
             print.stackTrace(e);
             System.exit(-1);
         }
-
     }
 }

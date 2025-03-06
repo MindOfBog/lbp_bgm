@@ -24,7 +24,6 @@ import java.util.ArrayList;
 public class Thing extends Entity{
 
     public cwlib.structs.things.Thing thing;
-    public Thing gluedTo;
 
     public boolean forceOrtho = false;
     public Vector3f rotation;

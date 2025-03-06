@@ -156,7 +156,7 @@ public class Export extends GuiScreen {
         typePlan = new ArrayList<>();
 
         creatorHistoryListPlan = new ArrayList<>();
-        planExport = new DropDownTab("planExport", "Export Plan", new Vector2f(7, 21 + 7), new Vector2f(450, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window);
+        planExport = new DropDownTab("planExport", "Export Plan", new Vector2f(10, 21 + 10), new Vector2f(450, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window);
 
         Panel userCreatedNamePlanPanel = planExport.addPanel("userCreatedNamePlanPanel");
         userCreatedNamePlanPanel.elements.add(new Panel.PanelElement(
@@ -956,7 +956,7 @@ public class Export extends GuiScreen {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
-                    importMetadataPlan();
+                    importPlanMeta = true;
             }
         };
 
@@ -1173,7 +1173,7 @@ public class Export extends GuiScreen {
 
         this.guiElements.add(planExport);
 
-        binExport = new DropDownTab("binExport", "Export Bin", new Vector2f(7 * 2 + 450, 21 + 7), new Vector2f(450, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window);
+        binExport = new DropDownTab("binExport", "Export Bin", new Vector2f(7 * 2 + 3 + 450, 21 + 10), new Vector2f(450, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window);
 
         Panel addPartsPanel = binExport.addPanel("addPartsPanel");
         addPartsPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("addpartsstr", "Parts:", 10, mainView.renderer), 0.5f));
@@ -1227,7 +1227,7 @@ public class Export extends GuiScreen {
                         try {
                             thingPart.addPart((Part) object, worldThingA);
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            print.stackTrace(e);
                         }
                     }
                 }
@@ -1336,7 +1336,7 @@ public class Export extends GuiScreen {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
-                    importMetadataBin();
+                    importBinMeta = true;
             }
         };
 
@@ -2023,7 +2023,7 @@ public class Export extends GuiScreen {
                 name = file.getName();
                 lvl = new Resource(file.getAbsolutePath()).loadResource(RLevel.class);
             }
-        }catch (NullPointerException e)
+        }catch (Exception e)
         {
             print.stackTrace(e);
             mainView.pushError("File/Resource Error", print.stackTraceAsString(e));
@@ -2051,7 +2051,7 @@ public class Export extends GuiScreen {
                 name = file.getName();
                 pln = new Resource(file.getAbsolutePath()).loadResource(RPlan.class);
             }
-        }catch (NullPointerException e)
+        }catch (Exception e)
         {
             print.stackTrace(e);
             mainView.pushError("File/Resource Error", print.stackTraceAsString(e));
@@ -2124,10 +2124,23 @@ public class Export extends GuiScreen {
             }
 
             namePlan.setText(name);
+        }
+    }
 
-            compressionFlagsIntPlan.isChecked = Utils.isBitwiseBool(pln.compressionFlags, CompressionFlags.USE_COMPRESSED_INTEGERS);
-            compressionFlagsVecPlan.isChecked = Utils.isBitwiseBool(pln.compressionFlags, CompressionFlags.USE_COMPRESSED_VECTORS);
-            compressionFlagsMatPlan.isChecked = Utils.isBitwiseBool(pln.compressionFlags, CompressionFlags.USE_COMPRESSED_MATRICES);
+    boolean importPlanMeta = false;
+    boolean importBinMeta = false;
+
+    public void loaderThread()
+    {
+        if(importPlanMeta)
+        {
+            importMetadataPlan();
+            importPlanMeta = false;
+        }
+        if(importBinMeta)
+        {
+            importMetadataBin();
+            importBinMeta = false;
         }
     }
 }

@@ -86,6 +86,8 @@ public class MouseInput {
 
     public void onMousePos(WindowMan window, double xPos, double yPos)
     {
+        window.onMousePos(xPos, yPos);
+
         displayVec.set(0, 0);
 
         if(previousPos.x >= 0 && previousPos.y >= 0 && previousPos.x <= window.width && previousPos.y <= window.height && inWindow)

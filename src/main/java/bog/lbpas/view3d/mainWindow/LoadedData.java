@@ -60,8 +60,12 @@ public class LoadedData {
 
     public static Texture missingTexture;
 
-    public static void init(ObjectLoader loader)
+    private static View3D mainView;
+
+
+    public static void init(View3D view)
     {
+        mainView = view;
         loadedModels = new HashMap<>();
         loadedGfxMaterials = new ArrayList<>();
         loadedMaterialTextures = new ArrayList<>();
@@ -85,7 +89,7 @@ public class LoadedData {
                 for (int y = 0; y < img.getHeight(); y++)
                     img.setRGB(x, y, new Color((float)(x / 255f), (float)(y / 255f), 0f, 0.5f).getRGB());
 
-            missingTexture = new Texture(loader.loadTexture(img, GL11.GL_LINEAR_MIPMAP_NEAREST, GL11.GL_LINEAR));
+            missingTexture = new Texture(view.loader.loadTexture(img, GL11.GL_LINEAR_MIPMAP_NEAREST, GL11.GL_LINEAR));
             loadedTextures.put(null, missingTexture);
         }catch (Exception e){}
 
@@ -143,6 +147,7 @@ public class LoadedData {
         if (descriptor == null)
         {
             print.error("Failed loading Mesh: descriptor null");
+            mainView.pushError("Failed loading Mesh", "Descriptor is null");
             return null;
         }
 
@@ -150,6 +155,7 @@ public class LoadedData {
         if (data == null)
         {
             print.error("Failed loading Mesh: extracted data null");
+            mainView.pushError("Failed loading Msh (" + descriptor.toString() + ")", "Extracted data is null");
             return null;
         }
         RMesh mesh = null;
@@ -163,6 +169,7 @@ public class LoadedData {
         if (descriptor == null)
         {
             print.error("Failed loading Plan: descriptor null");
+            mainView.pushError("Failed loading Plan", "Descriptor is null");
             return null;
         }
 
@@ -170,6 +177,7 @@ public class LoadedData {
         if (data == null)
         {
             print.error("Failed loading Plan: extracted data null");
+            mainView.pushError("Failed loading Pln (" + descriptor.toString() + ")", "Extracted data is null");
             return null;
         }
         RPlan mesh = null;
@@ -183,6 +191,7 @@ public class LoadedData {
         if (descriptor == null)
         {
             print.error("Failed loading Level: descriptor null");
+            mainView.pushError("Failed loading Level", "Descriptor is null");
             return null;
         }
 
@@ -190,6 +199,7 @@ public class LoadedData {
         if (data == null)
         {
             print.error("Failed loading Level: extracted data null");
+            mainView.pushError("Failed loading Lvl (" + descriptor.toString() + ")", "Extracted data is null");
             return null;
         }
         RLevel mesh = null;
@@ -203,6 +213,7 @@ public class LoadedData {
         if (descriptor == null)
         {
             print.error("Failed loading GFX Material: descriptor null");
+            mainView.pushError("Failed loading GFX Material", "Descriptor is null");
             return null;
         }
 
@@ -210,6 +221,7 @@ public class LoadedData {
         if (data == null)
         {
             print.error("Failed loading GFX Material: extracted data null");
+            mainView.pushError("Failed loading GMat (" + descriptor.toString() + ")", "Extracted data is null");
             return null;
         }
         RGfxMaterial material = null;
@@ -242,6 +254,7 @@ public class LoadedData {
         if (descriptor == null)
         {
             print.error("Failed loading Texture: descriptor null");
+            mainView.pushError("Failed loading Texture", "Descriptor is null");
             return null;
         }
 
@@ -249,6 +262,7 @@ public class LoadedData {
         if (data == null)
         {
             print.error("Failed loading Texture: extracted data null");
+            mainView.pushError("Failed loading Tex (" + descriptor.toString() + ")", "Extracted data is null");
             return null;
         }
         BufferedImage texture = null;
@@ -474,6 +488,9 @@ public class LoadedData {
             {
                 for(int i = 0; i < loadedMaterialTextures.get(0).size(); i++)
                 {
+                    if(texIndex + i >= 32)
+                        break;
+
                     textures[texIndex + i] = loadedMaterialTextures.get(0).get(i);
                     gmatMAP[texIndex + i].x = id;
                     gmatMAP[texIndex + i].y = texIndex + i;
@@ -699,6 +716,7 @@ public class LoadedData {
                 if (material.textures[box.getParameters()[5]] == null)
                 {
                     print.error("Failed loading Texture: descriptor null");
+                    mainView.pushError("Failed loading Texture", "Descriptor is null");
                 }
                 else
                 {
@@ -707,6 +725,7 @@ public class LoadedData {
                     if (data == null)
                     {
                         print.error("Failed loading Texture: extracted data null");
+                        mainView.pushError("Failed loading Tex (" + material.textures[box.getParameters()[5]].toString() + ")", "Extracted data is null");
                     }
                     else
                         try {

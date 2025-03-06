@@ -422,14 +422,14 @@ public abstract class PartRenderMesh extends iPart {
 
                 if (msh != null)
                 {
-                    try{rmesh.mesh = new ResourceDescriptor(msh, ResourceType.MESH);}catch (Exception e){}
+                    try{rmesh.mesh = new ResourceDescriptor(msh.trim(), ResourceType.MESH);}catch (Exception e){}
 
                     if((rmesh.mesh.isGUID() && rmesh.mesh.getGUID().getValue() != prevGuidMesh) ||
                             (rmesh.mesh.isHash() && !rmesh.mesh.getSHA1().toString().equalsIgnoreCase(prevSHA1Mesh)))
                         thing.reloadModel();
                 }
                 if (anim != null)
-                    try{rmesh.anim = new ResourceDescriptor(anim, ResourceType.MESH);}catch (Exception e){}
+                    try{rmesh.anim = new ResourceDescriptor(anim.trim(), ResourceType.ANIMATION);}catch (Exception e){}
 
                 if(animPos.y == 1)
                     rmesh.animPos = animPos.x;

@@ -25,7 +25,7 @@ import java.awt.image.BufferedImage;
  */
 public abstract class ButtonImage extends Element{
 
-    public int buttonImage;
+    public int buttonImage = -1;
     public boolean isClicked = false;
 
     Vector2f prevSize;
@@ -33,7 +33,7 @@ public abstract class ButtonImage extends Element{
 
     Vector2f imageSize;
 
-    public ButtonImage(String id, String imagePath, Vector2f pos, Vector2f size, RenderMan renderer, ObjectLoader loader, WindowMan window)
+    public ButtonImage(String id, Vector2f pos, Vector2f size, RenderMan renderer, ObjectLoader loader, WindowMan window)
     {
         this.id = id;
         this.pos = pos;
@@ -43,32 +43,9 @@ public abstract class ButtonImage extends Element{
         this.renderer = renderer;
         this.loader = loader;
         this.window = window;
-        try {
-            BufferedImage image;
-
-            if(imagePath.endsWith(".svg"))
-                image = Utils.loadAndRenderSVG(Thread.currentThread().getContextClassLoader().getResourceAsStream(imagePath), Math.round(this.imageSize.x), Math.round(this.imageSize.y), false);
-            else
-                image = ImageIO.read(Main.class.getResourceAsStream(imagePath));
-
-            this.buttonImage = loader.loadTexture(image, GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR);
-        } catch (Exception e) {e.printStackTrace();}
     }
 
-    public ButtonImage(String id, int image, Vector2f pos, Vector2f size, RenderMan renderer, ObjectLoader loader, WindowMan window)
-    {
-        this.id = id;
-        this.pos = pos;
-        this.size = size;
-        this.imageSize = this.size;
-        this.prevSize = size;
-        this.renderer = renderer;
-        this.loader = loader;
-        this.window = window;
-        this.buttonImage = image;
-    }
-
-    public ButtonImage(String id, String imagePath, Vector2f pos, Vector2f size, Vector2f imageSize, boolean antiAlias, RenderMan renderer, ObjectLoader loader, WindowMan window)
+    public ButtonImage(String id, Vector2f pos, Vector2f size, Vector2f imageSize, RenderMan renderer, ObjectLoader loader, WindowMan window)
     {
         this.id = id;
         this.pos = pos;
@@ -78,29 +55,6 @@ public abstract class ButtonImage extends Element{
         this.renderer = renderer;
         this.loader = loader;
         this.window = window;
-        try {
-            BufferedImage image;
-
-            if(imagePath.endsWith(".svg"))
-                image = Utils.loadAndRenderSVG(Thread.currentThread().getContextClassLoader().getResourceAsStream(imagePath), Math.round(this.imageSize.x), Math.round(this.imageSize.y), antiAlias);
-            else
-                image = ImageIO.read(Main.class.getResourceAsStream(imagePath));
-
-            this.buttonImage = loader.loadTexture(image, GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR);
-        } catch (Exception e) {e.printStackTrace();}
-    }
-
-    public ButtonImage(String id, int image, Vector2f pos, Vector2f size, Vector2f imageSize, RenderMan renderer, ObjectLoader loader, WindowMan window)
-    {
-        this.id = id;
-        this.pos = pos;
-        this.size = size;
-        this.imageSize = imageSize;
-        this.prevSize = size;
-        this.renderer = renderer;
-        this.loader = loader;
-        this.window = window;
-        this.buttonImage = image;
     }
 
     public ButtonImage clicked()
@@ -112,6 +66,9 @@ public abstract class ButtonImage extends Element{
     @Override
     public void draw(MouseInput mouseInput, boolean overOther) {
         super.draw(mouseInput, overOther);
+
+        if(this.buttonImage == -1)
+            getImage();
 
         if(this.outlineRect == null)
             this.outlineRect = LineStrip.processVerts(LineStrip.getRectangle(size), loader, window);
@@ -128,7 +85,8 @@ public abstract class ButtonImage extends Element{
         Color[] colors = getColors(mouseInput, overOther);
 
         renderer.drawRect(Math.round(pos.x), Math.round(pos.y), Math.round(size.x), Math.round(size.y), colors[0]);
-        renderer.drawImageStatic(buttonImage, Math.round(pos.x + size.x / 2f - this.imageSize.x / 2f), Math.round(pos.y + size.y / 2f - this.imageSize.y / 2f), Math.round(this.imageSize.x), Math.round(this.imageSize.y));
+        if(this.buttonImage != -1)
+            renderer.drawImageStatic(buttonImage, Math.round(pos.x + (size.x / 2f) - (this.imageSize.x / 2f)), Math.round(pos.y + (size.y / 2f) - (this.imageSize.y / 2f)), Math.round(this.imageSize.x), Math.round(this.imageSize.y));
         renderer.drawRectOutline(pos, outlineRect, colors[1], false);
     }
     @Override
@@ -180,5 +138,12 @@ public abstract class ButtonImage extends Element{
             return new Color[]{Config.INTERFACE_SECONDARY_COLOR, Config.INTERFACE_SECONDARY_COLOR2};
         else
             return new Color[]{Config.INTERFACE_PRIMARY_COLOR, Config.INTERFACE_PRIMARY_COLOR2};
+    }
+
+    public abstract void getImage();
+
+    public void updateImage()
+    {
+        buttonImage = -1;
     }
 }

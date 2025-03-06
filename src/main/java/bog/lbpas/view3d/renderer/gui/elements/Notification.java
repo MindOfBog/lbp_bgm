@@ -8,11 +8,14 @@ import bog.lbpas.view3d.managers.WindowMan;
 import bog.lbpas.view3d.managers.assetLoading.ObjectLoader;
 import bog.lbpas.view3d.renderer.gui.ingredients.LineStrip;
 import bog.lbpas.view3d.utils.Config;
+import bog.lbpas.view3d.utils.Consts;
 import org.joml.Vector2d;
 import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
 
 import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 
 public abstract class Notification extends Element{
 
@@ -20,9 +23,11 @@ public abstract class Notification extends Element{
     private Model outlineRect;
     private float prevHeight = 0;
     private ButtonImage closeButton;
+    private ButtonImage copyButton;
 
     public long time = -1;
     private int lineLimit = 5;
+    public boolean copyable = false;
 
     public Notification() {
     }
@@ -30,14 +35,29 @@ public abstract class Notification extends Element{
     public Notification(int lineLimit) {
         this.lineLimit = lineLimit;
     }
+    public Notification(int lineLimit, boolean copyable) {
+        this.lineLimit = lineLimit;
+        this.copyable = copyable;
+    }
 
     public Notification(long time) {
         this.time = System.currentTimeMillis() + time;
     }
 
+    public Notification(long time, boolean copyable) {
+        this.time = System.currentTimeMillis() + time;
+        this.copyable = copyable;
+    }
+
     public Notification(long time, int lineLimit) {
         this.time = System.currentTimeMillis() + time;
         this.lineLimit = lineLimit;
+    }
+
+    public Notification(long time, int lineLimit, boolean copyable) {
+        this.time = System.currentTimeMillis() + time;
+        this.lineLimit = lineLimit;
+        this.copyable = copyable;
     }
 
     public void init(String id, Vector2f pos, float width, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window) {
@@ -51,7 +71,7 @@ public abstract class Notification extends Element{
 
         Vector2f position = this.pos;
         Vector2f dims = this.size;
-        closeButton = new ButtonImage("closeButton", ConstantTextures.getTexture(ConstantTextures.WINDOW_CLOSE, 23, 23, loader), new Vector2f(0), new Vector2f(22, 22), new Vector2f(23, 23), renderer, loader, window) {
+        closeButton = new ButtonImage("closeButton", new Vector2f(0), new Vector2f(22, 22), new Vector2f(22, 22), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
@@ -75,6 +95,47 @@ public abstract class Notification extends Element{
                 else
                     return new Color[]{backgroundColor(), outlineColor()};
             }
+
+            @Override
+            public void getImage() {
+                buttonImage = ConstantTextures.getTexture(ConstantTextures.WINDOW_CLOSE, 22, 22, loader);
+            }
+        };
+
+        if(copyable)
+            copyButton = new ButtonImage("copyButton", new Vector2f(0), new Vector2f(22, 22), new Vector2f(16, 16), renderer, loader, window) {
+            @Override
+            public void clickedButton(int button, int action, int mods) {
+                if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
+                {
+                    StringSelection selection = new StringSelection(getContent());
+                    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+                    clipboard.setContents(selection, selection);
+                }
+            }
+
+            @Override
+            public void draw(MouseInput mouseInput, boolean overOther) {
+                this.pos.x = position.x + dims.x - 44 - 6;
+                this.pos.y = position.y + 3;
+                super.draw(mouseInput, overOther);
+            }
+
+            @Override
+            public Color[] getColors(MouseInput mouseInput, boolean overOther)
+            {
+                if(isClicked)
+                    return new Color[]{backgroundColor(), outlineColor()};
+                else if(isMouseOverElement(mouseInput) && !overOther)
+                    return new Color[]{new Color(backgroundColor().getRGB()).darker(), new Color(outlineColor().getRGB()).darker()};
+                else
+                    return new Color[]{backgroundColor(), outlineColor()};
+            }
+
+            @Override
+            public void getImage() {
+                buttonImage = ConstantTextures.getTexture(ConstantTextures.COPY, 16, 16, loader);
+            }
         };
     }
 
@@ -82,6 +143,8 @@ public abstract class Notification extends Element{
     public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement) {
         super.onClick(mouseInput, pos, button, action, mods, overElement);
         closeButton.onClick(mouseInput, pos, button, action, mods, overElement);
+        if(copyable)
+            copyButton.onClick(mouseInput, pos, button, action, mods, overElement);
     }
 
     @Override
@@ -98,12 +161,7 @@ public abstract class Notification extends Element{
 
         int titleFontSize = (int) (fontSize * 1.3f);
 
-        renderer.doBlur(1.0025f, (int) pos.x, (int) pos.y, (int) size.x, (int) size.y);
-        renderer.doBlur(2, (int) pos.x, (int) pos.y, (int) size.x, (int) size.y);
-        renderer.doBlur(3, (int) pos.x, (int) pos.y, (int) size.x, (int) size.y);
-        renderer.doBlur(2, (int) pos.x, (int) pos.y, (int) size.x, (int) size.y);
-        renderer.doBlur(1.5f, (int) pos.x, (int) pos.y, (int) size.x, (int) size.y);
-        renderer.doBlur(1.25f, (int) pos.x, (int) pos.y, (int) size.x, (int) size.y);
+        renderer.doBlur(Consts.GAUSSIAN_RADIUS, Consts.GAUSSIAN_KERNEL, (int) pos.x, (int) pos.y, (int) size.x, (int) size.y);
 
         renderer.startScissor((int) pos.x, (int) pos.y, (int) size.x, (int) size.y);
 
@@ -141,6 +199,8 @@ public abstract class Notification extends Element{
         }
 
         closeButton.draw(mouseInput, overElement);
+        if(copyable)
+            copyButton.draw(mouseInput, overElement);
 
         renderer.endScissor();
         renderer.drawRectOutline(pos, outlineRect, outlineColor(), false);
@@ -151,6 +211,8 @@ public abstract class Notification extends Element{
         super.resize();
         refreshOutline();
         closeButton.resize();
+        if(copyable)
+            copyButton.resize();
     }
 
     public void forceRefreshOutline()

@@ -1,5 +1,6 @@
 package bog.lbpas.view3d.renderer;
 
+import bog.lbpas.Main;
 import bog.lbpas.view3d.managers.assetLoading.ObjectLoader;
 import bog.lbpas.view3d.core.*;
 import bog.lbpas.view3d.core.types.Entity;
@@ -41,6 +42,7 @@ public class EntityRenderer implements IRenderer{
     public ShaderMan normalShader;
     public ShaderMan shaderMousePick;
     public ShaderMan basicShader;
+    public ShaderMan outlineFlatShader;
     public ArrayList<Entity> entities;
     public ArrayList<Entity> basicMeshes;
     public ArrayList<DirectionalLight> directionalLights;
@@ -65,6 +67,7 @@ public class EntityRenderer implements IRenderer{
         normalShader = new ShaderMan("normalShader");
         shaderMousePick = new ShaderMan("shaderMousePick");
         basicShader = new ShaderMan("basicShader");
+        outlineFlatShader = new ShaderMan("outlineFlatShader");
         this.window = window;
         this.loader = loader;
     }
@@ -138,6 +141,7 @@ public class EntityRenderer implements IRenderer{
         thingShader.createUniform("fogFar");
         thingShader.createUniform("camPos");
         thingShader.createUniform("sunPos");
+        thingShader.createUniform("noCulling");
 
         thingShader.createUniform("transformationMatrix");
         thingShader.createUniform("projectionMatrix");
@@ -174,6 +178,39 @@ public class EntityRenderer implements IRenderer{
         basicShader.createListUniform("bones", 100);
         basicShader.createUniform("hasBones");
         basicShader.createUniform("triangleOffset");
+
+        outlineFlatShader.createVertexShader(vertex);
+        outlineFlatShader.createFragmentShader(
+                "#version 330 core\n" +
+                "\n" +
+                "in vec4 fragTextureCoord;\n" +
+                "in vec3 fragNormal;\n" +
+                "in vec3 fragPos;\n" +
+                "in vec3 fragTang;\n" +
+                "in vec3 fragBitTang;\n" +
+                "flat in int fragGmat;\n" +
+                "in vec4 viewPosition;\n" +
+                "\n" +
+                "out vec4 fragmentColor;\n" +
+                "\n" +
+                "const mat4 thresholdMatrix = mat4(\n" +
+                "    1, 9, 3, 11,\n" +
+                "    13, 5, 15, 7,\n" +
+                "    4, 12, 2, 10,\n" +
+                "    16, 8, 14, 6);\n" +
+                "\n" +
+                "void main()\n" +
+                "{\n" +
+                "    fragmentColor = vec4(1.0, 1.0, 1.0, 1.0);\n" +
+                "}");
+        outlineFlatShader.link();
+
+        outlineFlatShader.createUniform("transformationMatrix");
+        outlineFlatShader.createUniform("projectionMatrix");
+        outlineFlatShader.createUniform("viewMatrix");
+        outlineFlatShader.createListUniform("bones", 100);
+        outlineFlatShader.createUniform("hasBones");
+        outlineFlatShader.createUniform("triangleOffset");
 
         solidShader.createVertexShader(vertex);
         String solidShaderCode = Utils.loadResource("/shaders/fragment.glsl").replaceAll("//%&AMBIENTC",
@@ -269,8 +306,6 @@ public class EntityRenderer implements IRenderer{
         shaderMousePick.createUniform("hasBones");
         shaderMousePick.createUniform("triangleOffset");
         shaderMousePick.createUniform("arrayIndex");
-
-//        GL11.glEnable(GL11.GL_LINE_SMOOTH);
 
         mouseFB = RenderMan.initFrameBufferINT();
         mouseCT = RenderMan.initColorTexINT(window);
@@ -407,6 +442,7 @@ public class EntityRenderer implements IRenderer{
                 thingShader.createUniform("fogFar");
                 thingShader.createUniform("camPos");
                 thingShader.createUniform("sunPos");
+                thingShader.createUniform("noCulling");
 
                 thingShader.createUniform("transformationMatrix");
                 thingShader.createUniform("projectionMatrix");
@@ -419,10 +455,13 @@ public class EntityRenderer implements IRenderer{
             }catch (Exception e){
                 print.stackTrace(e);
 
-                StringSelection selection = new StringSelection(shaderCode);
-                Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-                clipboard.setContents(selection, selection);
-                System.out.println("Shader copied to clipboard.");
+                if(Main.debug)
+                {
+                    StringSelection selection = new StringSelection(shaderCode);
+                    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+                    clipboard.setContents(selection, selection);
+                    print.neutral("Shader copied to clipboard.");
+                }
             }
         }
 
@@ -618,6 +657,7 @@ public class EntityRenderer implements IRenderer{
         lastShader.setUniform("fogFar", mainView.fogFar);
         lastShader.setUniform("camPos", mainView.camera.pos);
         lastShader.setUniform("sunPos", mainView.sunPos);
+        lastShader.setUniform("noCulling", Config.NO_CULLING);
         lastShader.setUniform("preview", Config.PREVIEW_MODE);
 
         boolean outline = false;
@@ -663,11 +703,11 @@ public class EntityRenderer implements IRenderer{
                                 {
                                     Vector4f color = new Vector4f(1f);
                                     if(((Thing) entity).thing.hasPart(Part.RENDER_MESH))
-                                        color = Colors.RGBA32.toVector(((PRenderMesh)((Thing) entity).thing.getPart(Part.RENDER_MESH)).editorColor);
+                                        color = Colors.RGBA32.fromARGB(((PRenderMesh)((Thing) entity).thing.getPart(Part.RENDER_MESH)).editorColor);
                                     if(((Thing) entity).thing.hasPart(Part.SHAPE))
                                     {
                                         PShape shape = ((Thing) entity).thing.getPart(Part.SHAPE);
-                                        Vector4f col = Colors.RGBA32.toVector(shape.color);
+                                        Vector4f col = Colors.RGBA32.fromARGB(shape.color);
                                         if(shape.brightness != Float.NaN) {
                                             col.y *= shape.brightness;
                                             col.z *= shape.brightness;
@@ -675,7 +715,7 @@ public class EntityRenderer implements IRenderer{
                                         }
                                         if(shape.colorOpacity != Float.NaN)
                                             col.x *= ((128f + shape.colorOpacity) / 255f);
-                                        Vector4f colOff = Colors.RGBA32.toVector(shape.colorOff);
+                                        Vector4f colOff = Colors.RGBA32.fromARGB(shape.colorOff);
                                         if(shape.brightnessOff != Float.NaN) {
                                             colOff.y *= shape.brightnessOff;
                                             colOff.z *= shape.brightnessOff;
@@ -685,7 +725,7 @@ public class EntityRenderer implements IRenderer{
                                             colOff.x *= (128f + shape.colorOffOpacity) / 255f;
                                         color.mul(System.currentTimeMillis() % 2000 <= 1000 ? col : colOff);
                                     }
-                                    lastShader.setUniform("thingColor", new Vector4f(color.y, color.z, color.w, color.x));
+                                    lastShader.setUniform("thingColor", color);
                                 }
 
                                 // Main render
@@ -745,14 +785,16 @@ public class EntityRenderer implements IRenderer{
                             }
                 }
 
+        lastShader = outlineFlatShader;
+        lastShader.bind();
+
+        lastShader.setUniform("projectionMatrix", projection);
+
         if(outline)
         {
             RenderMan.bindFrameBuffer(getOutlineFB()[0]);
             RenderMan.bindColorTex(getOutlineFB()[1]);
             RenderMan.bindDepthTex(getOutlineFB()[2]);
-
-            lastShader.setUniform("highlightMode", 1);
-            lastShader.setUniform("highlightColor", new Vector4f(0.8f));
 
             GL11.glClearColor(0,0,0,0);
             GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
@@ -769,17 +811,15 @@ public class EntityRenderer implements IRenderer{
                         {
                             boolean isThing = entity instanceof Thing;
                             bindNoCullColor(model, isThing);
-                            lastShader.setUniform("material", noCol);
-                            prepare(entity, camera, lastShader, model);
+                            Matrix4f mat = new Matrix4f(Transformation.createTransformationMatrix(entity));
+                            lastShader.setUniform("transformationMatrix", mat);
+                            lastShader.setUniform("viewMatrix", Transformation.getViewMatrix(camera));
                             lastShader.setUniform("bones", model.hasBones ? ((Thing)entity).getBones() : null, model.hasBones ? model.mesh.getBones() : null);
                             lastShader.setUniform("hasBones", model.hasBones);
                             //render entities to outline FBO
-
                             GL11.glDrawElements(GL11.GL_TRIANGLES, model.vertexCount, GL11.GL_UNSIGNED_INT, 0L);
                         }
             }
-
-            lastShader.setUniform("highlightMode", 0);
 
             unbindFrameBuffer();
         }

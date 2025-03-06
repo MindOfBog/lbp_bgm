@@ -701,6 +701,17 @@ public abstract class PartLevelSettings extends iPart {
 
 //        ComboBox flags = partComboBox.addComboBox("flags", "BG Repeat Flags", 150);
 //        flags.addList("flagList", , 200);
+        partComboBox.addString(new DropDownTab.StringElement("backgroundRepeatFlags", 10, view.renderer)
+        {
+            @Override
+            public String stringToDraw() {
+                int mode = -1;
+                for(bog.lbpas.view3d.core.types.Thing thing : view.things)
+                    if(thing.thing.hasPart(part) && thing.selected)
+                        mode = ((PLevelSettings)thing.thing.getPart(part)).backgroundRepeatFlags;
+                return "BG Repeat Flags: 0x" + Integer.toHexString(mode);
+            }
+        });
 
         Panel backdropMeshPanel = partComboBox.addPanel("backdropMeshPanel");
         backdropMeshPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("backdropMeshstr", "BG Mesh:", 10, view.renderer), 0.6f));

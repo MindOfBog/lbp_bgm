@@ -10,6 +10,7 @@ import bog.lbpas.view3d.renderer.gui.elements.Button;
 import bog.lbpas.view3d.renderer.gui.elements.Element;
 import bog.lbpas.view3d.renderer.gui.ingredients.LineStrip;
 import bog.lbpas.view3d.utils.Config;
+import bog.lbpas.view3d.utils.Consts;
 import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
 
@@ -94,25 +95,7 @@ public abstract class GuiKeybind extends GuiScreen{
             prevFontSize = fontSize;
         }
 
-        renderer.doBlur(2);
-        renderer.doBlur(3);
-        renderer.doBlur(4);
-        renderer.doBlur(5);
-        renderer.doBlur(6);
-        renderer.doBlur(7);
-        renderer.doBlur(8);
-        renderer.doBlur(9);
-        renderer.doBlur(10);
-        renderer.doBlur(9);
-        renderer.doBlur(8);
-        renderer.doBlur(7);
-        renderer.doBlur(6);
-        renderer.doBlur(5);
-        renderer.doBlur(4);
-        renderer.doBlur(3);
-        renderer.doBlur(2);
-        renderer.doBlur(1.5f);
-        renderer.doBlur(1.25f);
+        renderer.doBlur(Consts.GAUSSIAN_RADIUS, Consts.GAUSSIAN_KERNEL);
 
         renderer.drawRect(window.width/2 - 100, window.height/2 + (getFontHeight(fontSize) / 2 - 10 - 45), 200, (getFontHeight(fontSize) / 2 + 33) * 2, Config.PRIMARY_COLOR);
         renderer.drawRect(window.width / 2 - 95, window.height / 2 - getFontHeight(fontSize) / 2 - 10, 190, 20, Config.INTERFACE_PRIMARY_COLOR);

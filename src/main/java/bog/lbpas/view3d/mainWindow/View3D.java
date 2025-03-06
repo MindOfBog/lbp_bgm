@@ -21,12 +21,11 @@ import bog.lbpas.view3d.renderer.gui.font.FontRenderer;
 import bog.lbpas.view3d.renderer.gui.ingredients.*;
 import bog.lbpas.view3d.utils.*;
 import cwlib.enums.*;
-import cwlib.io.serializer.Serializer;
 import cwlib.resources.RMesh;
+import cwlib.structs.mesh.Bone;
 import cwlib.structs.things.Thing;
 import cwlib.structs.things.parts.*;
 import cwlib.types.data.ResourceDescriptor;
-import cwlib.types.data.Revision;
 import cwlib.types.databases.FileDBRow;
 import cwlib.types.databases.FileEntry;
 import cwlib.util.GsonUtils;
@@ -39,6 +38,8 @@ import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
 import java.util.List;
 import java.util.*;
 
@@ -60,6 +61,8 @@ public class View3D implements ILogic {
     public GuiScreen overrideScreen;
 
     Model topBarLine;
+    Model windowFrame;
+    Model windowFrameOuter;
 
     public View3D(WindowMan window)
     {
@@ -82,11 +85,13 @@ public class View3D implements ILogic {
 
     @Override
     public void init() throws Exception {
-        topBarLine = Line.getLine(window, loader, new Vector2i(0, 20), new Vector2i(window.width, 20));
+        topBarLine = Line.getLine(window, loader, new Vector2i(3, 23), new Vector2i(window.width - 3, 23));
+        windowFrame = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(window.width - 6, window.height - 6)), loader, window);
+        windowFrameOuter = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(window.width, window.height)), loader, window);
         renderer.init(this.loader);
         FontRenderer.init(this.loader);
         Transformation3D.init(this.loader);
-        LoadedData.init(this.loader);
+        LoadedData.init(this);
         ConstantTextures.initTextures(this.loader);
 
         things = new ArrayList<>();
@@ -95,11 +100,11 @@ public class View3D implements ILogic {
 
         initMillis = System.currentTimeMillis();
 
-        notificationFeed = new NotificationFeed(false, new Vector2f(this.window.width - 248 - 350, this.window.height - 8), 350, renderer, loader, window)
+        notificationFeed = new NotificationFeed(false, new Vector2f(this.window.width - 248 - 400, this.window.height - 8), 400, renderer, loader, window)
         {
             @Override
             public void draw(MouseInput mouseInput, boolean overElement) {
-                this.pos.x = this.window.width - (currentScreen instanceof ElementEditing ? 305 : 0) - 350 - 8;
+                this.pos.x = this.window.width - (currentScreen instanceof ElementEditing ? 305 : 0) - 400 - 8;
                 this.pos.y = this.window.height - 8;
                 super.draw(mouseInput, overElement);
             }
@@ -283,6 +288,9 @@ public class View3D implements ILogic {
 
     @Override
     public void update(MouseInput mouseInput) {
+//     todo   if(window.width != 1920 || window.height != 1080)
+//            window.setWindowSize(1920, 1080);
+        ConstantTextures.mainThread();
         loader.primaryThread();
 
         boolean isLoadingModels = loader.modelLoader.isLoadingSomething();
@@ -341,7 +349,11 @@ public class View3D implements ILogic {
 
             if(topBarLine != null)
                 topBarLine.cleanup(loader);
-            topBarLine = Line.getLine(window, loader, new Vector2i(0, 20), new Vector2i(window.width, 20));
+            if(windowFrame != null)
+                windowFrame.cleanup(loader);
+            topBarLine = Line.getLine(window, loader, new Vector2i(3, 23), new Vector2i(window.width - 3, 23));
+            windowFrame = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(window.width - 6, window.height - 6)), loader, window);
+            windowFrameOuter = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(window.width, window.height)), loader, window);
 
             if(currentScreen instanceof GuiKeybind)
                 ((GuiKeybind)currentScreen).resize();
@@ -635,8 +647,8 @@ public class View3D implements ILogic {
 
         int xCoord = 300;
         int w = 125;
-
-        Button elementEditing = new Button("elementEditing", "Scene", new Vector2f(xCoord, -1), new Vector2f(w, 22), 10, renderer, loader, window) {
+        int yCoord = 3;
+        Button elementEditing = new Button("elementEditing", "Scene", new Vector2f(xCoord, yCoord), new Vector2f(w, 21), 10, renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)setCurrentScreen(ElementEditing);
@@ -648,7 +660,7 @@ public class View3D implements ILogic {
             }
         };
         xCoord += w - 1;
-        Button archive = new Button("archive", "Archive", new Vector2f(xCoord, -1), new Vector2f(w, 22), 10, renderer, loader, window) {
+        Button archive = new Button("archive", "Archive", new Vector2f(xCoord, yCoord), new Vector2f(w, 21), 10, renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)setCurrentScreen(Archive);
@@ -660,7 +672,7 @@ public class View3D implements ILogic {
             }
         };
         xCoord += w - 1;
-        Button export = new Button("export", "Export", new Vector2f(xCoord, -1), new Vector2f(w, 22), 10, renderer, loader, window) {
+        Button export = new Button("export", "Export", new Vector2f(xCoord, yCoord), new Vector2f(w, 21), 10, renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)setCurrentScreen(Export);
@@ -672,7 +684,7 @@ public class View3D implements ILogic {
             }
         };
         xCoord += w - 1;
-        Button settingss = new Button("settingss", "Settings", new Vector2f(xCoord, -1), new Vector2f(w, 22), 10, renderer, loader, window) {
+        Button settingss = new Button("settingss", "Settings", new Vector2f(xCoord, yCoord), new Vector2f(w, 21), 10, renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)setCurrentScreen(Settings);
@@ -682,7 +694,7 @@ public class View3D implements ILogic {
             public void draw(MouseInput mouseInput, boolean overOther) {super.draw(mouseInput, overOther);}
         };
 
-        ButtonImage minimizeButton = new ButtonImage("minimizeButton", ConstantTextures.getTexture(ConstantTextures.WINDOW_MINIMIZE, 23, 23, loader), new Vector2f(window.width - 177, -1), new Vector2f(60, 22), new Vector2f(23), renderer, loader, window) {
+        ButtonImage minimizeButton = new ButtonImage("minimizeButton", new Vector2f(window.width - 181, yCoord), new Vector2f(60, 21), new Vector2f(23), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
@@ -691,12 +703,17 @@ public class View3D implements ILogic {
 
             @Override
             public void draw(MouseInput mouseInput, boolean overOther) {
-                this.pos.x = window.width - 177;
+                this.pos.x = window.width - 181;
                 super.draw(mouseInput, overOther);
+            }
+
+            @Override
+            public void getImage() {
+                buttonImage = ConstantTextures.getTexture(ConstantTextures.WINDOW_MINIMIZE, 23, 23, loader);
             }
         };
 
-        ButtonImage restMaxButton = new ButtonImage("restMaxButton", ConstantTextures.getTexture(ConstantTextures.WINDOW_MAXIMIZE, 23, 23, loader), new Vector2f(window.width - 118, -1), new Vector2f(60, 22), new Vector2f(23, 23), renderer, loader, window) {
+        ButtonImage restMaxButton = new ButtonImage("restMaxButton", new Vector2f(window.width - 122, yCoord), new Vector2f(60, 21), new Vector2f(23, 23), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
@@ -716,13 +733,18 @@ public class View3D implements ILogic {
 
             @Override
             public void draw(MouseInput mouseInput, boolean overOther) {
-                this.pos.x = window.width - 118;
+                this.pos.x = window.width - 122;
                 super.draw(mouseInput, overOther);
             }
 
             @Override
             public void secondThread() {
                 super.secondThread();
+                updateImage();
+            }
+
+            @Override
+            public void getImage() {
                 if(this.window.isMaximized)
                     this.buttonImage = ConstantTextures.getTexture(ConstantTextures.WINDOW_RESTORE, 23, 23, loader);
                 else
@@ -730,7 +752,7 @@ public class View3D implements ILogic {
             }
         };
 
-        ButtonImage closeButton = new ButtonImage("closeButton", ConstantTextures.getTexture(ConstantTextures.WINDOW_CLOSE, 23, 23, loader), new Vector2f(window.width - 59, -1), new Vector2f(60, 22), new Vector2f(23, 23), renderer, loader, window) {
+        ButtonImage closeButton = new ButtonImage("closeButton", new Vector2f(window.width - 63, yCoord), new Vector2f(60, 21), new Vector2f(23, 23), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
@@ -739,9 +761,14 @@ public class View3D implements ILogic {
 
             @Override
             public void draw(MouseInput mouseInput, boolean overOther) {
-                this.pos.x = window.width - 59;
+                this.pos.x = window.width - 63;
 
                 super.draw(mouseInput, overOther);
+            }
+
+            @Override
+            public void getImage() {
+                buttonImage = ConstantTextures.getTexture(ConstantTextures.WINDOW_CLOSE, 23, 23, loader);
             }
         };
 
@@ -750,45 +777,66 @@ public class View3D implements ILogic {
         Element titleBar = new Element() {
             @Override
             public void secondThread() {
-                this.size = new Vector2f(window.width, 20);
+                this.size.x = window.width - 6;
             }
 
             @Override
             public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement) {
                 super.onClick(mouseInput, pos, button, action, mods, overElement);
 
-                if(pos.x > this.pos.x && pos.x < this.pos.x + this.size.x &&
-                        pos.y > this.pos.y && pos.y < this.pos.y + this.size.y &&
-                        button == GLFW.GLFW_MOUSE_BUTTON_1 && !overElement)
+                if(button == GLFW.GLFW_MOUSE_BUTTON_1 && !overElement)
                 {
-                    if(action == GLFW.GLFW_PRESS)
+                    if(pos.x > this.pos.x && pos.x < this.pos.x + this.size.x &&
+                            pos.y > this.pos.y && pos.y < this.pos.y + this.size.y)
                     {
-                        long currentMs = System.currentTimeMillis();
-                        if(currentMs - prevMs[0] <= 500)
+                        if(action == GLFW.GLFW_PRESS)
                         {
-                            if(this.window.isMaximized)
+                            long currentMs = System.currentTimeMillis();
+                            if(currentMs - prevMs[0] <= 500)
                             {
-                                this.window.restore();
-                                restMaxButton.buttonImage = ConstantTextures.getTexture(ConstantTextures.WINDOW_MAXIMIZE, 23, 23, loader);
+                                if(this.window.isMaximized)
+                                {
+                                    this.window.restore();
+                                    restMaxButton.buttonImage = ConstantTextures.getTexture(ConstantTextures.WINDOW_MAXIMIZE, 23, 23, loader);
+                                }
+                                else
+                                {
+                                    this.window.maximize();
+                                    restMaxButton.buttonImage = ConstantTextures.getTexture(ConstantTextures.WINDOW_RESTORE, 23, 23, loader);
+                                }
+                                prevMs[0] = 0;
                             }
                             else
                             {
-                                this.window.maximize();
-                                restMaxButton.buttonImage = ConstantTextures.getTexture(ConstantTextures.WINDOW_RESTORE, 23, 23, loader);
+                                prevMs[0] = currentMs;
+                                this.window.isDragging = true;
+                                if(!this.window.isMaximized)
+                                    this.window.setOpacity(0.75f);
+                                Vector2i windowPos = this.window.getWindowPosition();
+                                Vector2d cursorPos = this.window.getCursorPosition();
+                                this.window.prevCursor = new Vector2d(cursorPos.x / this.window.width, cursorPos.y);
+                                this.window.prevWindow = windowPos;
                             }
-                            prevMs[0] = 0;
                         }
-                        else
-                        {
-                            prevMs[0] = currentMs;
-                            this.window.isDragging = true;
-                            if(!this.window.isMaximized)
-                                this.window.setOpacity(0.75f);
-                            Vector2i windowPos = this.window.getWindowPosition();
-                            Vector2d cursorPos = this.window.getCursorPosition();
-                            this.window.prevCursor = new Vector2d(cursorPos.x / this.window.width, cursorPos.y);
-                            this.window.prevWindow = windowPos;
-                        }
+                    }
+
+                    if(action == GLFW.GLFW_PRESS)
+                    {
+                        boolean top = mouseInput.currentPos.y <= 3;
+                        boolean bottom = mouseInput.currentPos.y >= window.height - 3;
+                        boolean left = mouseInput.currentPos.x <= 3;
+                        boolean right = mouseInput.currentPos.x >= window.width - 3;
+
+                        this.window.resizing = Utils.setBitwiseBool(this.window.resizing, WindowMan.RESIZE_TOP, top);
+                        this.window.resizing = Utils.setBitwiseBool(this.window.resizing, WindowMan.RESIZE_BOTTOM, bottom);
+                        this.window.resizing = Utils.setBitwiseBool(this.window.resizing, WindowMan.RESIZE_LEFT, left);
+                        this.window.resizing = Utils.setBitwiseBool(this.window.resizing, WindowMan.RESIZE_RIGHT, right);
+
+                        this.window.prevX = this.window.getWindowPosition().x;
+                        this.window.prevY = this.window.getWindowPosition().y;
+                        this.window.prevWidth = this.window.width;
+                        this.window.prevHeight = this.window.height;
+                        this.window.prevMousePos = new Vector2d(pos);
                     }
                 }
             }
@@ -797,16 +845,27 @@ public class View3D implements ILogic {
             public void draw(MouseInput mouseInput, boolean overElement) {
                 super.draw(mouseInput, overElement);
 
-                if(!mouseInput.leftButtonPress && this.window.isDragging)
+                if(!mouseInput.leftButtonPress)
                 {
-                    this.window.isDragging = false;
-                    this.window.setOpacity(1f);
+                    if(this.window.resizing != 0)
+                    {
+                        this.window.resizing = 0;
+                        this.window.width = this.window.newWidth;
+                        this.window.height = this.window.newHeight;
+                        this.window.resize = true;
+                    }
+
+                    if(this.window.isDragging)
+                    {
+                        this.window.isDragging = false;
+                        this.window.setOpacity(1f);
+                    }
                 }
             }
         };
         titleBar.window = window;
-        titleBar.pos = new Vector2f(0, 0);
-        titleBar.size = new Vector2f(window.width, 20);
+        titleBar.pos = new Vector2f(3, 3);
+        titleBar.size = new Vector2f(window.width - 6, 23);
         titleBar.id = "titleBar";
 
         ElementEditing = new ElementEditing(this);
@@ -879,7 +938,7 @@ public class View3D implements ILogic {
 
     public void pushError(String title, String content)
     {
-        notificationFeed.pushNotification(new Notification(5000l) {
+        notificationFeed.pushNotification(new Notification(15000l, true) {
             @Override
             public String getTitle() {
                 return title;
@@ -999,16 +1058,37 @@ public class View3D implements ILogic {
 
     private void drawUI(MouseInput mouseInput) {
 
-        renderer.doBlur(1.0025f, 0, 0, window.width, 20);
-        renderer.doBlur(2, 0, 0, window.width, 20);
-        renderer.doBlur(3, 0, 0, window.width, 20);
-        renderer.doBlur(2, 0, 0, window.width, 20);
-        renderer.doBlur(1.5f, 0, 0, window.width, 20);
-        renderer.doBlur(1.25f, 0, 0, window.width, 20);
-        renderer.drawRect(0, 0, window.width, 20, Config.PRIMARY_COLOR);
-        renderer.drawLine(topBarLine, Config.SECONDARY_COLOR,false);
+        boolean top = mouseInput.currentPos.y <= 3;
+        boolean bottom = mouseInput.currentPos.y >= window.height - 3;
+        boolean left = mouseInput.currentPos.x <= 3;
+        boolean right = mouseInput.currentPos.x >= window.width - 3;
 
-        renderer.drawString(Config.TITLE + " | FPS: " + EngineMan.avgFPS, Config.FONT_COLOR, 7, (int)(11 - FontRenderer.getFontHeight(10) / 2), 10);
+        if((top && left) || (bottom && right))
+        {
+            Cursors.setCursor(ECursor.bd_double_arrow);
+        }
+        else if((top && right) || (bottom && left))
+        {
+            Cursors.setCursor(ECursor.fd_double_arrow);
+        }
+        else if(top || bottom)
+        {
+            Cursors.setCursor(ECursor.sb_v_double_arrow);
+        }
+        else if(left || right)
+        {
+            Cursors.setCursor(ECursor.sb_h_double_arrow);
+        }
+
+        renderer.doBlur(Consts.GAUSSIAN_RADIUS, Consts.GAUSSIAN_KERNEL, 3, 3, window.width, 20);
+        renderer.drawRect(3, 3, window.width - 6, 20, Config.PRIMARY_COLOR);
+
+        renderer.drawRect(0, 0, 3, window.height, Config.PRIMARY_COLOR);
+        renderer.drawRect(0, 0, window.width, 3, Config.PRIMARY_COLOR);
+        renderer.drawRect(0, window.height - 3, window.width, window.height, Config.PRIMARY_COLOR);
+        renderer.drawRect(window.width - 3, 0, window.width, window.height, Config.PRIMARY_COLOR);
+
+        renderer.drawString(Consts.TITLE + " | FPS: " + EngineMan.avgFPS, Config.FONT_COLOR, 7 + 3, (int)(11 - (FontRenderer.getFontHeight(10) / 2) + 3), 10);
 //        drawString("entRen ent: " + renderer.entityRenderer.entities.size(), Config.FONT_COLOR, 10, 32, 10);
 //        drawString("entRen dir L: " + renderer.entityRenderer.directionalLights.size(), Config.FONT_COLOR, 10, 42, 10);
 //        drawString("entRen poi L: " + renderer.entityRenderer.pointLights.size(), Config.FONT_COLOR, 10, 52, 10);
@@ -1053,6 +1133,7 @@ public class View3D implements ILogic {
             boolean vao = ((Checkbox) ((Settings) Settings).debug.tabElements.get(0)).isChecked;
             boolean vbo = ((Checkbox) ((Settings) Settings).debug.tabElements.get(1)).isChecked;
             boolean tex = ((Checkbox) ((Settings) Settings).debug.tabElements.get(2)).isChecked;
+            boolean thread = ((Checkbox) ((Settings) Settings).debug.tabElements.get(3)).isChecked;
 
             int l = 1;
 
@@ -1074,17 +1155,32 @@ public class View3D implements ILogic {
                 renderer.drawString("Textures: " + loader.textures.size(), Config.FONT_COLOR, 10, 20 + ((getFontHeight(10) + 2) + 3) * l, 10);
                 l++;
             }
+            if(thread)
+            {
+                ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+                long[] threadIds = threadMXBean.getAllThreadIds();
+                for (long id : threadIds) {
+                    long cpuTime = threadMXBean.getThreadCpuTime(id) / 1000000l;
+                    String s = "Thread ID: " + id + " CPU Time: " + cpuTime + " ms";
+                    renderer.drawRect(10 - 3, 20 - 3 + ((getFontHeight(10) + 2) + 3) * l, getStringWidth(s, 10) + 6, (getFontHeight(10) + 2) + 3, new Color(0f, 0f, 0f, 0.5f));
+                    renderer.drawString(s, Config.FONT_COLOR, 10, 20 + ((getFontHeight(10) + 2) + 3) * l, 10);
+                    l++;
+                }
+            }
         }
 
         Vector2d prev = mouseInput.currentPos;
         if(!introPlayed)
             mouseInput.currentPos = new Vector2d();
 
-
         if(currentScreen != null)
             currentScreen.draw(((OverrideScreen)overrideScreen).shadingMenu ? new MouseInput(null) : mouseInput);
         if(overrideScreen != null)
             overrideScreen.draw(mouseInput);
+
+        renderer.drawLine(topBarLine, Config.SECONDARY_COLOR,false);
+        renderer.drawLineStrip(windowFrame, new Vector2f(3, 3), Color.black, false);
+        renderer.drawLineStrip(windowFrameOuter, new Vector2f(0), Color.black, false);
 
         if(!introPlayed)
         {
@@ -1165,8 +1261,6 @@ public class View3D implements ILogic {
                 Thing thing = ((bog.lbpas.view3d.core.types.Thing) entity).thing;
                 copySelection += GsonUtils.toJSON(thing) + Consts.LEFT_ARROW_WITH_SMALL_CIRCLE;
             }
-
-        print.line(copySelection);
 
         if(copySelection.equalsIgnoreCase(""))
             return;
@@ -1768,6 +1862,9 @@ public class View3D implements ILogic {
 
     public void addThings(List<Thing> things)
     {
+        for(bog.lbpas.view3d.core.types.Thing t : this.things)
+            t.selected = false;
+
         for (Thing thing : things)
             if (thing != null)
             {
@@ -1840,40 +1937,48 @@ public class View3D implements ILogic {
                     {
                         thing.name = "Joint";
                     }
+                    else if(thing.hasPart(Part.SWITCH_KEY))
+                    {
+                        thing.name = "Tag";
+                    }
 
                     if(ent != null)
                     {
                         FileEntry e = LoadedData.getDigestedEntry(ent);
 
-                        if(e == null)
-                            continue;
+                        if(e != null)
+                        {
+                            String name = e.getName();
 
-                        String name = e.getName();
+                            int extInd = name.lastIndexOf(".");
+                            boolean nameIsHash = name.substring(0, extInd != -1 ? extInd : name.length()).equalsIgnoreCase(e.getSHA1().toString());
 
-                        int extInd = name.lastIndexOf(".");
-                        boolean nameIsHash = name.substring(0, extInd != -1 ? extInd : name.length()).equalsIgnoreCase(e.getSHA1().toString());
+                            if (!(e instanceof FileDBRow) && nameIsHash)
+                                name = name.substring(name.length() - 12);
 
-                        if (!(e instanceof FileDBRow) && nameIsHash)
-                            name = name.substring(name.length() - 12);
-
-                        thing.name = name.substring(0, name.lastIndexOf("."));
+                            thing.name = name.substring(0, name.lastIndexOf("."));
+                        }
                     }
                 }
 
                 if(thing.hasPart(Part.RENDER_MESH) && ((PRenderMesh)thing.getPart(Part.RENDER_MESH)).mesh != null)
                 {
                     RMesh msh = LoadedData.loadMesh(((PRenderMesh)thing.getPart(Part.RENDER_MESH)).mesh);
-                    for(int i = 0; i < ((PRenderMesh)thing.getPart(Part.RENDER_MESH)).boneThings.length; i++)
-                    {
-                        Thing th = ((PRenderMesh)thing.getPart(Part.RENDER_MESH)).boneThings[i];
+                    if(msh != null)
+                        for(int i = 0; i < ((PRenderMesh)thing.getPart(Part.RENDER_MESH)).boneThings.length; i++)
+                        {
+                            Thing th = ((PRenderMesh)thing.getPart(Part.RENDER_MESH)).boneThings[i];
 
-                        if(th!= null && th.name == null)
-                            th.name = msh.getBones()[i].getName();
+                            Bone[] bonearray = msh.getBones();
+                            if(th!= null && th.name == null && i < bonearray.length && bonearray[i] != null)
+                                th.name = msh.getBones()[i].getName();
 
-                    }
+                        }
                 }
 
-                this.things.add(new bog.lbpas.view3d.core.types.Thing(thing, loader));
+                bog.lbpas.view3d.core.types.Thing th = new bog.lbpas.view3d.core.types.Thing(thing, loader);
+                th.selected = true;
+                this.things.add(th);
             }
     }
 
@@ -1915,5 +2020,7 @@ public class View3D implements ILogic {
                 }
             }
         loader.loaderThread();
+        if(Export != null)
+            ((Export)Export).loaderThread();
     }
 }

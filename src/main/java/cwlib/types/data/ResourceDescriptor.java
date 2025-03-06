@@ -104,6 +104,11 @@ public final class ResourceDescriptor {
         this.sha1 = entry.getSHA1();
         this.type = ResourceType.fromMagic(new String(archive.extract(entry.getSHA1(), 3), StandardCharsets.UTF_8));
         this.flags = ResourceFlags.NONE;
+
+        if(entry.getInfo() == null)
+            entry.setInfo(new ResourceInfo());
+
+        entry.getInfo().setType(this.type);
     }
 
     public ResourceDescriptor(FileEntry entry, BigSave archive)
@@ -113,6 +118,11 @@ public final class ResourceDescriptor {
         this.sha1 = entry.getSHA1();
         this.type = ResourceType.fromMagic(new String(archive.archive.extract(entry.getSHA1(), 3), StandardCharsets.UTF_8));
         this.flags = ResourceFlags.NONE;
+
+        if(entry.getInfo() == null)
+            entry.setInfo(new ResourceInfo());
+
+        entry.getInfo().setType(this.type);
     }
 
     public ResourceDescriptor(FileEntry entry)
@@ -122,6 +132,11 @@ public final class ResourceDescriptor {
         this.sha1 = entry.getSHA1();
         this.type = ResourceType.fromExtension(entry.getPath());
         this.flags = ResourceFlags.NONE;
+
+        if(entry.getInfo() == null)
+            entry.setInfo(new ResourceInfo());
+
+        entry.getInfo().setType(this.type);
     }
 
     /**

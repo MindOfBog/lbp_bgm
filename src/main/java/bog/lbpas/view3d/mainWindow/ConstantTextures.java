@@ -3,6 +3,7 @@ package bog.lbpas.view3d.mainWindow;
 import bog.lbpas.Main;
 import bog.lbpas.view3d.managers.assetLoading.ObjectLoader;
 import bog.lbpas.view3d.utils.Utils;
+import bog.lbpas.view3d.utils.print;
 import org.lwjgl.opengl.GL11;
 
 import javax.imageio.ImageIO;
@@ -135,34 +136,42 @@ public class ConstantTextures {
 
     public static int getTexture(HashMap<String, Integer> texture, int width, int height, ObjectLoader loader)
     {
-        String resKey = width + ":" + height;
-        if(texture.containsKey(resKey))
+        if(Thread.currentThread().getName().equals("main"))
         {
-            return texture.get(resKey);
+            String resKey = width + ":" + height;
+            if(texture.containsKey(resKey))
+            {
+                return texture.get(resKey);
+            }
+            else
+            {
+                int minF = GL11.GL_LINEAR_MIPMAP_NEAREST;
+                int magF = GL11.GL_LINEAR;
+
+                String path = "";
+
+                for (HashMap.Entry<String, Integer> entry : texture.entrySet())
+                    if (entry.getValue() == -1)
+                    {
+                        path = entry.getKey();
+                        break;
+                    }
+
+                int tex = LoadedData.missingTexture.id;
+
+                try {
+                    tex = loadTexture(path, width, height, minF, magF, loader);
+                    texture.put(resKey, tex);
+                }catch (Exception e){e.printStackTrace();}
+
+                return tex;
+            }
         }
         else
         {
-            int minF = GL11.GL_LINEAR_MIPMAP_NEAREST;
-            int magF = GL11.GL_LINEAR;
-
-            String path = "";
-
-            for (HashMap.Entry<String, Integer> entry : texture.entrySet())
-                if (entry.getValue() == -1)
-                {
-                    path = entry.getKey();
-                    break;
-                }
-
-            int tex = LoadedData.missingTexture.id;
-
-            try {
-                tex = loadTexture(path, width, height, minF, magF, loader);
-                texture.put(resKey, tex);
-            }catch (Exception e){e.printStackTrace();}
-
-            return tex;
+            toLoad = new ToLoad(texture, width, height, loader);
         }
+        return -1;
     }
 
     private static int loadTexture(String path, int width, int height, int minF, int magF, ObjectLoader loader) throws Exception {
@@ -201,6 +210,53 @@ public class ConstantTextures {
         {
             String p = path.startsWith("/") ? path : "/" + path;
             return loader.loadTexture(ImageIO.read(Main.class.getResourceAsStream(p)), minF, magF);
+        }
+    }
+
+    private static ToLoad toLoad = null;
+
+    public static void mainThread()
+    {
+        if(toLoad != null)
+        {
+            String resKey = toLoad.width + ":" + toLoad.height;
+            if(!toLoad.texture.containsKey(resKey))
+            {
+                int minF = GL11.GL_LINEAR_MIPMAP_NEAREST;
+                int magF = GL11.GL_LINEAR;
+
+                String path = "";
+
+                for (HashMap.Entry<String, Integer> entry : toLoad.texture.entrySet())
+                    if (entry.getValue() == -1)
+                    {
+                        path = entry.getKey();
+                        break;
+                    }
+
+                int tex = LoadedData.missingTexture.id;
+
+                try {
+                    tex = loadTexture(path, toLoad.width, toLoad.height, minF, magF, toLoad.loader);
+                    toLoad.texture.put(resKey, tex);
+                }catch (Exception e){e.printStackTrace();}
+            }
+            toLoad = null;
+        }
+    }
+
+    private static class ToLoad
+    {
+        HashMap<String, Integer> texture;
+        int width;
+        int height;
+        ObjectLoader loader;
+
+        public ToLoad(HashMap<String, Integer> texture, int width, int height, ObjectLoader loader) {
+            this.texture = texture;
+            this.width = width;
+            this.height = height;
+            this.loader = loader;
         }
     }
 }

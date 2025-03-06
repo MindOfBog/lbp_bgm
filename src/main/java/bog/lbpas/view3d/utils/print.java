@@ -37,7 +37,6 @@ public class print {
 
     public static void stackTrace(Exception e)
     {
-        // Print our stack trace
         error(e);
         StackTraceElement[] trace = e.getStackTrace();
         for (StackTraceElement traceElement : trace)
@@ -58,7 +57,7 @@ public class print {
         String error = e.toString();
         StackTraceElement[] trace = e.getStackTrace();
         for (StackTraceElement traceElement : trace)
-            error += "\nat " + traceElement;
+            error += "\n  at " + traceElement;
         return error;
     }
 }

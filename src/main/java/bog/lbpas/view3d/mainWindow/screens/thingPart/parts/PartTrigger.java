@@ -105,18 +105,18 @@ public abstract class PartTrigger extends iPart {
         triggerTypePanel.elements.add(new Panel.PanelElement(triggerTypeCombo, 0.475f));
 
         Panel radiusMultiplierPanel = this.partComboBox.addPanel("radiusMultiplierPanel");
-        radiusMultiplierPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("radiusMultiplierStr", "Radius Mul.:", 10, view.renderer), 0.525f));
+        radiusMultiplierPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("radiusMultiplierStr", "Radius Mul.:", 10, view.renderer), 0.7f));
 
         radiusMultiplier = new Textbox("radiusMultiplier", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window).noLetters().noOthers();
 
-        radiusMultiplierPanel.elements.add(new Panel.PanelElement(radiusMultiplier, 0.475f));
+        radiusMultiplierPanel.elements.add(new Panel.PanelElement(radiusMultiplier, 0.3f));
 
         Panel zRangeHundredsPanel = this.partComboBox.addPanel("zRangeHundredsPanel");
-        zRangeHundredsPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("zRangeHundredsStr", "Layer Range:", 10, view.renderer), 0.525f));
+        zRangeHundredsPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("zRangeHundredsStr", "Layer Range:", 10, view.renderer), 0.7f));
 
         zRangeHundreds = new Textbox("zRangeHundreds", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window).noLetters().noOthers();
 
-        zRangeHundredsPanel.elements.add(new Panel.PanelElement(zRangeHundreds, 0.475f));
+        zRangeHundredsPanel.elements.add(new Panel.PanelElement(zRangeHundreds, 0.3f));
 
         allZLayers = this.partComboBox.addCheckbox("allZLayers", "All Z Layers", new Checkbox()
         {
@@ -132,11 +132,11 @@ public abstract class PartTrigger extends iPart {
         });
 
         Panel hysteresisMultiplierPanel = this.partComboBox.addPanel("hysteresisMultiplierPanel");
-        hysteresisMultiplierPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("hysteresisMultiplierStr", "Hysteresis Mul.:", 10, view.renderer), 0.525f));
+        hysteresisMultiplierPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("hysteresisMultiplierStr", "Hysteresis Mul.:", 10, view.renderer), 0.7f));
 
         hysteresisMultiplier = new Textbox("hysteresisMultiplier", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window).noLetters().noOthers();
 
-        hysteresisMultiplierPanel.elements.add(new Panel.PanelElement(hysteresisMultiplier, 0.475f));
+        hysteresisMultiplierPanel.elements.add(new Panel.PanelElement(hysteresisMultiplier, 0.3f));
 
         enabled = this.partComboBox.addCheckbox("enabled", "Enabled", new Checkbox()
         {
@@ -152,18 +152,18 @@ public abstract class PartTrigger extends iPart {
         });
 
         Panel zOffsetPanel = this.partComboBox.addPanel("zOffsetPanel");
-        zOffsetPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("zOffsetStr", "Z Offset:", 10, view.renderer), 0.525f));
+        zOffsetPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("zOffsetStr", "Z Offset:", 10, view.renderer), 0.7f));
 
         zOffset = new Textbox("zOffset", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window).noLetters().noOthers();
 
-        zOffsetPanel.elements.add(new Panel.PanelElement(zOffset, 0.475f));
+        zOffsetPanel.elements.add(new Panel.PanelElement(zOffset, 0.3f));
 
         Panel scoreValuePanel = this.partComboBox.addPanel("scoreValuePanel");
-        scoreValuePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("scoreValueStr", "Score Value:", 10, view.renderer), 0.525f));
+        scoreValuePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("scoreValueStr", "Score Value:", 10, view.renderer), 0.7f));
 
         scoreValue = new Textbox("scoreValue", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window).noLetters().noOthers();
 
-        scoreValuePanel.elements.add(new Panel.PanelElement(scoreValue, 0.475f));
+        scoreValuePanel.elements.add(new Panel.PanelElement(scoreValue, 0.3f));
     }
 
     @Override

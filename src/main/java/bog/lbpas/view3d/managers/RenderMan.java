@@ -17,6 +17,7 @@ import bog.lbpas.view3d.renderer.gui.ingredients.*;
 import bog.lbpas.view3d.utils.Config;
 import bog.lbpas.view3d.utils.Transformation;
 import bog.lbpas.view3d.utils.Utils;
+import bog.lbpas.view3d.utils.print;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
 import org.joml.Vector4f;
@@ -39,8 +40,7 @@ public class RenderMan {
     {
         this.window = window;
         try {
-            shaderOutlineVertical = new ShaderMan("shaderOutlineVertical");
-            shaderOutlineHorizontal = new ShaderMan("shaderOutlineHorizontal");
+            shaderOutline = new ShaderMan("shaderOutline");
             shaderSSAO = new ShaderMan("shaderSSAO");
         } catch (Exception e) {
             e.printStackTrace();
@@ -93,29 +93,16 @@ public class RenderMan {
         ssaoTexture = initColorTex(window);
         ssaoDepth = initDepthTex(window);
 
-        shaderOutlineVertical.createFragmentShader(Utils.loadResource("/shaders/fragment_blur.glsl"));
-        shaderOutlineVertical.createVertexShader(Utils.loadResource("/shaders/vertex_blur_vert.glsl"));
-        shaderOutlineVertical.link();
-        shaderOutlineVertical.createUniform("transformationMatrix");
-        shaderOutlineVertical.createUniform("originalTexture");
-        shaderOutlineVertical.createUniform("inputTexture");
-        shaderOutlineVertical.createUniform("target");
-        shaderOutlineVertical.createUniform("radius");
-        shaderOutlineVertical.createUniform("color");
-        shaderOutlineVertical.createUniform("hasColor");
-        shaderOutlineVertical.createUniform("hasInput");
-
-        shaderOutlineHorizontal.createFragmentShader(Utils.loadResource("/shaders/fragment_blur.glsl"));
-        shaderOutlineHorizontal.createVertexShader(Utils.loadResource("/shaders/vertex_blur_hor.glsl"));
-        shaderOutlineHorizontal.link();
-        shaderOutlineHorizontal.createUniform("transformationMatrix");
-        shaderOutlineHorizontal.createUniform("originalTexture");
-        shaderOutlineHorizontal.createUniform("inputTexture");
-        shaderOutlineHorizontal.createUniform("target");
-        shaderOutlineHorizontal.createUniform("radius");
-        shaderOutlineHorizontal.createUniform("color");
-        shaderOutlineHorizontal.createUniform("hasColor");
-        shaderOutlineHorizontal.createUniform("hasInput");
+        shaderOutline.createFragmentShader(Utils.loadResource("/shaders/fragment_outline.glsl"));
+        shaderOutline.createVertexShader(Utils.loadResource("/shaders/vertex_outline.glsl"));
+        shaderOutline.link();
+        shaderOutline.createUniform("originalTexture");
+        shaderOutline.createUniform("hasMask");
+        shaderOutline.createUniform("maskTexture");
+        shaderOutline.createUniform("pixelSize");
+        shaderOutline.createUniform("radius");
+        shaderOutline.createUniform("color");
+        shaderOutline.createUniform("vertical");
 
         shaderSSAO.createFragmentShader(Utils.loadResource("/shaders/fragment_ssao.glsl"));
         shaderSSAO.createVertexShader(Utils.loadResource("/shaders/vertex_gui.glsl"));
@@ -149,8 +136,7 @@ public class RenderMan {
     int ssaoTexture = -1;
     int ssaoDepth = -1;
 
-    ShaderMan shaderOutlineVertical;
-    ShaderMan shaderOutlineHorizontal;
+    ShaderMan shaderOutline;
 
     ShaderMan shaderSSAO;
 
@@ -182,7 +168,7 @@ public class RenderMan {
         bindDepthTex(screenDepth);
         clear();
         entityRenderer.render(mouseInput, mainView);
-        if(!Main.debug || !((Checkbox) ((Settings) mainView.Settings).debug.tabElements.get(3)).isChecked)
+        if(!Main.debug || !((Checkbox) ((Settings) mainView.Settings).debug.tabElements.get(4)).isChecked)
             doSSAO(mainView);
         doOutlines();
         entityRenderer.renderAfterPP(mainView);
@@ -292,24 +278,35 @@ public class RenderMan {
     private void doOutlines()
     {
         int radius = Math.round((Config.OUTLINE_DISTANCE * 2f - 1f) * 10f);
+
         bindFrameBuffer(outlineFB2);
         bindColorTex(outlineCT2);
         bindDepthTex(outlineDT2);
+
         GL11.glClearColor(0,0,0,0);
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
         GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
-        drawOutline(outlineCT, -1, shaderOutlineVertical, window.height, radius, Config.OUTLINE_COLOR);
+
+        shaderOutline.bind();
+
+        drawOutline(outlineCT, -1, shaderOutline, window.width, radius, false, Config.OUTLINE_COLOR);
+
         bindFrameBuffer(screenBuffer);
         bindColorTex(screenTexture);
         bindDepthTex(screenDepth);
+
         GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
-        drawOutline(outlineCT2, outlineCT, shaderOutlineHorizontal, window.width, radius, Config.OUTLINE_COLOR);
+
+        drawOutline(outlineCT2, outlineCT, shaderOutline, window.height, radius, true, Config.OUTLINE_COLOR);
+
         bindFrameBuffer(outlineFB);
         bindColorTex(outlineCT);
         bindDepthTex(outlineDT);
+
         GL11.glClearColor(0,0,0,0);
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
         GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
+
         bindFrameBuffer(screenBuffer);
         bindColorTex(screenTexture);
         bindDepthTex(screenDepth);
@@ -373,8 +370,7 @@ public class RenderMan {
 
     public void cleanup()
     {
-        shaderOutlineHorizontal.cleanup();
-        shaderOutlineVertical.cleanup();
+        shaderOutline.cleanup();
         entityRenderer.cleanup();
         guiRenderer.cleanup();
     }
@@ -404,6 +400,18 @@ public class RenderMan {
         Line l = new Line(line, color, window, smooth);
         l.pos = pos;
         this.processGuiElement(l);
+    }
+
+    public void drawLineStrip(Model lineStrip, Vector2f pos, boolean smooth)
+    {
+        LineStrip ls = new LineStrip(pos, lineStrip, smooth);
+        this.processGuiElement(ls);
+    }
+
+    public void drawLineStrip(Model lineStrip, Vector2f pos, Color color, boolean smooth)
+    {
+        LineStrip ls = new LineStrip(pos, lineStrip, color, smooth);
+        this.processGuiElement(ls);
     }
 
     public void drawImage(int image, float x, float y, float width, float height)
@@ -482,27 +490,51 @@ public class RenderMan {
     public void startScissorEscape(){this.processGuiElement(Scissor.startEscape());}
     public void endScissorEscape(){this.processGuiElement(Scissor.endEscape());}
 
-    public void startBlur(float amount)
+    public void startBlur(int radius)
     {
-        this.processGuiElement(new Blur(amount, true));
+        this.processGuiElement(new Blur(radius, true));
     }
 
-    public void endBlur(float amount)
+    public void endBlur(int radius)
     {
-        this.processGuiElement(new Blur(amount, false));
+        this.processGuiElement(new Blur(radius, false));
     }
 
-    public void doBlur(float amount)
+    public void doBlur(int radius)
     {
-        this.startBlur(amount);
-        this.endBlur(amount);
+        this.startBlur(radius);
+        this.endBlur(radius);
     }
 
-    public void doBlur(float amount, int x, int y, int width, int height)
+    public void doBlur(int radius, int x, int y, int width, int height)
     {
-        this.startBlur(amount);
+        this.startBlur(radius);
         this.startScissor(x, y, width, height);
-        this.endBlur(amount);
+        this.endBlur(radius);
+        this.endScissor();
+    }
+
+    public void startBlur(int radius, float[] kernel)
+    {
+        this.processGuiElement(new Blur(radius, kernel, true));
+    }
+
+    public void endBlur(int radius, float[] kernel)
+    {
+        this.processGuiElement(new Blur(radius, kernel, false));
+    }
+
+    public void doBlur(int radius, float[] kernel)
+    {
+        this.startBlur(radius, kernel);
+        this.endBlur(radius, kernel);
+    }
+
+    public void doBlur(int radius, float[] kernel, int x, int y, int width, int height)
+    {
+        this.startBlur(radius, kernel);
+        this.startScissor(x, y, width, height);
+        this.endBlur(radius, kernel);
         this.endScissor();
     }
 
@@ -587,10 +619,8 @@ public class RenderMan {
     }
 
 
-    private void drawOutline(int originalTexture, int inputTexture, ShaderMan outlineShader, float target, int radius, Color color)
+    private void drawOutline(int originalTexture, int maskTexture, ShaderMan outlineShader, float target, int radius, boolean vertical, Color color)
     {
-        outlineShader.bind();
-
         GL11.glEnable(GL11.GL_BLEND);
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 
@@ -600,24 +630,19 @@ public class RenderMan {
         GL13.glActiveTexture(GL13.GL_TEXTURE0);
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, originalTexture);
 
-        if(inputTexture != -1)
+        if(maskTexture != -1)
         {
             GL13.glActiveTexture(GL13.GL_TEXTURE1);
-            GL11.glBindTexture(GL11.GL_TEXTURE_2D, inputTexture);
+            GL11.glBindTexture(GL11.GL_TEXTURE_2D, maskTexture);
         }
 
         outlineShader.setUniform("originalTexture", 0);
-        outlineShader.setUniform("inputTexture", 1);
-        outlineShader.setUniform("target", target);
+        outlineShader.setUniform("hasMask", maskTexture != -1);
+        outlineShader.setUniform("maskTexture", 1);
+        outlineShader.setUniform("pixelSize", 1f / target);
         outlineShader.setUniform("radius", radius);
-        outlineShader.setUniform("hasInput", inputTexture != -1);
-        outlineShader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(
-                new Vector2f(),
-                new Vector2f(1)
-        ));
-
+        outlineShader.setUniform("vertical", vertical);
         outlineShader.setUniform("color", new Vector4f(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, color.getAlpha() / 255f));
-        outlineShader.setUniform("hasColor", true);
 
         GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, GuiRenderer.defaultQuad.vertexCount);
         GL11.glDisable(GL11.GL_BLEND);

@@ -228,27 +228,33 @@ public class MaterialEditing extends GuiScreen {
 
                 if(this.selectedVertices.size() > 0)
                 {
-                    Vector3f pos = new Vector3f();
+                    float x = 0;
+                    float y = 0;
 
                     for(int index : this.selectedVertices)
-                        pos.add(shape.polygon.vertices[index].mulProject(entity.getTransformation(), new Vector3f()));
+                    {
+                        Vector3f vert = new Vector3f(shape.polygon.vertices[index]).mulProject(entity.getTransformation(), new Vector3f());
+                        x += vert.x;
+                        y += vert.y;
+                    }
 
-                    pos.div(shape.polygon.vertices.length);
+                    x /= selectedVertices.size();
+                    y /= selectedVertices.size();
 
-                    Vector2f xp = xPos.setTextboxValueFloat(Utils.round(pos.x, 3));
+                    Vector2f xp = xPos.setTextboxValueFloat(Utils.round(x, 3));
                     if (xp.y == 1)
                         for(int index : this.selectedVertices)
                         {
-                            Vector3f vpos = shape.polygon.vertices[index].mulProject(entity.getTransformation(), new Vector3f());
-                            Vector3f offset = vpos.sub(pos, new Vector3f());
+                            Vector3f vpos = new Vector3f(shape.polygon.vertices[index]).mulProject(entity.getTransformation(), new Vector3f());
+                            Vector3f offset = vpos.sub(new Vector3f(x, y, vpos.z), new Vector3f());
                             shape.polygon.vertices[index] = new Vector3f(xp.x + offset.x, vpos.y, vpos.z).mulProject(new Matrix4f(entity.getTransformation()).invert());
                         }
-                    Vector2f yp = yPos.setTextboxValueFloat(Utils.round(pos.y, 3));
+                    Vector2f yp = yPos.setTextboxValueFloat(Utils.round(y, 3));
                     if (yp.y == 1)
                         for(int index : this.selectedVertices)
                         {
-                            Vector3f vpos = shape.polygon.vertices[index].mulProject(entity.getTransformation(), new Vector3f());
-                            Vector3f offset = vpos.sub(pos, new Vector3f());
+                            Vector3f vpos = new Vector3f(shape.polygon.vertices[index]).mulProject(entity.getTransformation(), new Vector3f());
+                            Vector3f offset = vpos.sub(new Vector3f(x, y, vpos.z), new Vector3f());
                             shape.polygon.vertices[index] = new Vector3f(vpos.x, yp.x + offset.y, vpos.z).mulProject(new Matrix4f(entity.getTransformation()).invert());
                         }
                 }
@@ -278,45 +284,6 @@ public class MaterialEditing extends GuiScreen {
                         Vector3f position = new Vector3f(vertex);
                         position.mulProject(entity.getTransformation(), position);
                         position.z = entity.getTransformation().getTranslation(new Vector3f()).z + shape.thickness;
-
-//                            int p0 = (i - 2);
-//                            if(p0 < 0)
-//                                p0 = loop + p0;
-//
-//                            int p1 = (i - 1);
-//                            if(p1 < 0)
-//                                p1 = loop - 1;
-//
-//                            int p2 = (i + 1);
-//                            if(p2 >= loop)
-//                                p2 = 0;
-//
-//                            if(selectedVertices.isEmpty() || selectedVertices.contains(lo + i) || selectedVertices.contains(lo + p1) || selectedVertices.contains(lo + p2))
-//                            {
-//                                Vector3f pos0 = new Vector3f(shape.polygon.vertices[lo + p0]);
-//                                pos0.mulProject(entity.getTransformation(), pos0);
-//
-//                                Vector3f pos1 = new Vector3f(shape.polygon.vertices[lo + p1]);
-//                                pos1.mulProject(entity.getTransformation(), pos1);
-//
-//                                Vector3f pos2 = new Vector3f(shape.polygon.vertices[lo + p2]);
-//                                pos2.mulProject(entity.getTransformation(), pos2);
-//
-//                                if(bev != null) {
-//                                    Vector2f newPos = Utils.offsetAndFindIntersection(new Vector2f(pos1.x, pos1.y), new Vector2f(position.x, position.y), new Vector2f(pos2.x, pos2.y), bev.vertices.get(bev.vertices.size() - 1).y * bevelSize);
-//                                    Vector2f newPosPrev = Utils.offsetAndFindIntersection(new Vector2f(pos0.x, pos0.y), new Vector2f(pos1.x, pos1.y), new Vector2f(position.x, position.y), bev.vertices.get(bev.vertices.size() - 1).y * bevelSize);
-//
-//                                    Vector2f dir = new Vector2f(pos1.x, pos1.y).sub(new Vector2f(position.x, position.y)).normalize();
-//                                    Vector2f dirOffset = new Vector2f(newPosPrev.x, newPosPrev.y).sub(new Vector2f(newPos.x, newPos.y)).normalize();
-//
-//                                    boolean isBugged = (dir.dot(dirOffset) <= -Math.cos(1));
-//
-//                                    Vector3f screenPosition = mainView.camera.worldToScreen(new Vector3f(newPos.x, newPos.y, position.z), window);
-//                                    renderer.drawImageStatic(ConstantTextures.getTexture(ConstantTextures.CORNER_EDIT_PICK, 30, 30, loader), (int) (screenPosition.x - 15), (int) (screenPosition.y - 15), 30, 30, selectedVertices.contains(lo + p1) ? new Color(0.45f, 0.45f, 1f) : selectedVertices.contains(lo + p2) ? new Color(1f, 0.45f, 0.45f) : new Color(0.45f, 1f, 0.45f));
-//
-//                                    renderer.drawString("" + isBugged, Color.white, (int) screenPosition.x + 8, (int) screenPosition.y + 8, 10);
-//                                }
-//                            }
 
                         Vector3f screenPosition = mainView.camera.worldToScreen(position, window);
                         screenPositions.put(screenPosition, lo + i);
@@ -449,7 +416,6 @@ public class MaterialEditing extends GuiScreen {
                         float x = 0;
                         float y = 0;
                         float z = 0;
-                        int amount = 0;
                         for(Vector3f pos : screenPositions.keySet())
                             for(int index : this.selectedVertices)
                                 if(screenPositions.get(pos) == index)
@@ -457,9 +423,8 @@ public class MaterialEditing extends GuiScreen {
                                     x += pos.x;
                                     y += pos.y;
                                     z += pos.z;
-                                    amount++;
                                 }
-                        screenPos = new Vector3f(x/amount, y/amount, z/amount);
+                        screenPos = new Vector3f(x/this.selectedVertices.size(), y/this.selectedVertices.size(), z/this.selectedVertices.size());
                     }
                     catch (Exception e){e.printStackTrace();}
                     try
@@ -494,7 +459,7 @@ public class MaterialEditing extends GuiScreen {
 //                        vertexTool.render(true, true, true, false, false, false, true, true, true, false, true, -1, window, loader, renderer, mouseInput);
                         vertexTool.render(true, true, true, false, false, false, false, false, false, false, false, -1, window, loader, renderer, mouseInput);
 
-                        if(vertexTool.selected != -1) {
+                        if(vertexTool.isSelected()) {
                             switch (vertexTool.selected) {
                                 //0,1,2   pos
                                 //3,4,5   rot

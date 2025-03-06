@@ -163,6 +163,9 @@ public class ResourceInfo {
             this.populateDependencyModel(this.dependencies, new HashSet<>(), depth);
     }
 
+    public <T extends Compressable> ResourceInfo()
+    {}
+
     private void populateDependencyModel(ResourceDescriptor[] dependencies, HashSet<ResourceDescriptor> unique, int depth) {
         if (dependencies == null) return;
         if (depth > ResourceInfo.MAX_DEPENDENCY_DEPTH) return;
@@ -192,6 +195,7 @@ public class ResourceInfo {
     @SuppressWarnings("unchecked") public <T> T getResource() { return (T) this.resource; }
     public Revision getRevision() { return this.revision; }
     public ResourceType getType() { return this.type; }
+    public void setType(ResourceType type) { this.type = type; }
     public SerializationType getMethod() { return this.method; }
     public byte getCompressionFlags() { return this.compressionFlags; }
     public ResourceDescriptor[] getDependencies() { return this.dependencies; }

@@ -16,6 +16,7 @@ import bog.lbpas.view3d.renderer.gui.ingredients.Line;
 import bog.lbpas.view3d.renderer.gui.ingredients.LineStrip;
 import bog.lbpas.view3d.utils.CWLibUtils.SkeletonUtils;
 import bog.lbpas.view3d.utils.Config;
+import bog.lbpas.view3d.utils.Consts;
 import bog.lbpas.view3d.utils.print;
 import common.FileChooser;
 import cwlib.enums.Part;
@@ -96,7 +97,7 @@ public class ElementEditing extends GuiScreen {
     public void init() {
         elementTool = new Transformation3D.Tool(loader);
 
-        camPos = new DropDownTab("camPosition", "Camera position", new Vector2f(7, 21 + 7), new Vector2f(200, getFontHeight(10) + 4), 10, renderer, loader, window) {
+        camPos = new DropDownTab("camPosition", "Camera position", new Vector2f(10, 21 + 10), new Vector2f(200, getFontHeight(10) + 4), 10, renderer, loader, window) {
             @Override
             public void secondThread() {
                 super.secondThread();
@@ -127,7 +128,7 @@ public class ElementEditing extends GuiScreen {
         positionZ = new Textbox("ztex", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
         positionZ.noLetters().noOthers();
         zPos.elements.add(new Panel.PanelElement(positionZ, 0.9f));
-        currentSelection = new DropDownTab("currentSelection", "Current Selection", new Vector2f(521, 21 + 7), new Vector2f(200, getFontHeight(10) + 4), 10, renderer, loader, window) {
+        currentSelection = new DropDownTab("currentSelection", "Current Selection", new Vector2f(524, 21 + 10), new Vector2f(200, getFontHeight(10) + 4), 10, renderer, loader, window) {
 
             @Override
             public void draw(MouseInput mouseInput, boolean overOther) {
@@ -465,7 +466,7 @@ public class ElementEditing extends GuiScreen {
 
         currentSelectionParts = new ThingPart(mainView, partsList, currentSelection, mainView.things);
 
-        helpers = new DropDownTab("helpers", "Helpers", new Vector2f(7, 21 + 7 + camPos.getFullHeight() + 3), new Vector2f(200, getFontHeight(10) + 4), 10, renderer, loader, window).closed();
+        helpers = new DropDownTab("helpers", "Helpers", new Vector2f(10, 21 + 10 + camPos.getFullHeight() + 3), new Vector2f(200, getFontHeight(10) + 4), 10, renderer, loader, window).closed();
         levelBorders = helpers.addCheckbox("levelBorders", "Level borders", Config.LEVEL_BORDERS);
         podHelper = helpers.addCheckbox("podHelper", "Pod helper", Config.POD_HELPER);
         helpers.addButton("Pod cam", new bog.lbpas.view3d.renderer.gui.elements.Button("podCam") {
@@ -476,7 +477,7 @@ public class ElementEditing extends GuiScreen {
             }
         });
 
-        availableAssets = new DropDownTab("availableModels", "Available assets", new Vector2f(214, 21 + 7), new Vector2f(300, getFontHeight(10) + 4), 10, renderer, loader, window);
+        availableAssets = new DropDownTab("availableModels", "Available assets", new Vector2f(217, 21 + 10), new Vector2f(300, getFontHeight(10) + 4), 10, renderer, loader, window);
         Panel assetsPanel = availableAssets.addPanel("assetsPanel");
         assetsPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Search:", 10, renderer), 0.25f));
         availableAssetsSearch = new Textbox("availableAssetsSearch", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
@@ -512,12 +513,11 @@ public class ElementEditing extends GuiScreen {
                 if (button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS) {
                     clicked = index;
 
-                    String ext = entry.getPath();
-                    ext = ext.substring(ext.lastIndexOf(".") + 1);
+                    ResourceType type = entry.getInfo().getType();
 
-                    switch(ext)
+                    switch(type)
                     {
-                        case "mol":
+                        case MESH:
                         {
                             ResourceDescriptor descriptor = new ResourceDescriptor(entry.getSHA1(), ResourceType.MESH);
 
@@ -563,8 +563,7 @@ public class ElementEditing extends GuiScreen {
                             mainView.things.add(new bog.lbpas.view3d.core.types.Thing(mesh, loader));
                         }
                         break;
-                        case "gmat":
-                        case "gmt":
+                        case GFX_MATERIAL:
                         {
                             ResourceDescriptor descriptor = new ResourceDescriptor(entry.getSHA1(), ResourceType.MESH);
 
@@ -601,8 +600,7 @@ public class ElementEditing extends GuiScreen {
                             mainView.things.add(new bog.lbpas.view3d.core.types.Thing(material, loader));
                         }
                         break;
-                        case "plan":
-                        case "pln":
+                        case PLAN:
                         {
                             ResourceDescriptor descriptor = new ResourceDescriptor(entry.getSHA1(), ResourceType.MESH);
 
@@ -613,7 +611,7 @@ public class ElementEditing extends GuiScreen {
                             mainView.addThings(things);
                         }
                         break;
-                        case "bin":
+                        case LEVEL:
                         {
                             ResourceDescriptor descriptor = new ResourceDescriptor(entry.getSHA1(), ResourceType.MESH);
                             RLevel level = LoadedData.loadLevel(descriptor);
@@ -625,7 +623,8 @@ public class ElementEditing extends GuiScreen {
                         }
                         break;
                         default:
-                            System.err.println("Unknown background file type.");
+                            mainView.pushError("Failed loading asset.", "Resource type " + type.name() + " cannot be loaded.");
+                            print.error("Resource type " + type.name() + " cannot be loaded.");
                             break;
                     }
                 }
@@ -666,7 +665,7 @@ public class ElementEditing extends GuiScreen {
 
                 if(LoadedData.loadedTranslation != -1)
                 {
-                    ResourceDescriptor descriptor = LoadedData.digestedEntriesDescriptors.get(LoadedData.digestedEntries.indexOf(object));
+                    ResourceDescriptor descriptor = LoadedData.digestedEntriesDescriptors.get(index);
 
                     if (descriptor.getType() == ResourceType.PLAN) {
                         if(entry.translatedFor != LoadedData.loadedTranslation)
@@ -795,23 +794,23 @@ public class ElementEditing extends GuiScreen {
             public void secondThread() {
                 super.secondThread();
 
-                this.pos.x = window.width - 305;
-                this.size.y = window.height - 21;
+                this.pos.x = window.width - 308;
+                this.size.y = window.height - 27;
             }
 
             @Override
             public void resize() {
                 super.resize();
 
-                this.pos.x = window.width - 305;
-                this.size.y = window.height - 21;
+                this.pos.x = window.width - 308;
+                this.size.y = window.height - 27;
             }
         };
-        loadedEntitiesHitbox.pos = new Vector2f(window.width - 305, 21);
-        loadedEntitiesHitbox.size = new Vector2f(305, window.height - 21);
+        loadedEntitiesHitbox.pos = new Vector2f(window.width - 308, 21);
+        loadedEntitiesHitbox.size = new Vector2f(305, window.height - 27);
         loadedEntitiesHitbox.id = "loadedEntitiesHitbox";
         loadedEntitiesHitbox.window = window;
-        loadedEntities = new ButtonList("loadedEntities", mainView.things, new Vector2f(0, 2 + Math.floor(getFontHeight(10) * 1.25f + 2) * 2 + 21), new Vector2f(302 - getFontHeight(10) - 8, 0), 10, renderer, loader, window) {
+        loadedEntities = new ButtonList("loadedEntities", mainView.things, new Vector2f(0, 5 + Math.floor(getFontHeight(10) * 1.25f + 2) * 2 + 22), new Vector2f(302 - getFontHeight(10) - 8, 0), 10, renderer, loader, window) {
             int lastSelected = 0;
             @Override
             public void clickedButton(Object object, int index, int button, int action, int mods) {
@@ -950,14 +949,14 @@ public class ElementEditing extends GuiScreen {
             public void secondThread() {
                 super.secondThread();
 
-                this.pos.x = window.width - (302 - getFontHeight(10) - 8);
-                this.size.y = window.height - (2 + Math.floor(getFontHeight(10) * 1.25f + 2) * 2 + (Math.floor(getFontHeight(10) * 1.25f) + 4)) - 21;
+                this.pos.x = window.width - (305 - getFontHeight(10) - 8);
+                this.size.y = window.height - (2 + Math.floor(getFontHeight(10) * 1.25f + 2) * 2 + (Math.floor(getFontHeight(10) * 1.25f) + 4)) - 28;
             }
 
             @Override
             public void resize() {
-                this.pos.x = window.width - (302 - getFontHeight(10) - 8);
-                this.size.y = window.height - (2 + Math.floor(getFontHeight(10) * 1.25f + 2) * 2 + (Math.floor(getFontHeight(10) * 1.25f) + 4)) - 21;
+                this.pos.x = window.width - (305 - getFontHeight(10) - 8);
+                this.size.y = window.height - (2 + Math.floor(getFontHeight(10) * 1.25f + 2) * 2 + (Math.floor(getFontHeight(10) * 1.25f) + 4)) - 28;
                 super.resize();
             }
 
@@ -1000,7 +999,7 @@ public class ElementEditing extends GuiScreen {
                 mainView.deleteEntity(index);
             }
         }.deletable().draggable();
-        loadPlanElements = new Button("loadPlanElements", "Load elements from PLAN/LEVEL", new Vector2f(window.width - 303, 23), new Vector2f(301, getFontHeight(10) * 1.25f), 10, renderer, loader, window) {
+        loadPlanElements = new Button("loadPlanElements", "Load elements from PLAN/LEVEL", new Vector2f(window.width - 306, 26), new Vector2f(301, getFontHeight(10) * 1.25f), 10, renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if (button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS) {
@@ -1056,18 +1055,18 @@ public class ElementEditing extends GuiScreen {
             public void secondThread() {
                 super.secondThread();
 
-                this.pos.x = window.width - 303;
+                this.pos.x = window.width - 306;
             }
 
             @Override
             public void resize() {
                 super.resize();
 
-                this.pos.x = window.width - 303;
+                this.pos.x = window.width - 306;
             }
         };
         Panel loadedSearchPanel = new Panel(
-                new Vector2f(window.width - 303, (6 + getFontHeight(10) * 1.25f * 2)),
+                new Vector2f(window.width - 306, (6 + getFontHeight(10) * 1.25f * 2) + 3),
                 new Vector2f(301, getFontHeight(10) * 1.25f),
                 renderer)
         {
@@ -1075,14 +1074,14 @@ public class ElementEditing extends GuiScreen {
             public void secondThread() {
                 super.secondThread();
 
-                this.pos.x = window.width - 303;
+                this.pos.x = window.width - 306;
             }
 
             @Override
             public void resize() {
                 super.resize();
 
-                this.pos.x = window.width - 303;
+                this.pos.x = window.width - 306;
             }
         };
         loadedSearchPanel.window = window;
@@ -1101,16 +1100,16 @@ public class ElementEditing extends GuiScreen {
             public void secondThread() {
                 super.secondThread();
 
-                this.pos.x = window.width - 303;
-                this.pos.y = Math.ceil(window.height - getFontHeight(10) * 1.25f) - 2;
+                this.pos.x = window.width - 306;
+                this.pos.y = Math.ceil(window.height - getFontHeight(10) * 1.25f) - 6;
             }
 
             @Override
             public void resize() {
                 super.resize();
 
-                this.pos.x = window.width - 303;
-                this.pos.y = Math.ceil(window.height - getFontHeight(10) * 1.25f) - 2;
+                this.pos.x = window.width - 306;
+                this.pos.y = Math.ceil(window.height - getFontHeight(10) * 1.25f) - 6;
             }
         };
         newThing = new Button("newThing", "New", new Vector2f(), new Vector2f(99f, getFontHeight(10) * 1.25f), 10, renderer, loader, window) {
@@ -1128,16 +1127,16 @@ public class ElementEditing extends GuiScreen {
             public void secondThread() {
                 super.secondThread();
 
-                this.pos.x = window.width - 303 + 99f + 2;
-                this.pos.y = Math.ceil(window.height - getFontHeight(10) * 1.25f) - 2;
+                this.pos.x = window.width - 306 + 99f + 2;
+                this.pos.y = Math.ceil(window.height - getFontHeight(10) * 1.25f) - 6;
             }
 
             @Override
             public void resize() {
                 super.resize();
 
-                this.pos.x = window.width - 303 + 99f + 2;
-                this.pos.y = Math.ceil(window.height - getFontHeight(10) * 1.25f) - 2;
+                this.pos.x = window.width - 306 + 99f + 2;
+                this.pos.y = Math.ceil(window.height - getFontHeight(10) * 1.25f) - 6;
             }
         };
         sortEntityList = new Button("sortEntityList", "Sort list", new Vector2f(), new Vector2f(99f, getFontHeight(10) * 1.25f), 10, renderer, loader, window) {
@@ -1166,19 +1165,19 @@ public class ElementEditing extends GuiScreen {
             public void secondThread() {
                 super.secondThread();
 
-                this.pos.x = window.width - 303 + (99f + 2) * 2;
-                this.pos.y = Math.ceil(window.height - getFontHeight(10) * 1.25f) - 2;
+                this.pos.x = window.width - 306 + (99f + 2) * 2;
+                this.pos.y = Math.ceil(window.height - getFontHeight(10) * 1.25f) - 6;
             }
 
             @Override
             public void resize() {
                 super.resize();
 
-                this.pos.x = window.width - 303 + (99f + 2) * 2;
-                this.pos.y = Math.ceil(window.height - getFontHeight(10) * 1.25f) - 2;
+                this.pos.x = window.width - 306 + (99f + 2) * 2;
+                this.pos.y = Math.ceil(window.height - getFontHeight(10) * 1.25f) - 6;
             }
         };
-        move = (new ButtonImage("move", ConstantTextures.getTexture(ConstantTextures.TRANSFORMATION_MOVE, 30, 30, loader), new Vector2f(window.width - 342, 21 + 7), new Vector2f(30, 30), renderer, loader, window) {
+        move = (new ButtonImage("move", new Vector2f(window.width - 345, 21 + 10), new Vector2f(30, 30), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
             }
@@ -1200,17 +1199,22 @@ public class ElementEditing extends GuiScreen {
             public void secondThread() {
                 super.secondThread();
 
-                this.pos.x = window.width - 342;
+                this.pos.x = window.width - 345;
             }
 
             @Override
             public void resize() {
                 super.resize();
 
-                this.pos.x = window.width - 342;
+                this.pos.x = window.width - 345;
+            }
+
+            @Override
+            public void getImage() {
+                buttonImage = ConstantTextures.getTexture(ConstantTextures.TRANSFORMATION_MOVE, 30, 30, loader);
             }
         }).clicked();
-        rotate = new ButtonImage("rotate", ConstantTextures.getTexture(ConstantTextures.TRANSFORMATION_ROTATE, 30, 30, loader), new Vector2f(window.width - 342, 21 + 7 + 37), new Vector2f(30, 30), renderer, loader, window) {
+        rotate = new ButtonImage("rotate", new Vector2f(window.width - 345, 21 + 10 + 37), new Vector2f(30, 30), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
             }
@@ -1232,17 +1236,22 @@ public class ElementEditing extends GuiScreen {
             public void secondThread() {
                 super.secondThread();
 
-                this.pos.x = window.width - 342;
+                this.pos.x = window.width - 345;
             }
 
             @Override
             public void resize() {
                 super.resize();
 
-                this.pos.x = window.width - 342;
+                this.pos.x = window.width - 345;
+            }
+
+            @Override
+            public void getImage() {
+                buttonImage = ConstantTextures.getTexture(ConstantTextures.TRANSFORMATION_ROTATE, 30, 30, loader);
             }
         };
-        scale = new ButtonImage("scale", ConstantTextures.getTexture(ConstantTextures.TRANSFORMATION_SCALE, 30, 30, loader), new Vector2f(window.width - 342, 21 + 7 + 74), new Vector2f(30, 30), renderer, loader, window) {
+        scale = new ButtonImage("scale", new Vector2f(window.width - 345, 21 + 10 + 74), new Vector2f(30, 30), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
             }
@@ -1264,18 +1273,23 @@ public class ElementEditing extends GuiScreen {
             public void secondThread() {
                 super.secondThread();
 
-                this.pos.x = window.width - 342;
+                this.pos.x = window.width - 345;
             }
 
             @Override
             public void resize() {
                 super.resize();
 
-                this.pos.x = window.width - 342;
+                this.pos.x = window.width - 345;
+            }
+
+            @Override
+            public void getImage() {
+                buttonImage = ConstantTextures.getTexture(ConstantTextures.TRANSFORMATION_SCALE, 30, 30, loader);
             }
         };
 
-        preview = new ButtonImage("preview", Config.PREVIEW_MODE ? ConstantTextures.getTexture(ConstantTextures.VISIBILITY_OFF, 30, 30, loader) : ConstantTextures.getTexture(ConstantTextures.VISIBILITY, 30, 30, loader), new Vector2f(window.width - 342, 21 + 7 + 111), new Vector2f(30, 30), renderer, loader, window) {
+        preview = new ButtonImage("preview", new Vector2f(window.width - 345, 21 + 10 + 111), new Vector2f(30, 30), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if(action == GLFW.GLFW_PRESS)
@@ -1289,14 +1303,19 @@ public class ElementEditing extends GuiScreen {
             public void secondThread() {
                 super.secondThread();
 
-                this.pos.x = window.width - 342;
+                this.pos.x = window.width - 345;
             }
 
             @Override
             public void resize() {
                 super.resize();
 
-                this.pos.x = window.width - 342;
+                this.pos.x = window.width - 345;
+            }
+
+            @Override
+            public void getImage() {
+                buttonImage = Config.PREVIEW_MODE ? ConstantTextures.getTexture(ConstantTextures.VISIBILITY_OFF, 30, 30, loader) : ConstantTextures.getTexture(ConstantTextures.VISIBILITY, 30, 30, loader);
             }
         };
 
@@ -1337,38 +1356,6 @@ public class ElementEditing extends GuiScreen {
             {
                 hasSelection = true;
                 selectedAmount++;
-//                TODO if(entity.getType() == 0)
-//                {
-//                    Mesh mesh = (Mesh)entity;
-//
-//                    if(mesh.skeleton != null)
-//                        for(Bone bone : mesh.skeleton)
-//                        {
-//                            Matrix4f boneMat = new Matrix4f(entity.transformation);
-//
-//                            Bone parent = bone.parent;
-//                            ArrayList<Bone> parents = new ArrayList<>();
-//
-//                            while(parent != null)
-//                            {
-//                                parents.add(parent);
-//                                parent = parent.parent;
-//                            }
-//
-//                            for(int i = parents.size() - 1; i >= 0; i--)
-//                            {
-//                                Bone b = parents.get(i);
-//
-//                                if(b.parent == null)
-//                                    boneMat.mul(b.invSkinPoseMatrix);
-//                                else
-//                                    parentMat = new Matrix4f(boneTransform).mul(parentMat);
-//                            }
-//                            boneMat.mul(bone.invSkinPoseMatrix);
-//
-//                            renderer.processThroughWallEntity(new Entity(mainView.bone, boneMat, loader));
-//                        }
-//                }
                 if(((bog.lbpas.view3d.core.types.Thing)entity).thing.hasPart(Part.POS))
                     hasPPos = true;
             }
@@ -1376,12 +1363,12 @@ public class ElementEditing extends GuiScreen {
         if(hasSelection && hasPPos)
             elementTool.updateModels(mainView, mainView.getSelectedPosition());
 
-        if(mouseInput.inWindow && elementTool.selected == -1 && hasPPos)
+        if(mouseInput.inWindow)
         {
             for(Entity entity : mainView.things)
                 entity.highlighted = false;
 
-            elementTool.testForMouse(hasSelection, mainView.camera, mouseInput.mousePicker,
+            elementTool.testForMouse(hasSelection && hasPPos, mainView.camera, mouseInput.mousePicker,
                     move.isClicked,
                     rotate.isClicked,
                     scale.isClicked);
@@ -1391,7 +1378,7 @@ public class ElementEditing extends GuiScreen {
             for(int i = 0; i < mainView.things.size(); i++)
                 mainView.things.get(i).highlighted = false;
 
-        if(elementTool.selected != -1 && hasPPos)
+        if(elementTool.isSelected() && hasPPos)
         {
             switch (elementTool.selected)
             {
@@ -1751,14 +1738,9 @@ public class ElementEditing extends GuiScreen {
                     rotate.isClicked,
                     scale.isClicked, window, loader, renderer, mouseInput);
 
-        renderer.doBlur(1.0025f, window.width - 305, 21, 305, window.height - 21);
-        renderer.doBlur(2, window.width - 305, 21, 305, window.height - 21);
-        renderer.doBlur(3, window.width - 305, 21, 305, window.height - 21);
-        renderer.doBlur(2, window.width - 305, 21, 305, window.height - 21);
-        renderer.doBlur(1.5f, window.width - 305, 21, 305, window.height - 21);
-        renderer.doBlur(1.25f, window.width - 305, 21, 305, window.height - 21);
-        renderer.drawRect(window.width - 305, 21, 305, window.height - 21, Config.PRIMARY_COLOR);
-        renderer.drawLine(loader, new Vector2i(window.width - 304, 21), new Vector2i(window.width - 304, window.height), Config.SECONDARY_COLOR, false);
+        renderer.doBlur(Consts.GAUSSIAN_RADIUS, Consts.GAUSSIAN_KERNEL, window.width - 308, 24, 304, window.height - 28);
+        renderer.drawRect(window.width - 308, 24, 304, window.height - 28, Config.PRIMARY_COLOR);
+        renderer.drawLine(loader, new Vector2i(window.width - 307, 24), new Vector2i(window.width - 307, window.height - 3), Config.SECONDARY_COLOR, false);
 
         super.draw(mouseInput);
     }

@@ -157,6 +157,15 @@ public class ShaderMan {
         }
     }
 
+    public void setUniform(String uniformName, float[] floats)
+    {
+        int num = floats != null ? floats.length : 0;
+        for(int i = 0; i < num; i++)
+        {
+            setUniform(uniformName, floats[i], i);
+        }
+    }
+
     public void setUniform(String uniformName, Thing[] thingBones, Bone[] meshBones)
     {
         int num = thingBones != null && meshBones != null ? meshBones.length : 0;
@@ -186,6 +195,11 @@ public class ShaderMan {
     }
 
     public void setUniform(String uniformName, Matrix4f value, int index)
+    {
+        setUniform(uniformName + "[" + index + "]", value);
+    }
+
+    public void setUniform(String uniformName, float value, int index)
     {
         setUniform(uniformName + "[" + index + "]", value);
     }

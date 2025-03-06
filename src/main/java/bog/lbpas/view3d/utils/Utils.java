@@ -744,6 +744,13 @@ public class Utils {
 
         float t = (diff.x * dir2.y - diff.y * dir2.x) / det;
         Vector2f intersection = new Vector2f(offsetP12).add(new Vector2f(dir1).mul(t));
+
+        if(intersection.distance(p2) > Math.pow(distance, 1.4f))
+        {
+            Vector2f dir = new Vector2f(intersection).sub(p2).normalize();
+            intersection = new Vector2f(p2).add(dir.mul(distance));
+        }
+
         return intersection;
     }
 
@@ -844,5 +851,26 @@ public class Utils {
     public static byte setBitwiseBool(byte flags , int flag, boolean bool)
     {
         return bool ? (flags |= flag) : (flags &= ~flag);
+    }
+
+    public static float[] gaussianKernel(float sigma, int radius)
+    {
+        int kernelSize = radius * 2 + 1;
+        float[] kernel = new float[kernelSize];
+        int center = kernelSize / 2;
+
+        for (int i = 0; i < kernelSize; i++) {
+            float x = i - center;
+            kernel[i] = (float) Math.exp(-(x * x) / (2 * (sigma * sigma)));
+        }
+
+        float sum = 0;
+        for (float value : kernel)
+            sum += value;
+
+        for (int i = 0; i < kernelSize; i++)
+            kernel[i] /= sum;
+
+        return kernel;
     }
 }

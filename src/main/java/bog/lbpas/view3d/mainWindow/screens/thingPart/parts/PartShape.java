@@ -3,6 +3,7 @@ package bog.lbpas.view3d.mainWindow.screens.thingPart.parts;
 import bog.lbpas.view3d.core.types.Thing;
 import bog.lbpas.view3d.mainWindow.LoadedData;
 import bog.lbpas.view3d.mainWindow.View3D;
+import bog.lbpas.view3d.mainWindow.screens.MaterialEditing;
 import bog.lbpas.view3d.managers.MouseInput;
 import bog.lbpas.view3d.renderer.gui.elements.*;
 import bog.lbpas.view3d.utils.Utils;
@@ -99,7 +100,10 @@ public abstract class PartShape extends iPart {
                         }
 
                     if(hasSelection && selected.size() == 1 && ((bog.lbpas.view3d.core.types.Thing)view.things.get(selected.get(0))).thing.hasPart(cwlib.enums.Part.SHAPE))
+                    {
                         view.setCurrentScreen(view.MaterialEditing);
+                        ((MaterialEditing)view.MaterialEditing).selectedVertices.clear();
+                    }
                 }
             }
         };
@@ -899,12 +903,12 @@ public abstract class PartShape extends iPart {
             if(material != null)
             {
                 shape.material = null;
-                try{shape.material = new ResourceDescriptor(material, ResourceType.MATERIAL);}catch (Exception e){}
+                try{shape.material = new ResourceDescriptor(material.trim(), ResourceType.MATERIAL);}catch (Exception e){}
             }
             if(oldMaterial != null)
             {
                 shape.oldMaterial = null;
-                try{shape.oldMaterial = new ResourceDescriptor(oldMaterial, ResourceType.MATERIAL);}catch (Exception e){}
+                try{shape.oldMaterial = new ResourceDescriptor(oldMaterial.trim(), ResourceType.MATERIAL);}catch (Exception e){}
             }
             if(thickness.y == 1)
                 shape.thickness = thickness.x;

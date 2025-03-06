@@ -22,7 +22,7 @@ float readDepth(vec2 coord) {
 
 float compareDepths(in float depth1, in float depth2, float aoMultiplier) {
 	float depthTolerance = 0.0001f;
-	float aorange = 100.0f;
+	float aorange = 300.0f;
 	float diff = sqrt(clamp(1.0f - (depth1 - depth2) / (aorange / (camerarange.y - camerarange.x)), 0.0f, 1.0f));
 	float ao = (max(0.0f, depth1 - depth2 - depthTolerance) * aoMultiplier) * diff;
 	return ao;
@@ -40,75 +40,33 @@ void main(void)
 
 	float ao = 0.0f;
 
-	float aoMultiplier = zRatio * 4.0f;
+	float aoMultiplier = zRatio * 6.5f;
 
 	float aoscale = 5.0f;
 
-	d = readDepth(vec2(texCoord.x + pw, texCoord.y + ph));
-	ao += compareDepths(depth, d, aoMultiplier) / aoscale;
+	int steps = 9;
 
-	d = readDepth(vec2(texCoord.x - pw, texCoord.y + ph));
-	ao += compareDepths(depth, d, aoMultiplier) / aoscale;
+	for(int i = 0; i < steps; i++)
+	{
+		d = readDepth(vec2(texCoord.x + pw, texCoord.y + ph));
+		ao += compareDepths(depth, d, aoMultiplier) / aoscale;
 
-	d = readDepth(vec2(texCoord.x + pw, texCoord.y - ph));
-	ao += compareDepths(depth, d, aoMultiplier) / aoscale;
+		d = readDepth(vec2(texCoord.x - pw, texCoord.y + ph));
+		ao += compareDepths(depth, d, aoMultiplier) / aoscale;
 
-	d = readDepth(vec2(texCoord.x - pw, texCoord.y - ph));
-	ao += compareDepths(depth, d, aoMultiplier) / aoscale;
+		d = readDepth(vec2(texCoord.x + pw, texCoord.y - ph));
+		ao += compareDepths(depth, d, aoMultiplier) / aoscale;
 
-	pw *= 2.0f;
-	ph *= 2.0f;
-	aoMultiplier /= 2.0f;
-	aoscale *= 1.2f;
+		d = readDepth(vec2(texCoord.x - pw, texCoord.y - ph));
+		ao += compareDepths(depth, d, aoMultiplier) / aoscale;
 
-	d = readDepth(vec2(texCoord.x + pw, texCoord.y + ph));
-	ao += compareDepths(depth, d, aoMultiplier) / aoscale;
+		pw *= 2.0f;
+		ph *= 2.0f;
+		aoMultiplier /= 2.0f;
+		aoscale *= 1.2f;
+	}
 
-	d = readDepth(vec2(texCoord.x - pw, texCoord.y + ph));
-	ao += compareDepths(depth, d, aoMultiplier) / aoscale;
-
-	d = readDepth(vec2(texCoord.x + pw, texCoord.y - ph));
-	ao += compareDepths(depth, d, aoMultiplier) / aoscale;
-
-	d = readDepth(vec2(texCoord.x - pw, texCoord.y - ph));
-	ao += compareDepths(depth, d, aoMultiplier) / aoscale;
-
-	pw *= 2.0f;
-	ph *= 2.0f;
-	aoMultiplier /= 2.0f;
-	aoscale *= 1.2f;
-
-	d = readDepth(vec2(texCoord.x + pw, texCoord.y + ph));
-	ao += compareDepths(depth, d, aoMultiplier) / aoscale;
-
-	d = readDepth(vec2(texCoord.x - pw, texCoord.y + ph));
-	ao += compareDepths(depth, d, aoMultiplier) / aoscale;
-
-	d = readDepth(vec2(texCoord.x + pw, texCoord.y - ph));
-	ao += compareDepths(depth, d, aoMultiplier) / aoscale;
-
-	d = readDepth(vec2(texCoord.x - pw, texCoord.y - ph));
-	ao += compareDepths(depth, d, aoMultiplier) / aoscale;
-
-	pw *= 2.0f;
-	ph *= 2.0f;
-	aoMultiplier /= 2.0f;
-	aoscale *= 1.2f;
-
-	d = readDepth(vec2(texCoord.x + pw, texCoord.y + ph));
-	ao += compareDepths(depth, d, aoMultiplier) / aoscale;
-
-	d = readDepth(vec2(texCoord.x - pw, texCoord.y + ph));
-	ao += compareDepths(depth, d, aoMultiplier) / aoscale;
-
-	d = readDepth(vec2(texCoord.x + pw, texCoord.y - ph));
-	ao += compareDepths(depth, d, aoMultiplier) / aoscale;
-
-	d = readDepth(vec2(texCoord.x - pw, texCoord.y - ph));
-	ao += compareDepths(depth, d, aoMultiplier) / aoscale;
-
-	ao /= 16.0f;
-
+	ao /= pow(steps, 2);
 //	if(ao < 0.25f)
 //		ao = 0.25f;
 //	if(ao > 0.75f)

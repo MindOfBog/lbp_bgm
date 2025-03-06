@@ -11,6 +11,7 @@ import bog.lbpas.view3d.managers.WindowMan;
 import bog.lbpas.view3d.renderer.gui.ingredients.Line;
 import bog.lbpas.view3d.renderer.gui.ingredients.Quad;
 import bog.lbpas.view3d.utils.MousePicker;
+import bog.lbpas.view3d.utils.print;
 import org.joml.Math;
 import org.joml.*;
 import org.lwjgl.glfw.GLFW;
@@ -89,16 +90,19 @@ public class Transformation3D{
             for(Entity entity : tools)
                 entity.highlighted = false;
 
-            for(int i = 0; i < tools.size(); i++)
-                tools.get(i).testForMouse = hasSelection;
-
-            hit = -1;
-
-            for(int i = 0; i < tools.size(); i++)
+            if(hasSelection)
             {
-                Entity entity = tools.get(i);
-                if(entity.highlighted)
-                    hit = i;
+                for(int i = 0; i < tools.size(); i++)
+                    tools.get(i).testForMouse = hasSelection;
+
+                hit = -1;
+
+                for(int i = 0; i < tools.size(); i++)
+                {
+                    Entity entity = tools.get(i);
+                    if(entity.highlighted)
+                        hit = i;
+                }
             }
         }
 
@@ -136,12 +140,16 @@ public class Transformation3D{
             }
 
             if(selected == -1)
+            {
                 for(int i = 0; i < tools.size(); i++)
                     if(hasSelection)
+                    {
                         if((i == 0 && translateX) || (i == 1 && translateY) || (i == 2 && translateZ) ||
                                 (i == 3 && rotateX) || (i == 4 && rotateY) || (i == 5 && rotateZ)
                                 || (i == 6 && scaleX) || (i == 7 && scaleY) || (i == 8 && scaleZ) || (i == 9 && scaleUniform))
                             renderer.processThroughWallEntity(tools.get(i));
+                    }
+            }
         }
 
         public boolean onClick(MouseInput mouseInput, int button, int action, int mods, WindowMan window, Camera camera)

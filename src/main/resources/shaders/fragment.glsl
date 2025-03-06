@@ -70,6 +70,8 @@ uniform float fogFar;
 uniform vec3 camPos;
 uniform vec3 sunPos;
 
+uniform bool noCulling;
+
 const mat4 thresholdMatrix = mat4(
     1, 9, 3, 11,
     13, 5, 15, 7,
@@ -82,7 +84,7 @@ vec4 specularC;
 
 void cullBackFace()
 {
-    if(!gl_FrontFacing)
+    if(!gl_FrontFacing && !noCulling)
         discard;
 }
 

@@ -118,7 +118,7 @@ public class Settings extends GuiScreen{
     public Checkbox debugScissorTest;
 
     public void init() {
-        rendererSettings = new DropDownTab("rendererSettings", "Renderer Settings", new Vector2f(7, 21 + 7), new Vector2f(200, getFontHeight(10) + 4), 10, renderer, loader, window).closed();
+        rendererSettings = new DropDownTab("rendererSettings", "Renderer Settings", new Vector2f(10, 21 + 10), new Vector2f(200, getFontHeight(10) + 4), 10, renderer, loader, window).closed();
         culling = rendererSettings.addCheckbox("culling", "No culling", Config.NO_CULLING);
 
         Panel fovPanel = rendererSettings.addPanel("fovPanel");
@@ -132,20 +132,6 @@ public class Settings extends GuiScreen{
         fps.noLetters().noOthers();
         fps.setText(Float.toString(Config.FRAMERATE));
         fpsPanel.elements.add(new Panel.PanelElement(fps, 0.475f));
-
-        Panel moveSpeedPanel = rendererSettings.addPanel("moveSpeedPanel");
-        moveSpeedPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Move speed:", 10, renderer), 0.525f));
-        moveSpeed = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-        moveSpeed.noLetters().noOthers();
-        moveSpeed.setText(Float.toString(Config.CAMERA_MOVE_SPEED));
-        moveSpeedPanel.elements.add(new Panel.PanelElement(moveSpeed, 0.475f));
-
-        Panel sensitivityPanel = rendererSettings.addPanel("sensitivityPanel");
-        sensitivityPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Sensitivity:", 10, renderer), 0.525f));
-        sensitivity = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-        sensitivity.noLetters().noOthers();
-        sensitivity.setText(Float.toString(Config.MOUSE_SENS));
-        sensitivityPanel.elements.add(new Panel.PanelElement(sensitivity, 0.475f));
 
         Panel zNearPanel = rendererSettings.addPanel("zNearPanel");
         zNearPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Z Near:", 10, renderer), 0.525f));
@@ -358,7 +344,7 @@ public class Settings extends GuiScreen{
 
         //------------------------------------
 
-        guiSettings = new DropDownTab("guiSettings", "GUI Settings", new Vector2f(7, 21 + 7 + 7 + rendererSettings.getFullHeight()), new Vector2f(200, getFontHeight(10) + 4), 10, renderer, loader, window).closed();
+        guiSettings = new DropDownTab("guiSettings", "GUI Settings", new Vector2f(10, 21 + 10 + 7 + rendererSettings.getFullHeight()), new Vector2f(200, getFontHeight(10) + 4), 10, renderer, loader, window).closed();
 
         guiSettings.addString("fontColorLabel", "Font Color:");
         {
@@ -754,7 +740,7 @@ public class Settings extends GuiScreen{
         cursorSize.setText("" + Config.CURSOR_SCALE);
         cursorSizePanel.elements.add(new Panel.PanelElement(cursorSize, 0.65f));
 
-        controls = new DropDownTab("controls", "Controls", new Vector2f(7, 21 + 7 + 14 + rendererSettings.getFullHeight() + guiSettings.getFullHeight()), new Vector2f(200, getFontHeight(10) + 4), 10, renderer, loader, window).closed();
+        controls = new DropDownTab("controls", "Controls", new Vector2f(10, 21 + 10 + 14 + rendererSettings.getFullHeight() + guiSettings.getFullHeight()), new Vector2f(200, getFontHeight(10) + 4), 10, renderer, loader, window).closed();
 
         float buttonWidth = 0.62f;
 
@@ -992,15 +978,30 @@ public class Settings extends GuiScreen{
         };
         cameraPanel.elements.add(new Panel.PanelElement(camera, buttonWidth));
 
+        Panel moveSpeedPanel = controls.addPanel("moveSpeedPanel");
+        moveSpeedPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Move speed:", 10, renderer), 0.525f));
+        moveSpeed = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
+        moveSpeed.noLetters().noOthers();
+        moveSpeed.setText(Float.toString(Config.CAMERA_MOVE_SPEED));
+        moveSpeedPanel.elements.add(new Panel.PanelElement(moveSpeed, 0.475f));
+
+        Panel sensitivityPanel = controls.addPanel("sensitivityPanel");
+        sensitivityPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Sensitivity:", 10, renderer), 0.525f));
+        sensitivity = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
+        sensitivity.noLetters().noOthers();
+        sensitivity.setText(Float.toString(Config.MOUSE_SENS));
+        sensitivityPanel.elements.add(new Panel.PanelElement(sensitivity, 0.475f));
+
         this.guiElements.add(rendererSettings);
         this.guiElements.add(guiSettings);
         this.guiElements.add(controls);
 
         if (Main.debug) {
-            debug = new DropDownTab("debug", "Debug", new Vector2f(214, 21 + 7), new Vector2f(200, getFontHeight(10) + 4), 10, renderer, loader, window).closed();
+            debug = new DropDownTab("debug", "Debug", new Vector2f(217, 21 + 10), new Vector2f(200, getFontHeight(10) + 4), 10, renderer, loader, window).closed();
             debug.addCheckbox("vaoCount", "VAO Count");
             debug.addCheckbox("vboCount", "VBO Count");
             debug.addCheckbox("textureCount", "Texture Count");
+            debug.addCheckbox("threads", "Threads");
             debug.addCheckbox("noSSAO", "Disable SSAO");
             debugScissorTest = debug.addCheckbox("debugScissorTest", "Scissor Test");
             this.guiElements.add(debug);

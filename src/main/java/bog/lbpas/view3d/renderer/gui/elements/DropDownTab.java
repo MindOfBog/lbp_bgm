@@ -9,6 +9,7 @@ import bog.lbpas.view3d.renderer.gui.cursor.ECursor;
 import bog.lbpas.view3d.renderer.gui.ingredients.Line;
 import bog.lbpas.view3d.renderer.gui.ingredients.LineStrip;
 import bog.lbpas.view3d.utils.Config;
+import bog.lbpas.view3d.utils.Consts;
 import bog.lbpas.view3d.utils.Cursors;
 import org.joml.Vector2d;
 import org.joml.Vector2f;
@@ -410,15 +411,15 @@ public class DropDownTab extends Element{
         }
 
         if (!renderer.window.isMinimized) {
-            if (this.pos.x < 0)
-                this.pos.x = 0;
-            if (this.pos.y < 21)
-                this.pos.y = 21;
+            if (this.pos.x < 3)
+                this.pos.x = 3;
+            if (this.pos.y < 23)
+                this.pos.y = 23;
 
-            if (this.pos.x + this.size.x > renderer.window.width)
-                this.pos.x = renderer.window.width - this.size.x;
-            if (this.pos.y + this.size.y > renderer.window.height)
-                this.pos.y = renderer.window.height - this.size.y;
+            if (this.pos.x + this.size.x > renderer.window.width - 3)
+                this.pos.x = renderer.window.width - 3 - this.size.x;
+            if (this.pos.y + this.size.y > renderer.window.height - 3)
+                this.pos.y = renderer.window.height - 3 - this.size.y;
         }
 
         if(extended)
@@ -505,12 +506,7 @@ public class DropDownTab extends Element{
                 Config.INTERFACE_SECONDARY_COLOR.getAlpha() < 253 ||
                 Config.INTERFACE_PRIMARY_COLOR.getAlpha() < 253)
         {
-            renderer.doBlur(1.0025f, x, y, xSize, ySize);
-            renderer.doBlur(2, x, y, xSize, ySize);
-            renderer.doBlur(3, x, y, xSize, ySize);
-            renderer.doBlur(2, x, y, xSize, ySize);
-            renderer.doBlur(1.5f, x, y, xSize, ySize);
-            renderer.doBlur(1.25f, x, y, xSize, ySize);
+            renderer.doBlur(Consts.GAUSSIAN_RADIUS, Consts.GAUSSIAN_KERNEL, x, y, xSize, ySize);
         }
 
         if (extended)

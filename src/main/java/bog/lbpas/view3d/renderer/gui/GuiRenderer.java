@@ -20,6 +20,7 @@ import java.util.ArrayList;
 public class GuiRenderer {
     public ShaderMan guiShader;
     WindowMan window;
+
     public static Model defaultQuad(ObjectLoader loader)
     {
         Model quad = loader.loadModel(new float[]{-1, 1, -1, -1, 1, 1, 1, -1}, new float[]{0, 0, 0, 1, 1, 0, 1, 1});
@@ -48,6 +49,12 @@ public class GuiRenderer {
         guiShader.createUniform("color");
         guiShader.createUniform("smoothst");
         guiShader.createUniform("alpha");
+        guiShader.createUniform("isBlur");
+        guiShader.createUniform("isGaussian");
+        guiShader.createUniform("pixelSize");
+        guiShader.createUniform("radius");
+        guiShader.createUniform("vertical");
+        guiShader.createListUniform("gaussKernel", 41);
 
         line = loader.loadModel(new float[]{0f, 0f, 100f, 100f});
         defaultQuad = defaultQuad(loader);
@@ -449,9 +456,9 @@ public class GuiRenderer {
                     {
                         Blur blur = (Blur)drawable;
                         if(blur.start)
-                            startBlur(screenTexture, blurBuffer, blurTexture, blurDepth, blur.amount);
+                            startBlur(screenTexture, blurBuffer, blurTexture, blurDepth, blur);
                         else
-                            endBlur(blurTexture, blur.amount);
+                            endBlur(blurTexture);
                     }
                     break;
             }
@@ -488,7 +495,7 @@ public class GuiRenderer {
         }
     }
 
-    private void startBlur(int screenTexture, int blurBuffer, int blurTexture, int blurDepth, float amount)
+    private void startBlur(int screenTexture, int blurBuffer, int blurTexture, int blurDepth, Blur blur)
     {
         RenderMan.bindFrameBuffer(blurBuffer);
         RenderMan.bindColorTex(blurTexture);
@@ -503,12 +510,17 @@ public class GuiRenderer {
 
         guiShader.setUniform("hasCoords", false);
         guiShader.setUniform("guiTexture", 0);
-        guiShader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(
-                new Vector2f(1f / amount, 1f / amount),
-                new Vector2f(1f / amount, -(1f / amount))
-        ));
+        guiShader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(new Vector2f(), new Vector2f(1)));
         guiShader.setUniform("hasColor", 0);
         guiShader.setUniform("smoothst", false);
+
+        guiShader.setUniform("isBlur", true);
+        guiShader.setUniform("isGaussian", blur.gaussian);
+        if(blur.gaussian)
+            guiShader.setUniform("gaussKernel", blur.gaussKernel);
+        guiShader.setUniform("pixelSize", 1.0f/window.height);
+        guiShader.setUniform("radius", blur.radius);
+        guiShader.setUniform("vertical", true);
 
         GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, GuiRenderer.defaultQuad.vertexCount);
 
@@ -518,7 +530,7 @@ public class GuiRenderer {
         unbindFrameBuffer();
     }
 
-    public void endBlur(int blurTexture, float amount)
+    public void endBlur(int blurTexture)
     {
         GL30.glBindVertexArray(GuiRenderer.defaultQuad.vao);
         GL20.glEnableVertexAttribArray(0);
@@ -528,16 +540,18 @@ public class GuiRenderer {
 
         guiShader.setUniform("hasCoords", false);
         guiShader.setUniform("guiTexture", 0);
-        guiShader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(
-                new Vector2f(-1f),
-                new Vector2f(amount, -amount)
-        ));
+        guiShader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(new Vector2f(), new Vector2f(1)));
         guiShader.setUniform("hasColor", 0);
         guiShader.setUniform("smoothst", false);
-
         guiShader.setUniform("alpha", true);
+
+        guiShader.setUniform("pixelSize", 1.0f/window.width);
+        guiShader.setUniform("vertical", false);
+
         GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, GuiRenderer.defaultQuad.vertexCount);
+
         guiShader.setUniform("alpha", false);
+        guiShader.setUniform("isBlur", false);
 
         GL20.glDisableVertexAttribArray(0);
         GL30.glBindVertexArray(0);

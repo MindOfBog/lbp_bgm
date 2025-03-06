@@ -8,6 +8,7 @@ import bog.lbpas.view3d.managers.WindowMan;
 import bog.lbpas.view3d.renderer.gui.cursor.ECursor;
 import bog.lbpas.view3d.renderer.gui.ingredients.LineStrip;
 import bog.lbpas.view3d.utils.Config;
+import bog.lbpas.view3d.utils.Consts;
 import bog.lbpas.view3d.utils.Cursors;
 import org.joml.Vector2d;
 import org.joml.Vector2f;
@@ -41,6 +42,20 @@ public class ComboBox extends Element{
         this.tabTitle = tabTitle;
         this.pos = pos;
         this.size = size;
+        this.fontSize = fontSize;
+        this.renderer = renderer;
+        this.loader = loader;
+        this.window = window;
+        this.tabWidth = tabWidth;
+        comboElements = new ArrayList<>();
+    }
+
+    public ComboBox(String id, String tabTitle, int fontSize, int tabWidth, RenderMan renderer, ObjectLoader loader, WindowMan window)
+    {
+        this.id = id;
+        this.tabTitle = tabTitle;
+        this.pos = new Vector2f();
+        this.size = new Vector2f();
         this.fontSize = fontSize;
         this.renderer = renderer;
         this.loader = loader;
@@ -319,6 +334,12 @@ public class ComboBox extends Element{
             comboElements.add(new DropDownTab.StringElement(id, string, fontSize, renderer));
     }
 
+    public void addString(DropDownTab.StringElement string)
+    {
+        if(!containsElementByID(id))
+            comboElements.add(string);
+    }
+
     public void addRect(String id, float height)
     {
         if(!containsElementByID(id))
@@ -338,6 +359,18 @@ public class ComboBox extends Element{
             buttonList.id = id;
             buttonList.pos = new Vector2f(0, 0);
             buttonList.size = new Vector2f(tabWidth - 4, height);
+            comboElements.add(buttonList);
+        }
+        return buttonList;
+    }
+
+    public ButtonList addList(String id, ButtonList buttonList)
+    {
+        if(!containsElementByID(id))
+        {
+            buttonList.id = id;
+            buttonList.pos = new Vector2f(0, 0);
+            buttonList.size = new Vector2f(tabWidth - 4, 8 + (buttonList.buttonHeight() + 2) * buttonList.list.size());
             comboElements.add(buttonList);
         }
         return buttonList;
@@ -448,12 +481,7 @@ public class ComboBox extends Element{
         if(x + xSize > window.width)
             x = (int) Math.round((parentTransform == null ? pos.x : parentTransform[0]) - size.y / 2 - xSize);
 
-        renderer.doBlur(1.0025f, x, y, xSize, ySize);
-        renderer.doBlur(2, x, y, xSize, ySize);
-        renderer.doBlur(3, x, y, xSize, ySize);
-        renderer.doBlur(2, x, y, xSize, ySize);
-        renderer.doBlur(1.5f, x, y, xSize, ySize);
-        renderer.doBlur(1.25f, x, y, xSize, ySize);
+        renderer.doBlur(Consts.GAUSSIAN_RADIUS, Consts.GAUSSIAN_KERNEL, x, y, xSize, ySize);
 
         renderer.drawRect(x, y, xSize, (int) Math.round(2f + yOffset), Config.PRIMARY_COLOR);
         renderer.drawRectOutline(new Vector2f(x, y), outlineElement, Config.SECONDARY_COLOR, false);
@@ -493,14 +521,14 @@ public class ComboBox extends Element{
 
             int[] parentTransform = getParentTransform();
 
-            int x = (int) Math.round((parentTransform == null ? pos.x + size.x : parentTransform[0] + parentTransform[2]) + (element instanceof ButtonList ? 0 : 2) + size.y / 2);
+            int x = (int) Math.round((parentTransform == null ? pos.x + size.x : parentTransform[0] + parentTransform[2]) + size.y / 2);
             int y = (int) Math.round(pos.y);
-            int xSize = tabWidth;
+            int xSize = (int) Math.round(tabWidth);
 
             if(x + xSize > window.width)
-                x = (int) Math.round((parentTransform == null ? pos.x : parentTransform[0]) + (element instanceof ButtonList ? 0 : 2) - xSize - size.y / 2);
+                x = (int) Math.round((parentTransform == null ? pos.x : parentTransform[0]) - xSize - size.y / 2);
 
-            element.pos = new Vector2f(x, y + 2 + yOffset);
+            element.pos = new Vector2f(x + (element instanceof ButtonList ? 0 : 2), y + 2 + yOffset);
 
             if (element.size == null)
                 element.size = new Vector2f(xSize - (element instanceof ButtonList ? 0 : 4), getFontHeight(fontSize) + 4);

@@ -54,11 +54,16 @@ public abstract class iPart {
         partPanel = new Panel(new Vector2f(0, panelHeight), view.renderer);
         partPanel.elements.add(new Panel.PanelElement(partComboBox, comboWidth));
         partPanel.elements.add(new Panel.PanelElement(null, finalGap));
-        partPanel.elements.add(new Panel.PanelElement(new ButtonImage("closeButton", ConstantTextures.getTexture(ConstantTextures.WINDOW_CLOSE, 23, 23, view.loader), new Vector2f(0), new Vector2f(22, 22), new Vector2f(23, 23), view.renderer, view.loader, view.window) {
+        partPanel.elements.add(new Panel.PanelElement(new ButtonImage("closeButton", new Vector2f(0), new Vector2f(22, 22), new Vector2f(23, 23), view.renderer, view.loader, view.window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
                     removePart(part);
+            }
+
+            @Override
+            public void getImage() {
+                buttonImage = ConstantTextures.getTexture(ConstantTextures.WINDOW_CLOSE, 23, 23, view.loader);
             }
         }, closeWidth));
 
@@ -114,4 +119,31 @@ public abstract class iPart {
     public abstract void init(View3D view);
     public <T extends Serializable> void addPart(ArrayList<bog.lbpas.view3d.core.types.Thing> things, bog.lbpas.view3d.core.types.Thing thing, T p){}
 
+    public float compareNumber(float number, float valueToCompare)
+    {
+        float temp = valueToCompare;
+        if (Float.isInfinite(number))
+            return temp;
+        else if (number != temp)
+            return Float.NaN;
+        return number;
+    }
+
+    public String compareString(String string, String valueToCompare)
+    {
+        if(string == null)
+            return valueToCompare;
+        else if(string != valueToCompare)
+            return "";
+        return string;
+    }
+
+    public int compareBoolean(int bool, boolean valueToCompare)
+    {
+        if(bool == -1)
+            return valueToCompare ? 1 : 0;
+        else if(bool != (valueToCompare ? 1 : 0))
+            return 0;
+        return bool;
+    }
 }

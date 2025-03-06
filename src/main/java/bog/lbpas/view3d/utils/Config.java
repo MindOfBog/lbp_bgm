@@ -17,7 +17,6 @@ import java.util.Scanner;
  */
 public class Config {
 
-    public static String TITLE = "LBP Asset Studio";
     public static float FOV = (float) Math.toRadians(63);
     public static float Z_NEAR = 10f;
     public static float Z_FAR = 100000f;
@@ -64,6 +63,9 @@ public class Config {
     public static float CURSOR_SCALE = 1f;
     public static boolean PREVIEW_MODE = false;
     public static boolean LEGACY_FD = false;
+    public static int WINDOW_WIDTH = 1280;
+    public static int WINDOW_HEIGHT = 720;
+    public static boolean WINDOW_MAXIMIZED = false;
 
     private static String buildSettings()
     {
@@ -113,6 +115,9 @@ public class Config {
         builtString += "CURSOR_SCALE:" + CURSOR_SCALE + ";";
         builtString += "PREVIEW_MODE:" + PREVIEW_MODE + ";";
         builtString += "LEGACY_FD:" + LEGACY_FD + ";";
+        builtString += "WINDOW_WIDTH:" + WINDOW_WIDTH + ";";
+        builtString += "WINDOW_HEIGHT:" + WINDOW_HEIGHT + ";";
+        builtString += "WINDOW_MAXIMIZED:" + WINDOW_MAXIMIZED + ";";
 
         return builtString;
     }
@@ -204,6 +209,9 @@ public class Config {
                         case "CURSOR_SCALE" : CURSOR_SCALE = Float.parseFloat(data); break;
                         case "PREVIEW_MODE" : PREVIEW_MODE = Boolean.parseBoolean(data); break;
                         case "LEGACY_FD" : LEGACY_FD = Boolean.parseBoolean(data); break;
+                        case "WINDOW_WIDTH" : WINDOW_WIDTH = Integer.parseInt(data); break;
+                        case "WINDOW_HEIGHT" : WINDOW_HEIGHT = Integer.parseInt(data); break;
+                        case "WINDOW_MAXIMIZED" : WINDOW_MAXIMIZED = Boolean.parseBoolean(data); break;
                     }
                 }
 
@@ -581,6 +589,30 @@ public class Config {
                         break loop;
                     }
                     break;
+                case 43:
+                    if(!o.equals(WINDOW_WIDTH))
+                    {
+                        hasChanged = true;
+                        updateVariables();
+                        break loop;
+                    }
+                    break;
+                case 44:
+                    if(!o.equals(WINDOW_HEIGHT))
+                    {
+                        hasChanged = true;
+                        updateVariables();
+                        break loop;
+                    }
+                    break;
+                case 45:
+                    if(!o.equals(WINDOW_MAXIMIZED))
+                    {
+                        hasChanged = true;
+                        updateVariables();
+                        break loop;
+                    }
+                    break;
             }
         }
         if(variables.size() == 0)
@@ -634,5 +666,8 @@ public class Config {
         variables.add(CURSOR_SCALE);
         variables.add(PREVIEW_MODE);
         variables.add(LEGACY_FD);
+        variables.add(WINDOW_WIDTH);
+        variables.add(WINDOW_HEIGHT);
+        variables.add(WINDOW_MAXIMIZED);
     }
 }

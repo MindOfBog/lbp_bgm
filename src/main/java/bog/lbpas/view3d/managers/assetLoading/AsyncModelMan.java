@@ -299,10 +299,15 @@ public class AsyncModelMan {
                     for (Primitive submesh : primitives) {
 
                         ResourceDescriptor mat = submesh.getMaterial();
+
                         if(mat == null)
                             continue;
+
                         int material = LoadedData.getMaterial(mat, loader, textures, gmatMAP);
                         RGfxMaterial gmat = LoadedData.loadGfxMaterial(mat);
+
+                        if(gmat == null)
+                            continue;
 
                         int output = gmat.getOutputBox();
                         MaterialBox box = gmat.getBoxConnectedToPort(output, 0);
@@ -442,6 +447,8 @@ public class AsyncModelMan {
         int[] loops = polygon.loops;
         Vector3f[] polygonVertices = polygon.vertices;
 
+        ensureWindingOrder(polygonVertices, loops, transformation);
+
         BevelVertex offset = bevel.vertices.get(bevel.vertices.size() - 1);
         float bevelSize = bevel.fixedBevelSize;
         if(bevelSize == -1)
@@ -523,6 +530,32 @@ public class AsyncModelMan {
                         new Vector2f(nextVert.x, nextVert.y),
                         new Vector2f(nextNextVert.x, nextNextVert.y), offset.y * bevelSize);
 
+                Vector2f dir = new Vector2f(prevVert.x, prevVert.y).sub(new Vector2f(curVert.x, curVert.y)).normalize();
+                Vector2f dirOffset = new Vector2f(newPosPrev.x, newPosPrev.y).sub(new Vector2f(newPos.x, newPos.y)).normalize();
+
+//                boolean bugged = dir.dot(dirOffset) <= -Math.cos(90);
+//                float dist = (offset.y * bevelSize) * 0.9f;
+//                int iteration = 0;
+//                while(bugged && iteration < 100)
+//                {
+//                    newPos = Utils.offsetAndFindIntersection(
+//                            new Vector2f(prevVert.x, prevVert.y),
+//                            new Vector2f(curVert.x, curVert.y),
+//                            new Vector2f(nextVert.x, nextVert.y), dist);
+//                    print.neutral(dist + " : " + iteration);
+//                    dist *= 0.9f;
+//                    iteration++;
+//
+//                    dirOffset = new Vector2f(newPosPrev.x, newPosPrev.y).sub(new Vector2f(newPos.x, newPos.y)).normalize();
+//                    bugged = dir.dot(dirOffset) <= -Math.cos(90);
+//
+//                    if(dist > -0.01f || iteration >= 100)
+//                    {
+//                        newPos = new Vector2f(curVert.x, curVert.y);
+//                        bugged = false;
+//                    }
+//                }
+
                 Vector3f newVertex = new Vector3f(newPos.x, newPos.y, transformation.getTranslation(new Vector3f()).z + thickness).mulProject(invTransform);
 
                 vertices[l * 3] = newVertex.x;
@@ -544,58 +577,58 @@ public class AsyncModelMan {
         }
 
         //temporary bandage for buggy corners
-        for(int asd = 0; asd < 1; asd++){
-        int lo = 0;
-        for(int loop : loops)
-        {
-            for(int i = 0; i < loop; i++)
-            {
-                int p = lo + i;
-                int p1 = (i - 1);
-                if(p1 < 0)
-                    p1 = loop - 1;
-                p1 = lo + p1;
-
-                Vector3f position = new Vector3f(vertices[p * 3], vertices[p * 3 + 1], vertices[p * 3 + 2]);
-                position.mulProject(transformation, position);
-                Vector3f positionPrev = new Vector3f(vertices[p1 * 3], vertices[p1* 3 + 1], vertices[p1 * 3 + 2]);
-                positionPrev.mulProject(transformation, positionPrev);
-
-                Vector3f curVert = new Vector3f(polygonVertices[p]);
-                curVert.mulProject(transformation, curVert);
-                Vector3f prevVert = new Vector3f(polygonVertices[p1]);
-                prevVert.mulProject(transformation, prevVert);
-
-                Vector2f dir = new Vector2f(positionPrev.x, positionPrev.y).sub(new Vector2f(position.x, position.y)).normalize();
-                Vector2f dirOffset = new Vector2f(prevVert.x, prevVert.y).sub(new Vector2f(curVert.x, curVert.y)).normalize();
-
-                if(dir.dot(dirOffset) <= -Math.cos(90))
-                {
-                    float[] temp = new float[]{vertices[p1 * 3], vertices[p1* 3 + 1], vertices[p1 * 3 + 2]};
-
-                    vertices[p1 * 3] = vertices[p * 3];
-                    vertices[p1* 3 + 1] = vertices[p * 3 + 1];
-                    vertices[p1 * 3 + 2] = vertices[p * 3 + 2];
-
-                    vertices[p * 3] = temp[0];
-                    vertices[p * 3 + 1] = temp[1];
-                    vertices[p * 3 + 2] = temp[2];
-
-                    temp = new float[]{texCoords[p * 4], texCoords[p * 4 + 1], texCoords[p * 4 + 2], texCoords[p * 4 + 3]};
-
-                    texCoords[p * 4] = texCoords[p1 * 4];
-                    texCoords[p * 4 + 1] = texCoords[p1 * 4 + 1];
-                    texCoords[p * 4 + 2] = texCoords[p1 * 4 + 2];
-                    texCoords[p * 4 + 3] = texCoords[p1 * 4 + 3];
-
-                    texCoords[p1 * 4] = temp[0];
-                    texCoords[p1 * 4 + 1] = temp[1];
-                    texCoords[p1 * 4 + 2] = temp[2];
-                    texCoords[p1 * 4 + 3] = temp[3];
-                }
-            }
-            lo += loop;
-        }}
+//        for(int asd = 0; asd < 1; asd++){
+//        int lo = 0;
+//        for(int loop : loops)
+//        {
+//            for(int i = 0; i < loop; i++)
+//            {
+//                int p = lo + i;
+//                int p1 = (i - 1);
+//                if(p1 < 0)
+//                    p1 = loop - 1;
+//                p1 = lo + p1;
+//
+//                Vector3f position = new Vector3f(vertices[p * 3], vertices[p * 3 + 1], vertices[p * 3 + 2]);
+//                position.mulProject(transformation, position);
+//                Vector3f positionPrev = new Vector3f(vertices[p1 * 3], vertices[p1* 3 + 1], vertices[p1 * 3 + 2]);
+//                positionPrev.mulProject(transformation, positionPrev);
+//
+//                Vector3f curVert = new Vector3f(polygonVertices[p]);
+//                curVert.mulProject(transformation, curVert);
+//                Vector3f prevVert = new Vector3f(polygonVertices[p1]);
+//                prevVert.mulProject(transformation, prevVert);
+//
+//                Vector2f dir = new Vector2f(positionPrev.x, positionPrev.y).sub(new Vector2f(position.x, position.y)).normalize();
+//                Vector2f dirOffset = new Vector2f(prevVert.x, prevVert.y).sub(new Vector2f(curVert.x, curVert.y)).normalize();
+//
+//                if(dir.dot(dirOffset) <= -Math.cos(90))
+//                {
+//                    float[] temp = new float[]{vertices[p1 * 3], vertices[p1* 3 + 1], vertices[p1 * 3 + 2]};
+//
+//                    vertices[p1 * 3] = vertices[p * 3];
+//                    vertices[p1* 3 + 1] = vertices[p * 3 + 1];
+//                    vertices[p1 * 3 + 2] = vertices[p * 3 + 2];
+//
+//                    vertices[p * 3] = temp[0];
+//                    vertices[p * 3 + 1] = temp[1];
+//                    vertices[p * 3 + 2] = temp[2];
+//
+//                    temp = new float[]{texCoords[p * 4], texCoords[p * 4 + 1], texCoords[p * 4 + 2], texCoords[p * 4 + 3]};
+//
+//                    texCoords[p * 4] = texCoords[p1 * 4];
+//                    texCoords[p * 4 + 1] = texCoords[p1 * 4 + 1];
+//                    texCoords[p * 4 + 2] = texCoords[p1 * 4 + 2];
+//                    texCoords[p * 4 + 3] = texCoords[p1 * 4 + 3];
+//
+//                    texCoords[p1 * 4] = temp[0];
+//                    texCoords[p1 * 4 + 1] = temp[1];
+//                    texCoords[p1 * 4 + 2] = temp[2];
+//                    texCoords[p1 * 4 + 3] = temp[3];
+//                }
+//            }
+//            lo += loop;
+//        }}
 
         double[] flat = new double[polygonVertices.length * 2];
         for (int i = 0; i < polygonVertices.length; i++) {
@@ -926,7 +959,7 @@ public class AsyncModelMan {
             signedArea += (next.x - current.x) * (next.y + current.y);
         }
 
-        return transformation.determinant() < 0 ? !(signedArea > 0.0f) : signedArea > 0.0f;
+        return signedArea > 0.0f;
     }
 
     private static void reverseLoop(Vector3f[] vertices, int offset, int loopSize) {

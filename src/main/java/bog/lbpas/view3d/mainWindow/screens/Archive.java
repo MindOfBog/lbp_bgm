@@ -47,7 +47,7 @@ public class Archive extends GuiScreen {
 
     public void init()
     {
-        mapList = new DropDownTab("mapList", "MAPs", new Vector2f(7, 21 + 7), new Vector2f(200, getFontHeight(10) + 4), 10, renderer, loader, window)
+        mapList = new DropDownTab("mapList", "MAPs", new Vector2f(10, 21 + 10), new Vector2f(200, getFontHeight(10) + 4), 10, renderer, loader, window)
         {
 
         };
@@ -95,7 +95,7 @@ public class Archive extends GuiScreen {
             }
         }.deletable().draggable(), 150);
 
-        farcList = new DropDownTab("farcList", "FARCs", new Vector2f(7 * 2 + 200, 21 + 7), new Vector2f(200, getFontHeight(10) + 4), 10, renderer, loader, window)
+        farcList = new DropDownTab("farcList", "FARCs", new Vector2f(7 * 2 + 3 + 200, 21 + 10), new Vector2f(200, getFontHeight(10) + 4), 10, renderer, loader, window)
         {
 
         };
@@ -143,7 +143,7 @@ public class Archive extends GuiScreen {
             }
         }.deletable().draggable(), 150);
 
-        fartList = new DropDownTab("fartList", "BIG Profiles", new Vector2f(7 * 3 + 400, 21 + 7), new Vector2f(200, getFontHeight(10) + 4), 10, renderer, loader, window)
+        fartList = new DropDownTab("fartList", "BIG Profiles", new Vector2f(7 * 3 + 3 + 400, 21 + 10), new Vector2f(200, getFontHeight(10) + 4), 10, renderer, loader, window)
         {
 
         };
@@ -191,7 +191,7 @@ public class Archive extends GuiScreen {
             }
         }.deletable().draggable(), 150);
 
-        translations = new DropDownTab("translations", "Translations", new Vector2f(7, 21 + 7 + mapList.getFullHeight() + 7), new Vector2f(325, getFontHeight(10) + 4), 10, renderer, loader, window);
+        translations = new DropDownTab("translations", "Translations", new Vector2f(10, 21 + 10 + mapList.getFullHeight() + 7), new Vector2f(325, getFontHeight(10) + 4), 10, renderer, loader, window);
         translations.addButton("None", new Button() {
             @Override
             public void clickedButton(int button, int action, int mods) {
@@ -263,7 +263,10 @@ public class Archive extends GuiScreen {
 
             @Override
             public boolean isSelected(Object object, int index) {
-                return LoadedData.loadedTranslation == LoadedData.digestedEntriesDescriptors.get(LoadedData.digestedEntries.indexOf(object)).getGUID().getValue();
+                int ind = LoadedData.digestedEntries.indexOf(object);
+                if(ind < 0)
+                    return false;
+                return LoadedData.loadedTranslation == LoadedData.digestedEntriesDescriptors.get(ind).getGUID().getValue();
             }
 
             @Override
