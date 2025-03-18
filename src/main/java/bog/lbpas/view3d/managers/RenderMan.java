@@ -14,10 +14,7 @@ import bog.lbpas.view3d.renderer.gui.GuiRenderer;
 import bog.lbpas.view3d.renderer.gui.elements.Checkbox;
 import bog.lbpas.view3d.renderer.gui.font.FontRenderer;
 import bog.lbpas.view3d.renderer.gui.ingredients.*;
-import bog.lbpas.view3d.utils.Config;
-import bog.lbpas.view3d.utils.Transformation;
-import bog.lbpas.view3d.utils.Utils;
-import bog.lbpas.view3d.utils.print;
+import bog.lbpas.view3d.utils.*;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
 import org.joml.Vector4f;
@@ -92,6 +89,9 @@ public class RenderMan {
         ssaoBuffer = initFrameBuffer();
         ssaoTexture = initColorTex(window);
         ssaoDepth = initDepthTex(window);
+        ssaoBuffer2 = initFrameBuffer();
+        ssaoTexture2 = initColorTex(window);
+        ssaoDepth2 = initDepthTex(window);
 
         shaderOutline.createFragmentShader(Utils.loadResource("/shaders/fragment_outline.glsl"));
         shaderOutline.createVertexShader(Utils.loadResource("/shaders/vertex_outline.glsl"));
@@ -109,12 +109,13 @@ public class RenderMan {
         shaderSSAO.link();
         shaderSSAO.createUniform("transformationMatrix");
         shaderSSAO.createUniform("hasCoords");
-        shaderSSAO.createUniform("texture0");
-        shaderSSAO.createUniform("texture1");
+        shaderSSAO.createUniform("depthTexture");
+        shaderSSAO.createUniform("colorTexture");
         shaderSSAO.createUniform("zRatio");
         shaderSSAO.createUniform("camerarange");
         shaderSSAO.createUniform("screensize");
         shaderSSAO.createUniform("fogColor");
+        shaderSSAO.createUniform("start");
     }
 
     int screenBuffer = -1;
@@ -135,6 +136,10 @@ public class RenderMan {
     int ssaoBuffer = -1;
     int ssaoTexture = -1;
     int ssaoDepth = -1;
+
+    int ssaoBuffer2 = -1;
+    int ssaoTexture2 = -1;
+    int ssaoDepth2 = -1;
 
     ShaderMan shaderOutline;
 
@@ -158,6 +163,8 @@ public class RenderMan {
         outlineDT2 = RenderMan.initDepthTex(window);
         ssaoTexture = initColorTex(window);
         ssaoDepth = initDepthTex(window);
+        ssaoTexture2 = initColorTex(window);
+        ssaoDepth2 = initDepthTex(window);
     }
 
     public void render(MouseInput mouseInput, View3D mainView)
@@ -210,6 +217,7 @@ public class RenderMan {
         shaderSSAO.bind();
         GL11.glEnable(GL11.GL_DEPTH_TEST);
         GL11.glDisable(GL11.GL_BLEND);
+
         bindFrameBuffer(ssaoBuffer);
         bindColorTex(ssaoTexture);
         bindDepthTex(ssaoDepth);
@@ -226,12 +234,9 @@ public class RenderMan {
         GL13.glActiveTexture(GL13.GL_TEXTURE0);
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, screenDepth);
 
-        GL13.glActiveTexture(GL13.GL_TEXTURE1);
-        GL11.glBindTexture(GL11.GL_TEXTURE_2D, screenTexture);
-
+        shaderSSAO.setUniform("start", true);
         shaderSSAO.setUniform("hasCoords", false);
-        shaderSSAO.setUniform("texture0", 0);
-        shaderSSAO.setUniform("texture1", 1);
+        shaderSSAO.setUniform("depthTexture", 0);
         shaderSSAO.setUniform("zRatio", Config.Z_FAR / Config.Z_NEAR);
         shaderSSAO.setUniform("transformationMatrix", Transformation.createTransformationMatrix(
                 new Vector2f(),
@@ -239,23 +244,24 @@ public class RenderMan {
         ));
         shaderSSAO.setUniform("camerarange", new Vector2f(Config.Z_NEAR, Config.Z_FAR));
         shaderSSAO.setUniform("screensize", new Vector2f(window.width, window.height));
-        shaderSSAO.setUniform("fogColor", mainView.fogColor);
-
+        //ssao pass
         GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, GuiRenderer.defaultQuad.vertexCount);
 
         ShaderMan shader = guiRenderer.guiShader;
         shader.bind();
 
-        bindFrameBuffer(screenBuffer);
-        bindColorTex(screenTexture);
-        bindDepthTex(screenDepth);
+        bindFrameBuffer(ssaoBuffer2);
+        bindColorTex(ssaoTexture2);
+        bindDepthTex(ssaoDepth2);
 
-        shader.setUniform("hasCoords", true);
+        GL11.glClearColor(0,0,0,0);
+        GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
+        GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
+        clear();
+
+        shader.setUniform("hasCoords", false);
         shader.setUniform("guiTexture", 0);
-        shader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(
-                new Vector2f(),
-                new Vector2f(1, -1)
-        ));
+        shader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(new Vector2f(), new Vector2f(1)));
 
         shader.setUniform("hasColor", 0);
         shader.setUniform("smoothst", false);
@@ -264,13 +270,74 @@ public class RenderMan {
         GL13.glActiveTexture(GL13.GL_TEXTURE0);
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, ssaoTexture);
 
+        shader.setUniform("isBlur", true);
+        shader.setUniform("isGaussian", true);
+        shader.setUniform("pixelSize", 1.0f/window.height);
+        shader.setUniform("radius", Consts.GAUSSIAN_RADIUS_SSAO);
+        shader.setUniform("gaussKernel", Consts.GAUSSIAN_KERNEL_SSAO);
+        shader.setUniform("vertical", true);
+        //vertical blur pass
+        GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, GuiRenderer.defaultQuad.vertexCount);
+
+        bindFrameBuffer(ssaoBuffer);
+        bindColorTex(ssaoTexture);
+        bindDepthTex(ssaoDepth);
+
+        GL11.glClearColor(0,0,0,0);
+        GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
+        GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
+        clear();
+
+        shader.setUniform("hasCoords", false);
+        shader.setUniform("guiTexture", 0);
+        shader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(new Vector2f(), new Vector2f(1)));
+        shader.setUniform("hasColor", 0);
+        shader.setUniform("smoothst", false);
+
+        GL30.glBindVertexArray(GuiRenderer.defaultQuad.vao);
+        GL13.glActiveTexture(GL13.GL_TEXTURE0);
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, ssaoTexture2);
+
+        shader.setUniform("pixelSize", 1.0f/window.width);
+        shader.setUniform("vertical", false);
+        //horizontal blur pass
+        GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, GuiRenderer.defaultQuad.vertexCount);
+
+        shader.setUniform("isBlur", false);
+
+        bindFrameBuffer(screenBuffer);
+        bindColorTex(screenTexture);
+        bindDepthTex(screenDepth);
+
+        shaderSSAO.bind();
+        shaderSSAO.setUniform("hasCoords", true);
+        shaderSSAO.setUniform("depthTexture", 0);
+        shaderSSAO.setUniform("colorTexture", 1);
+        shaderSSAO.setUniform("transformationMatrix", Transformation.createTransformationMatrix(
+                new Vector2f(),
+                new Vector2f(1, -1)
+        ));
+
+        shaderSSAO.setUniform("hasColor", 0);
+        shaderSSAO.setUniform("smoothst", false);
+        shaderSSAO.setUniform("start", false);
+        shaderSSAO.setUniform("fogColor", mainView.fogColor);
+
+        GL30.glBindVertexArray(GuiRenderer.defaultQuad.vao);
+        GL13.glActiveTexture(GL13.GL_TEXTURE0);
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, ssaoTexture);
+
+        GL13.glActiveTexture(GL13.GL_TEXTURE1);
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, screenTexture);
+
+        //final pass
         GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, GuiRenderer.defaultQuad.vertexCount);
 
         GL20.glDisableVertexAttribArray(0);
         GL20.glDisableVertexAttribArray(1);
         GL30.glBindVertexArray(0);
 
-        shader.unbind();
+        shaderSSAO.unbind();
 
         GL11.glEnable(GL11.GL_BLEND);
     }
@@ -355,6 +422,10 @@ public class RenderMan {
 
     public void processThroughWallEntity(Entity entity) {
         this.entityRenderer.throughWallEntities.add(entity);
+    }
+
+    public void processThroughWallEntityForMousePick(Entity entity) {
+        this.entityRenderer.throughWallEntitiesMouse.add(entity);
     }
 
     public void processGuiElement(Drawable element)
@@ -536,6 +607,34 @@ public class RenderMan {
         this.startScissor(x, y, width, height);
         this.endBlur(radius, kernel);
         this.endScissor();
+    }
+
+    public void drawHUERamp(int x, int y, int width, int height) {
+        this.processGuiElement(ColorPickerPart.hueRamp(x, y, width, height, window));
+    }
+
+    public void drawSaturationLuminancePicker(int x, int y, int width, int height, Vector4f color) {
+        this.processGuiElement(ColorPickerPart.saturationLuminancePicker(x, y, width, height, color, window));
+    }
+
+    public void drawHUERamp(Vector2f pos, Vector2f size) {
+        this.processGuiElement(ColorPickerPart.hueRamp(Math.round(pos.x), Math.round(pos.y), Math.round(size.x), Math.round(size.y), window));
+    }
+
+    public void drawSaturationLuminancePicker(Vector2f pos, Vector2f size, Vector4f color) {
+        this.processGuiElement(ColorPickerPart.saturationLuminancePicker(Math.round(pos.x), Math.round(pos.y), Math.round(size.x), Math.round(size.y), color, window));
+    }
+
+    public void drawTransparencyCheckerBoard(Vector2f pos, Vector2f size) {
+        this.processGuiElement(ColorPickerPart.transparencyCheckerBoard(Math.round(pos.x), Math.round(pos.y), Math.round(size.x), Math.round(size.y), window));
+    }
+
+    public void drawHUERamp(Vector2i pos, Vector2i size) {
+        this.processGuiElement(ColorPickerPart.hueRamp(pos.x, pos.y, size.x, size.y, window));
+    }
+
+    public void drawSaturationLuminancePicker(Vector2i pos, Vector2i size, Vector4f color) {
+        this.processGuiElement(ColorPickerPart.saturationLuminancePicker(pos.x, pos.y, size.x, size.y, color, window));
     }
 
     public static int initFrameBuffer()

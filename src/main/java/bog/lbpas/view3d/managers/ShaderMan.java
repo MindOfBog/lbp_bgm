@@ -2,6 +2,7 @@ package bog.lbpas.view3d.managers;
 
 import bog.lbpas.Main;
 import bog.lbpas.view3d.core.*;
+import bog.lbpas.view3d.renderer.gui.ingredients.Blur;
 import bog.lbpas.view3d.utils.print;
 import cwlib.enums.Part;
 import cwlib.structs.mesh.Bone;
@@ -136,6 +137,43 @@ public class ShaderMan {
         setUniform(uniformName + ".specular", material.specularColor);
         setUniform(uniformName + ".hasTexture", material.hasTexture() ? 1 : 0);
         setUniform(uniformName + ".reflectance", material.reflectance);
+    }
+
+    public void createBlurUniform(String uniformName) throws Exception
+    {
+        createUniform(uniformName + ".isGaussian");
+        createListUniform(uniformName + ".gaussKernel", 41);
+        createUniform(uniformName + ".pixelSize");
+        createUniform(uniformName + ".radius");
+        createUniform(uniformName + ".vertical");
+    }
+
+    public void setUniform(String uniformName, Blur blur, float pixelSize, boolean vertical)
+    {
+        setUniform(uniformName + ".isGaussian", blur.gaussian);
+        if(blur.gaussian)
+            setUniform(uniformName + ".gaussKernel", blur.gaussKernel);
+        setUniform(uniformName + ".pixelSize", pixelSize);
+        setUniform(uniformName + ".radius", blur.radius);
+        setUniform(uniformName + ".vertical", vertical);
+    }
+
+    public void setUniform(String uniformName, float pixelSize, boolean vertical)
+    {
+        setUniform(uniformName + ".pixelSize", pixelSize);
+        setUniform(uniformName + ".vertical", vertical);
+    }
+
+    public void createDimensionUniform(String uniformName) throws Exception
+    {
+        createUniform(uniformName + ".position");
+        createUniform(uniformName + ".size");
+    }
+
+    public void setUniform(String uniformName, Vector2i pos, Vector2i size)
+    {
+        setUniform(uniformName + ".position", pos);
+        setUniform(uniformName + ".size", size);
     }
 
     public void setUniform(String uniformName, Matrix4f value)

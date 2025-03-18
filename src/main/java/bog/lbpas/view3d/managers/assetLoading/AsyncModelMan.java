@@ -2,25 +2,32 @@ package bog.lbpas.view3d.managers.assetLoading;
 
 import bog.lbpas.view3d.core.Model;
 import bog.lbpas.view3d.core.Texture;
+import bog.lbpas.view3d.core.types.Thing;
 import bog.lbpas.view3d.mainWindow.ConstantTextures;
 import bog.lbpas.view3d.mainWindow.LoadedData;
 import bog.lbpas.view3d.utils.Utils;
 import bog.lbpas.view3d.utils.print;
+import cwlib.enums.PrimitiveType;
 import cwlib.resources.RBevel;
 import cwlib.resources.RGfxMaterial;
 import cwlib.resources.RMesh;
+import cwlib.resources.RStaticMesh;
 import cwlib.structs.bevel.BevelVertex;
 import cwlib.structs.gmat.MaterialBox;
 import cwlib.structs.mesh.Primitive;
+import cwlib.structs.staticmesh.StaticMeshInfo;
+import cwlib.structs.staticmesh.StaticPrimitive;
 import cwlib.structs.things.components.shapes.Polygon;
 import cwlib.structs.things.parts.PShape;
 import cwlib.types.data.ResourceDescriptor;
 import io.github.earcut4j.Earcut;
 import org.joml.*;
+import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
 import java.lang.Math;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class AsyncModelMan {
@@ -28,6 +35,7 @@ public class AsyncModelMan {
     private ArrayList<Model> toLoad;
     private ArrayList<ModelDataOBJ> toDigestOBJ;
     private ArrayList<ModelDataRMesh> toDigestRMesh;
+    private ArrayList<ModelDataStaticMesh> toDigestStaticMesh;
     private ArrayList<ModelDataShape> toDigestShape;
     private ObjectLoader loader;
 
@@ -36,6 +44,7 @@ public class AsyncModelMan {
     public AsyncModelMan(ObjectLoader loader) {
         toDigestOBJ = new ArrayList<>();
         toDigestRMesh = new ArrayList<>();
+        toDigestStaticMesh = new ArrayList<>();
         toDigestShape = new ArrayList<>();
         toLoad = new ArrayList<>();
         this.loader = loader;
@@ -43,7 +52,7 @@ public class AsyncModelMan {
 
     public int digestionCount()
     {
-        return toDigestShape.size() + toDigestRMesh.size() + toDigestOBJ.size();
+        return toDigestShape.size() + toDigestRMesh.size() + toDigestStaticMesh.size() + toDigestOBJ.size();
     }
 
     public int loadingCount()
@@ -53,7 +62,7 @@ public class AsyncModelMan {
 
     public boolean isLoadingSomething()
     {
-        return digestionCount() != 0 || loadingCount() != 0;
+        return digestionCount() > 1 || loadingCount() >= 1;
     }
 
     public void loadDigestedMeshes()
@@ -97,6 +106,7 @@ public class AsyncModelMan {
     {
         digestionOBJ();
         digestionRMesh();
+        digestionStaticMesh();
 
         for(int i = toDigestShape.size() - 1; i >= 0; i--)
         {
@@ -247,7 +257,7 @@ public class AsyncModelMan {
                 totalDigestionCount++;
             }catch (Exception e)
             {
-                e.printStackTrace();
+                print.stackTrace(e);
             }
         }
     }
@@ -419,9 +429,10 @@ public class AsyncModelMan {
                 model.joints = joints;
                 model.weights = weights;
                 model.tangents = tangentsArr;
-                model.gmats = materialArray;
                 model.hasBones = weights.length > 0;
                 model.mesh = mesh;
+
+                model.gmats = materialArray;
                 model.material.textures = textures;
                 model.material.texCount = texCount;
                 model.material.gmatMAP = gmatMAP;
@@ -435,7 +446,179 @@ public class AsyncModelMan {
             {
                 toDigestRMesh.remove(p);
                 totalDigestionCount++;
-                e.printStackTrace();
+                print.stackTrace(e);
+            }
+        }
+    }
+
+    private void digestionStaticMesh()
+    {
+        for(int p = toDigestStaticMesh.size() - 1; p >= 0; p--)
+        {
+            try
+            {
+                RStaticMesh mesh = toDigestStaticMesh.get(p).mesh;
+
+                if(mesh == null) {
+                    toDigestStaticMesh.remove(p);
+                    totalDigestionCount++;
+                    continue;
+                }
+
+                Vector3f[] vertices = mesh.getVertices();
+                Vector3f[] normals = mesh.getNormals();
+                Vector2f[] UV0 = mesh.getUV0();
+                Vector2f[] UV1 = mesh.getUV1();
+                int[] indices = mesh.getIndices();
+
+                StaticMeshInfo info = mesh.getMeshInfo();
+                StaticPrimitive[] primitives = info.primitives;
+
+                Model model = new Model();
+
+                ArrayList<Float> newVertices = new ArrayList<>();
+                ArrayList<Float> newNormals = new ArrayList<>();
+                ArrayList<Float> newTexCoords = new ArrayList<>();
+                ArrayList<Integer> newIndices = new ArrayList<>();
+                ArrayList<Integer> newMaterials = new ArrayList<>();
+
+                Vector2i[] gmatMAP = new Vector2i[100];
+                for(int i = 0; i < gmatMAP.length; i++)
+                    gmatMAP[i] = new Vector2i(-1);
+
+                Texture[] textures = new Texture[32];
+
+                int index = 0;
+
+                for(StaticPrimitive primitive : primitives)
+                {
+                    int material = LoadedData.getMaterial(primitive.gmat, loader, textures, gmatMAP);
+                    int[] faces = mesh.getTriangles(primitive.indexStart, primitive.numIndices, primitive.type);
+
+                    for(int i = 0; i < faces.length / 3; i++)
+                    {
+                        for(int o = 0; o < 3; o++)
+                        {
+                            int indexRelative = faces[i * 3 + o];
+                            int indexAbsolute = primitive.vertexStart + indexRelative;
+
+                            Vector3f vert = vertices[indexAbsolute];
+
+                            newVertices.add(vert == null ? 0.0f : vert.x);
+                            newVertices.add(vert == null ? 0.0f : vert.y);
+                            newVertices.add(vert == null ? 0.0f : vert.z);
+
+                            Vector3f normal = normals[indexAbsolute];
+
+                            newNormals.add(normal == null ? 0.0f : normal.x);
+                            newNormals.add(normal == null ? 0.0f : normal.y);
+                            newNormals.add(normal == null ? 0.0f : normal.z);
+
+                            Vector2f uv0 = UV0[indexAbsolute];
+                            Vector2f uv1 = UV1[indexAbsolute];
+
+                            newTexCoords.add(uv0 == null ? 0.0f : uv0.x);
+                            newTexCoords.add(uv0 == null ? 0.0f : uv0.y);
+                            newTexCoords.add(uv1 == null ? 0.0f : uv1.x);
+                            newTexCoords.add(uv1 == null ? 0.0f : uv1.y);
+
+                            newMaterials.add(material);
+
+                            newIndices.add(index);
+                            index++;
+                        }
+
+                        int texCount = 0;
+                        for(Texture t : textures)
+                            if(t != null)
+                                texCount++;
+                            else
+                                break;
+                        int gmatCount = 0;
+                        for(Vector2i v : gmatMAP)
+                            if(v.x != -1)
+                                gmatCount++;
+                            else
+                                break;
+
+                        if(texCount >= 25 || gmatCount >= 75)
+                        {
+                            model.vertices = Utils.toPrimitive(newVertices);
+                            model.normals = Utils.toPrimitive(newNormals);
+                            model.textureCoords = Utils.toPrimitive(newTexCoords);
+
+                            model.indices = newIndices.stream().mapToInt((Integer v) -> v).toArray();
+                            model.hasBones = false;
+                            model.staticMesh = mesh;
+
+                            model.gmats = newMaterials.stream().mapToInt((Integer v) -> v).toArray();
+                            model.material.textures = textures;
+                            model.material.texCount = texCount;
+                            model.material.gmatMAP = gmatMAP;
+                            model.material.gmatCount = gmatCount;
+
+                            toLoad.add(model);
+                            toDigestStaticMesh.get(p).models.add(model);
+
+                            model = new Model();
+
+                            newVertices = new ArrayList<>();
+                            newNormals = new ArrayList<>();
+                            newTexCoords = new ArrayList<>();
+                            newIndices = new ArrayList<>();
+                            newMaterials = new ArrayList<>();
+                            index = 0;
+                            gmatMAP = new Vector2i[100];
+                            for(int k = 0; k < gmatMAP.length; k++)
+                                gmatMAP[k] = new Vector2i(-1);
+
+                            textures = new Texture[32];
+                        }
+                    }
+                }
+
+                if(!newVertices.isEmpty())
+                {
+                    int texCount = 0;
+                    for(Texture t : textures)
+                        if(t != null)
+                            texCount++;
+                        else
+                            break;
+                    int gmatCount = 0;
+                    for(Vector2i v : gmatMAP)
+                        if(v.x != -1)
+                            gmatCount++;
+                        else
+                            break;
+
+                    model.vertices = Utils.toPrimitive(newVertices);
+                    model.normals = Utils.toPrimitive(newNormals);
+                    model.textureCoords = Utils.toPrimitive(newTexCoords);
+
+                    model.indices = newIndices.stream().mapToInt((Integer v) -> v).toArray();
+                    model.hasBones = false;
+                    model.staticMesh = mesh;
+
+                    model.gmats = newMaterials.stream().mapToInt((Integer v) -> v).toArray();
+                    model.material.textures = textures;
+                    model.material.texCount = texCount;
+                    model.material.gmatMAP = gmatMAP;
+                    model.material.gmatCount = gmatCount;
+
+                    toLoad.add(model);
+                    toDigestStaticMesh.get(p).models.add(model);
+                    toDigestStaticMesh.get(p).thing.reloadModel();
+                }
+
+                toDigestStaticMesh.remove(p);
+                totalDigestionCount++;
+            }
+            catch (Exception e)
+            {
+                toDigestStaticMesh.remove(p);
+                totalDigestionCount++;
+                print.stackTrace(e);
             }
         }
     }
@@ -472,7 +655,7 @@ public class AsyncModelMan {
                 material =  LoadedData.getMaterial(gmat, loader, textures, gmatMAP);
             }
             else material = LoadedData.getMaterial(parentGmat, loader, textures, gmatMAP);
-        }catch (Exception e){e.printStackTrace();}
+        }catch (Exception e){print.stackTrace(e);}
 
         int count = (polygonVertices.length * bevel.vertices.size()) + (polygonVertices.length * (bevel.vertices.size() - 1));
 
@@ -819,7 +1002,7 @@ public class AsyncModelMan {
                 normas[triIndC + 2] = normalC.z;
             }
 
-            bevels[i] = new Model(0, null, 0);
+            bevels[i] = new Model(0, null, 0, null);
             bevels[i].vertices = vertis;
             bevels[i].textureCoords = textureCoords;
             bevels[i].normals = normas;
@@ -835,7 +1018,7 @@ public class AsyncModelMan {
                     gmts[g] = mat;
                 bevels[i].gmats = gmts;
             } catch (Exception e) {
-                e.printStackTrace();
+                print.stackTrace(e);
             }
         }
 
@@ -983,6 +1166,11 @@ public class AsyncModelMan {
         toDigestRMesh.add(data);
     }
 
+    public void digest(ModelDataStaticMesh data)
+    {
+        toDigestStaticMesh.add(data);
+    }
+
     public void digest(ModelDataShape data)
     {
         toDigestShape.add(data);
@@ -1006,6 +1194,18 @@ public class AsyncModelMan {
         public ModelDataRMesh(Model model, RMesh mesh) {
             this.model = model;
             this.mesh = mesh;
+        }
+    }
+    public static class ModelDataStaticMesh
+    {
+        public ArrayList<Model> models;
+        public RStaticMesh mesh;
+        public Thing thing;
+
+        public ModelDataStaticMesh(ArrayList<Model> models, RStaticMesh mesh, Thing thing) {
+            this.models = models;
+            this.mesh = mesh;
+            this.thing = thing;
         }
     }
     public static class ModelDataShape

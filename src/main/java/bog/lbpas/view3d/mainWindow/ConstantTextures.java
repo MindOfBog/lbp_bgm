@@ -48,6 +48,8 @@ public class ConstantTextures {
 
     public static HashMap<String, Integer> VISIBILITY;
     public static HashMap<String, Integer> VISIBILITY_OFF;
+    public static HashMap<String, Integer> FRONT_VIEW;
+    public static HashMap<String, Integer> FRONT_VIEW_OFF;
     public static HashMap<String, Integer> COPY;
     public static HashMap<String, Integer> PASTE;
     public static HashMap<String, Integer> DRAG;
@@ -126,6 +128,10 @@ public class ConstantTextures {
         VISIBILITY.put("/textures/ui/visibility.svg", -1);
         VISIBILITY_OFF = new HashMap<>();
         VISIBILITY_OFF.put("/textures/ui/visibility_off.svg", -1);
+        FRONT_VIEW = new HashMap<>();
+        FRONT_VIEW.put("/textures/ui/front_view.svg", -1);
+        FRONT_VIEW_OFF = new HashMap<>();
+        FRONT_VIEW_OFF.put("/textures/ui/front_view_off.svg", -1);
         COPY = new HashMap<>();
         COPY.put("/textures/ui/copy.svg", -1);
         PASTE = new HashMap<>();

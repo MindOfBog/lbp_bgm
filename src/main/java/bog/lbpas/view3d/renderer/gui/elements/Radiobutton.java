@@ -54,8 +54,8 @@ public class Radiobutton extends Checkbox{
     }
 
     @Override
-    public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement) {
-        super.onClick(mouseInput, pos, button, action, mods, overElement);
+    public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement, boolean focusedOther) {
+        super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
         if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
             check();

@@ -44,24 +44,19 @@ public class MousePicker {
 
     private Vector3f calculateMouseRay()
     {
-        float mouseX = (float)mouse.currentPos.x;
-        float mouseY = (float)mouse.currentPos.y;
-        Vector2f normalizedCoords = getNormalizedDeviceCoords(mouseX, mouseY);
-        Vector4f clipCoords = new Vector4f(normalizedCoords.x, normalizedCoords.y, -1f, 1f);
-        Vector4f eyeCoords = toEyeCoords(clipCoords);
-        Vector3f worldRay = toWorldCoords(eyeCoords);
-        return worldRay;
+        return calculateMouseRay((float)mouse.currentPos.x, (float)mouse.currentPos.y);
     }
 
     private Vector3f calculateMouseRay(float mouseX, float mouseY)
     {
         Vector2f normalizedCoords = getNormalizedDeviceCoords(mouseX, mouseY);
+
         Vector4f clipCoords = new Vector4f(normalizedCoords.x, normalizedCoords.y, -1f, 1f);
         Vector4f eyeCoords = toEyeCoords(clipCoords);
         Vector3f worldRay = toWorldCoords(eyeCoords);
+
         return worldRay;
     }
-
     private Vector3f toWorldCoords(Vector4f eyeCoords)
     {
         Matrix4f invertedView = viewMatrix.invert();
@@ -78,10 +73,14 @@ public class MousePicker {
     }
     private Vector2f getNormalizedDeviceCoords(float mouseX, float mouseY)
     {
-        return new Vector2f((2f * mouseX) / window.width - 1f, -((2f * mouseY) / window.height - 1f));
+        float zoom = Config.FRONT_VIEW ? 1 : Math.max(camera.getPos().z / 1000f, 0.0f);
+        float orthoWidth = Config.FRONT_VIEW ? 1 : window.width == 0 ? zoom : (float) window.width * zoom;
+        float orthoHeight = Config.FRONT_VIEW ? 1 : window.height == 0 ? zoom : (float) window.height * zoom;
+
+        return new Vector2f(((2f * mouseX) / window.width - 1f) * (Config.FRONT_VIEW ? orthoWidth : 1), -((2f * mouseY) / window.height - 1f) * (Config.FRONT_VIEW ? orthoHeight : 1));
     }
     public Vector3f getPointOnRay(Vector3f ray, float distance) {
-        Vector3f camPos = camera.pos;
+        Vector3f camPos = camera.getPos();
         Vector3f start = new Vector3f(camPos.x, camPos.y, camPos.z);
         Vector3f scaledRay = new Vector3f(ray.x * distance, ray.y * distance, ray.z * distance);
         return start.add(scaledRay);
@@ -94,14 +93,14 @@ public class MousePicker {
         if (currentRay.x == 0)
             return null;
 
-        float t = (xPos - camera.pos.x) / currentRay.x;
+        float t = (xPos - camera.getPos().x) / currentRay.x;
 
         if (t < 0)
             return null;
 
         intersectionPoint.set(currentRay)
                 .mul(t)
-                .add(camera.pos);
+                .add(camera.getPos());
 
         return intersectionPoint;
     }
@@ -113,35 +112,59 @@ public class MousePicker {
         if (currentRay.y == 0)
             return null;
 
-        float t = (yPos - camera.pos.y) / currentRay.y;
+        float t = (yPos - camera.getPos().y) / currentRay.y;
 
         if (t < 0)
             return null;
 
         intersectionPoint.set(currentRay)
                 .mul(t)
-                .add(camera.pos);
+                .add(camera.getPos());
 
         return intersectionPoint;
     }
 
     public Vector3f getPointOnPlaneZ(float zPos)
     {
-        Vector3f intersectionPoint = new Vector3f();
+        if(Config.FRONT_VIEW)
+        {
+            float zoom = Math.max(camera.getPos().z / 1000f, 0.0f);
+            Vector3f point = new Vector3f(camera.getPos()).add((float) ((mouse.currentPos.x - window.width/2) * zoom), (float) ((1 - mouse.currentPos.y + window.height/2)  * zoom),0);
 
-        if (currentRay.z == 0)
-            return null;
+            return new Vector3f(point.x, point.y, zPos);
+        }
+        else
+        {
+            Vector3f intersectionPoint = new Vector3f();
 
-        float t = (zPos - camera.pos.z) / currentRay.z;
+            if (currentRay.z == 0)
+                return null;
 
-        if (t < 0)
-            return null;
+            float t = (zPos - camera.getPos().z) / currentRay.z;
 
-        intersectionPoint.set(currentRay)
-                .mul(t)
-                .add(camera.pos);
+            if (t < 0)
+                return null;
 
-        return intersectionPoint;
+            intersectionPoint.set(currentRay)
+                    .mul(t)
+                    .add(camera.getPos());
+
+            return intersectionPoint;
+        }
+    }
+
+    public Vector3f getPointOnPlaneAbstract(Vector3f pos, Vector3f normal) {
+        float denom = new Vector3f(currentRay).dot(normal);
+
+        if (Math.abs(denom) > 1e-6) {
+            Vector3f diff = new Vector3f(pos).sub(camera.getPos());
+            float t = diff.dot(normal) / denom;
+
+            if (t >= 0)
+                return new Vector3f().set(camera.getPos()).add(new Vector3f(currentRay).mul(t));
+        }
+
+        return null;
     }
 
 }

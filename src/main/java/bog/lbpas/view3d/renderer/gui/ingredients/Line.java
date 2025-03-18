@@ -62,7 +62,7 @@ public class Line extends Drawable{
     }
 
     @Override
-    public int getType() {
-        return 2;
+    public Type getType() {
+        return Type.LINE;
     }
 }

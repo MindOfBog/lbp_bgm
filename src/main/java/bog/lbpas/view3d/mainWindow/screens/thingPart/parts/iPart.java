@@ -39,7 +39,7 @@ public abstract class iPart {
             }
 
             @Override
-            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overOther) {
+            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overOther, boolean focusedOther) {
 
                 if(action == GLFW.GLFW_RELEASE && !isMouseOverElement(pos) && tab.isMouseOverElement(pos))
                 {
@@ -48,7 +48,17 @@ public abstract class iPart {
                         e.setFocused(false);
                 }
 
-                super.onClick(mouseInput, pos, button, action, mods, overOther);
+                super.onClick(mouseInput, pos, button, action, mods, overOther, focusedOther);
+            }
+
+            @Override
+            public void onExtend() {
+                super.onExtend();
+
+                if(!extended)
+                    return;
+                
+                onExtendPart();
             }
         };
         partPanel = new Panel(new Vector2f(0, panelHeight), view.renderer);
@@ -146,4 +156,6 @@ public abstract class iPart {
             return 0;
         return bool;
     }
+
+    public void onExtendPart(){}
 }

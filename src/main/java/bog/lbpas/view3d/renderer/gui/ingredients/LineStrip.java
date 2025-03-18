@@ -125,7 +125,7 @@ public class LineStrip extends Drawable{
     }
 
     @Override
-    public int getType() {
-        return 3;
+    public Type getType() {
+        return Type.LINE_STRIP;
     }
 }

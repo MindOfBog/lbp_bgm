@@ -5,28 +5,21 @@ import bog.lbpas.view3d.core.Transformation3D;
 import bog.lbpas.view3d.core.types.Entity;
 import bog.lbpas.view3d.core.types.Thing;
 import bog.lbpas.view3d.mainWindow.ConstantTextures;
-import bog.lbpas.view3d.mainWindow.LoadedData;
 import bog.lbpas.view3d.mainWindow.View3D;
 import bog.lbpas.view3d.managers.MouseInput;
 import bog.lbpas.view3d.renderer.gui.GuiScreen;
 import bog.lbpas.view3d.renderer.gui.cursor.ECursor;
+import bog.lbpas.view3d.renderer.gui.elements.*;
 import bog.lbpas.view3d.renderer.gui.elements.Button;
-import bog.lbpas.view3d.renderer.gui.elements.DropDownTab;
 import bog.lbpas.view3d.renderer.gui.elements.Panel;
-import bog.lbpas.view3d.renderer.gui.elements.Textbox;
 import bog.lbpas.view3d.renderer.gui.ingredients.LineStrip;
-import bog.lbpas.view3d.utils.Cursors;
-import bog.lbpas.view3d.utils.MousePicker;
-import bog.lbpas.view3d.utils.Utils;
-import bog.lbpas.view3d.utils.print;
+import bog.lbpas.view3d.utils.*;
 import cwlib.enums.Part;
 import cwlib.resources.RBevel;
 import cwlib.structs.things.parts.PGeneratedMesh;
 import cwlib.structs.things.parts.PShape;
-import org.joml.Matrix4f;
-import org.joml.Vector2d;
-import org.joml.Vector2f;
-import org.joml.Vector3f;
+import org.joml.*;
+import org.joml.Math;
 import org.lwjgl.glfw.GLFW;
 
 import java.awt.*;
@@ -53,6 +46,8 @@ public class MaterialEditing extends GuiScreen {
 
     Textbox xPos;
     Textbox yPos;
+
+    ButtonImage frontView;
 
     public void init()
     {
@@ -203,6 +198,38 @@ public class MaterialEditing extends GuiScreen {
         yPosPanel.elements.add(new Panel.PanelElement(yPos, 0.9f));
 
         this.guiElements.add(shapeDataTab);
+
+        frontView = new ButtonImage("frontView", new Vector2f(window.width - 40, 21 + 10), new Vector2f(30, 30), new Vector2f(26, 24), renderer, loader, window) {
+            @Override
+            public void clickedButton(int button, int action, int mods) {
+                if(action == GLFW.GLFW_PRESS)
+                {
+                    Config.FRONT_VIEW = !Config.FRONT_VIEW;
+                    this.buttonImage = Config.FRONT_VIEW ? ConstantTextures.getTexture(ConstantTextures.FRONT_VIEW, org.joml.Math.round(this.imageSize.x), org.joml.Math.round(this.imageSize.y), loader) : ConstantTextures.getTexture(ConstantTextures.FRONT_VIEW_OFF, org.joml.Math.round(this.imageSize.x), org.joml.Math.round(this.imageSize.y), loader);
+                }
+            }
+
+            @Override
+            public void secondThread() {
+                super.secondThread();
+
+                this.pos.x = window.width - 40;
+            }
+
+            @Override
+            public void resize() {
+                super.resize();
+
+                this.pos.x = window.width - 40;
+            }
+
+            @Override
+            public void getImage() {
+                buttonImage = Config.FRONT_VIEW ? ConstantTextures.getTexture(ConstantTextures.FRONT_VIEW, org.joml.Math.round(this.imageSize.x), org.joml.Math.round(this.imageSize.y), loader) : ConstantTextures.getTexture(ConstantTextures.FRONT_VIEW_OFF, org.joml.Math.round(this.imageSize.x), Math.round(this.imageSize.y), loader);
+            }
+        };
+
+        this.guiElements.add(frontView);
     }
 
     PShape shape;
@@ -447,12 +474,21 @@ public class MaterialEditing extends GuiScreen {
 
                     if(screenPos != null && screenPos.z >= 0)
                     {
-                        MouseInput mi = new MouseInput(new View3D(window));
-                        mi.previousPos = new Vector2d(screenPos.x, screenPos.y);
-                        mi.currentPos = mi.previousPos;
-                        MousePicker mp = new MousePicker(mi, window);
-                        mp.update(mainView.camera);
-                        Vector3f worldPos = mp.getPointOnPlaneZ(entity.getTransformation().getTranslation(new Vector3f()).z + shape.thickness);
+                        Vector3f worldPos = new Vector3f();
+
+                        for (int i : this.selectedVertices)
+                        {
+                            Vector3f position = new Vector3f(shape.polygon.vertices[i]);
+
+                            Matrix4f m = new Matrix4f(entity.getTransformation());
+
+                            position.mulProject(m);
+
+                            worldPos.add(position);
+                        }
+
+                        worldPos.div(this.selectedVertices.size());
+                        worldPos.add(0, 0, shape.thickness);
 
                         vertexTool.updateModels(mainView, worldPos);
                         vertexTool.testForMouse(true, mainView.camera, mouseInput.mousePicker, true, false, false);
@@ -460,22 +496,14 @@ public class MaterialEditing extends GuiScreen {
                         vertexTool.render(true, true, true, false, false, false, false, false, false, false, false, -1, window, loader, renderer, mouseInput);
 
                         if(vertexTool.isSelected()) {
-                            switch (vertexTool.selected) {
-                                //0,1,2   pos
-                                //3,4,5   rot
-                                //6,7,8,9 scale
-                                case 0:
-                                    //x pos
+                            switch(Transformation3D.ToolType.fromValue(vertexTool.selected)) {
+                                case POSITION_X:
                                 {
-                                    boolean failed = false;
-
-                                    if ((mainView.camera.getWrappedRotation().x < 45f && mainView.camera.getWrappedRotation().x > -45f) ||
-                                            (mainView.camera.getWrappedRotation().x > 135f && mainView.camera.getWrappedRotation().x < -135f))
+                                    if(Config.FRONT_VIEW)
                                     {
                                         Vector3f currentPosOnZ = mouseInput.mousePicker.getPointOnPlaneZ(worldPos.z);
-                                        if(currentPosOnZ == null || vertexTool.initPosZ == null)
-                                            failed = true;
-                                        else
+
+                                        if(currentPosOnZ != null)
                                         {
                                             for (int i : this.selectedVertices)
                                             {
@@ -484,24 +512,25 @@ public class MaterialEditing extends GuiScreen {
                                                 Matrix4f m = new Matrix4f(entity.getTransformation());
 
                                                 position.mulProject(m);
-                                                position.x += currentPosOnZ.x - vertexTool.initPosZ.x;
+                                                position.x += currentPosOnZ.x - vertexTool.initPosXY.x;
                                                 position.mulProject(m.invert());
 
                                                 shape.polygon.vertices[i] = position;
                                                 reloadMesh();
                                             }
-                                            vertexTool.initPosZ = currentPosOnZ;
+
+                                            vertexTool.initPosXY = currentPosOnZ;
                                         }
                                     }
                                     else
-                                        failed = true;
-
-                                    if(failed)
                                     {
-                                        Vector3f currentPosOnY = mouseInput.mousePicker.getPointOnPlaneY(worldPos.y);
+                                        Vector3f normal = new Vector3f(new Vector3f(0, mainView.camera.getPos().y, mainView.camera.getPos().z)).sub(new Vector3f(0, worldPos.y, worldPos.z)).normalize();
+                                        Vector3f intersection = mouseInput.mousePicker.getPointOnPlaneAbstract(worldPos, normal);
 
-                                        if(currentPosOnY != null && vertexTool.initPosY != null)
+                                        if(intersection != null)
                                         {
+                                            Vector3f pos = Utils.getClosestPointOnLine(worldPos, new Vector3f(1, 0, 0), intersection);
+
                                             for (int i : this.selectedVertices)
                                             {
                                                 Vector3f position = new Vector3f(shape.polygon.vertices[i]);
@@ -509,29 +538,24 @@ public class MaterialEditing extends GuiScreen {
                                                 Matrix4f m = new Matrix4f(entity.getTransformation());
 
                                                 position.mulProject(m);
-                                                position.x += currentPosOnY.x - vertexTool.initPosY.x;
+                                                position.x += (pos.x - vertexTool.initPosX.x);
                                                 position.mulProject(m.invert());
 
                                                 shape.polygon.vertices[i] = position;
                                                 reloadMesh();
                                             }
-                                            vertexTool.initPosY = currentPosOnY;
+                                            vertexTool.initPosX = pos;
                                         }
                                     }
                                 }
                                 break;
-                                case 1:
-                                    //y pos
+                                case POSITION_Y:
                                 {
-                                    boolean failed = false;
-
-                                    if ((mainView.camera.getWrappedRotation().y < 45f && mainView.camera.getWrappedRotation().y > -45f) ||
-                                            (mainView.camera.getWrappedRotation().y > 135f && mainView.camera.getWrappedRotation().y < -135f))
+                                    if(Config.FRONT_VIEW)
                                     {
                                         Vector3f currentPosOnZ = mouseInput.mousePicker.getPointOnPlaneZ(worldPos.z);
-                                        if(currentPosOnZ == null || vertexTool.initPosZ == null)
-                                            failed = true;
-                                        else
+
+                                        if(currentPosOnZ != null)
                                         {
                                             for (int i : this.selectedVertices)
                                             {
@@ -540,24 +564,25 @@ public class MaterialEditing extends GuiScreen {
                                                 Matrix4f m = new Matrix4f(entity.getTransformation());
 
                                                 position.mulProject(m);
-                                                position.y += currentPosOnZ.y - vertexTool.initPosZ.y;
+                                                position.y += currentPosOnZ.y - vertexTool.initPosXY.y;
                                                 position.mulProject(m.invert());
 
                                                 shape.polygon.vertices[i] = position;
                                                 reloadMesh();
                                             }
-                                            vertexTool.initPosZ = currentPosOnZ;
+
+                                            vertexTool.initPosXY = currentPosOnZ;
                                         }
                                     }
                                     else
-                                        failed = true;
-
-                                    if(failed)
                                     {
-                                        Vector3f currentPosOnX = mouseInput.mousePicker.getPointOnPlaneX(worldPos.x);
+                                        Vector3f normal = new Vector3f(new Vector3f(mainView.camera.getPos().x, 0, mainView.camera.getPos().z)).sub(new Vector3f(worldPos.x, 0, worldPos.z)).normalize();
+                                        Vector3f intersection = mouseInput.mousePicker.getPointOnPlaneAbstract(worldPos, normal);
 
-                                        if(currentPosOnX != null && vertexTool.initPosX != null)
+                                        if(intersection != null)
                                         {
+                                            Vector3f pos = Utils.getClosestPointOnLine(worldPos, new Vector3f(0, 1, 0), intersection);
+
                                             for (int i : this.selectedVertices)
                                             {
                                                 Vector3f position = new Vector3f(shape.polygon.vertices[i]);
@@ -565,19 +590,43 @@ public class MaterialEditing extends GuiScreen {
                                                 Matrix4f m = new Matrix4f(entity.getTransformation());
 
                                                 position.mulProject(m);
-                                                position.y += currentPosOnX.y - vertexTool.initPosX.y;
+                                                position.y += (pos.y - vertexTool.initPosY.y);
                                                 position.mulProject(m.invert());
 
                                                 shape.polygon.vertices[i] = position;
                                                 reloadMesh();
                                             }
-                                            vertexTool.initPosX = currentPosOnX;
+                                            vertexTool.initPosY = pos;
                                         }
                                     }
                                 }
                                 break;
-                                case 5:
-                                    //z rot
+                                case POSITION_XY:
+                                {
+                                    Vector3f currentPosOnZ = mouseInput.mousePicker.getPointOnPlaneZ(worldPos.z);
+
+                                    if(currentPosOnZ != null)
+                                    {
+                                        for (int i : this.selectedVertices)
+                                        {
+                                            Vector3f position = new Vector3f(shape.polygon.vertices[i]);
+
+                                            Matrix4f m = new Matrix4f(entity.getTransformation());
+
+                                            position.mulProject(m);
+                                            position.x += currentPosOnZ.x - vertexTool.initPosXY.x;
+                                            position.y += currentPosOnZ.y - vertexTool.initPosXY.y;
+                                            position.mulProject(m.invert());
+
+                                            shape.polygon.vertices[i] = position;
+                                            reloadMesh();
+                                        }
+
+                                        vertexTool.initPosXY = currentPosOnZ;
+                                    }
+                                }
+                                break;
+                                case ROTATION_Z:
                                 {
 
                                 }

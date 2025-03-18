@@ -619,13 +619,13 @@ public class ElementList extends Element{
     }
 
     @Override
-    public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overOther) {
+    public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overOther, boolean focusedOther) {
 
         float maxScroll = getFullHeight() + 4;
 
         for(Element element : elements)
             if(!((element instanceof ComboBox ? ((ComboBox)element).isMouseOverTab(mouseInput) : element instanceof Panel ? ((Panel)element).isMouseOverPanel(mouseInput) : element.isMouseOverElement(mouseInput)) && (mouseInput.currentPos.y > this.pos.y + this.size.y || mouseInput.currentPos.y < this.pos.y)))
-                element.onClick(mouseInput, pos, button, action, mods, overOther);
+                element.onClick(mouseInput, pos, button, action, mods, overOther, focusedOther);
 
         boolean hoveringScroll = pos.x > this.pos.x + size.x - 4f - size.x * 0.05f &&
                 pos.x < this.pos.x + size.x &&
@@ -640,7 +640,7 @@ public class ElementList extends Element{
                 scrolling = false;
         }
 
-        super.onClick(mouseInput, pos, button, action, mods, overOther);
+        super.onClick(mouseInput, pos, button, action, mods, overOther, focusedOther);
     }
 
     @Override

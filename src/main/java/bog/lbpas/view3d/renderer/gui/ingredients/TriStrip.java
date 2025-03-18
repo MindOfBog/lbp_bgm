@@ -19,7 +19,7 @@ public class TriStrip extends Drawable{
     public boolean smoothstep = false;
 
     @Override
-    public int getType() {
-        return 0;
+    public Type getType() {
+        return Type.TRI_STRIP;
     }
 }

@@ -36,12 +36,12 @@ public class Transformation {
 
     public static Matrix4f getViewMatrix(Camera camera)
     {
-        Vector3f pos = new Vector3f(camera.pos);
-        Vector3f rot = new Vector3f(camera.rotation);
+        Vector3f pos = new Vector3f(camera.getPos());
+        Vector3f rot = new Vector3f(camera.getRotation());
         Matrix4f matrix = new Matrix4f();
         matrix.identity()
                 .rotateAffineXYZ(Math.toRadians(rot.x), Math.toRadians(rot.y), Math.toRadians(rot.z))
-                .translate(-pos.x, -pos.y, -pos.z);
+                .translate(-pos.x, -pos.y, -(Config.FRONT_VIEW ? 20000f : pos.z));
         return matrix;
     }
 

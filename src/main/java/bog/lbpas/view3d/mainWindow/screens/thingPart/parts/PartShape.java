@@ -6,6 +6,9 @@ import bog.lbpas.view3d.mainWindow.View3D;
 import bog.lbpas.view3d.mainWindow.screens.MaterialEditing;
 import bog.lbpas.view3d.managers.MouseInput;
 import bog.lbpas.view3d.renderer.gui.elements.*;
+import bog.lbpas.view3d.renderer.gui.elements.Button;
+import bog.lbpas.view3d.renderer.gui.elements.Checkbox;
+import bog.lbpas.view3d.renderer.gui.elements.Panel;
 import bog.lbpas.view3d.utils.Utils;
 import cwlib.enums.AudioMaterial;
 import cwlib.enums.LethalType;
@@ -22,6 +25,7 @@ import cwlib.util.Colors;
 import org.joml.*;
 import org.lwjgl.glfw.GLFW;
 
+import java.awt.*;
 import java.lang.Math;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,16 +45,10 @@ public abstract class PartShape extends iPart {
     public Textbox Thickness;
     public Textbox BevelSize;
     public Textbox ColorShininess;
-    public Textbox ColorR;
-    public Textbox ColorG;
-    public Textbox ColorB;
-    public Textbox ColorA;
+    public ColorPicker Color;
     public Slider Brightness;
     public Slider Opacity;
-    public Textbox ColorOffR;
-    public Textbox ColorOffG;
-    public Textbox ColorOffB;
-    public Textbox ColorOffA;
+    public ColorPicker ColorOff;
     public Slider BrightnessOff;
     public Slider OpacityOff;
     public ComboBox LethalType;
@@ -134,72 +132,71 @@ public abstract class PartShape extends iPart {
         ColorShininess = new Textbox("ShapeColorShininess", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
         shapeColorShininessPanel.elements.add(new Panel.PanelElement(ColorShininess, 0.45f));
 
-        partComboBox.addString("shapecolorstr", "Color:");
-
-        float spacing = 0.015f;
-        float textboxsize = (1f - (spacing * 3f)) / 4f;
-
         Panel shapecolor = partComboBox.addPanel("shapecolor");
-        ColorR = new Textbox("", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
-        ColorR.noLetters().noOthers().numberLimits(0, 255);
-        shapecolor.elements.add(new Panel.PanelElement(ColorR, textboxsize));
+        shapecolor.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("shapecolorstr", "Color:", 10, view.renderer), 0.55f));
+        Color = new ColorPicker("Color", 10, view.renderer, view.loader, view.window) {
+            @Override
+            public java.awt.Color getColor() {
+                if(scolor == null)
+                    return null;
 
-        shapecolor.elements.add(new Panel.PanelElement(null, spacing));
-        ColorG = new Textbox("", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
-        ColorG.noLetters().noOthers().numberLimits(0, 255);
-        shapecolor.elements.add(new Panel.PanelElement(ColorG, textboxsize));
+                return new Color(scolor.x, scolor.y, scolor.z, scolor.w);
+            }
 
-        shapecolor.elements.add(new Panel.PanelElement(null, spacing));
-        ColorB = new Textbox("", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
-        ColorB.noLetters().noOthers().numberLimits(0, 255);
-        shapecolor.elements.add(new Panel.PanelElement(ColorB, textboxsize));
-
-        shapecolor.elements.add(new Panel.PanelElement(null, spacing));
-        ColorA = new Textbox("", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
-        ColorA.noLetters().noOthers().numberLimits(0, 255);
-        shapecolor.elements.add(new Panel.PanelElement(ColorA, textboxsize));
+            @Override
+            public void setColor(Color color) {
+                for(Thing t : view.things)
+                    if(t.selected)
+                    {
+                        PShape shape = t.thing.getPart(Part.SHAPE);
+                        shape.color = Colors.RGBA32.getARGB(Utils.toVectorColor(color));
+                    }
+            }
+        };
+        shapecolor.elements.add(new Panel.PanelElement(Color, 0.45f));
 
         Panel shapebrightnessPanel = partComboBox.addPanel("shapebrightnessPanel");
         shapebrightnessPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("brightnessstr", "Brightness:", 10, view.renderer), 0.55f));
         Brightness = new Slider("ShapeBrightness", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window, 1, 0, 1);
-        shapebrightnessPanel.elements.add(new Panel.PanelElement(Brightness, 0.45f));
+        shapebrightnessPanel.elements.add(new Panel.PanelElement(Brightness, 0.44f));
 
         Panel shapeopacityPanel = partComboBox.addPanel("shapeopacityPanel");
         shapeopacityPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("shapeopacitystr", "Opacity:", 10, view.renderer), 0.55f));
         Opacity = new Slider("ShapeOpacity", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window, 1, 0, 1);
-        shapeopacityPanel.elements.add(new Panel.PanelElement(Opacity, 0.45f));
-
-        partComboBox.addString("shapeoffcolorstr", "Color Off:");
+        shapeopacityPanel.elements.add(new Panel.PanelElement(Opacity, 0.44f));
 
         Panel shapecoloroff = partComboBox.addPanel("shapecoloroff");
-        ColorOffR = new Textbox("", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
-        ColorOffR.noLetters().noOthers().numberLimits(0, 255);
-        shapecoloroff.elements.add(new Panel.PanelElement(ColorOffR, textboxsize));
+        shapecoloroff.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("shapecoloroffstr", "Color Off:", 10, view.renderer), 0.55f));
+        ColorOff = new ColorPicker("ColorOff", 10, view.renderer, view.loader, view.window) {
+            @Override
+            public java.awt.Color getColor() {
+                if(scolorOff == null)
+                    return null;
 
-        shapecoloroff.elements.add(new Panel.PanelElement(null, spacing));
-        ColorOffG = new Textbox("", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
-        ColorOffG.noLetters().noOthers().numberLimits(0, 255);
-        shapecoloroff.elements.add(new Panel.PanelElement(ColorOffG, textboxsize));
+                return new Color(scolorOff.x, scolorOff.y, scolorOff.z, scolorOff.w);
+            }
 
-        shapecoloroff.elements.add(new Panel.PanelElement(null, spacing));
-        ColorOffB = new Textbox("", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
-        ColorOffB.noLetters().noOthers().numberLimits(0, 255);
-        shapecoloroff.elements.add(new Panel.PanelElement(ColorOffB, textboxsize));
-
-        shapecoloroff.elements.add(new Panel.PanelElement(null, spacing));
-        ColorOffA = new Textbox("", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
-        ColorOffA.noLetters().noOthers().numberLimits(0, 255);
-        shapecoloroff.elements.add(new Panel.PanelElement(ColorOffA, textboxsize));
+            @Override
+            public void setColor(Color color) {
+                for(Thing t : view.things)
+                    if(t.selected)
+                    {
+                        PShape shape = t.thing.getPart(Part.SHAPE);
+                        shape.colorOff = Colors.RGBA32.getARGB(Utils.toVectorColor(color));
+                    }
+            }
+        };
+        shapecoloroff.elements.add(new Panel.PanelElement(ColorOff, 0.45f));
 
         Panel shapeoffbrightnessPanel = partComboBox.addPanel("shapeoffbrightnessPanel");
         shapeoffbrightnessPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("shapeoffbrightnessstr", "Brightn. Off:", 10, view.renderer), 0.55f));
         BrightnessOff = new Slider("ShapeBrightnessOff", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window, 1, 0, 1);
-        shapeoffbrightnessPanel.elements.add(new Panel.PanelElement(BrightnessOff, 0.45f));
+        shapeoffbrightnessPanel.elements.add(new Panel.PanelElement(BrightnessOff, 0.44f));
 
         Panel shapeoffopacityPanel = partComboBox.addPanel("shapeoffopacityPanel");
         shapeoffopacityPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("shapeoffopacitystr", "Opacity Off:", 10, view.renderer), 0.55f));
         OpacityOff = new Slider("ShapeOpacityOff", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window, 1, 0, 1);
-        shapeoffopacityPanel.elements.add(new Panel.PanelElement(OpacityOff, 0.45f));
+        shapeoffopacityPanel.elements.add(new Panel.PanelElement(OpacityOff, 0.44f));
 
         Panel lethalPanel = partComboBox.addPanel("lethalPanel");
         lethalPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("lethalstr", "Lethal Type:", 10, view.renderer), 0.55f));
@@ -335,8 +332,8 @@ public abstract class PartShape extends iPart {
         FlagCollidableGame = Flags.addCheckbox("COLLIDABLE_GAME", "Collidable Game", new Checkbox()
         {
             @Override
-            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement) {
-                super.onClick(mouseInput, pos, button, action, mods, overElement);
+            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement, boolean focusedOther) {
+                super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
                     for (int i = 0; i < view.things.size(); i++)
@@ -350,8 +347,8 @@ public abstract class PartShape extends iPart {
         FlagCollidablePoppet = Flags.addCheckbox("COLLIDABLE_POPPET", "Colli. Poppet", new Checkbox()
         {
             @Override
-            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement) {
-                super.onClick(mouseInput, pos, button, action, mods, overElement);
+            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement, boolean focusedOther) {
+                super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
                     for (int i = 0; i < view.things.size(); i++)
@@ -365,8 +362,8 @@ public abstract class PartShape extends iPart {
         FlagCollidableWithParent = Flags.addCheckbox("COLLIDABLE_WITH_PARENT", "Colli. w/ Parent", new Checkbox()
         {
             @Override
-            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement) {
-                super.onClick(mouseInput, pos, button, action, mods, overElement);
+            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement, boolean focusedOther) {
+                super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
                     for (int i = 0; i < view.things.size(); i++)
@@ -393,8 +390,8 @@ public abstract class PartShape extends iPart {
         IsStatic = partComboBox.addCheckbox("isStatic", "Static", new Checkbox()
         {
             @Override
-            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement) {
-                super.onClick(mouseInput, pos, button, action, mods, overElement);
+            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement, boolean focusedOther) {
+                super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
                     for (int i = 0; i < view.things.size(); i++)
@@ -405,8 +402,8 @@ public abstract class PartShape extends iPart {
         Ghosty = partComboBox.addCheckbox("ghosty", "Dephysicalized", new Checkbox()
         {
             @Override
-            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement) {
-                super.onClick(mouseInput, pos, button, action, mods, overElement);
+            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement, boolean focusedOther) {
+                super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
                     for (int i = 0; i < view.things.size(); i++)
@@ -417,8 +414,8 @@ public abstract class PartShape extends iPart {
         Ethereal = partComboBox.addCheckbox("ethereal", "Etherial", new Checkbox()
         {
             @Override
-            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement) {
-                super.onClick(mouseInput, pos, button, action, mods, overElement);
+            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement, boolean focusedOther) {
+                super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
                     for (int i = 0; i < view.things.size(); i++)
@@ -489,8 +486,8 @@ public abstract class PartShape extends iPart {
         CanCollect = Extras.addCheckbox("canCollect", "Can collect", new Checkbox()
         {
             @Override
-            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement) {
-                super.onClick(mouseInput, pos, button, action, mods, overElement);
+            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement, boolean focusedOther) {
+                super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
                     for (int i = 0; i < view.things.size(); i++)
@@ -501,8 +498,8 @@ public abstract class PartShape extends iPart {
         DefaultClimbable = Extras.addCheckbox("defaultClimbable", "Default Climbable", new Checkbox()
         {
             @Override
-            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement) {
-                super.onClick(mouseInput, pos, button, action, mods, overElement);
+            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement, boolean focusedOther) {
+                super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
                     for (int i = 0; i < view.things.size(); i++)
@@ -513,8 +510,8 @@ public abstract class PartShape extends iPart {
         CurrentlyClimbable = Extras.addCheckbox("currentlyClimbable", "Current Climbable", new Checkbox()
         {
             @Override
-            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement) {
-                super.onClick(mouseInput, pos, button, action, mods, overElement);
+            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement, boolean focusedOther) {
+                super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
                     for (int i = 0; i < view.things.size(); i++)
@@ -525,8 +522,8 @@ public abstract class PartShape extends iPart {
         HeadDucking = Extras.addCheckbox("headDucking", "Head Ducking", new Checkbox()
         {
             @Override
-            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement) {
-                super.onClick(mouseInput, pos, button, action, mods, overElement);
+            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement, boolean focusedOther) {
+                super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
                     for (int i = 0; i < view.things.size(); i++)
@@ -537,8 +534,8 @@ public abstract class PartShape extends iPart {
         IsLBP2Shape = Extras.addCheckbox("isLBP2Shape", "LBP2 Shape", new Checkbox()
         {
             @Override
-            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement) {
-                super.onClick(mouseInput, pos, button, action, mods, overElement);
+            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement, boolean focusedOther) {
+                super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
                     for (int i = 0; i < view.things.size(); i++)
@@ -549,8 +546,8 @@ public abstract class PartShape extends iPart {
         CollidableSackboy = Extras.addCheckbox("collidableSackboy", "Collidable Sackboy", new Checkbox()
         {
             @Override
-            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement) {
-                super.onClick(mouseInput, pos, button, action, mods, overElement);
+            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement, boolean focusedOther) {
+                super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
                     for (int i = 0; i < view.things.size(); i++)
@@ -561,8 +558,8 @@ public abstract class PartShape extends iPart {
         CameraExcluderIsSticky = Extras.addCheckbox("cameraExcluderIsSticky", "Cam Excluder is sticky", new Checkbox()
         {
             @Override
-            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement) {
-                super.onClick(mouseInput, pos, button, action, mods, overElement);
+            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement, boolean focusedOther) {
+                super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
                     for (int i = 0; i < view.things.size(); i++)
@@ -571,6 +568,9 @@ public abstract class PartShape extends iPart {
             }
         });
     }
+
+    Vector4f scolor;
+    Vector4f scolorOff;
 
     @Override
     public void addValues(ArrayList<Integer> selected, ArrayList<Thing> things) {
@@ -583,10 +583,10 @@ public abstract class PartShape extends iPart {
         float thickn = Float.NEGATIVE_INFINITY;
         float bevs = Float.NEGATIVE_INFINITY;
         float colshine = Float.NEGATIVE_INFINITY;
-        Vector4f color = null;
+        scolor = null;
         float brightness = Float.NEGATIVE_INFINITY;
         float opacity = Float.NEGATIVE_INFINITY;
-        Vector4f colorOff = null;
+        scolorOff = null;
         float brightnessOff = Float.NEGATIVE_INFINITY;
         float opacityOff = Float.NEGATIVE_INFINITY;
         float zBias = Float.NEGATIVE_INFINITY;
@@ -711,14 +711,14 @@ public abstract class PartShape extends iPart {
                 colshine = Float.NaN;
 
             Vector4f col = Colors.RGBA32.fromARGB(shape.color);
-            if(color == null)
-                color = col;
-            else if(!(color.x == col.x && color.y == col.y && color.z == col.z && color.w == col.w))
+            if(scolor == null)
+                scolor = col;
+            else if(!(scolor.x == col.x && scolor.y == col.y && scolor.z == col.z && scolor.w == col.w))
             {
-                color.x = Float.NaN;
-                color.y = Float.NaN;
-                color.z = Float.NaN;
-                color.w = Float.NaN;
+                scolor.x = Float.NaN;
+                scolor.y = Float.NaN;
+                scolor.z = Float.NaN;
+                scolor.w = Float.NaN;
             }
 
             float bright = shape.brightness;
@@ -734,14 +734,14 @@ public abstract class PartShape extends iPart {
                 opacity = Float.NaN;
 
             Vector4f colOff = Colors.RGBA32.fromARGB(shape.colorOff);
-            if(colorOff == null)
-                colorOff = colOff;
-            else if(!(colorOff.x == colOff.x && colorOff.y == colOff.y && colorOff.z == colOff.z && colorOff.w == colOff.w))
+            if(scolorOff == null)
+                scolorOff = colOff;
+            else if(!(scolorOff.x == colOff.x && scolorOff.y == colOff.y && scolorOff.z == colOff.z && scolorOff.w == colOff.w))
             {
-                colorOff.x = Float.NaN;
-                colorOff.y = Float.NaN;
-                colorOff.z = Float.NaN;
-                colorOff.w = Float.NaN;
+                scolorOff.x = Float.NaN;
+                scolorOff.y = Float.NaN;
+                scolorOff.z = Float.NaN;
+                scolorOff.w = Float.NaN;
             }
 
             float brightOff = shape.brightnessOff;
@@ -869,16 +869,8 @@ public abstract class PartShape extends iPart {
         Vector2f thickness = Thickness.setTextboxValueFloat(thickn);
         Vector2f bevelSize = BevelSize.setTextboxValueFloat(bevs);
         Vector2i colorShine = ColorShininess.setTextboxValueInt((byte)Math.round(colshine));
-        Vector2i colorr = ColorR.setTextboxValueInt(Math.round(color.x * 255));
-        Vector2i colorg = ColorG.setTextboxValueInt(Math.round(color.y * 255));
-        Vector2i colorb = ColorB.setTextboxValueInt(Math.round(color.z * 255));
-        Vector2i colora = ColorA.setTextboxValueInt(Math.round(color.w * 255));
         Vector2f brightn = Brightness.setSliderValue(brightness);
         Vector2f opac = Opacity.setSliderValue(opacity);
-        Vector2i coloroffr = ColorOffR.setTextboxValueInt(Math.round(colorOff.x * 255));
-        Vector2i coloroffg = ColorOffG.setTextboxValueInt(Math.round(colorOff.y * 255));
-        Vector2i coloroffb = ColorOffB.setTextboxValueInt(Math.round(colorOff.z * 255));
-        Vector2i coloroffa = ColorOffA.setTextboxValueInt(Math.round(colorOff.w * 255));
         Vector2f brightnoff = BrightnessOff.setSliderValue(brightnessOff);
         Vector2f opacoff = OpacityOff.setSliderValue(opacityOff);
         Vector2i zBs = ZBias.setTextboxValueInt((byte)Math.round(zBias));
@@ -916,20 +908,10 @@ public abstract class PartShape extends iPart {
                 shape.bevelSize = bevelSize.x;
             if(colorShine.y == 1)
                 shape.colorShininess = (byte) colorShine.x;
-            if(colorr.y == 1 || colorg.y == 1 || colorb.y == 1 || colora.y == 1)
-            {
-                Vector4f col = Colors.RGBA32.fromARGB(shape.color);
-                shape.color = Colors.RGBA32.getARGB(new Vector4f(colorr.y == 1 ? colorr.x / 255f : col.x, colorg.y == 1 ? colorg.x / 255f : col.y, colorb.y == 1 ? colorb.x / 255f : col.z, colora.y == 1 ? colora.x / 255f : col.w));
-            }
             if(brightn.y == 1 && !Float.isNaN(brightn.x))
                 shape.brightness = brightn.x;
             if(opac.y == 1)
                 shape.colorOpacity = (byte) (opac.x * 255 - 128);
-            if(coloroffr.y == 1 || coloroffg.y == 1 || coloroffb.y == 1 || coloroffa.y == 1)
-            {
-                Vector4f col = Colors.RGBA32.fromARGB(shape.colorOff);
-                shape.colorOff = Colors.RGBA32.getARGB(new Vector4f(coloroffr.y == 1 ? coloroffr.x / 255f : col.x, coloroffg.y == 1 ? coloroffg.x / 255f : col.y, coloroffb.y == 1 ? coloroffb.x / 255f : col.z, coloroffa.y == 1 ? coloroffa.x / 255f : col.w));
-            }
             if(brightnoff.y == 1)
                 shape.brightnessOff = brightnoff.x;
             if(opacoff.y == 1)
@@ -1009,5 +991,20 @@ public abstract class PartShape extends iPart {
             for(Thing t : things.stream().filter(Thing -> Thing.thing == pMesh.boneThings[finalB]).toArray(Thing[]::new))
                 t.reloadModel();
         }
+    }
+
+    @Override
+    public void selectionChange() {
+        super.selectionChange();
+        Color.updateColorValues();
+        ColorOff.updateColorValues();
+    }
+
+    @Override
+    public void onExtendPart() {
+        super.onExtendPart();
+        super.onExtendPart();
+        Color.updateColorValues();
+        ColorOff.updateColorValues();
     }
 }

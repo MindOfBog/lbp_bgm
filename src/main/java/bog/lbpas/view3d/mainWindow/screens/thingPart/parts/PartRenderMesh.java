@@ -4,6 +4,9 @@ import bog.lbpas.view3d.core.types.Thing;
 import bog.lbpas.view3d.mainWindow.View3D;
 import bog.lbpas.view3d.managers.MouseInput;
 import bog.lbpas.view3d.renderer.gui.elements.*;
+import bog.lbpas.view3d.renderer.gui.elements.Checkbox;
+import bog.lbpas.view3d.renderer.gui.elements.Panel;
+import bog.lbpas.view3d.utils.Config;
 import bog.lbpas.view3d.utils.Utils;
 import cwlib.enums.Part;
 import cwlib.enums.ResourceType;
@@ -17,6 +20,7 @@ import org.joml.Vector2i;
 import org.joml.Vector4f;
 import org.lwjgl.glfw.GLFW;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -35,10 +39,7 @@ public abstract class PartRenderMesh extends iPart {
     public Textbox AnimSpeed;
     public Textbox AnimStart;
     public Textbox AnimEnd;
-    public Textbox EditorColorR;
-    public Textbox EditorColorG;
-    public Textbox EditorColorB;
-    public Textbox EditorColorA;
+    public ColorPicker EditorColor;
     public Checkbox RTT;
     public Checkbox FlagPlayMode;
     public Checkbox FlagEditMode;
@@ -91,8 +92,8 @@ public abstract class PartRenderMesh extends iPart {
         AnimLoop = partComboBox.addCheckbox("RMeshAnimLoop", "Animation Loop", new Checkbox()
         {
             @Override
-            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement) {
-                super.onClick(mouseInput, pos, button, action, mods, overElement);
+            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement, boolean focusedOther) {
+                super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
                     for (int i = 0; i < view.things.size(); i++)
@@ -101,36 +102,36 @@ public abstract class PartRenderMesh extends iPart {
             }
         });
 
-        partComboBox.addString("editcolorstr", "Editor Color:");
-
-        float spacing = 0.015f;
-        float textboxsize = (1f - (spacing * 3f)) / 4f;
-
         Panel editcolor = partComboBox.addPanel("editcolor");
-        EditorColorR = new Textbox("", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
-        EditorColorR.noLetters().noOthers().numberLimits(0, 255);
-        editcolor.elements.add(new Panel.PanelElement(EditorColorR, textboxsize));
+        editcolor.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("editcolorstr", "Editor Color:", 10, view.renderer), 0.55f));
+        EditorColor = new ColorPicker("EditorColor", 10, view.renderer, view.loader, view.window) {
+            @Override
+            public Color getColor() {
+                if(edColor == null)
+                    return null;
 
-        editcolor.elements.add(new Panel.PanelElement(null, spacing));
-        EditorColorG = new Textbox("", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
-        EditorColorG.noLetters().noOthers().numberLimits(0, 255);
-        editcolor.elements.add(new Panel.PanelElement(EditorColorG, textboxsize));
+                return new Color(edColor.x, edColor.y, edColor.z, edColor.w);
+            }
 
-        editcolor.elements.add(new Panel.PanelElement(null, spacing));
-        EditorColorB = new Textbox("", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
-        EditorColorB.noLetters().noOthers().numberLimits(0, 255);
-        editcolor.elements.add(new Panel.PanelElement(EditorColorB, textboxsize));
+            @Override
+            public void setColor(Color color) {
 
-        editcolor.elements.add(new Panel.PanelElement(null, spacing));
-        EditorColorA = new Textbox("", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
-        EditorColorA.noLetters().noOthers().numberLimits(0, 255);
-        editcolor.elements.add(new Panel.PanelElement(EditorColorA, textboxsize));
+                for(Thing t : view.things)
+                    if(t.selected)
+                    {
+                        PRenderMesh rmesh = t.thing.getPart(Part.RENDER_MESH);
+                        rmesh.editorColor = Colors.RGBA32.getARGB(Utils.toVectorColor(color));
+                    }
+
+            }
+        };
+        editcolor.elements.add(new Panel.PanelElement(EditorColor, 0.45f));
 
         RTT = partComboBox.addCheckbox("RMeshRTT", "RTT Enable", new Checkbox()
         {
             @Override
-            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement) {
-                super.onClick(mouseInput, pos, button, action, mods, overElement);
+            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement, boolean focusedOther) {
+                super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
                     for (int i = 0; i < view.things.size(); i++)
@@ -208,8 +209,8 @@ public abstract class PartRenderMesh extends iPart {
         FlagPlayMode = VisibilityFlags.addCheckbox("PLAY_MODE", "Play mode", new Checkbox()
         {
             @Override
-            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement) {
-                super.onClick(mouseInput, pos, button, action, mods, overElement);
+            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement, boolean focusedOther) {
+                super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
                     for (int i = 0; i < view.things.size(); i++)
@@ -223,8 +224,8 @@ public abstract class PartRenderMesh extends iPart {
         FlagEditMode = VisibilityFlags.addCheckbox("EDIT_MODE", "Edit mode", new Checkbox()
         {
             @Override
-            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement) {
-                super.onClick(mouseInput, pos, button, action, mods, overElement);
+            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement, boolean focusedOther) {
+                super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
                     for (int i = 0; i < view.things.size(); i++)
@@ -255,6 +256,8 @@ public abstract class PartRenderMesh extends iPart {
         distSidePanel.elements.add(new Panel.PanelElement(DistanceSide, 0.45f));
     }
 
+    Vector4f edColor = null;
+
     @Override
     public void addValues(ArrayList<Integer> selected, ArrayList<Thing> things) {
 
@@ -272,7 +275,7 @@ public abstract class PartRenderMesh extends iPart {
         float renderScale = Float.NEGATIVE_INFINITY;
         float distanceFront = Float.NEGATIVE_INFINITY;
         float distanceSide = Float.NEGATIVE_INFINITY;
-        Vector4f color = null;
+        edColor = null;
 
         for(int i : selected) {
             Thing thing = things.get(i);
@@ -365,14 +368,14 @@ public abstract class PartRenderMesh extends iPart {
 
             Vector4f col = Colors.RGBA32.fromARGB(rmesh.editorColor);
 
-            if(color == null)
-                color = col;
-            else if(!(color.x == col.x && color.y == col.y && color.z == col.z && color.w == col.w))
+            if(edColor == null)
+                edColor = col;
+            else if(!(edColor.x == col.x && edColor.y == col.y && edColor.z == col.z && edColor.w == col.w))
             {
-                color.x = Float.NaN;
-                color.y = Float.NaN;
-                color.z = Float.NaN;
-                color.w = Float.NaN;
+                edColor.x = Float.NaN;
+                edColor.y = Float.NaN;
+                edColor.z = Float.NaN;
+                edColor.w = Float.NaN;
             }
         }
 
@@ -403,56 +406,54 @@ public abstract class PartRenderMesh extends iPart {
         Vector2f distFront = DistanceFront.setTextboxValueFloat(distanceFront);
         Vector2f distSide = DistanceSide.setTextboxValueFloat(distanceSide);
 
-        if(color != null)
-        {
-            Vector2i colorr = EditorColorR.setTextboxValueInt(Math.round(color.x * 255));
-            Vector2i colorg = EditorColorG.setTextboxValueInt(Math.round(color.y * 255));
-            Vector2i colorb = EditorColorB.setTextboxValueInt(Math.round(color.z * 255));
-            Vector2i colora = EditorColorA.setTextboxValueInt(Math.round(color.w * 255));
+        for(int i : selected) {
+            Thing thing = things.get(i);
+            PRenderMesh rmesh = thing.thing.getPart(Part.RENDER_MESH);
 
-            for(int i : selected) {
-                Thing thing = things.get(i);
-                PRenderMesh rmesh = thing.thing.getPart(Part.RENDER_MESH);
+            if(rmesh == null)
+                continue;
 
-                if(rmesh == null)
-                    continue;
+            long prevGuidMesh = rmesh.mesh == null || !rmesh.mesh.isGUID() ? -1 : rmesh.mesh.getGUID().getValue();
+            String prevSHA1Mesh = rmesh.mesh == null || !rmesh.mesh.isHash() ? "" : rmesh.mesh.getSHA1().toString();
 
-                long prevGuidMesh = rmesh.mesh == null || !rmesh.mesh.isGUID() ? -1 : rmesh.mesh.getGUID().getValue();
-                String prevSHA1Mesh = rmesh.mesh == null || !rmesh.mesh.isHash() ? "" : rmesh.mesh.getSHA1().toString();
+            if (msh != null)
+            {
+                try{rmesh.mesh = new ResourceDescriptor(msh.trim(), ResourceType.MESH);}catch (Exception e){}
 
-                if (msh != null)
-                {
-                    try{rmesh.mesh = new ResourceDescriptor(msh.trim(), ResourceType.MESH);}catch (Exception e){}
-
-                    if((rmesh.mesh.isGUID() && rmesh.mesh.getGUID().getValue() != prevGuidMesh) ||
-                            (rmesh.mesh.isHash() && !rmesh.mesh.getSHA1().toString().equalsIgnoreCase(prevSHA1Mesh)))
-                        thing.reloadModel();
-                }
-                if (anim != null)
-                    try{rmesh.anim = new ResourceDescriptor(anim.trim(), ResourceType.ANIMATION);}catch (Exception e){}
-
-                if(animPos.y == 1)
-                    rmesh.animPos = animPos.x;
-                if(animSp.y == 1)
-                    rmesh.animSpeed = animSp.x;
-                if(animSt.y == 1)
-                    rmesh.loopStart = animSt.x;
-                if(animEn.y == 1)
-                    rmesh.loopEnd = animEn.x;
-                if(renSca.y == 1)
-                    rmesh.poppetRenderScale = renSca.x;
-                if(distFront.y == 1)
-                    rmesh.parentDistanceFront = distFront.x;
-                if(distSide.y == 1)
-                    rmesh.parentDistanceSide = distSide.x;
-
-                if(colorr.y == 1 || colorg.y == 1 || colorb.y == 1 || colora.y == 1)
-                {
-                    Vector4f col = Colors.RGBA32.fromARGB(rmesh.editorColor);
-                    rmesh.editorColor = Colors.RGBA32.getARGB(new Vector4f(colorr.y == 1 ? colorr.x / 255f : col.x, colorg.y == 1 ? colorg.x / 255f : col.y, colorb.y == 1 ? colorb.x / 255f : col.z, colora.y == 1 ? colora.x / 255f : col.w));
-                }
+                if((rmesh.mesh.isGUID() && rmesh.mesh.getGUID().getValue() != prevGuidMesh) ||
+                        (rmesh.mesh.isHash() && !rmesh.mesh.getSHA1().toString().equalsIgnoreCase(prevSHA1Mesh)))
+                    thing.reloadModel();
             }
+            if (anim != null)
+                try{rmesh.anim = new ResourceDescriptor(anim.trim(), ResourceType.ANIMATION);}catch (Exception e){}
 
+            if(animPos.y == 1)
+                rmesh.animPos = animPos.x;
+            if(animSp.y == 1)
+                rmesh.animSpeed = animSp.x;
+            if(animSt.y == 1)
+                rmesh.loopStart = animSt.x;
+            if(animEn.y == 1)
+                rmesh.loopEnd = animEn.x;
+            if(renSca.y == 1)
+                rmesh.poppetRenderScale = renSca.x;
+            if(distFront.y == 1)
+                rmesh.parentDistanceFront = distFront.x;
+            if(distSide.y == 1)
+                rmesh.parentDistanceSide = distSide.x;
         }
+
+    }
+
+    @Override
+    public void selectionChange() {
+        super.selectionChange();
+        EditorColor.updateColorValues();
+    }
+
+    @Override
+    public void onExtendPart() {
+        super.onExtendPart();
+        EditorColor.updateColorValues();
     }
 }

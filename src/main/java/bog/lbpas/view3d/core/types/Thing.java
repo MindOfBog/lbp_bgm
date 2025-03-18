@@ -4,9 +4,11 @@ import bog.lbpas.view3d.managers.assetLoading.ObjectLoader;
 import bog.lbpas.view3d.core.Model;
 import bog.lbpas.view3d.mainWindow.LoadedData;
 import bog.lbpas.view3d.utils.CWLibUtils.SkeletonUtils;
+import bog.lbpas.view3d.utils.print;
 import cwlib.enums.Part;
 import cwlib.resources.RBevel;
 import cwlib.resources.RMesh;
+import cwlib.resources.RStaticMesh;
 import cwlib.structs.things.parts.*;
 import cwlib.types.data.ResourceDescriptor;
 import org.joml.Matrix4f;
@@ -31,6 +33,7 @@ public class Thing extends Entity{
 
     public Model shapeMesh;
     public Model renderMesh;
+    public ArrayList<Model> staticMesh;
 
     public RBevel bevelData;
 
@@ -69,19 +72,23 @@ public class Thing extends Entity{
             cwlib.structs.things.Thing boneThing = bones[i];
             if(joint != null)
             {
-                Matrix4f aOffset = new Matrix4f().identity()
-                        .translate(joint.aContact)
-                        .rotate(joint.aAngleOffset, new Vector3f(0, 0, 1))
-                        .scale(0);
-                Matrix4f bOffset = new Matrix4f().identity()
-                        .translate(joint.bContact)
-                        .rotate(joint.bAngleOffset, new Vector3f(0, 0, 1))
-                        .scale(0);
+//      todo          Matrix4f aOffset = new Matrix4f().identity()
+//                        .translate(joint.aContact)
+//                        .rotate(joint.aAngleOffset, new Vector3f(0, 0, 1))
+//                        .scale(0);
+//                Matrix4f bOffset = new Matrix4f().identity()
+//                        .translate(joint.bContact)
+//                        .rotate(joint.bAngleOffset, new Vector3f(0, 0, 1))
+//                        .scale(0);
+//
+//                Matrix4f aTranformation = new Matrix4f(((PPos)joint.a.getPart(Part.POS)).worldPosition)
+//                        .mul(aOffset);
+//                Matrix4f bTranformation =  new Matrix4f(((PPos)joint.b.getPart(Part.POS)).worldPosition)
+//                        .mul(bOffset);
 
-                Matrix4f aTranformation = new Matrix4f(((PPos)joint.a.getPart(Part.POS)).worldPosition)
-                        .mul(aOffset);
-                Matrix4f bTranformation =  new Matrix4f(((PPos)joint.b.getPart(Part.POS)).worldPosition)
-                        .mul(bOffset);
+
+
+
 //                Matrix4f aTranformation = new Matrix4f(((PPos)joint.a.getPart(Part.POS)).worldPosition)
 //                        .translate(joint.aContact)
 //                        .rotate(joint.aAngleOffset, new Vector3f(0, 0, 1));
@@ -89,8 +96,8 @@ public class Thing extends Entity{
 //                        .translate(joint.bContact)
 //                        .rotate(joint.bAngleOffset, new Vector3f(0, 0, 1));
 
-                PPos ppos = new PPos(i == 0 ? aTranformation : bTranformation);
-                boneThing.setPart(Part.POS, ppos);//.scale(joint.modScale, joint.modScale, 1);
+//                PPos ppos = new PPos(i == 0 ? aTranformation : bTranformation);
+//                boneThing.setPart(Part.POS, ppos);//.scale(joint.modScale, joint.modScale, 1);
             }
         }
 
@@ -109,17 +116,19 @@ public class Thing extends Entity{
 
         if(joint != null)
         {
-            Matrix4f aOffset = new Matrix4f().identity()
-                    .translate(joint.aContact)
-                    .rotate(joint.aAngleOffset, new Vector3f(0, 0, 1));
-
-            Matrix4f aTranformation = new Matrix4f(((PPos)joint.a.getPart(Part.POS)).worldPosition)
-                    .mul(aOffset);
+//      todo      Matrix4f aOffset = new Matrix4f().identity()
+//                    .translate(joint.aContact == null ? new Vector3f() : joint.aContact)
+//                    .rotate(joint.aAngleOffset, new Vector3f(0, 0, 1));
+//
+//            PPos pposj = (PPos)joint.a.getPart(Part.POS);
+//
+//            Matrix4f aTranformation = new Matrix4f(pposj.worldPosition)
+//                    .mul(aOffset);
 //            Matrix4f aTranformation = new Matrix4f(((PPos)joint.a.getPart(Part.POS)).worldPosition)
 //                    .translate(joint.aContact)
 //                    .rotate(joint.aAngleOffset, new Vector3f(0, 0, 1));
-            PPos jppos = new PPos(aTranformation);
-            this.thing.setPart(Part.POS, jppos);
+//            PPos jppos = new PPos(aTranformation);
+//            this.thing.setPart(Part.POS, jppos);
 //            pos.translate(pos1.getTranslation(new Vector3f()));//pos.mul(pos1).rotate(joint.aAngleOffset, new Vector3f(0, 0, joint.invertAngle ? -1 : 1)).scale(joint.modScale, joint.modScale, 1);
         }
 
@@ -159,8 +168,21 @@ public class Thing extends Entity{
                 getMesh(renderMesh.mesh);
             else
                 this.renderMesh = null;
+
             if(this.renderMesh != null)
                 this.model.add(this.renderMesh);
+
+            PLevelSettings levelSettings = this.thing.getPart(Part.LEVEL_SETTINGS);
+            if(levelSettings != null)
+                getStaticMesh(levelSettings.backdropMesh);
+            else
+                this.staticMesh = null;
+
+            if(this.staticMesh != null)
+            {
+                for (Model subMesh : this.staticMesh)
+                    this.model.add(subMesh);
+            }
 
             PShape shape = this.thing.getPart(Part.SHAPE);
             PGeneratedMesh generatedMesh = this.thing.getPart(Part.GENERATED_MESH);
@@ -199,6 +221,9 @@ public class Thing extends Entity{
 
     public void getMesh(ResourceDescriptor meshDescriptor)
     {
+        if(meshDescriptor == null)
+            return;
+
         if(LoadedData.loadedModels.containsKey(meshDescriptor))
         {
             this.renderMesh = LoadedData.loadedModels.get(meshDescriptor);
@@ -219,6 +244,34 @@ public class Thing extends Entity{
             }
 
             this.renderMesh = LoadedData.loadedModels.get(meshDescriptor);
+        }
+    }
+
+    public void getStaticMesh(ResourceDescriptor meshDescriptor)
+    {
+        if(meshDescriptor == null)
+            return;
+
+        if(LoadedData.loadedStaticModels.containsKey(meshDescriptor))
+        {
+            this.staticMesh = LoadedData.loadedStaticModels.get(meshDescriptor);
+        }
+        else
+        {
+            RStaticMesh mesh = LoadedData.loadStaticMesh(meshDescriptor);
+
+            ArrayList<Model> m = null;
+
+            try {
+                m = this.loader.loadStaticMesh(mesh, this);
+            }catch (Exception e){e.printStackTrace();}
+
+            if(m != null)
+            {
+                LoadedData.loadedStaticModels.put(meshDescriptor, m);
+            }
+
+            this.staticMesh = LoadedData.loadedStaticModels.get(meshDescriptor);
         }
     }
 

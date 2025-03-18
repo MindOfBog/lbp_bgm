@@ -53,6 +53,7 @@ public class LoadedData {
     public static HashMap<String, FileEntry> digestedEntriesSHA1;
 
     public static HashMap<ResourceDescriptor, Model> loadedModels;
+    public static HashMap<ResourceDescriptor, ArrayList<Model>> loadedStaticModels;
     public static ArrayList<String> loadedGfxMaterials;
     public static ArrayList<ArrayList<Texture>> loadedMaterialTextures;
     public static HashMap<ResourceDescriptor, Integer> loadedGMATS;
@@ -67,6 +68,7 @@ public class LoadedData {
     {
         mainView = view;
         loadedModels = new HashMap<>();
+        loadedStaticModels = new HashMap<>();
         loadedGfxMaterials = new ArrayList<>();
         loadedMaterialTextures = new ArrayList<>();
         loadedGMATS = new HashMap<>();
@@ -160,7 +162,29 @@ public class LoadedData {
         }
         RMesh mesh = null;
         try { mesh = new Resource(data).loadResource(RMesh.class); }
-        catch (Exception e) { e.printStackTrace(); }
+        catch (Exception e) { print.stackTrace(e); }
+
+        return mesh;
+    }
+
+    public static RStaticMesh loadStaticMesh(ResourceDescriptor descriptor) {
+        if (descriptor == null)
+        {
+            print.error("Failed loading Mesh: descriptor null");
+            mainView.pushError("Failed loading Mesh", "Descriptor is null");
+            return null;
+        }
+
+        byte[] data = extract(descriptor);
+        if (data == null)
+        {
+            print.error("Failed loading Mesh: extracted data null");
+            mainView.pushError("Failed loading Msh (" + descriptor.toString() + ")", "Extracted data is null");
+            return null;
+        }
+        RStaticMesh mesh = null;
+        try {mesh = new RStaticMesh(new Resource(data));}
+        catch (Exception e) { print.stackTrace(e); }
 
         return mesh;
     }
@@ -182,7 +206,7 @@ public class LoadedData {
         }
         RPlan mesh = null;
         try { mesh = new Resource(data).loadResource(RPlan.class); }
-        catch (Exception e) { e.printStackTrace(); }
+        catch (Exception e) { print.stackTrace(e); }
 
         return mesh;
     }
@@ -204,7 +228,7 @@ public class LoadedData {
         }
         RLevel mesh = null;
         try { mesh = new Resource(data).loadResource(RLevel.class); }
-        catch (Exception e) { e.printStackTrace(); }
+        catch (Exception e) { print.stackTrace(e); }
 
         return mesh;
     }
@@ -226,7 +250,7 @@ public class LoadedData {
         }
         RGfxMaterial material = null;
         try { material = new Resource(data).loadResource(RGfxMaterial.class); }
-        catch (Exception e) { e.printStackTrace(); }
+        catch (Exception e) { print.stackTrace(e); }
 
         return material;
     }
@@ -245,7 +269,7 @@ public class LoadedData {
 
         RBevel RBevel = null;
         try { RBevel = new Resource(data).loadResource(RBevel.class); }
-        catch (Exception e) { e.printStackTrace(); }
+        catch (Exception e) { print.stackTrace(e); }
 
         return RBevel;
     }
@@ -270,7 +294,7 @@ public class LoadedData {
             RTexture resource = new RTexture(new Resource(data));
             texture = resource.getImage();
         }
-        catch (Exception e) { e.printStackTrace(); }
+        catch (Exception e) { print.stackTrace(e); }
 
         return texture;
     }
@@ -735,7 +759,7 @@ public class LoadedData {
                                 isBump = t.isBumpTexture();
                             texture = resource.getImage();
                         }
-                        catch (Exception e) {e.printStackTrace();}
+                        catch (Exception e) {print.stackTrace(e);}
 
                     tex = getTexture(material.textures[box.getParameters()[5]], texture, loader);
                 }
@@ -767,7 +791,7 @@ public class LoadedData {
                 loadedTextures.put(desc, tex);
                 return tex;
             }
-        }catch (Exception e){e.printStackTrace();}
+        }catch (Exception e){print.stackTrace(e);}
         return null;
     }
 }

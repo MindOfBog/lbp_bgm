@@ -1,4 +1,4 @@
-#version 330 core
+#version 400 core
 
 in vec4 fragTextureCoord;
 in vec3 fragNormal;
@@ -41,6 +41,7 @@ struct SpotLight
 };
 
 uniform bool preview;
+uniform bool frontView;
 uniform sampler2D textureSampler[32];
 uniform ivec2 gmatMAP[100];
 uniform int gmatCount;
@@ -247,7 +248,7 @@ void main()
     fragmentColor.r = fragmentColor.r + rimFinal1.r + rimFinal2.r;
     fragmentColor.g = fragmentColor.g + rimFinal1.g + rimFinal2.g;
     fragmentColor.b = fragmentColor.b + rimFinal1.b + rimFinal2.b;
-    fragmentColor.a = (fogFar == -1 && fogNear == -1) || !preview ? 1.0f : fogFactor;
+    fragmentColor.a = (fogFar == -1 && fogNear == -1) || !preview || frontView ? 1.0f : fogFactor;
 
     fragmentColor = clamp(fragmentColor, 0.0, 1.0);
 }

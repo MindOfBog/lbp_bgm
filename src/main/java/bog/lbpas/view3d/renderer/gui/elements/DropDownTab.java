@@ -765,7 +765,7 @@ public class DropDownTab extends Element{
     }
 
     @Override
-    public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overOther) {
+    public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overOther, boolean focusedOther) {
         if(isMouseOverTab(pos) && !overOther)
         {
             if(button == GLFW.GLFW_MOUSE_BUTTON_2 && action == GLFW.GLFW_RELEASE)
@@ -795,12 +795,12 @@ public class DropDownTab extends Element{
         if(extended)
             for(Element element : tabElements)
             {
-                element.onClick(mouseInput, pos, button, action, mods, overOther);
+                element.onClick(mouseInput, pos, button, action, mods, overOther, focusedOther);
                 if(element.isMouseOverElement(pos))
                     overOther = true;
             }
 
-        super.onClick(mouseInput, pos, button, action, mods, overOther);
+        super.onClick(mouseInput, pos, button, action, mods, overOther, focusedOther);
     }
 
     @Override

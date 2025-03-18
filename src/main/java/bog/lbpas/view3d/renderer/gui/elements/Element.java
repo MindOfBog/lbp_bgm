@@ -24,7 +24,9 @@ public class Element {
     public ObjectLoader loader;
     public WindowMan window;
 
-    public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement){}
+    Vector2f prevSize;
+
+    public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement, boolean focusedElement){}
     public void onKey(int key, int scancode, int action, int mods){}
     public void onChar(int codePoint, int modifiers){}
     public void onMouseScroll(Vector2d pos, double xOffset, double yOffset){}
@@ -34,6 +36,12 @@ public class Element {
         hovering = isMouseOverElement(mouseInput) && !overElement;
         if(hovering)
             hoverCursor();
+
+        if(prevSize == null || prevSize.x != size.x || prevSize.y != size.y)
+        {
+            resize();
+            prevSize = new Vector2f(size);
+        }
     }
     public void resize(){}
 

@@ -21,6 +21,22 @@ public class print {
         System.out.println(message);
     }
 
+    public static void line(float[] floatArray)
+    {
+        System.out.print("float[]{");
+        for(int i = 0; i < floatArray.length; i++)
+            System.out.print(floatArray[i] + (i == floatArray.length - 1 ? "f" : "f, "));
+        System.out.print("}\n");
+    }
+
+    public static void line(int[] intArray)
+    {
+        System.out.print("int[]{");
+        for(int i = 0; i < intArray.length; i++)
+            System.out.print(intArray[i] + (i == intArray.length - 1 ? "" : ", "));
+        System.out.print("}\n");
+    }
+
     public static void success(Object message)
     {
         System.out.print(Consts.ANSI_GREEN);

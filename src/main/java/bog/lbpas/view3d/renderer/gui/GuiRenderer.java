@@ -38,7 +38,12 @@ public class GuiRenderer {
     Model line;
 
     public void init() throws Exception {
-        guiShader.createFragmentShader(Utils.loadResource("/shaders/fragment_gui.glsl"));
+        String shaderCode = Utils.loadResource("/shaders/fragment_gui.glsl");
+        String typeEnums = "";
+        for(Drawable.Type type : Drawable.Type.values())
+            typeEnums += "const int " + type.name() + " = " + type.value + ";\n";
+        shaderCode = shaderCode.replaceAll("//%&TYPES;", typeEnums);
+        guiShader.createFragmentShader(shaderCode);
         guiShader.createVertexShader(Utils.loadResource("/shaders/vertex_gui.glsl"));
         guiShader.link();
         guiShader.createUniform("transformationMatrix");
@@ -49,12 +54,10 @@ public class GuiRenderer {
         guiShader.createUniform("color");
         guiShader.createUniform("smoothst");
         guiShader.createUniform("alpha");
-        guiShader.createUniform("isBlur");
-        guiShader.createUniform("isGaussian");
-        guiShader.createUniform("pixelSize");
-        guiShader.createUniform("radius");
-        guiShader.createUniform("vertical");
-        guiShader.createListUniform("gaussKernel", 41);
+        guiShader.createUniform("type");
+        guiShader.createUniform("abstractInt");
+        guiShader.createBlurUniform("blur");
+        guiShader.createDimensionUniform("dimensions");
 
         line = loader.loadModel(new float[]{0f, 0f, 100f, 100f});
         defaultQuad = defaultQuad(loader);
@@ -77,391 +80,389 @@ public class GuiRenderer {
         ArrayList<int[]> scissorEscapes = new ArrayList();
 
         for(Drawable drawable : elements)
-            switch (drawable.getType())
-            {
-                case 0: //TRI STRIP
-                    {
-                        TriStrip element = (TriStrip) drawable;
-                        GL30.glBindVertexArray(element.model.vao);
-                        GL20.glEnableVertexAttribArray(0);
+        {
+            Drawable.Type type = drawable.getType();
+            guiShader.setUniform("type", type.value);
+            switch (type) {
+                case TRI_STRIP:
+                {
+                    TriStrip element = (TriStrip) drawable;
+                    GL30.glBindVertexArray(element.model.vao);
+                    GL20.glEnableVertexAttribArray(0);
 
-                        if(element.hasTexCoords)
-                            GL20.glEnableVertexAttribArray(1);
+                    if (element.hasTexCoords)
+                        GL20.glEnableVertexAttribArray(1);
 
-                        if(element.texture != -1)
-                        {
-                            GL13.glActiveTexture(GL13.GL_TEXTURE0);
-                            GL11.glBindTexture(GL11.GL_TEXTURE_2D, element.texture == -69 ? screenTexture : element.texture);
-                        }
-
-                        guiShader.setUniform("hasCoords", element.hasTexCoords);
-                        guiShader.setUniform("guiTexture", 0);
-                        guiShader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(
-                                new Vector2f(element.pos.x / (window.width/2f) - 1 + element.scale.x / window.width, (-element.pos.y) / (window.height/2f) + 1 - element.scale.y / window.height),
-                                new Vector2f(element.scale.x / window.width, element.scale.y / window.height)));
-
-                        if(element.color != null)
-                            guiShader.setUniform("color", new Vector4f(
-                                    element.invert ? 1f : element.color.getRed() / 255f,
-                                    element.invert ? 1f : element.color.getGreen() / 255f,
-                                    element.invert ? 1f : element.color.getBlue() / 255f,
-                                    element.invert ? 1f : element.color.getAlpha() / 255f));
-
-                        guiShader.setUniform("hasColor", element.color == null ? 0 : element.texture != -1 ? 1 : 2);
-                        guiShader.setUniform("smoothst", element.smoothstep);
-
-                        if(element.invert)
-                        {
-                            GL11.glBlendFunc(GL11.GL_SRC_COLOR, GL11.GL_ONE);
-                            GL14.glBlendEquation(GL14.GL_FUNC_SUBTRACT);
-                        }
-
-                        GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, element.model.vertexCount);
-
-                        if(element.invert)
-                        {
-                            GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-                            GL14.glBlendEquation(GL14.GL_FUNC_ADD);
-                        }
-
-                        if(!element.staticTexture)
-                        {
-                            if(loader.textures.contains(element.texture))
-                                loader.textures.remove((Object)element.texture);
-                            GL11.glDeleteTextures(element.texture);
-                        }
-
-                        clearElement(element);
-                    }
-                    break;
-                case 1: //TRI FAN
-                    {
-                        TriFan element = (TriFan) drawable;
-                        GL30.glBindVertexArray(element.model.vao);
-                        GL20.glEnableVertexAttribArray(0);
-
-                        if(element.hasTexCoords)
-                            GL20.glEnableVertexAttribArray(1);
-
+                    if (element.texture != -1) {
                         GL13.glActiveTexture(GL13.GL_TEXTURE0);
                         GL11.glBindTexture(GL11.GL_TEXTURE_2D, element.texture == -69 ? screenTexture : element.texture);
-
-                        guiShader.setUniform("hasCoords", element.hasTexCoords);
-                        guiShader.setUniform("guiTexture", 0);
-                        guiShader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(
-                                new Vector2f(element.pos.x / (window.width/2f) - 1 + element.scale.x / window.width, (-element.pos.y) / (window.height/2f) + 1 - element.scale.y / window.height),
-                                new Vector2f(element.scale.x / window.width, element.scale.y / window.height)));
-
-                        if(element.color != null)
-                            guiShader.setUniform("color", new Vector4f(
-                                    element.invert ? 1f : element.color.getRed() / 255f,
-                                    element.invert ? 1f : element.color.getGreen() / 255f,
-                                    element.invert ? 1f : element.color.getBlue() / 255f,
-                                    element.invert ? 1f : element.color.getAlpha() / 255f));
-
-                        guiShader.setUniform("hasColor", element.color == null ? 0 : element.texture != -1 ? 1 : 2);
-                        guiShader.setUniform("smoothst", element.smoothstep);
-
-                        if(element.invert)
-                            GL11.glBlendFunc(GL11.GL_DST_COLOR, GL11.GL_ONE_MINUS_DST_COLOR);
-
-                        if(element.invert)
-                        {
-                            GL11.glBlendFunc(GL11.GL_SRC_COLOR, GL11.GL_ONE);
-                            GL14.glBlendEquation(GL14.GL_FUNC_SUBTRACT);
-                        }
-
-                        GL11.glDrawArrays(GL11.GL_TRIANGLE_FAN, 0, element.model.vertexCount);
-
-                        if(element.invert)
-                        {
-                            GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-                            GL14.glBlendEquation(GL14.GL_FUNC_ADD);
-                        }
-
-                        if(element.invert)
-                            GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-
-                        if(!element.staticTexture)
-                        {
-                            if(loader.textures.contains(element.texture))
-                                loader.textures.remove((Object)element.texture);
-                            GL11.glDeleteTextures(element.texture);
-                        }
-
-                        clearElement(element);
                     }
-                    break;
-                case 2: //LINE
-                    {
-                        Line element = (Line) drawable;
-                        if(element.model == null || window.isMinimized)
-                            continue;
-                        GL30.glBindVertexArray(element.model.vao);
-                        GL20.glEnableVertexAttribArray(0);
 
-                        guiShader.setUniform("color", element.invert ? new Vector4f(1f) : element.color);
-                        guiShader.setUniform("hasCoords", false);
-                        guiShader.setUniform("guiTexture", 0);
-                        guiShader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(new Vector2f(element.pos.x / (window.width/2f) + 1 / window.width, (-element.pos.y) / (window.height/2f) - 1 / window.height), new Vector2f(1, 1)));
-                        guiShader.setUniform("hasColor", 2);
+                    guiShader.setUniform("hasCoords", element.hasTexCoords);
+                    guiShader.setUniform("guiTexture", 0);
+                    guiShader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(
+                            new Vector2f(element.pos.x / (window.width / 2f) - 1 + element.scale.x / window.width, (-element.pos.y) / (window.height / 2f) + 1 - element.scale.y / window.height),
+                            new Vector2f(element.scale.x / window.width, element.scale.y / window.height)));
 
-                        if(!element.smooth)
-                            GL11.glDisable(GL11.GL_LINE_SMOOTH);
+                    if (element.color != null)
+                        guiShader.setUniform("color", new Vector4f(
+                                element.invert ? 1f : element.color.getRed() / 255f,
+                                element.invert ? 1f : element.color.getGreen() / 255f,
+                                element.invert ? 1f : element.color.getBlue() / 255f,
+                                element.invert ? 1f : element.color.getAlpha() / 255f));
 
-                        if(element.invert)
-                            GL11.glBlendFunc(GL11.GL_DST_COLOR, GL11.GL_ONE_MINUS_DST_COLOR);
+                    guiShader.setUniform("hasColor", element.color == null ? 0 : element.texture != -1 ? 1 : 2);
+                    guiShader.setUniform("smoothst", element.smoothstep);
 
-                        if(element.invert)
-                        {
-                            GL11.glBlendFunc(GL11.GL_SRC_COLOR, GL11.GL_ONE);
-                            GL14.glBlendEquation(GL14.GL_FUNC_SUBTRACT);
-                        }
-
-                        GL11.glDrawArrays(GL11.GL_LINES, 0, element.model.vertexCount);
-
-                        if(element.invert)
-                        {
-                            GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-                            GL14.glBlendEquation(GL14.GL_FUNC_ADD);
-                        }
-
-                        if(element.invert)
-                            GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-
-                        if(!element.smooth)
-                            GL11.glEnable(GL11.GL_LINE_SMOOTH);
-
-                        clearElement(element);
+                    if (element.invert) {
+                        GL11.glBlendFunc(GL11.GL_SRC_COLOR, GL11.GL_ONE);
+                        GL14.glBlendEquation(GL14.GL_FUNC_SUBTRACT);
                     }
-                    break;
-                case 3: //LINE STRIP
-                    {
-                        LineStrip element = (LineStrip) drawable;
-                        if(element.model == null)
-                            continue;
-                        GL30.glBindVertexArray(element.model.vao);
-                        GL20.glEnableVertexAttribArray(0);
 
-                        guiShader.setUniform("color", element.invert ? new Vector4f(1f) : element.color);
-                        guiShader.setUniform("hasCoords", false);
-                        guiShader.setUniform("guiTexture", 0);
-                        guiShader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(
-                                new Vector2f(element.pos.x / (window.width/2f), (-element.pos.y) / (window.height/2f)), new Vector2f(1, 1)));
-                        guiShader.setUniform("hasColor", 2);
+                    GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, element.model.vertexCount);
 
-                        if(!element.smooth)
-                            GL11.glDisable(GL11.GL_LINE_SMOOTH);
-
-                        if(element.invert)
-                            GL11.glBlendFunc(GL11.GL_DST_COLOR, GL11.GL_ONE_MINUS_DST_COLOR);
-
-                        if(element.invert)
-                        {
-                            GL11.glBlendFunc(GL11.GL_SRC_COLOR, GL11.GL_ONE);
-                            GL14.glBlendEquation(GL14.GL_FUNC_SUBTRACT);
-                        }
-
-                        GL11.glDrawArrays(GL11.GL_LINE_STRIP, 0, element.model.vertexCount);
-
-                        if(element.invert)
-                        {
-                            GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-                            GL14.glBlendEquation(GL14.GL_FUNC_ADD);
-                        }
-
-                        if(element.invert)
-                            GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-
-                        if(!element.smooth)
-                            GL11.glEnable(GL11.GL_LINE_SMOOTH);
-
-                        clearElement(element);
+                    if (element.invert) {
+                        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+                        GL14.glBlendEquation(GL14.GL_FUNC_ADD);
                     }
-                    break;
-                case 4: //SCISSOR
-                    {
-                        Scissor scissor = (Scissor) drawable;
 
-                        boolean isScissorOn = GL11.glIsEnabled(GL11.GL_SCISSOR_TEST);
+                    if (!element.staticTexture) {
+                        if (loader.textures.contains(element.texture))
+                            loader.textures.remove((Object) element.texture);
+                        GL11.glDeleteTextures(element.texture);
+                    }
 
-                        if((scissor.start && !scissor.escape) || (!scissor.start && scissor.escape))
-                        {
-                            int minX = 0;
-                            int minY = 0;
-                            int maxX = 0;
-                            int maxY = 0;
+                    clearElement(element);
+                }
+                break;
+                case TRI_FAN:
+                {
+                    TriFan element = (TriFan) drawable;
+                    GL30.glBindVertexArray(element.model.vao);
+                    GL20.glEnableVertexAttribArray(0);
 
-                            if(scissor.escape)
-                            {
-                                if(scissorEscapes.size() != 0)
-                                {
-                                    int[] scissorEscape = scissorEscapes.get(scissorEscapes.size() - 1);
+                    if (element.hasTexCoords)
+                        GL20.glEnableVertexAttribArray(1);
 
-                                    if (scissorEscape == null)
-                                    {
-                                        scissorEscapes.remove(scissorEscapes.size() - 1);
-                                        break;
-                                    }
+                    GL13.glActiveTexture(GL13.GL_TEXTURE0);
+                    GL11.glBindTexture(GL11.GL_TEXTURE_2D, element.texture == -69 ? screenTexture : element.texture);
 
-                                    minX = scissorEscape[0];
-                                    minY = scissorEscape[1];
-                                    maxX = scissorEscape[2] + scissorEscape[0];
-                                    maxY = scissorEscape[3] + scissorEscape[1];
+                    guiShader.setUniform("hasCoords", element.hasTexCoords);
+                    guiShader.setUniform("guiTexture", 0);
+                    guiShader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(
+                            new Vector2f(element.pos.x / (window.width / 2f) - 1 + element.scale.x / window.width, (-element.pos.y) / (window.height / 2f) + 1 - element.scale.y / window.height),
+                            new Vector2f(element.scale.x / window.width, element.scale.y / window.height)));
 
+                    if (element.color != null)
+                        guiShader.setUniform("color", new Vector4f(
+                                element.invert ? 1f : element.color.getRed() / 255f,
+                                element.invert ? 1f : element.color.getGreen() / 255f,
+                                element.invert ? 1f : element.color.getBlue() / 255f,
+                                element.invert ? 1f : element.color.getAlpha() / 255f));
+
+                    guiShader.setUniform("hasColor", element.color == null ? 0 : element.texture != -1 ? 1 : 2);
+                    guiShader.setUniform("smoothst", element.smoothstep);
+
+                    if (element.invert)
+                        GL11.glBlendFunc(GL11.GL_DST_COLOR, GL11.GL_ONE_MINUS_DST_COLOR);
+
+                    if (element.invert) {
+                        GL11.glBlendFunc(GL11.GL_SRC_COLOR, GL11.GL_ONE);
+                        GL14.glBlendEquation(GL14.GL_FUNC_SUBTRACT);
+                    }
+
+                    GL11.glDrawArrays(GL11.GL_TRIANGLE_FAN, 0, element.model.vertexCount);
+
+                    if (element.invert) {
+                        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+                        GL14.glBlendEquation(GL14.GL_FUNC_ADD);
+                    }
+
+                    if (element.invert)
+                        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+
+                    if (!element.staticTexture) {
+                        if (loader.textures.contains(element.texture))
+                            loader.textures.remove((Object) element.texture);
+                        GL11.glDeleteTextures(element.texture);
+                    }
+
+                    clearElement(element);
+                }
+                break;
+                case LINE:
+                {
+                    Line element = (Line) drawable;
+                    if (element.model == null || window.isMinimized)
+                        continue;
+                    GL30.glBindVertexArray(element.model.vao);
+                    GL20.glEnableVertexAttribArray(0);
+
+                    guiShader.setUniform("color", element.invert ? new Vector4f(1f) : element.color);
+                    guiShader.setUniform("hasCoords", false);
+                    guiShader.setUniform("guiTexture", 0);
+                    guiShader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(new Vector2f(element.pos.x / (window.width / 2f) + 1 / window.width, (-element.pos.y) / (window.height / 2f) - 1 / window.height), new Vector2f(1, 1)));
+                    guiShader.setUniform("hasColor", 2);
+
+                    if (!element.smooth)
+                        GL11.glDisable(GL11.GL_LINE_SMOOTH);
+
+                    if (element.invert)
+                        GL11.glBlendFunc(GL11.GL_DST_COLOR, GL11.GL_ONE_MINUS_DST_COLOR);
+
+                    if (element.invert) {
+                        GL11.glBlendFunc(GL11.GL_SRC_COLOR, GL11.GL_ONE);
+                        GL14.glBlendEquation(GL14.GL_FUNC_SUBTRACT);
+                    }
+
+                    GL11.glDrawArrays(GL11.GL_LINES, 0, element.model.vertexCount);
+
+                    if (element.invert) {
+                        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+                        GL14.glBlendEquation(GL14.GL_FUNC_ADD);
+                    }
+
+                    if (element.invert)
+                        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+
+                    if (!element.smooth)
+                        GL11.glEnable(GL11.GL_LINE_SMOOTH);
+
+                    clearElement(element);
+                }
+                break;
+                case LINE_STRIP:
+                {
+                    LineStrip element = (LineStrip) drawable;
+                    if (element.model == null)
+                        continue;
+                    GL30.glBindVertexArray(element.model.vao);
+                    GL20.glEnableVertexAttribArray(0);
+
+                    guiShader.setUniform("color", element.invert ? new Vector4f(1f) : element.color);
+                    guiShader.setUniform("hasCoords", false);
+                    guiShader.setUniform("guiTexture", 0);
+                    guiShader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(
+                            new Vector2f(element.pos.x / (window.width / 2f), (-element.pos.y) / (window.height / 2f)), new Vector2f(1, 1)));
+                    guiShader.setUniform("hasColor", 2);
+
+                    if (!element.smooth)
+                        GL11.glDisable(GL11.GL_LINE_SMOOTH);
+
+                    if (element.invert)
+                        GL11.glBlendFunc(GL11.GL_DST_COLOR, GL11.GL_ONE_MINUS_DST_COLOR);
+
+                    if (element.invert) {
+                        GL11.glBlendFunc(GL11.GL_SRC_COLOR, GL11.GL_ONE);
+                        GL14.glBlendEquation(GL14.GL_FUNC_SUBTRACT);
+                    }
+
+                    GL11.glDrawArrays(GL11.GL_LINE_STRIP, 0, element.model.vertexCount);
+
+                    if (element.invert) {
+                        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+                        GL14.glBlendEquation(GL14.GL_FUNC_ADD);
+                    }
+
+                    if (element.invert)
+                        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+
+                    if (!element.smooth)
+                        GL11.glEnable(GL11.GL_LINE_SMOOTH);
+
+                    clearElement(element);
+                }
+                break;
+                case SCISSOR:
+                {
+                    Scissor scissor = (Scissor) drawable;
+
+                    boolean isScissorOn = GL11.glIsEnabled(GL11.GL_SCISSOR_TEST);
+
+                    if ((scissor.start && !scissor.escape) || (!scissor.start && scissor.escape)) {
+                        int minX = 0;
+                        int minY = 0;
+                        int maxX = 0;
+                        int maxY = 0;
+
+                        if (scissor.escape) {
+                            if (scissorEscapes.size() != 0) {
+                                int[] scissorEscape = scissorEscapes.get(scissorEscapes.size() - 1);
+
+                                if (scissorEscape == null) {
                                     scissorEscapes.remove(scissorEscapes.size() - 1);
+                                    break;
                                 }
-                                else break;
-                            }
-                            else
-                            {
-                                minX = scissor.pos.x;
-                                minY = window.height - scissor.pos.y - scissor.size.y;
-                                maxX = scissor.pos.x + scissor.size.x;
-                                maxY = window.height - scissor.pos.y;
-                            }
 
-                            int temp;
+                                minX = scissorEscape[0];
+                                minY = scissorEscape[1];
+                                maxX = scissorEscape[2] + scissorEscape[0];
+                                maxY = scissorEscape[3] + scissorEscape[1];
 
-                            if (minY > maxY) {
-                                temp = maxY;
-                                maxY = minY;
-                                minY = temp;
-                            }
-                            if (minX > maxX) {
-                                temp = maxX;
-                                maxX = minX;
-                                minX = temp;
-                            }
-
-                            if (isScissorOn)
-                            {
-                                int[] box = new int[4];
-                                GL11.glGetIntegerv(GL11.GL_SCISSOR_BOX, box);
-                                prevScissors.add(box);
-                            }
-                            else
-                                GL11.glEnable(GL11.GL_SCISSOR_TEST);
-
-                            if(prevScissors.size() > 0){
-                                int[] s = prevScissors.get(prevScissors.size() - 1);
-
-                                if (minX < s[0])
-                                    minX = s[0];
-                                if (minX > s[0] + s[2])
-                                    minX = s[0] + s[2];
-
-                                if (minY < s[1])
-                                    minY = s[1];
-                                if (minY > s[1] + s[3])
-                                    minY = s[1] + s[3];
-
-                                if (maxX < s[0])
-                                    maxX = s[0];
-                                if (maxX > s[0] + s[2])
-                                    maxX = s[0] + s[2];
-
-                                if (maxY < s[1])
-                                    maxY = s[1];
-                                if (maxY > s[1] + s[3])
-                                    maxY = s[1] + s[3];
-                            }
-
-                            GL11.glScissor(minX, minY, maxX - minX, maxY - minY);
+                                scissorEscapes.remove(scissorEscapes.size() - 1);
+                            } else break;
+                        } else {
+                            minX = scissor.pos.x;
+                            minY = window.height - scissor.pos.y - scissor.size.y;
+                            maxX = scissor.pos.x + scissor.size.x;
+                            maxY = window.height - scissor.pos.y;
                         }
-                        if((!scissor.start && !scissor.escape) || (scissor.start && scissor.escape))
-                        {
-                            if(scissor.escape)
-                            {
-                                int[] box = new int[4];
-                                GL11.glGetIntegerv(GL11.GL_SCISSOR_BOX, box);
-                                scissorEscapes.add(isScissorOn ? box : null);
-                            }
 
-                            if (prevScissors.size() == 0) {
-                                GL11.glDisable(GL11.GL_SCISSOR_TEST);
-                            } else {
-                                int[] prevScissor = prevScissors.get(prevScissors.size() - 1);
-                                GL11.glScissor(prevScissor[0], prevScissor[1], prevScissor[2], prevScissor[3]);
-                                prevScissors.remove(prevScissors.size() - 1);
-                            }
+                        int temp;
+
+                        if (minY > maxY) {
+                            temp = maxY;
+                            maxY = minY;
+                            minY = temp;
+                        }
+                        if (minX > maxX) {
+                            temp = maxX;
+                            maxX = minX;
+                            minX = temp;
+                        }
+
+                        if (isScissorOn) {
+                            int[] box = new int[4];
+                            GL11.glGetIntegerv(GL11.GL_SCISSOR_BOX, box);
+                            prevScissors.add(box);
+                        } else
+                            GL11.glEnable(GL11.GL_SCISSOR_TEST);
+
+                        if (prevScissors.size() > 0) {
+                            int[] s = prevScissors.get(prevScissors.size() - 1);
+
+                            if (minX < s[0])
+                                minX = s[0];
+                            if (minX > s[0] + s[2])
+                                minX = s[0] + s[2];
+
+                            if (minY < s[1])
+                                minY = s[1];
+                            if (minY > s[1] + s[3])
+                                minY = s[1] + s[3];
+
+                            if (maxX < s[0])
+                                maxX = s[0];
+                            if (maxX > s[0] + s[2])
+                                maxX = s[0] + s[2];
+
+                            if (maxY < s[1])
+                                maxY = s[1];
+                            if (maxY > s[1] + s[3])
+                                maxY = s[1] + s[3];
+                        }
+
+                        GL11.glScissor(minX, minY, maxX - minX, maxY - minY);
+                    }
+                    if ((!scissor.start && !scissor.escape) || (scissor.start && scissor.escape)) {
+                        if (scissor.escape) {
+                            int[] box = new int[4];
+                            GL11.glGetIntegerv(GL11.GL_SCISSOR_BOX, box);
+                            scissorEscapes.add(isScissorOn ? box : null);
+                        }
+
+                        if (prevScissors.size() == 0) {
+                            GL11.glDisable(GL11.GL_SCISSOR_TEST);
+                        } else {
+                            int[] prevScissor = prevScissors.get(prevScissors.size() - 1);
+                            GL11.glScissor(prevScissor[0], prevScissor[1], prevScissor[2], prevScissor[3]);
+                            prevScissors.remove(prevScissors.size() - 1);
                         }
                     }
-                    break;
-                case 5: //CIRCLE
-                    {
-                        TriStrip element = (TriStrip) drawable;
-                        GL30.glBindVertexArray(element.model.vao);
-                        GL20.glEnableVertexAttribArray(0);
+                }
+                break;
+                case CIRCLE:
+                {
+                    TriStrip element = (TriStrip) drawable;
+                    GL30.glBindVertexArray(element.model.vao);
+                    GL20.glEnableVertexAttribArray(0);
 
-                        if(element.hasTexCoords)
-                            GL20.glEnableVertexAttribArray(1);
+                    if (element.hasTexCoords)
+                        GL20.glEnableVertexAttribArray(1);
 
-                        if(element.texture != -1)
-                        {
-                            GL13.glActiveTexture(GL13.GL_TEXTURE0);
-                            GL11.glBindTexture(GL11.GL_TEXTURE_2D, element.texture == -69 ? screenTexture : element.texture);
-                        }
-
-                        guiShader.setUniform("hasCoords", element.hasTexCoords);
-                        guiShader.setUniform("circle", ((Circle) drawable).circle);
-                        guiShader.setUniform("guiTexture", 0);
-                        guiShader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(
-                                new Vector2f(element.pos.x / (window.width/2f) - 1 + element.scale.x / window.width, (-element.pos.y) / (window.height/2f) + 1 - element.scale.y / window.height),
-                                new Vector2f(element.scale.x / window.width, element.scale.y / window.height)));
-
-                        if(element.color != null)
-                            guiShader.setUniform("color", new Vector4f(
-                                    element.invert ? 1f : element.color.getRed() / 255f,
-                                    element.invert ? 1f : element.color.getGreen() / 255f,
-                                    element.invert ? 1f : element.color.getBlue() / 255f,
-                                    element.invert ? 1f : element.color.getAlpha() / 255f));
-
-                        guiShader.setUniform("hasColor", element.color == null ? 0 : element.texture != -1 ? 1 : 2);
-                        guiShader.setUniform("smoothst", element.smoothstep);
-
-                        if(element.invert)
-                            GL11.glBlendFunc(GL11.GL_DST_COLOR, GL11.GL_ONE_MINUS_DST_COLOR);
-
-                        if(element.invert)
-                        {
-                            GL11.glBlendFunc(GL11.GL_SRC_COLOR, GL11.GL_ONE);
-                            GL14.glBlendEquation(GL14.GL_FUNC_SUBTRACT);
-                        }
-
-                        GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, element.model.vertexCount);
-
-                        if(element.invert)
-                        {
-                            GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-                            GL14.glBlendEquation(GL14.GL_FUNC_ADD);
-                        }
-
-                        if(element.invert)
-                            GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-
-                        if(!element.staticTexture)
-                        {
-                            if(loader.textures.contains(element.texture))
-                                loader.textures.remove((Object)element.texture);
-                            GL11.glDeleteTextures(element.texture);
-                        }
-
-                        guiShader.setUniform("circle", new Vector4f(-1));
-
-                        clearElement(element);
+                    if (element.texture != -1) {
+                        GL13.glActiveTexture(GL13.GL_TEXTURE0);
+                        GL11.glBindTexture(GL11.GL_TEXTURE_2D, element.texture == -69 ? screenTexture : element.texture);
                     }
-                    break;
-                case 6: //BLUR
-                    {
-                        Blur blur = (Blur)drawable;
-                        if(blur.start)
-                            startBlur(screenTexture, blurBuffer, blurTexture, blurDepth, blur);
-                        else
-                            endBlur(blurTexture);
+
+                    guiShader.setUniform("hasCoords", element.hasTexCoords);
+                    guiShader.setUniform("circle", ((Circle) drawable).circle);
+                    guiShader.setUniform("guiTexture", 0);
+                    guiShader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(
+                            new Vector2f(element.pos.x / (window.width / 2f) - 1 + element.scale.x / window.width, (-element.pos.y) / (window.height / 2f) + 1 - element.scale.y / window.height),
+                            new Vector2f(element.scale.x / window.width, element.scale.y / window.height)));
+
+                    if (element.color != null)
+                        guiShader.setUniform("color", new Vector4f(
+                                element.invert ? 1f : element.color.getRed() / 255f,
+                                element.invert ? 1f : element.color.getGreen() / 255f,
+                                element.invert ? 1f : element.color.getBlue() / 255f,
+                                element.invert ? 1f : element.color.getAlpha() / 255f));
+
+                    guiShader.setUniform("hasColor", element.color == null ? 0 : element.texture != -1 ? 1 : 2);
+                    guiShader.setUniform("smoothst", element.smoothstep);
+
+                    if (element.invert)
+                        GL11.glBlendFunc(GL11.GL_DST_COLOR, GL11.GL_ONE_MINUS_DST_COLOR);
+
+                    if (element.invert) {
+                        GL11.glBlendFunc(GL11.GL_SRC_COLOR, GL11.GL_ONE);
+                        GL14.glBlendEquation(GL14.GL_FUNC_SUBTRACT);
                     }
-                    break;
+
+                    GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, element.model.vertexCount);
+
+                    if (element.invert) {
+                        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+                        GL14.glBlendEquation(GL14.GL_FUNC_ADD);
+                    }
+
+                    if (element.invert)
+                        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+
+                    if (!element.staticTexture) {
+                        if (loader.textures.contains(element.texture))
+                            loader.textures.remove((Object) element.texture);
+                        GL11.glDeleteTextures(element.texture);
+                    }
+
+                    guiShader.setUniform("circle", new Vector4f(-1));
+
+                    clearElement(element);
+                }
+                break;
+                case BLUR:
+                {
+                    Blur blur = (Blur) drawable;
+                    if (blur.start)
+                        startBlur(screenTexture, blurBuffer, blurTexture, blurDepth, blur);
+                    else
+                        endBlur(blurTexture);
+                }
+                break;
+                case COLOR_PICKER:
+                {
+                    ColorPickerPart element = (ColorPickerPart) drawable;
+
+                    GL30.glBindVertexArray(GuiRenderer.defaultQuad.vao);
+                    GL20.glEnableVertexAttribArray(0);
+
+                    guiShader.setUniform("hasCoords", false);
+                    guiShader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(new Vector2f(), new Vector2f(1)));
+
+                    guiShader.setUniform("dimensions", element.pos, element.size);
+                    guiShader.setUniform("abstractInt", element.part);
+
+                    if(element.part == 1)
+                        guiShader.setUniform("color", element.color);
+
+                    GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, GuiRenderer.defaultQuad.vertexCount);
+
+                    GL20.glDisableVertexAttribArray(0);
+                }
+                break;
             }
+        }
 
         GL11.glEnable(GL11.GL_DEPTH_TEST);
         GL11.glDisable(GL11.GL_BLEND);
@@ -511,16 +512,8 @@ public class GuiRenderer {
         guiShader.setUniform("hasCoords", false);
         guiShader.setUniform("guiTexture", 0);
         guiShader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(new Vector2f(), new Vector2f(1)));
-        guiShader.setUniform("hasColor", 0);
-        guiShader.setUniform("smoothst", false);
 
-        guiShader.setUniform("isBlur", true);
-        guiShader.setUniform("isGaussian", blur.gaussian);
-        if(blur.gaussian)
-            guiShader.setUniform("gaussKernel", blur.gaussKernel);
-        guiShader.setUniform("pixelSize", 1.0f/window.height);
-        guiShader.setUniform("radius", blur.radius);
-        guiShader.setUniform("vertical", true);
+        guiShader.setUniform("blur", blur, 1.0f/window.height, true);
 
         GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, GuiRenderer.defaultQuad.vertexCount);
 
@@ -541,17 +534,10 @@ public class GuiRenderer {
         guiShader.setUniform("hasCoords", false);
         guiShader.setUniform("guiTexture", 0);
         guiShader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(new Vector2f(), new Vector2f(1)));
-        guiShader.setUniform("hasColor", 0);
-        guiShader.setUniform("smoothst", false);
-        guiShader.setUniform("alpha", true);
 
-        guiShader.setUniform("pixelSize", 1.0f/window.width);
-        guiShader.setUniform("vertical", false);
+        guiShader.setUniform("blur", 1.0f/window.width, false);
 
         GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, GuiRenderer.defaultQuad.vertexCount);
-
-        guiShader.setUniform("alpha", false);
-        guiShader.setUniform("isBlur", false);
 
         GL20.glDisableVertexAttribArray(0);
         GL30.glBindVertexArray(0);

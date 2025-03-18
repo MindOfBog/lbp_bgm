@@ -66,6 +66,8 @@ public class Config {
     public static int WINDOW_WIDTH = 1280;
     public static int WINDOW_HEIGHT = 720;
     public static boolean WINDOW_MAXIMIZED = false;
+    public static boolean FRONT_VIEW = false;
+    public static boolean SHOW_FPS = false;
 
     private static String buildSettings()
     {
@@ -118,6 +120,7 @@ public class Config {
         builtString += "WINDOW_WIDTH:" + WINDOW_WIDTH + ";";
         builtString += "WINDOW_HEIGHT:" + WINDOW_HEIGHT + ";";
         builtString += "WINDOW_MAXIMIZED:" + WINDOW_MAXIMIZED + ";";
+        builtString += "SHOW_FPS:" + SHOW_FPS + ";";
 
         return builtString;
     }
@@ -212,6 +215,7 @@ public class Config {
                         case "WINDOW_WIDTH" : WINDOW_WIDTH = Integer.parseInt(data); break;
                         case "WINDOW_HEIGHT" : WINDOW_HEIGHT = Integer.parseInt(data); break;
                         case "WINDOW_MAXIMIZED" : WINDOW_MAXIMIZED = Boolean.parseBoolean(data); break;
+                        case "SHOW_FPS" : SHOW_FPS = Boolean.parseBoolean(data); break;
                     }
                 }
 
@@ -613,6 +617,14 @@ public class Config {
                         break loop;
                     }
                     break;
+                case 46:
+                    if(!o.equals(SHOW_FPS))
+                    {
+                        hasChanged = true;
+                        updateVariables();
+                        break loop;
+                    }
+                    break;
             }
         }
         if(variables.size() == 0)
@@ -669,5 +681,6 @@ public class Config {
         variables.add(WINDOW_WIDTH);
         variables.add(WINDOW_HEIGHT);
         variables.add(WINDOW_MAXIMIZED);
+        variables.add(SHOW_FPS);
     }
 }

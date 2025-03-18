@@ -36,6 +36,11 @@ public class ComboBox extends Element{
     Model outlineSelection;
     Model outlineElement;
 
+    public ComboBox()
+    {
+        comboElements = new ArrayList<>();
+    }
+
     public ComboBox(String id, String tabTitle, Vector2f pos, Vector2f size, int fontSize, int tabWidth, RenderMan renderer, ObjectLoader loader, WindowMan window)
     {
         this.id = id;
@@ -68,6 +73,63 @@ public class ComboBox extends Element{
     {
         this(id, tabTitle, pos, size, fontSize, tabWidth, renderer, loader, window);
         this.autoCollapse = autoCollapse;
+    }
+    
+    float prevYOff = -1;
+    @Override
+    public void draw(MouseInput mouseInput, boolean overOther)
+    {
+        super.draw(mouseInput, overOther);
+
+        float fontHeight = getFontHeight(fontSize);
+
+        hovering = isMouseOverTab(mouseInput) && !overOther;
+
+        if(hovering)
+            Cursors.setCursor(ECursor.hand2);
+
+        float yOffset = 0;
+
+        if (extended)
+            yOffset = updateElements(yOffset);
+
+        if(tabWidth != prevSize.x || size.y != prevSize.y || prevYOff != yOffset)
+        {
+            refreshOutline(yOffset);
+            prevSize.x = size.x;
+            prevSize.y = size.y;
+            prevYOff = yOffset;
+        }
+
+
+        renderer.drawRect(Math.round(pos.x), Math.round(pos.y), Math.round(size.x), Math.round(size.y), ((mouseInput.rightButtonPress || mouseInput.leftButtonPress) && hovering) ? Config.INTERFACE_TERTIARY_COLOR : (hovering ? Config.INTERFACE_SECONDARY_COLOR : Config.INTERFACE_PRIMARY_COLOR));
+        renderer.drawRectOutline(new Vector2f(pos.x, pos.y), outlineSelection, ((mouseInput.rightButtonPress || mouseInput.leftButtonPress) && hovering) ? Config.INTERFACE_TERTIARY_COLOR2 : (hovering ? Config.INTERFACE_SECONDARY_COLOR2 : Config.INTERFACE_PRIMARY_COLOR2), false);
+
+        renderer.startScissor(Math.round(pos.x), Math.round(pos.y), Math.round(size.x - size.y), Math.round(size.y));
+        renderer.drawString(tabTitle == null ? "" : tabTitle, Config.FONT_COLOR, Math.round(pos.x + (size.y + fontHeight) / 8f), Math.round(pos.y + size.y / 2f - fontHeight / 2f), fontSize);
+        renderer.endScissor();
+
+        float triangleSize = fontHeight * 0.6f;
+
+        if(extended)
+        {
+            Vector2f p1 = new Vector2f(pos.x + size.x - size.y / 2f + triangleSize / 2f, pos.y + size.y / 2f);
+            Vector2f p2 = new Vector2f(p1.x - triangleSize, pos.y + size.y / 2f - triangleSize / 2f);
+            Vector2f p3 = new Vector2f(p1.x - triangleSize, pos.y + size.y / 2f + triangleSize / 2f);
+            renderer.drawTriangle(loader, p1, p2, p3, Config.FONT_COLOR);
+
+            renderer.startScissorEscape();
+            drawBackdrop(yOffset);
+            drawElements(mouseInput, overOther);
+            renderer.endScissorEscape();
+        }
+        else
+        {
+            Vector2f p1 = new Vector2f(pos.x + size.x - size.y / 2f - triangleSize / 2f, pos.y + size.y / 2f);
+            Vector2f p2 = new Vector2f(p1.x + triangleSize, pos.y + size.y / 2f - triangleSize / 2f);
+            Vector2f p3 = new Vector2f(p1.x + triangleSize, pos.y + size.y / 2f + triangleSize / 2f);
+            renderer.drawTriangle(loader, p1, p2, p3, Config.FONT_COLOR);
+        }
     }
 
     public float getFullHeight()
@@ -388,61 +450,6 @@ public class ComboBox extends Element{
             return (DropDownTab.SeparatorElement) getElementByID(id);
     }
 
-    float prevYOff = -1;
-    @Override
-    public void draw(MouseInput mouseInput, boolean overOther) {
-        super.draw(mouseInput, overOther);
-
-        float fontHeight = getFontHeight(fontSize);
-
-        hovering = isMouseOverTab(mouseInput) && !overOther;
-
-        if(hovering)
-            Cursors.setCursor(ECursor.hand2);
-
-        float yOffset = 0;
-
-        if (extended)
-            yOffset = updateElements(yOffset);
-
-        if(tabWidth != prevSize.x || size.y != prevSize.y || prevYOff != yOffset)
-        {
-            refreshOutline(yOffset);
-            prevSize.x = size.x;
-            prevSize.y = size.y;
-            prevYOff = yOffset;
-        }
-
-
-        renderer.drawRect(Math.round(pos.x), Math.round(pos.y), Math.round(size.x), Math.round(size.y), ((mouseInput.rightButtonPress || mouseInput.leftButtonPress) && hovering) ? Config.INTERFACE_TERTIARY_COLOR : (hovering ? Config.INTERFACE_SECONDARY_COLOR : Config.INTERFACE_PRIMARY_COLOR));
-        renderer.drawRectOutline(new Vector2f(pos.x, pos.y), outlineSelection, ((mouseInput.rightButtonPress || mouseInput.leftButtonPress) && hovering) ? Config.INTERFACE_TERTIARY_COLOR2 : (hovering ? Config.INTERFACE_SECONDARY_COLOR2 : Config.INTERFACE_PRIMARY_COLOR2), false);
-
-        renderer.startScissor(Math.round(pos.x), Math.round(pos.y), Math.round(size.x - size.y), Math.round(size.y));
-        renderer.drawString(tabTitle == null ? "" : tabTitle, Config.FONT_COLOR, Math.round(pos.x + (size.y + fontHeight) / 8f), Math.round(pos.y + size.y / 2f - fontHeight / 2f), fontSize);
-        renderer.endScissor();
-
-        float triangleSize = fontHeight * 0.6f;
-
-        if(extended)
-        {
-            Vector2f p1 = new Vector2f(pos.x + size.x - size.y / 2f + triangleSize / 2f, pos.y + size.y / 2f);
-            Vector2f p2 = new Vector2f(p1.x - triangleSize, pos.y + size.y / 2f - triangleSize / 2f);
-            Vector2f p3 = new Vector2f(p1.x - triangleSize, pos.y + size.y / 2f + triangleSize / 2f);
-            renderer.drawTriangle(loader, p1, p2, p3, Config.FONT_COLOR);
-
-            renderer.startScissorEscape();
-            drawBackdrop(yOffset);
-            drawElements(mouseInput, overOther);
-            renderer.endScissorEscape();
-        }
-        else
-        {
-            Vector2f p1 = new Vector2f(pos.x + size.x - size.y / 2f - triangleSize / 2f, pos.y + size.y / 2f);
-            Vector2f p2 = new Vector2f(p1.x + triangleSize, pos.y + size.y / 2f - triangleSize / 2f);
-            Vector2f p3 = new Vector2f(p1.x + triangleSize, pos.y + size.y / 2f + triangleSize / 2f);
-            renderer.drawTriangle(loader, p1, p2, p3, Config.FONT_COLOR);
-        }
-    }
     @Override
     public void resize() {
         super.resize();
@@ -759,20 +766,22 @@ public class ComboBox extends Element{
     }
 
     @Override
-    public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overOther) {
+    public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overOther, boolean focusedOther) {
 
-        if((!isMouseOverElement(pos) && autoCollapse) || (!autoCollapse && overOther))
+        if(((!isMouseOverElement(pos) && autoCollapse) || (!autoCollapse && overOther)) && !(action == GLFW.GLFW_RELEASE && isFocused()))
         {
             this.extended = false;
             for(Element e : comboElements)
                 e.setFocused(false);
         }
 
-        if(isMouseOverTab(pos) && !overOther)
+        if(isMouseOverTab(pos) && !overOther && !focusedOther)
         {
             if((button == GLFW.GLFW_MOUSE_BUTTON_2 || button == GLFW.GLFW_MOUSE_BUTTON_1) && action == GLFW.GLFW_RELEASE)
             {
                 extended = !extended;
+
+                onExtend();
 
                 if(!extended)
                     for(Element element : comboElements)
@@ -789,9 +798,9 @@ public class ComboBox extends Element{
 
         if(extended)
             for(Element element : comboElements)
-                element.onClick(mouseInput, pos, button, action, mods, overOther);
+                element.onClick(mouseInput, pos, button, action, mods, overOther, focusedOther);
 
-        super.onClick(mouseInput, pos, button, action, mods, overOther);
+        super.onClick(mouseInput, pos, button, action, mods, overOther, focusedOther);
     }
 
     @Override
@@ -828,4 +837,6 @@ public class ComboBox extends Element{
                     overElement = true;
             }
     }
+
+    public void onExtend(){}
 }

@@ -395,9 +395,9 @@ public class View3D implements ILogic {
         }
 
         if(camera.getWrappedRotation().x <= -90)
-            camera.rotation.x = -89.999f;
+            camera.setRotX(-89.999f);
         if(camera.getWrappedRotation().x >= 90)
-            camera.rotation.x = 89.999f;
+            camera.setRotX(89.999f);
 
         if(Config.LEVEL_BORDERS)
             for(Entity entity : BORDERS)
@@ -626,7 +626,7 @@ public class View3D implements ILogic {
         fogColor.y = Math.clamp(0, 1, fogColor.y);
         fogColor.z = Math.clamp(0, 1, fogColor.z);
 
-        GL11.glClearColor(fogColor.x, fogColor.y, fogColor.z, 1f);
+        GL11.glClearColor(fogColor.x, fogColor.y, fogColor.z, 0f);
 
         renderer.render(mouseInput, this);
     }
@@ -781,13 +781,13 @@ public class View3D implements ILogic {
             }
 
             @Override
-            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement) {
-                super.onClick(mouseInput, pos, button, action, mods, overElement);
+            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement, boolean focusedOther) {
+                super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && !overElement)
                 {
                     if(pos.x > this.pos.x && pos.x < this.pos.x + this.size.x &&
-                            pos.y > this.pos.y && pos.y < this.pos.y + this.size.y)
+                            pos.y > this.pos.y && pos.y < this.pos.y + this.size.y - 2)
                     {
                         if(action == GLFW.GLFW_PRESS)
                         {
@@ -1088,13 +1088,15 @@ public class View3D implements ILogic {
         renderer.drawRect(0, window.height - 3, window.width, window.height, Config.PRIMARY_COLOR);
         renderer.drawRect(window.width - 3, 0, window.width, window.height, Config.PRIMARY_COLOR);
 
-        renderer.drawString(Consts.TITLE + " | FPS: " + EngineMan.avgFPS, Config.FONT_COLOR, 7 + 3, (int)(11 - (FontRenderer.getFontHeight(10) / 2) + 3), 10);
+        renderer.drawString(Consts.TITLE + (Config.SHOW_FPS ? " | FPS: " + EngineMan.avgFPS : ""), Config.FONT_COLOR, 7 + 3, (int)(11 - (FontRenderer.getFontHeight(10) / 2) + 3), 10);
 //        drawString("entRen ent: " + renderer.entityRenderer.entities.size(), Config.FONT_COLOR, 10, 32, 10);
 //        drawString("entRen dir L: " + renderer.entityRenderer.directionalLights.size(), Config.FONT_COLOR, 10, 42, 10);
 //        drawString("entRen poi L: " + renderer.entityRenderer.pointLights.size(), Config.FONT_COLOR, 10, 52, 10);
 //        drawString("entRen spo L: " + renderer.entityRenderer.spotLights.size(), Config.FONT_COLOR, 10, 62, 10);
 //        drawString("entRen thr ent: " + renderer.entityRenderer.throughWallEntities.size(), Config.FONT_COLOR, 10, 72, 10);
 //        drawString("guiRen ele: " + renderer.guiRenderer.elements.size(), Config.FONT_COLOR, 10, 82, 10);
+
+//        renderer.drawString("drawn things: " + renderer.entityRenderer.drawnThingMeshes, Config.FONT_COLOR, 10, 82, 10);
 
         if(Main.debug)
         {
@@ -1355,7 +1357,7 @@ public class View3D implements ILogic {
         if(selected.size() == 1)
             for(int i : selected)
             {
-                things.get(i).getTransformation().setTranslation(new Vector3f(pos));
+                things.get(i).setTransformation(things.get(i).getTransformation().setTranslation(new Vector3f(pos)));
             }
         else
         {
@@ -1366,7 +1368,7 @@ public class View3D implements ILogic {
                 Entity entity = things.get(i);
                 Vector3f curTransl = new Vector3f(entity.getTransformation().getTranslation(new Vector3f()));
                 Vector3f diff = new Vector3f(new Vector3f(curTransl).sub(avgpos, new Vector3f()));
-                entity.getTransformation().setTranslation(new Vector3f(pos).add(diff, new Vector3f()));
+                entity.setTransformation(entity.getTransformation().setTranslation(new Vector3f(pos).add(diff, new Vector3f())));
             }
         }
     }
@@ -1395,6 +1397,8 @@ public class View3D implements ILogic {
         int index = -1;
         for(int i = 0; i < things.size(); i++)
         {
+            if(things.get(i) == null)
+                continue;
             if(things.get(i).selected)
             {
                 if(index != -1 && parent != things.get(i).thing.parent)

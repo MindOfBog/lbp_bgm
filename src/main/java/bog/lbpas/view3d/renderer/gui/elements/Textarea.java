@@ -173,7 +173,7 @@ public class Textarea extends Element{
     }
 
     @Override
-    public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overOther) {
+    public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overOther, boolean focusedOther) {
 
         if(isMouseOverElement(pos) && !overOther)
         {
@@ -232,7 +232,7 @@ public class Textarea extends Element{
                 this.setFocused(false);
         }
 
-        super.onClick(mouseInput, pos, button, action, mods, overOther);
+        super.onClick(mouseInput, pos, button, action, mods, overOther, focusedOther);
     }
 
     int[] selectedText = {-1, -1};

@@ -10,8 +10,8 @@ public class Blur extends Drawable{
 
 
     @Override
-    public int getType() {
-        return 6;
+    public Type getType() {
+        return Type.BLUR;
     }
 
     public int radius;

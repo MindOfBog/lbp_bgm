@@ -106,7 +106,7 @@ public abstract class Button extends Element{
     }
 
     @Override
-    public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overOther) {
+    public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overOther, boolean focusedOther) {
 
         if(!overOther)
         {
@@ -120,7 +120,7 @@ public abstract class Button extends Element{
                 setClicked(false);
         }
 
-        super.onClick(mouseInput, pos, button, action, mods, overOther);
+        super.onClick(mouseInput, pos, button, action, mods, overOther, focusedOther);
     }
 
     @Override

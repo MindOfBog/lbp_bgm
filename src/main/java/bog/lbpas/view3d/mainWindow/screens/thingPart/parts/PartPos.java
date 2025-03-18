@@ -44,7 +44,7 @@ public abstract class PartPos extends iPart {
                 if (button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS) {
                     Vector3f cpos = new Vector3f(view.getSelectedPosition());
                     if (!(Float.isNaN(cpos.x) || Float.isNaN(cpos.y) || Float.isNaN(cpos.z)))
-                        view.camera.pos = cpos;
+                        view.camera.setPos(cpos);
                 }
             }
         }, 0.475f));
@@ -68,9 +68,9 @@ public abstract class PartPos extends iPart {
         ForcedOrtho = new Checkbox("forcedOrtho", "Orthogonal")
         {
             @Override
-            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement) {
+            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement, boolean focusedOther) {
 
-                super.onClick(mouseInput, pos, button, action, mods, overElement);
+                super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
                 {

@@ -2,6 +2,7 @@ package bog.lbpas.view3d.managers;
 
 import bog.lbpas.Main;
 import bog.lbpas.view3d.managers.assetLoading.ObjectLoader;
+import bog.lbpas.view3d.renderer.Camera;
 import bog.lbpas.view3d.renderer.gui.cursor.ECursor;
 import bog.lbpas.view3d.utils.Config;
 import bog.lbpas.view3d.utils.Cursors;
@@ -414,10 +415,33 @@ public class WindowMan {
         GLFW.glfwSetWindowShouldClose(window, true);
     }
 
-    public Matrix4f updateProjectionMatrix()
+    public Matrix4f updateProjectionMatrix(Camera camera)
     {
-        float aspectRatio = ((width == 0 ? 1f : (float) width) / (height == 0 ? 1f : (float) height));
-        return projectionMatrix.setPerspective(Config.FOV, aspectRatio, Config.Z_NEAR, Config.Z_FAR);
+        if(!Config.FRONT_VIEW)
+        {
+            float aspectRatio = ((width == 0 ? 1f : (float) width) / (height == 0 ? 1f : (float) height));
+            return projectionMatrix.setPerspective(Config.FOV, aspectRatio, Config.Z_NEAR, Config.Z_FAR);
+        }
+        else
+        {
+            float aspectRatio = (width == 0 ? 1f : (float) width) / (height == 0 ? 1f : (float) height);
+            float orthoWidth = width == 0 ? 1f : (float) width;
+            float orthoHeight = height == 0 ? 1f : (float) height;
+
+            float zoom = Math.max(camera.getPos().z / 1000f, 0.0f);
+
+            orthoWidth *= zoom;
+            orthoHeight *= zoom;
+
+            float left = -orthoWidth / 2;
+            float right = orthoWidth / 2;
+            float bottom = -orthoHeight / 2;
+            float top = orthoHeight / 2;
+            float near = Config.Z_NEAR;
+            float far = Config.Z_FAR;
+
+            return projectionMatrix.setOrtho(left, right, bottom, top, near, far);
+        }
     }
 
     public Matrix4f updateProjectionMatrix(Matrix4f matrix, int width, int height)

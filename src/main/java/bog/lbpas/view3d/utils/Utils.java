@@ -9,6 +9,7 @@ import com.github.weisj.jsvg.attributes.ViewBox;
 import com.github.weisj.jsvg.geometry.size.FloatSize;
 import com.github.weisj.jsvg.parser.SVGLoader;
 import org.joml.*;
+import org.joml.Math;
 import org.lwjgl.system.MemoryUtil;
 
 import javax.crypto.*;
@@ -18,7 +19,6 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.RescaleOp;
 import java.io.*;
-import java.lang.Math;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -223,12 +223,12 @@ public class Utils {
 
     public static float round(float value, int decimals)
     {
-        return (float) (Math.round(value * Math.pow(10, decimals)) / Math.pow(10, decimals));
+        return (float) (Math.round(value * java.lang.Math.pow(10, decimals)) / java.lang.Math.pow(10, decimals));
     }
 
     public static double round(double value, int decimals)
     {
-        return (double) (Math.round(value * Math.pow(10, decimals)) / Math.pow(10, decimals));
+        return (double) (Math.round(value * java.lang.Math.pow(10, decimals)) / java.lang.Math.pow(10, decimals));
     }
 
     public static BufferedImage drawStringLegacy(String text, Color color, int size) {
@@ -591,13 +591,13 @@ public class Utils {
 
     public static String toHexColor(Vector4f color)
     {
-        String hex = toHexString((int) (color.x * 255f)) + toHexString((int) (color.y * 255f)) + toHexString((int) (color.z * 255f)) + toHexString((int) (color.w * 255f));
+        String hex = toHexString((int) (color.x * 255f)) + toHexString((int) (color.y * 255f)) + toHexString((int) (color.z * 255f));
         return hex;
     }
 
     public static String toHexColor(Color color)
     {
-        String hex = toHexString(color.getRed()) + toHexString(color.getGreen()) + toHexString(color.getBlue()) + toHexString(color.getAlpha());
+        String hex = toHexString(color.getRed()) + toHexString(color.getGreen()) + toHexString(color.getBlue());
         return hex;
     }
 
@@ -688,7 +688,7 @@ public class Utils {
         Vector2f a_to_p = new Vector2f(p.x - a.x, p.y - a.y);
         Vector2f a_to_b = new Vector2f(b.x - a.x, b.y - a.y);
 
-        double atb2 = Math.pow(a_to_b.x, 2) + Math.pow(a_to_b.y, 2);
+        double atb2 = java.lang.Math.pow(a_to_b.x, 2) + java.lang.Math.pow(a_to_b.y, 2);
 
         float atp_dot_atb = a_to_p.x * a_to_b.x + a_to_p.y * a_to_b.y;
 
@@ -745,7 +745,7 @@ public class Utils {
         float t = (diff.x * dir2.y - diff.y * dir2.x) / det;
         Vector2f intersection = new Vector2f(offsetP12).add(new Vector2f(dir1).mul(t));
 
-        if(intersection.distance(p2) > Math.pow(distance, 1.4f))
+        if(intersection.distance(p2) > java.lang.Math.pow(distance, 1.4f))
         {
             Vector2f dir = new Vector2f(intersection).sub(p2).normalize();
             intersection = new Vector2f(p2).add(dir.mul(distance));
@@ -872,5 +872,140 @@ public class Utils {
             kernel[i] /= sum;
 
         return kernel;
+    }
+
+    public static float[] toPrimitive(List<Float> floatList)
+    {
+        float[] array = new float[floatList.size()];
+        for(int i = 0; i < floatList.size(); i++)
+            array[i] = floatList.get(i);
+        return array;
+    }
+
+    public static Vector3f getClosestPointOnLine(Vector3f linePosition, Vector3f lineDirection, Vector3f point) {
+        Vector3f directionNormalized = new Vector3f(lineDirection).normalize();
+        Vector3f lineToPoint = new Vector3f(point).sub(linePosition);
+
+        float t = lineToPoint.dot(directionNormalized);
+
+        return new Vector3f(directionNormalized).mul(t).add(linePosition);
+    }
+
+    public static Vector4f toVectorColor(Color color)
+    {
+        return new Vector4f(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, color.getAlpha() / 255f);
+    }
+
+    public static Color fromVectorColor(Vector4f color)
+    {
+        return new Color(Math.clamp(0, 1, color.x), Math.clamp(0, 1, color.y), Math.clamp(0, 1, color.z), Math.clamp(0, 1, color.w));
+    }
+
+    public static Vector3f rgbToHsv(Vector4f rgb) {
+        float r = rgb.x;
+        float g = rgb.y;
+        float b = rgb.z;
+
+        float max = Math.max(r, Math.max(g, b));
+        float min = Math.min(r, Math.min(g, b));
+        float h, s, v = max;
+
+        float d = max - min;
+
+        if (d == 0) {
+            h = 0;
+        } else {
+            if (max == r) {
+                h = (g - b) / d;
+            } else if (max == g) {
+                h = 2.0f + (b - r) / d;
+            } else {
+                h = 4.0f + (r - g) / d;
+            }
+            h /= 6.0f;
+            if (h < 0) {
+                h += 1.0f;
+            }
+        }
+
+        if (max == 0) {
+            s = 0;
+        } else {
+            s = d / max;
+        }
+
+        return new Vector3f(h, s, v);
+    }
+
+    public static Vector3f rgbToHsv(Color rgb) {
+        return rgbToHsv(toVectorColor(rgb));
+    }
+    public static Vector3f hsv2rgbVec(Vector3f hsv) {
+
+        float R, G, B;
+
+        float H = hsv.x;
+        float S = hsv.y;
+        float V = hsv.z;
+
+        if (S == 0)
+        {
+            R = V;
+            G = V;
+            B = V;
+        } else {
+            float var_h = H * 6;
+            if (var_h == 6)
+                var_h = 0;
+            int var_i = (int) Math.floor((double) var_h);
+
+            float var_1 = V * (1 - S);
+            float var_2 = V * (1 - S * (var_h - var_i));
+            float var_3 = V * (1 - S * (1 - (var_h - var_i)));
+
+            float var_r;
+            float var_g;
+            float var_b;
+            if (var_i == 0) {
+                var_r = V;
+                var_g = var_3;
+                var_b = var_1;
+            } else if (var_i == 1) {
+                var_r = var_2;
+                var_g = V;
+                var_b = var_1;
+            } else if (var_i == 2) {
+                var_r = var_1;
+                var_g = V;
+                var_b = var_3;
+            } else if (var_i == 3) {
+                var_r = var_1;
+                var_g = var_2;
+                var_b = V;
+            } else if (var_i == 4) {
+                var_r = var_3;
+                var_g = var_1;
+                var_b = V;
+            } else {
+                var_r = V;
+                var_g = var_1;
+                var_b = var_2;
+            }
+
+            R = var_r;
+            G = var_g;
+            B = var_b;
+        }
+        return new Vector3f(R, G, B);
+    }
+    public static Vector4f hsv2rgbVec(Vector3f hsv, float alpha) {
+        Vector3f rgb = hsv2rgbVec(hsv);
+        return new Vector4f(rgb.x, rgb.y, rgb.z, alpha);
+    }
+
+    public static Color hsv2rgb(Vector3f hsv, float alpha)
+    {
+        Vector3f color = hsv2rgbVec(hsv);
+        return new Color(Math.clamp(0f, 1f, color.x), Math.clamp(0f, 1f, color.y), Math.clamp(0f, 1f, color.z), alpha);
     }
 }

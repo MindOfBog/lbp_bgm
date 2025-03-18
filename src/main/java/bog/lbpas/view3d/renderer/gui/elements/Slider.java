@@ -81,10 +81,10 @@ public class Slider extends Element{
             c2 = Config.INTERFACE_SECONDARY_COLOR2;
         }
 
-        renderer.drawRect((int) pos.x, (int) (pos.y + size.y/2f - size.y * 0.1f), (int) size.x, (int) (size.y * 0.2f), c);
-        renderer.drawRectOutline(new Vector2f((int) pos.x, (int) (pos.y + size.y/2f - size.y * 0.1f)), outlineRect, c2, false);
+        renderer.drawRect(Math.round(pos.x), Math.round(pos.y + size.y/2f - size.y * 0.1f), Math.round(size.x), Math.round(size.y * 0.2f), c);
+        renderer.drawRectOutline(new Vector2f(Math.round(pos.x), Math.round(pos.y + size.y/2f - size.y * 0.1f)), outlineRect, c2, false);
         if(!Float.isNaN(sliderPosition))
-            renderer.drawRect((int) (pos.x + (sliderPosition * ((size.x - size.y * 0.1f)/100))), (int) (pos.y), (int) (size.y * 0.2f), (int) size.y, Config.FONT_COLOR);
+            renderer.drawRect(Math.round(pos.x + (sliderPosition * ((size.x - size.y * 0.1f)/100))), Math.round(pos.y), Math.round(size.y * 0.15f), Math.round(size.y), Config.FONT_COLOR);
 
     }
     @Override
@@ -96,11 +96,11 @@ public class Slider extends Element{
     {
         if(this.outlineRect != null)
             this.outlineRect.cleanup(loader);
-        this.outlineRect = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f((int) size.x, (int) (size.y * 0.2f))), loader, window);
+        this.outlineRect = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(Math.round(size.x), Math.round(size.y * 0.2f))), loader, window);
     }
     @Override
-    public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement) {
-        super.onClick(mouseInput, pos, button, action, mods, overElement);
+    public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement, boolean focusedOther) {
+        super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
         if(button == GLFW.GLFW_MOUSE_BUTTON_1)
         {
@@ -136,6 +136,11 @@ public class Slider extends Element{
         super.setFocused(focused);
         if(!focused)
             isSliding = false;
+    }
+
+    @Override
+    public boolean isFocused() {
+        return super.isFocused() || isSliding;
     }
 
     @Override

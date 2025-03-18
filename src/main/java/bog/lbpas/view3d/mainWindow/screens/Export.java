@@ -1234,10 +1234,10 @@ public class Export extends GuiScreen {
             }
 
             @Override
-            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement) {
+            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement, boolean focusedOther) {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_RELEASE)
                     clicked = -1;
-                super.onClick(mouseInput, pos, button, action, mods, overElement);
+                super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
             }
 
             @Override
@@ -1281,7 +1281,7 @@ public class Export extends GuiScreen {
         ElementList binParts = binExport.addElementList(new ElementList("binParts", new Vector2f(), new Vector2f(150), 10, renderer, loader, window)
         {
             @Override
-            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overOther) {
+            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overOther, boolean focusedOther) {
 
                 if(isMouseOverElement(pos) && (button == GLFW.GLFW_MOUSE_BUTTON_2 || button == GLFW.GLFW_MOUSE_BUTTON_1) && action == GLFW.GLFW_PRESS)
                     for(Element element : this.elements)
@@ -1292,7 +1292,7 @@ public class Export extends GuiScreen {
                             ((ComboBox)e).collapsed(true);
                     }
 
-                super.onClick(mouseInput, pos, button, action, mods, overOther);
+                super.onClick(mouseInput, pos, button, action, mods, overOther, focusedOther);
             }
 
             @Override

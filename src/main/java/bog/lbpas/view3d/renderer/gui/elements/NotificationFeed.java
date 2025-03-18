@@ -42,12 +42,12 @@ public class NotificationFeed extends Element{
     }
 
     @Override
-    public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement) {
-        super.onClick(mouseInput, pos, button, action, mods, overElement);
+    public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement, boolean focusedOther) {
+        super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
         for(int i = notifications.size() - 1; i >= 0; i--) {
             Notification n = notifications.get(i);
-            n.onClick(mouseInput, pos, button, action, mods, overElement);
+            n.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
         }
     }
 

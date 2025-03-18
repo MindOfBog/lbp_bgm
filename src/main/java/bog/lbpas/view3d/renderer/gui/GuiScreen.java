@@ -236,17 +236,22 @@ public class GuiScreen {
                 overElement = true;
 
             boolean overOther = false;
+            boolean focusedOther = false;
 
             for(int o = i + 1; o < guiElements.size(); o++)
+            {
                 if(guiElements.get(o).isMouseOverElement(mouseInput.currentPos))
                     overOther = true;
+                if(guiElements.get(o).isFocused())
+                    focusedOther = true;
+            }
 
-            element.onClick(mouseInput, mouseInput.currentPos, button, action, mods, overOther);
+            element.onClick(mouseInput, mouseInput.currentPos, button, action, mods, overOther, focusedOther);
 
             if(element instanceof DropDownTab &&
                     (button == GLFW.GLFW_MOUSE_BUTTON_1 || button == GLFW.GLFW_MOUSE_BUTTON_2) &&
                     (((DropDownTab)element).isMouseOverTab(mouseInput) || ((DropDownTab)element).isMouseOverElement(mouseInput)) &&
-                    !overOther)
+                    !overOther && !focusedOther)
                 movetoEnd.put(i, element);
         }
 

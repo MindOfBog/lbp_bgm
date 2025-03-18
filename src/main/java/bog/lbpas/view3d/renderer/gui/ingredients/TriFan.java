@@ -21,7 +21,7 @@ public class TriFan extends Drawable{
     public boolean smoothstep = false;
 
     @Override
-    public int getType() {
-        return 1;
+    public Type getType() {
+        return Type.TRI_FAN;
     }
 }

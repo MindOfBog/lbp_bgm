@@ -48,7 +48,7 @@ public class Scissor extends Drawable {
     }
 
     @Override
-    public int getType() {
-        return 4;
+    public Type getType() {
+        return Type.SCISSOR;
     }
 }

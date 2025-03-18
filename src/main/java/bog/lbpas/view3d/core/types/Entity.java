@@ -57,6 +57,11 @@ public class Entity {
         return transformation;
     }
 
+    public void setHighlighted(boolean highlighted)
+    {
+        this.highlighted = highlighted;
+    }
+
     public void setTransformation(Matrix4f transformation) {
         this.transformation = transformation;
     }

@@ -45,74 +45,27 @@ public class Settings extends GuiScreen{
     public Textbox sensitivity;
     public Textbox zNear;
     public Textbox zFar;
-    public Textbox outlineColorR;
-    public Textbox outlineColorG;
-    public Textbox outlineColorB;
-    public Textbox outlineColorA;
-    public Textbox borderColor1R;
-    public Textbox borderColor1G;
-    public Textbox borderColor1B;
-    public Textbox borderColor1A;
-    public Textbox borderColor2R;
-    public Textbox borderColor2G;
-    public Textbox borderColor2B;
-    public Textbox borderColor2A;
-    public Textbox borderColor3R;
-    public Textbox borderColor3G;
-    public Textbox borderColor3B;
-    public Textbox borderColor3A;
-    public Textbox borderColor4R;
-    public Textbox borderColor4G;
-    public Textbox borderColor4B;
-    public Textbox borderColor4A;
-    public Textbox earthColorR;
-    public Textbox earthColorG;
-    public Textbox earthColorB;
-    public Textbox earthColorA;
-    public Textbox podColorR;
-    public Textbox podColorG;
-    public Textbox podColorB;
-    public Textbox podColorA;
-    public Textbox fontColorR;
-    public Textbox fontColorG;
-    public Textbox fontColorB;
-    public Textbox fontColorA;
-    public Textbox primaryColorR;
-    public Textbox primaryColorG;
-    public Textbox primaryColorB;
-    public Textbox primaryColorA;
-    public Textbox secondaryColorR;
-    public Textbox secondaryColorG;
-    public Textbox secondaryColorB;
-    public Textbox secondaryColorA;
-    public Textbox interfacePrimaryColorR;
-    public Textbox interfacePrimaryColorG;
-    public Textbox interfacePrimaryColorB;
-    public Textbox interfacePrimaryColorA;
-    public Textbox interfacePrimaryColor2R;
-    public Textbox interfacePrimaryColor2G;
-    public Textbox interfacePrimaryColor2B;
-    public Textbox interfacePrimaryColor2A;
-    public Textbox interfaceSecondaryColorR;
-    public Textbox interfaceSecondaryColorG;
-    public Textbox interfaceSecondaryColorB;
-    public Textbox interfaceSecondaryColorA;
-    public Textbox interfaceSecondaryColor2R;
-    public Textbox interfaceSecondaryColor2G;
-    public Textbox interfaceSecondaryColor2B;
-    public Textbox interfaceSecondaryColor2A;
-    public Textbox interfaceTertiaryColorR;
-    public Textbox interfaceTertiaryColorG;
-    public Textbox interfaceTertiaryColorB;
-    public Textbox interfaceTertiaryColorA;
-    public Textbox interfaceTertiaryColor2R;
-    public Textbox interfaceTertiaryColor2G;
-    public Textbox interfaceTertiaryColor2B;
-    public Textbox interfaceTertiaryColor2A;
+    public ColorPicker outlineColor;
+    public ColorPicker borderColor1;
+    public ColorPicker borderColor2;
+    public ColorPicker borderColor3;
+    public ColorPicker borderColor4;
+    public ColorPicker earthColor;
+    public ColorPicker podColor;
+    public ColorPicker fontColor;
+    public ColorPicker primaryColor;
+    public ColorPicker secondaryColor;
+    public ColorPicker interfacePrimaryColor;
+    public ColorPicker interfacePrimaryColor2;
+    public ColorPicker interfaceSecondaryColor;
+    public ColorPicker interfaceSecondaryColor2;
+    public ColorPicker interfaceTertiaryColor;
+    public ColorPicker interfaceTertiaryColor2;
 
     Textbox cursorSize;
     public Slider fov;
     public Checkbox culling;
+    public Checkbox showFPS;
     public Slider outlineSize;
 
     public Checkbox debugScissorTest;
@@ -150,436 +103,334 @@ public class Settings extends GuiScreen{
         rendererSettings.addString("outlineSizeLabel", "Outline Size:");
         outlineSize = rendererSettings.addSlider("outlineSize", Config.OUTLINE_DISTANCE, 0.525f, 1.1f);
 
-        float spacing = 0.0175f;
-        float textboxsize = (1f - (spacing * 3f)) / 4f;
+        Panel outlineColorPanel = rendererSettings.addPanel("outlineColorPickerPanel");
+        outlineColorPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("outlineColorLabel", "Outline Color:", 10, mainView.renderer), 0.7f));
+        outlineColor = new ColorPicker("outlineColor", 10, mainView.renderer, mainView.loader, mainView.window) {
+            @Override
+            public Color getColor() {
+                return Config.OUTLINE_COLOR;
+            }
 
-        rendererSettings.addString("outlineColorLabel", "Outline Color:");
-        {
-            Panel panel = rendererSettings.addPanel("outlineColorPanel");
-            outlineColorR = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            outlineColorR.noLetters().noOthers().numberLimits(0, 255);
-            outlineColorR.setText(Integer.toString(Config.OUTLINE_COLOR.getRed()));
-            panel.elements.add(new Panel.PanelElement(outlineColorR, textboxsize));
+            @Override
+            public void setColor(Color color) {
+                Config.OUTLINE_COLOR = color;
+            }
 
-            panel.elements.add(new Panel.PanelElement(null, spacing));
-            outlineColorG = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            outlineColorG.noLetters().noOthers().numberLimits(0, 255);
-            outlineColorG.setText(Integer.toString(Config.OUTLINE_COLOR.getGreen()));
-            panel.elements.add(new Panel.PanelElement(outlineColorG, textboxsize));
+            @Override
+            public int[] getParentTransform() {
+                return new int[]{(int) Math.round(rendererSettings.pos.x), (int) Math.round(rendererSettings.pos.y), (int) Math.round(rendererSettings.size.x)};
+            }
+        };
+        outlineColorPanel.elements.add(new Panel.PanelElement(outlineColor, 0.3f));
 
-            panel.elements.add(new Panel.PanelElement(null, spacing));
-            outlineColorB = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            outlineColorB.noLetters().noOthers().numberLimits(0, 255);
-            outlineColorB.setText(Integer.toString(Config.OUTLINE_COLOR.getBlue()));
-            panel.elements.add(new Panel.PanelElement(outlineColorB, textboxsize));
+        Panel borderColor1Panel = rendererSettings.addPanel("borderColor1PickerPanel");
+        borderColor1Panel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("borderColor1Label", "Border Color 1:", 10, mainView.renderer), 0.7f));
+        borderColor1 = new ColorPicker("borderColor1", 10, mainView.renderer, mainView.loader, mainView.window) {
+            @Override
+            public Color getColor() {
+                return Config.BORDER_COLOR_1;
+            }
 
-            panel.elements.add(new Panel.PanelElement(null, spacing));
-            outlineColorA = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            outlineColorA.noLetters().noOthers().numberLimits(0, 255);
-            outlineColorA.setText(Integer.toString(Config.OUTLINE_COLOR.getAlpha()));
-            panel.elements.add(new Panel.PanelElement(outlineColorA, textboxsize));
-        }
+            @Override
+            public void setColor(Color color) {
+                Config.BORDER_COLOR_1 = color;
+                mainView.borders.material.setColor(color);
+            }
 
-        rendererSettings.addString("borderColor1Label", "Border Color 1:");
-        {
-            Panel panel = rendererSettings.addPanel("borderColor1Panel");
-            borderColor1R = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            borderColor1R.noLetters().noOthers().numberLimits(0, 255);
-            borderColor1R.setText(Integer.toString(Config.BORDER_COLOR_1.getRed()));
-            panel.elements.add(new Panel.PanelElement(borderColor1R, textboxsize));
+            @Override
+            public int[] getParentTransform() {
+                return new int[]{(int) Math.round(rendererSettings.pos.x), (int) Math.round(rendererSettings.pos.y), (int) Math.round(rendererSettings.size.x)};
+            }
+        };
+        borderColor1Panel.elements.add(new Panel.PanelElement(borderColor1, 0.3f));
 
-            panel.elements.add(new Panel.PanelElement(null, spacing));
-            borderColor1G = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            borderColor1G.noLetters().noOthers().numberLimits(0, 255);
-            borderColor1G.setText(Integer.toString(Config.BORDER_COLOR_1.getGreen()));
-            panel.elements.add(new Panel.PanelElement(borderColor1G, textboxsize));
+        Panel borderColor2Panel = rendererSettings.addPanel("borderColor2PickerPanel");
+        borderColor2Panel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("borderColor2Label", "Border Color 2:", 10, mainView.renderer), 0.7f));
+        borderColor2 = new ColorPicker("borderColor2", 10, mainView.renderer, mainView.loader, mainView.window) {
+            @Override
+            public Color getColor() {
+                return Config.BORDER_COLOR_2;
+            }
 
-            panel.elements.add(new Panel.PanelElement(null, spacing));
-            borderColor1B = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            borderColor1B.noLetters().noOthers().numberLimits(0, 255);
-            borderColor1B.setText(Integer.toString(Config.BORDER_COLOR_1.getBlue()));
-            panel.elements.add(new Panel.PanelElement(borderColor1B, textboxsize));
+            @Override
+            public void setColor(Color color) {
+                Config.BORDER_COLOR_2 = color;
+                mainView.borders1.material.setColor(color);
+            }
 
-            panel.elements.add(new Panel.PanelElement(null, spacing));
-            borderColor1A = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            borderColor1A.noLetters().noOthers().numberLimits(0, 255);
-            borderColor1A.setText(Integer.toString(Config.BORDER_COLOR_1.getAlpha()));
-            panel.elements.add(new Panel.PanelElement(borderColor1A, textboxsize));
-        }
+            @Override
+            public int[] getParentTransform() {
+                return new int[]{(int) Math.round(rendererSettings.pos.x), (int) Math.round(rendererSettings.pos.y), (int) Math.round(rendererSettings.size.x)};
+            }
+        };
+        borderColor2Panel.elements.add(new Panel.PanelElement(borderColor2, 0.3f));
 
-        rendererSettings.addString("borderColor2Label", "Border Color 2:");
-        {
-            Panel panel = rendererSettings.addPanel("borderColor2Panel");
-            borderColor2R = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            borderColor2R.noLetters().noOthers().numberLimits(0, 255);
-            borderColor2R.setText(Integer.toString(Config.BORDER_COLOR_2.getRed()));
-            panel.elements.add(new Panel.PanelElement(borderColor2R, textboxsize));
+        Panel borderColor3Panel = rendererSettings.addPanel("borderColor3PickerPanel");
+        borderColor3Panel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("borderColor3Label", "Border Color 3:", 10, mainView.renderer), 0.7f));
+        borderColor3 = new ColorPicker("borderColor3", 10, mainView.renderer, mainView.loader, mainView.window) {
+            @Override
+            public Color getColor() {
+                return Config.BORDER_COLOR_3;
+            }
 
-            panel.elements.add(new Panel.PanelElement(null, spacing));
-            borderColor2G = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            borderColor2G.noLetters().noOthers().numberLimits(0, 255);
-            borderColor2G.setText(Integer.toString(Config.BORDER_COLOR_2.getGreen()));
-            panel.elements.add(new Panel.PanelElement(borderColor2G, textboxsize));
+            @Override
+            public void setColor(Color color) {
+                Config.BORDER_COLOR_3 = color;
+                mainView.borders2.material.setColor(color);
+            }
 
-            panel.elements.add(new Panel.PanelElement(null, spacing));
-            borderColor2B = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            borderColor2B.noLetters().noOthers().numberLimits(0, 255);
-            borderColor2B.setText(Integer.toString(Config.BORDER_COLOR_2.getBlue()));
-            panel.elements.add(new Panel.PanelElement(borderColor2B, textboxsize));
+            @Override
+            public int[] getParentTransform() {
+                return new int[]{(int) Math.round(rendererSettings.pos.x), (int) Math.round(rendererSettings.pos.y), (int) Math.round(rendererSettings.size.x)};
+            }
+        };
+        borderColor3Panel.elements.add(new Panel.PanelElement(borderColor3, 0.3f));
 
-            panel.elements.add(new Panel.PanelElement(null, spacing));
-            borderColor2A = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            borderColor2A.noLetters().noOthers().numberLimits(0, 255);
-            borderColor2A.setText(Integer.toString(Config.BORDER_COLOR_2.getAlpha()));
-            panel.elements.add(new Panel.PanelElement(borderColor2A, textboxsize));
-        }
+        Panel borderColor4Panel = rendererSettings.addPanel("borderColor4PickerPanel");
+        borderColor4Panel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("borderColor4Label", "Border Color 4:", 10, mainView.renderer), 0.7f));
+        borderColor4 = new ColorPicker("borderColor4", 10, mainView.renderer, mainView.loader, mainView.window) {
+            @Override
+            public Color getColor() {
+                return Config.BORDER_COLOR_4;
+            }
 
-        rendererSettings.addString("borderColor3Label", "Border Color 3:");
-        {
-            Panel panel = rendererSettings.addPanel("borderColor3Panel");
-            borderColor3R = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            borderColor3R.noLetters().noOthers().numberLimits(0, 255);
-            borderColor3R.setText(Integer.toString(Config.BORDER_COLOR_3.getRed()));
-            panel.elements.add(new Panel.PanelElement(borderColor3R, textboxsize));
+            @Override
+            public void setColor(Color color) {
+                Config.BORDER_COLOR_4 = color;
+                mainView.borders3.material.setColor(color);
+            }
 
-            panel.elements.add(new Panel.PanelElement(null, spacing));
-            borderColor3G = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            borderColor3G.noLetters().noOthers().numberLimits(0, 255);
-            borderColor3G.setText(Integer.toString(Config.BORDER_COLOR_3.getGreen()));
-            panel.elements.add(new Panel.PanelElement(borderColor3G, textboxsize));
+            @Override
+            public int[] getParentTransform() {
+                return new int[]{(int) Math.round(rendererSettings.pos.x), (int) Math.round(rendererSettings.pos.y), (int) Math.round(rendererSettings.size.x)};
+            }
+        };
+        borderColor4Panel.elements.add(new Panel.PanelElement(borderColor4, 0.3f));
 
-            panel.elements.add(new Panel.PanelElement(null, spacing));
-            borderColor3B = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            borderColor3B.noLetters().noOthers().numberLimits(0, 255);
-            borderColor3B.setText(Integer.toString(Config.BORDER_COLOR_3.getBlue()));
-            panel.elements.add(new Panel.PanelElement(borderColor3B, textboxsize));
+        Panel earthColorPanel = rendererSettings.addPanel("earthColorPickerPanel");
+        earthColorPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("earthColorLabel", "Earth Color:", 10, mainView.renderer), 0.7f));
+        earthColor = new ColorPicker("earthColor", 10, mainView.renderer, mainView.loader, mainView.window) {
+            @Override
+            public Color getColor() {
+                return Config.EARTH_COLOR;
+            }
 
-            panel.elements.add(new Panel.PanelElement(null, spacing));
-            borderColor3A = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            borderColor3A.noLetters().noOthers().numberLimits(0, 255);
-            borderColor3A.setText(Integer.toString(Config.BORDER_COLOR_3.getAlpha()));
-            panel.elements.add(new Panel.PanelElement(borderColor3A, textboxsize));
-        }
+            @Override
+            public void setColor(Color color) {
+                Config.EARTH_COLOR = color;
+                mainView.earth.material.setColor(color);
+            }
 
-        rendererSettings.addString("borderColor4Label", "Border Color 4:");
-        {
-            Panel panel = rendererSettings.addPanel("borderColor4Panel");
-            borderColor4R = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            borderColor4R.noLetters().noOthers().numberLimits(0, 255);
-            borderColor4R.setText(Integer.toString(Config.BORDER_COLOR_4.getRed()));
-            panel.elements.add(new Panel.PanelElement(borderColor4R, textboxsize));
+            @Override
+            public int[] getParentTransform() {
+                return new int[]{(int) Math.round(rendererSettings.pos.x), (int) Math.round(rendererSettings.pos.y), (int) Math.round(rendererSettings.size.x)};
+            }
+        };
+        earthColorPanel.elements.add(new Panel.PanelElement(earthColor, 0.3f));
 
-            panel.elements.add(new Panel.PanelElement(null, spacing));
-            borderColor4G = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            borderColor4G.noLetters().noOthers().numberLimits(0, 255);
-            borderColor4G.setText(Integer.toString(Config.BORDER_COLOR_4.getGreen()));
-            panel.elements.add(new Panel.PanelElement(borderColor4G, textboxsize));
+        Panel podColorPanel = rendererSettings.addPanel("podColorPickerPanel");
+        podColorPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("podColorLabel", "Pod Color:", 10, mainView.renderer), 0.7f));
+        podColor = new ColorPicker("podColor", 10, mainView.renderer, mainView.loader, mainView.window) {
+            @Override
+            public Color getColor() {
+                return Config.POD_COLOR;
+            }
 
-            panel.elements.add(new Panel.PanelElement(null, spacing));
-            borderColor4B = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            borderColor4B.noLetters().noOthers().numberLimits(0, 255);
-            borderColor4B.setText(Integer.toString(Config.BORDER_COLOR_4.getBlue()));
-            panel.elements.add(new Panel.PanelElement(borderColor4B, textboxsize));
+            @Override
+            public void setColor(Color color) {
+                Config.POD_COLOR = color;
+                mainView.pod.material.setColor(color);
+            }
 
-            panel.elements.add(new Panel.PanelElement(null, spacing));
-            borderColor4A = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            borderColor4A.noLetters().noOthers().numberLimits(0, 255);
-            borderColor4A.setText(Integer.toString(Config.BORDER_COLOR_4.getAlpha()));
-            panel.elements.add(new Panel.PanelElement(borderColor4A, textboxsize));
-        }
-
-        rendererSettings.addString("earthColorLabel", "Earth Color:");
-        {
-            Panel panel = rendererSettings.addPanel("earthColorPanel");
-            earthColorR = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            earthColorR.noLetters().noOthers().numberLimits(0, 255);
-            earthColorR.setText(Integer.toString(Config.EARTH_COLOR.getRed()));
-            panel.elements.add(new Panel.PanelElement(earthColorR, textboxsize));
-
-            panel.elements.add(new Panel.PanelElement(null, spacing));
-            earthColorG = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            earthColorG.noLetters().noOthers().numberLimits(0, 255);
-            earthColorG.setText(Integer.toString(Config.EARTH_COLOR.getGreen()));
-            panel.elements.add(new Panel.PanelElement(earthColorG, textboxsize));
-
-            panel.elements.add(new Panel.PanelElement(null, spacing));
-            earthColorB = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            earthColorB.noLetters().noOthers().numberLimits(0, 255);
-            earthColorB.setText(Integer.toString(Config.EARTH_COLOR.getBlue()));
-            panel.elements.add(new Panel.PanelElement(earthColorB, textboxsize));
-
-            panel.elements.add(new Panel.PanelElement(null, spacing));
-            earthColorA = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            earthColorA.noLetters().noOthers().numberLimits(0, 255);
-            earthColorA.setText(Integer.toString(Config.EARTH_COLOR.getAlpha()));
-            panel.elements.add(new Panel.PanelElement(earthColorA, textboxsize));
-        }
-
-        rendererSettings.addString("podColorLabel", "Pod Color:");
-        {
-            Panel panel = rendererSettings.addPanel("podColorPanel");
-            podColorR = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            podColorR.noLetters().noOthers().numberLimits(0, 255);
-            podColorR.setText(Integer.toString(Config.POD_COLOR.getRed()));
-            panel.elements.add(new Panel.PanelElement(podColorR, textboxsize));
-
-            panel.elements.add(new Panel.PanelElement(null, spacing));
-            podColorG = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            podColorG.noLetters().noOthers().numberLimits(0, 255);
-            podColorG.setText(Integer.toString(Config.POD_COLOR.getGreen()));
-            panel.elements.add(new Panel.PanelElement(podColorG, textboxsize));
-
-            panel.elements.add(new Panel.PanelElement(null, spacing));
-            podColorB = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            podColorB.noLetters().noOthers().numberLimits(0, 255);
-            podColorB.setText(Integer.toString(Config.POD_COLOR.getBlue()));
-            panel.elements.add(new Panel.PanelElement(podColorB, textboxsize));
-
-            panel.elements.add(new Panel.PanelElement(null, spacing));
-            podColorA = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            podColorA.noLetters().noOthers().numberLimits(0, 255);
-            podColorA.setText(Integer.toString(Config.POD_COLOR.getAlpha()));
-            panel.elements.add(new Panel.PanelElement(podColorA, textboxsize));
-        }
+            @Override
+            public int[] getParentTransform() {
+                return new int[]{(int) Math.round(rendererSettings.pos.x), (int) Math.round(rendererSettings.pos.y), (int) Math.round(rendererSettings.size.x)};
+            }
+        };
+        podColorPanel.elements.add(new Panel.PanelElement(podColor, 0.3f));
 
         //------------------------------------
 
         guiSettings = new DropDownTab("guiSettings", "GUI Settings", new Vector2f(10, 21 + 10 + 7 + rendererSettings.getFullHeight()), new Vector2f(200, getFontHeight(10) + 4), 10, renderer, loader, window).closed();
 
-        guiSettings.addString("fontColorLabel", "Font Color:");
-        {
-            Panel panel = guiSettings.addPanel("fontColorPanel");
-            fontColorR = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            fontColorR.noLetters().noOthers().numberLimits(0, 255);
-            fontColorR.setText(Integer.toString(Config.FONT_COLOR.getRed()));
-            panel.elements.add(new Panel.PanelElement(fontColorR, textboxsize));
+        Panel fontColorPanel = guiSettings.addPanel("fontColorPickerPanel");
+        fontColorPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("fontColorLabel", "Font Color:", 10, mainView.renderer), 0.7f));
+        fontColor = new ColorPicker("fontColor", 10, mainView.renderer, mainView.loader, mainView.window) {
+            @Override
+            public Color getColor() {
+                return Config.FONT_COLOR;
+            }
 
-            panel.elements.add(new Panel.PanelElement(null, spacing));
-            fontColorG = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            fontColorG.noLetters().noOthers().numberLimits(0, 255);
-            fontColorG.setText(Integer.toString(Config.FONT_COLOR.getGreen()));
-            panel.elements.add(new Panel.PanelElement(fontColorG, textboxsize));
+            @Override
+            public void setColor(Color color) {
+                Config.FONT_COLOR = color;
+            }
 
-            panel.elements.add(new Panel.PanelElement(null, spacing));
-            fontColorB = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            fontColorB.noLetters().noOthers().numberLimits(0, 255);
-            fontColorB.setText(Integer.toString(Config.FONT_COLOR.getBlue()));
-            panel.elements.add(new Panel.PanelElement(fontColorB, textboxsize));
+            @Override
+            public int[] getParentTransform() {
+                return new int[]{(int) Math.round(guiSettings.pos.x), (int) Math.round(guiSettings.pos.y), (int) Math.round(guiSettings.size.x)};
+            }
+        };
+        fontColorPanel.elements.add(new Panel.PanelElement(fontColor, 0.3f));
 
-            panel.elements.add(new Panel.PanelElement(null, spacing));
-            fontColorA = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            fontColorA.noLetters().noOthers().numberLimits(0, 255);
-            fontColorA.setText(Integer.toString(Config.FONT_COLOR.getAlpha()));
-            panel.elements.add(new Panel.PanelElement(fontColorA, textboxsize));
-        }
+        float gap = 1f / (guiSettings.size.x - 5f);
+        float element = 0.5f - (gap / 2);
 
-        guiSettings.addString("primaryColorLabel", "Backdrop Color:");
-        {
-            Panel panel = guiSettings.addPanel("primaryColorPanel");
-            primaryColorR = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            primaryColorR.noLetters().noOthers().numberLimits(0, 255);
-            primaryColorR.setText(Integer.toString(Config.PRIMARY_COLOR.getRed()));
-            panel.elements.add(new Panel.PanelElement(primaryColorR, textboxsize));
+        guiSettings.addString("primarySecondaryColorLabel", "Backdrop Color:");
 
-            panel.elements.add(new Panel.PanelElement(null, spacing));
-            primaryColorG = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            primaryColorG.noLetters().noOthers().numberLimits(0, 255);
-            primaryColorG.setText(Integer.toString(Config.PRIMARY_COLOR.getGreen()));
-            panel.elements.add(new Panel.PanelElement(primaryColorG, textboxsize));
+        Panel primaryColorPanel = guiSettings.addPanel("primaryColorPickerPanel");
+        primaryColor = new ColorPicker("primaryColor", 10, mainView.renderer, mainView.loader, mainView.window) {
+            @Override
+            public Color getColor() {
+                return Config.PRIMARY_COLOR;
+            }
 
-            panel.elements.add(new Panel.PanelElement(null, spacing));
-            primaryColorB = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            primaryColorB.noLetters().noOthers().numberLimits(0, 255);
-            primaryColorB.setText(Integer.toString(Config.PRIMARY_COLOR.getBlue()));
-            panel.elements.add(new Panel.PanelElement(primaryColorB, textboxsize));
+            @Override
+            public void setColor(Color color) {
+                Config.PRIMARY_COLOR = color;
+            }
 
-            panel.elements.add(new Panel.PanelElement(null, spacing));
-            primaryColorA = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            primaryColorA.noLetters().noOthers().numberLimits(0, 255);
-            primaryColorA.setText(Integer.toString(Config.PRIMARY_COLOR.getAlpha()));
-            panel.elements.add(new Panel.PanelElement(primaryColorA, textboxsize));
-        }
-        {
-            Panel panel = guiSettings.addPanel("secondaryColorPanel");
-            secondaryColorR = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            secondaryColorR.noLetters().noOthers().numberLimits(0, 255);
-            secondaryColorR.setText(Integer.toString(Config.SECONDARY_COLOR.getRed()));
-            panel.elements.add(new Panel.PanelElement(secondaryColorR, textboxsize));
+            @Override
+            public int[] getParentTransform() {
+                return new int[]{(int) Math.round(guiSettings.pos.x), (int) Math.round(guiSettings.pos.y), (int) Math.round(guiSettings.size.x)};
+            }
+        };
+        primaryColorPanel.elements.add(new Panel.PanelElement(primaryColor, element));
+        primaryColorPanel.elements.add(new Panel.PanelElement(null, gap));
+        secondaryColor = new ColorPicker("secondaryColor", 10, mainView.renderer, mainView.loader, mainView.window) {
+            @Override
+            public Color getColor() {
+                return Config.SECONDARY_COLOR;
+            }
 
-            panel.elements.add(new Panel.PanelElement(null, spacing));
-            secondaryColorG = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            secondaryColorG.noLetters().noOthers().numberLimits(0, 255);
-            secondaryColorG.setText(Integer.toString(Config.SECONDARY_COLOR.getGreen()));
-            panel.elements.add(new Panel.PanelElement(secondaryColorG, textboxsize));
+            @Override
+            public void setColor(Color color) {
+                Config.SECONDARY_COLOR = color;
+            }
 
-            panel.elements.add(new Panel.PanelElement(null, spacing));
-            secondaryColorB = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            secondaryColorB.noLetters().noOthers().numberLimits(0, 255);
-            secondaryColorB.setText(Integer.toString(Config.SECONDARY_COLOR.getBlue()));
-            panel.elements.add(new Panel.PanelElement(secondaryColorB, textboxsize));
+            @Override
+            public int[] getParentTransform() {
+                return new int[]{(int) Math.round(guiSettings.pos.x), (int) Math.round(guiSettings.pos.y), (int) Math.round(guiSettings.size.x)};
+            }
+        };
+        primaryColorPanel.elements.add(new Panel.PanelElement(secondaryColor, element));
 
-            panel.elements.add(new Panel.PanelElement(null, spacing));
-            secondaryColorA = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            secondaryColorA.noLetters().noOthers().numberLimits(0, 255);
-            secondaryColorA.setText(Integer.toString(Config.SECONDARY_COLOR.getAlpha()));
-            panel.elements.add(new Panel.PanelElement(secondaryColorA, textboxsize));
-        }
+        guiSettings.addString("interfacePrimaryColorLabel", "Primary Color:");
 
-        guiSettings.addString("interfacePrimaryColorLabel", "Interface Prim. Color:");
-        {
-            Panel panel = guiSettings.addPanel("interfacePrimaryColorPanel");
-            interfacePrimaryColorR = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            interfacePrimaryColorR.noLetters().noOthers().numberLimits(0, 255);
-            interfacePrimaryColorR.setText(Integer.toString(Config.INTERFACE_PRIMARY_COLOR.getRed()));
-            panel.elements.add(new Panel.PanelElement(interfacePrimaryColorR, textboxsize));
+        Panel interfacePrimaryColorPanel = guiSettings.addPanel("interfacePrimaryColorPickerPanel");
+        interfacePrimaryColor = new ColorPicker("interfacePrimaryColor", 10, mainView.renderer, mainView.loader, mainView.window) {
+            @Override
+            public Color getColor() {
+                return Config.INTERFACE_PRIMARY_COLOR;
+            }
 
-            panel.elements.add(new Panel.PanelElement(null, spacing));
-            interfacePrimaryColorG = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            interfacePrimaryColorG.noLetters().noOthers().numberLimits(0, 255);
-            interfacePrimaryColorG.setText(Integer.toString(Config.INTERFACE_PRIMARY_COLOR.getGreen()));
-            panel.elements.add(new Panel.PanelElement(interfacePrimaryColorG, textboxsize));
+            @Override
+            public void setColor(Color color) {
+                Config.INTERFACE_PRIMARY_COLOR = color;
+            }
 
-            panel.elements.add(new Panel.PanelElement(null, spacing));
-            interfacePrimaryColorB = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            interfacePrimaryColorB.noLetters().noOthers().numberLimits(0, 255);
-            interfacePrimaryColorB.setText(Integer.toString(Config.INTERFACE_PRIMARY_COLOR.getBlue()));
-            panel.elements.add(new Panel.PanelElement(interfacePrimaryColorB, textboxsize));
+            @Override
+            public int[] getParentTransform() {
+                return new int[]{(int) Math.round(guiSettings.pos.x), (int) Math.round(guiSettings.pos.y), (int) Math.round(guiSettings.size.x)};
+            }
+        };
+        interfacePrimaryColorPanel.elements.add(new Panel.PanelElement(interfacePrimaryColor, element));
+        interfacePrimaryColorPanel.elements.add(new Panel.PanelElement(null, gap));
+        interfacePrimaryColor2 = new ColorPicker("interfacePrimaryColor2", 10, mainView.renderer, mainView.loader, mainView.window) {
+            @Override
+            public Color getColor() {
+                return Config.INTERFACE_PRIMARY_COLOR2;
+            }
 
-            panel.elements.add(new Panel.PanelElement(null, spacing));
-            interfacePrimaryColorA = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            interfacePrimaryColorA.noLetters().noOthers().numberLimits(0, 255);
-            interfacePrimaryColorA.setText(Integer.toString(Config.INTERFACE_PRIMARY_COLOR.getAlpha()));
-            panel.elements.add(new Panel.PanelElement(interfacePrimaryColorA, textboxsize));
-        }
-        {
-            Panel panel = guiSettings.addPanel("interfacePrimaryColor2Panel");
-            interfacePrimaryColor2R = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            interfacePrimaryColor2R.noLetters().noOthers().numberLimits(0, 255);
-            interfacePrimaryColor2R.setText(Integer.toString(Config.INTERFACE_PRIMARY_COLOR2.getRed()));
-            panel.elements.add(new Panel.PanelElement(interfacePrimaryColor2R, textboxsize));
+            @Override
+            public void setColor(Color color) {
+                Config.INTERFACE_PRIMARY_COLOR2 = color;
+            }
 
-            panel.elements.add(new Panel.PanelElement(null, spacing));
-            interfacePrimaryColor2G = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            interfacePrimaryColor2G.noLetters().noOthers().numberLimits(0, 255);
-            interfacePrimaryColor2G.setText(Integer.toString(Config.INTERFACE_PRIMARY_COLOR2.getGreen()));
-            panel.elements.add(new Panel.PanelElement(interfacePrimaryColor2G, textboxsize));
+            @Override
+            public int[] getParentTransform() {
+                return new int[]{(int) Math.round(guiSettings.pos.x), (int) Math.round(guiSettings.pos.y), (int) Math.round(guiSettings.size.x)};
+            }
+        };
+        interfacePrimaryColorPanel.elements.add(new Panel.PanelElement(interfacePrimaryColor2, element));
 
-            panel.elements.add(new Panel.PanelElement(null, spacing));
-            interfacePrimaryColor2B = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            interfacePrimaryColor2B.noLetters().noOthers().numberLimits(0, 255);
-            interfacePrimaryColor2B.setText(Integer.toString(Config.INTERFACE_PRIMARY_COLOR2.getBlue()));
-            panel.elements.add(new Panel.PanelElement(interfacePrimaryColor2B, textboxsize));
+        guiSettings.addString("interfaceSecondaryColorLabel", "Secondary Color:");
 
-            panel.elements.add(new Panel.PanelElement(null, spacing));
-            interfacePrimaryColor2A = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            interfacePrimaryColor2A.noLetters().noOthers().numberLimits(0, 255);
-            interfacePrimaryColor2A.setText(Integer.toString(Config.INTERFACE_PRIMARY_COLOR2.getAlpha()));
-            panel.elements.add(new Panel.PanelElement(interfacePrimaryColor2A, textboxsize));
-        }
+        Panel interfaceSecondaryColorPanel = guiSettings.addPanel("interfaceSecondaryColorPanel");
+        interfaceSecondaryColor = new ColorPicker("interfaceSecondaryColor", 10, mainView.renderer, mainView.loader, mainView.window) {
+            @Override
+            public Color getColor() {
+                return Config.INTERFACE_SECONDARY_COLOR;
+            }
 
-        guiSettings.addString("interfaceSecondaryColorLabel", "Interface Sec. Color:");
-        {
-            Panel panel = guiSettings.addPanel("interfaceSecondaryColorPanel");
-            interfaceSecondaryColorR = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            interfaceSecondaryColorR.noLetters().noOthers().numberLimits(0, 255);
-            interfaceSecondaryColorR.setText(Integer.toString(Config.INTERFACE_SECONDARY_COLOR.getRed()));
-            panel.elements.add(new Panel.PanelElement(interfaceSecondaryColorR, textboxsize));
+            @Override
+            public void setColor(Color color) {
+                Config.INTERFACE_SECONDARY_COLOR = color;
+            }
 
-            panel.elements.add(new Panel.PanelElement(null, spacing));
-            interfaceSecondaryColorG = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            interfaceSecondaryColorG.noLetters().noOthers().numberLimits(0, 255);
-            interfaceSecondaryColorG.setText(Integer.toString(Config.INTERFACE_SECONDARY_COLOR.getGreen()));
-            panel.elements.add(new Panel.PanelElement(interfaceSecondaryColorG, textboxsize));
+            @Override
+            public int[] getParentTransform() {
+                return new int[]{(int) Math.round(guiSettings.pos.x), (int) Math.round(guiSettings.pos.y), (int) Math.round(guiSettings.size.x)};
+            }
+        };
+        interfaceSecondaryColorPanel.elements.add(new Panel.PanelElement(interfaceSecondaryColor, element));
+        interfaceSecondaryColorPanel.elements.add(new Panel.PanelElement(null, gap));
+        interfaceSecondaryColor2 = new ColorPicker("interfaceSecondaryColor2", 10, mainView.renderer, mainView.loader, mainView.window) {
+            @Override
+            public Color getColor() {
+                return Config.INTERFACE_SECONDARY_COLOR2;
+            }
 
-            panel.elements.add(new Panel.PanelElement(null, spacing));
-            interfaceSecondaryColorB = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            interfaceSecondaryColorB.noLetters().noOthers().numberLimits(0, 255);
-            interfaceSecondaryColorB.setText(Integer.toString(Config.INTERFACE_SECONDARY_COLOR.getBlue()));
-            panel.elements.add(new Panel.PanelElement(interfaceSecondaryColorB, textboxsize));
+            @Override
+            public void setColor(Color color) {
+                Config.INTERFACE_SECONDARY_COLOR2 = color;
+            }
 
-            panel.elements.add(new Panel.PanelElement(null, spacing));
-            interfaceSecondaryColorA = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            interfaceSecondaryColorA.noLetters().noOthers().numberLimits(0, 255);
-            interfaceSecondaryColorA.setText(Integer.toString(Config.INTERFACE_SECONDARY_COLOR.getAlpha()));
-            panel.elements.add(new Panel.PanelElement(interfaceSecondaryColorA, textboxsize));
-        }
-        {
-            Panel panel = guiSettings.addPanel("interfaceSecondaryColor2Panel");
-            interfaceSecondaryColor2R = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            interfaceSecondaryColor2R.noLetters().noOthers().numberLimits(0, 255);
-            interfaceSecondaryColor2R.setText(Integer.toString(Config.INTERFACE_SECONDARY_COLOR2.getRed()));
-            panel.elements.add(new Panel.PanelElement(interfaceSecondaryColor2R, textboxsize));
+            @Override
+            public int[] getParentTransform() {
+                return new int[]{(int) Math.round(guiSettings.pos.x), (int) Math.round(guiSettings.pos.y), (int) Math.round(guiSettings.size.x)};
+            }
+        };
+        interfaceSecondaryColorPanel.elements.add(new Panel.PanelElement(interfaceSecondaryColor2, element));
 
-            panel.elements.add(new Panel.PanelElement(null, spacing));
-            interfaceSecondaryColor2G = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            interfaceSecondaryColor2G.noLetters().noOthers().numberLimits(0, 255);
-            interfaceSecondaryColor2G.setText(Integer.toString(Config.INTERFACE_SECONDARY_COLOR2.getGreen()));
-            panel.elements.add(new Panel.PanelElement(interfaceSecondaryColor2G, textboxsize));
+        guiSettings.addString("interfaceTertiaryColorLabel", "Tertiary Color:");
 
-            panel.elements.add(new Panel.PanelElement(null, spacing));
-            interfaceSecondaryColor2B = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            interfaceSecondaryColor2B.noLetters().noOthers().numberLimits(0, 255);
-            interfaceSecondaryColor2B.setText(Integer.toString(Config.INTERFACE_SECONDARY_COLOR2.getBlue()));
-            panel.elements.add(new Panel.PanelElement(interfaceSecondaryColor2B, textboxsize));
+        Panel interfaceTertiaryColorPanel = guiSettings.addPanel("interfaceTertiaryColorPanel");
+        interfaceTertiaryColor = new ColorPicker("interfaceTertiaryColor", 10, mainView.renderer, mainView.loader, mainView.window) {
+            @Override
+            public Color getColor() {
+                return Config.INTERFACE_TERTIARY_COLOR;
+            }
 
-            panel.elements.add(new Panel.PanelElement(null, spacing));
-            interfaceSecondaryColor2A = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            interfaceSecondaryColor2A.noLetters().noOthers().numberLimits(0, 255);
-            interfaceSecondaryColor2A.setText(Integer.toString(Config.INTERFACE_SECONDARY_COLOR2.getAlpha()));
-            panel.elements.add(new Panel.PanelElement(interfaceSecondaryColor2A, textboxsize));
-        }
+            @Override
+            public void setColor(Color color) {
+                Config.INTERFACE_TERTIARY_COLOR = color;
+            }
 
-        guiSettings.addString("interfaceTertiaryColorLabel", "Interface Tert. Color:");
-        {
-            Panel panel = guiSettings.addPanel("interfaceTertiaryColorPanel");
-            interfaceTertiaryColorR = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            interfaceTertiaryColorR.noLetters().noOthers().numberLimits(0, 255);
-            interfaceTertiaryColorR.setText(Integer.toString(Config.INTERFACE_TERTIARY_COLOR.getRed()));
-            panel.elements.add(new Panel.PanelElement(interfaceTertiaryColorR, textboxsize));
+            @Override
+            public int[] getParentTransform() {
+                return new int[]{(int) Math.round(guiSettings.pos.x), (int) Math.round(guiSettings.pos.y), (int) Math.round(guiSettings.size.x)};
+            }
+        };
+        interfaceTertiaryColorPanel.elements.add(new Panel.PanelElement(interfaceTertiaryColor, element));
+        interfaceTertiaryColorPanel.elements.add(new Panel.PanelElement(null, gap));
+        interfaceTertiaryColor2 = new ColorPicker("interfaceTertiaryColor2", 10, mainView.renderer, mainView.loader, mainView.window) {
+            @Override
+            public Color getColor() {
+                return Config.INTERFACE_TERTIARY_COLOR2;
+            }
 
-            panel.elements.add(new Panel.PanelElement(null, spacing));
-            interfaceTertiaryColorG = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            interfaceTertiaryColorG.noLetters().noOthers().numberLimits(0, 255);
-            interfaceTertiaryColorG.setText(Integer.toString(Config.INTERFACE_TERTIARY_COLOR.getGreen()));
-            panel.elements.add(new Panel.PanelElement(interfaceTertiaryColorG, textboxsize));
+            @Override
+            public void setColor(Color color) {
+                Config.INTERFACE_TERTIARY_COLOR2 = color;
+            }
 
-            panel.elements.add(new Panel.PanelElement(null, spacing));
-            interfaceTertiaryColorB = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            interfaceTertiaryColorB.noLetters().noOthers().numberLimits(0, 255);
-            interfaceTertiaryColorB.setText(Integer.toString(Config.INTERFACE_TERTIARY_COLOR.getBlue()));
-            panel.elements.add(new Panel.PanelElement(interfaceTertiaryColorB, textboxsize));
-
-            panel.elements.add(new Panel.PanelElement(null, spacing));
-            interfaceTertiaryColorA = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            interfaceTertiaryColorA.noLetters().noOthers().numberLimits(0, 255);
-            interfaceTertiaryColorA.setText(Integer.toString(Config.INTERFACE_TERTIARY_COLOR.getAlpha()));
-            panel.elements.add(new Panel.PanelElement(interfaceTertiaryColorA, textboxsize));
-        }
-        {
-            Panel panel = guiSettings.addPanel("interfaceTertiaryColor2Panel");
-            interfaceTertiaryColor2R = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            interfaceTertiaryColor2R.noLetters().noOthers().numberLimits(0, 255);
-            interfaceTertiaryColor2R.setText(Integer.toString(Config.INTERFACE_TERTIARY_COLOR2.getRed()));
-            panel.elements.add(new Panel.PanelElement(interfaceTertiaryColor2R, textboxsize));
-
-            panel.elements.add(new Panel.PanelElement(null, spacing));
-            interfaceTertiaryColor2G = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            interfaceTertiaryColor2G.noLetters().noOthers().numberLimits(0, 255);
-            interfaceTertiaryColor2G.setText(Integer.toString(Config.INTERFACE_TERTIARY_COLOR2.getGreen()));
-            panel.elements.add(new Panel.PanelElement(interfaceTertiaryColor2G, textboxsize));
-
-            panel.elements.add(new Panel.PanelElement(null, spacing));
-            interfaceTertiaryColor2B = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            interfaceTertiaryColor2B.noLetters().noOthers().numberLimits(0, 255);
-            interfaceTertiaryColor2B.setText(Integer.toString(Config.INTERFACE_TERTIARY_COLOR2.getBlue()));
-            panel.elements.add(new Panel.PanelElement(interfaceTertiaryColor2B, textboxsize));
-
-            panel.elements.add(new Panel.PanelElement(null, spacing));
-            interfaceTertiaryColor2A = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-            interfaceTertiaryColor2A.noLetters().noOthers().numberLimits(0, 255);
-            interfaceTertiaryColor2A.setText(Integer.toString(Config.INTERFACE_TERTIARY_COLOR2.getAlpha()));
-            panel.elements.add(new Panel.PanelElement(interfaceTertiaryColor2A, textboxsize));
-        }
+            @Override
+            public int[] getParentTransform() {
+                return new int[]{(int) Math.round(guiSettings.pos.x), (int) Math.round(guiSettings.pos.y), (int) Math.round(guiSettings.size.x)};
+            }
+        };
+        interfaceTertiaryColorPanel.elements.add(new Panel.PanelElement(interfaceTertiaryColor2, element));
 
         Panel headerPanel = guiSettings.addPanel("headerPanel");
         headerPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Header:", 10, renderer), 0.35f));
@@ -739,6 +590,8 @@ public class Settings extends GuiScreen{
         cursorSize = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
         cursorSize.setText("" + Config.CURSOR_SCALE);
         cursorSizePanel.elements.add(new Panel.PanelElement(cursorSize, 0.65f));
+
+        showFPS = guiSettings.addCheckbox("showFPS", "Show FPS", Config.SHOW_FPS);
 
         controls = new DropDownTab("controls", "Controls", new Vector2f(10, 21 + 10 + 14 + rendererSettings.getFullHeight() + guiSettings.getFullHeight()), new Vector2f(200, getFontHeight(10) + 4), 10, renderer, loader, window).closed();
 
@@ -1013,6 +866,7 @@ public class Settings extends GuiScreen{
         super.secondaryThread();
 
         Config.NO_CULLING = culling.isChecked;
+        Config.SHOW_FPS = showFPS.isChecked;
 
         Vector2f fovSlider = fov.setSliderValue((float) Math.toDegrees(Config.FOV));
         if(fovSlider.y == 1)
@@ -1053,219 +907,6 @@ public class Settings extends GuiScreen{
         Vector2f outlineDistSlider = outlineSize.setSliderValue(Config.OUTLINE_DISTANCE);
         if(outlineDistSlider.y == 1)
             Config.OUTLINE_DISTANCE = outlineDistSlider.x;
-
-        {
-            String colorR = this.outlineColorR.setTextboxValueString(Integer.toString(Config.OUTLINE_COLOR.getRed()));
-            String colorG = this.outlineColorG.setTextboxValueString(Integer.toString(Config.OUTLINE_COLOR.getGreen()));
-            String colorB = this.outlineColorB.setTextboxValueString(Integer.toString(Config.OUTLINE_COLOR.getBlue()));
-            String colorA = this.outlineColorA.setTextboxValueString(Integer.toString(Config.OUTLINE_COLOR.getAlpha()));
-            int r = Config.OUTLINE_COLOR.getRed();
-            int g = Config.OUTLINE_COLOR.getGreen();
-            int b = Config.OUTLINE_COLOR.getBlue();
-            int a = Config.OUTLINE_COLOR.getAlpha();
-            if(colorR != null)
-                r = Utils.parseInt(colorR);
-            if(colorG != null)
-                g = Utils.parseInt(colorG);
-            if(colorB != null)
-                b = Utils.parseInt(colorB);
-            if(colorA != null)
-                a = Utils.parseInt(colorA);
-            Config.OUTLINE_COLOR = new Color(r, g, b, a);
-        }
-        {
-            String colorR = this.borderColor1R.setTextboxValueString(Integer.toString(Config.BORDER_COLOR_1.getRed()));
-            String colorG = this.borderColor1G.setTextboxValueString(Integer.toString(Config.BORDER_COLOR_1.getGreen()));
-            String colorB = this.borderColor1B.setTextboxValueString(Integer.toString(Config.BORDER_COLOR_1.getBlue()));
-            String colorA = this.borderColor1A.setTextboxValueString(Integer.toString(Config.BORDER_COLOR_1.getAlpha()));
-            int r = Config.BORDER_COLOR_1.getRed();
-            int g = Config.BORDER_COLOR_1.getGreen();
-            int b = Config.BORDER_COLOR_1.getBlue();
-            int a = Config.BORDER_COLOR_1.getAlpha();
-            if(colorR != null)r = Utils.parseInt(colorR);if(colorG != null)g = Utils.parseInt(colorG);if(colorB != null)b = Utils.parseInt(colorB);if(colorA != null)a = Utils.parseInt(colorA);
-            Config.BORDER_COLOR_1 = new Color(r, g, b, a);
-            mainView.borders.material.setColor(Config.BORDER_COLOR_1);
-        }
-        {
-            String colorR = this.borderColor2R.setTextboxValueString(Integer.toString(Config.BORDER_COLOR_2.getRed()));
-            String colorG = this.borderColor2G.setTextboxValueString(Integer.toString(Config.BORDER_COLOR_2.getGreen()));
-            String colorB = this.borderColor2B.setTextboxValueString(Integer.toString(Config.BORDER_COLOR_2.getBlue()));
-            String colorA = this.borderColor2A.setTextboxValueString(Integer.toString(Config.BORDER_COLOR_2.getAlpha()));
-            int r = Config.BORDER_COLOR_2.getRed();
-            int g = Config.BORDER_COLOR_2.getGreen();
-            int b = Config.BORDER_COLOR_2.getBlue();
-            int a = Config.BORDER_COLOR_2.getAlpha();
-            if(colorR != null)r = Utils.parseInt(colorR);if(colorG != null)g = Utils.parseInt(colorG);if(colorB != null)b = Utils.parseInt(colorB);if(colorA != null)a = Utils.parseInt(colorA);
-            Config.BORDER_COLOR_2 = new Color(r, g, b, a);
-            mainView.borders1.material.setColor(Config.BORDER_COLOR_2);
-        }
-        {
-            String colorR = this.borderColor3R.setTextboxValueString(Integer.toString(Config.BORDER_COLOR_3.getRed()));
-            String colorG = this.borderColor3G.setTextboxValueString(Integer.toString(Config.BORDER_COLOR_3.getGreen()));
-            String colorB = this.borderColor3B.setTextboxValueString(Integer.toString(Config.BORDER_COLOR_3.getBlue()));
-            String colorA = this.borderColor3A.setTextboxValueString(Integer.toString(Config.BORDER_COLOR_3.getAlpha()));
-            int r = Config.BORDER_COLOR_3.getRed();
-            int g = Config.BORDER_COLOR_3.getGreen();
-            int b = Config.BORDER_COLOR_3.getBlue();
-            int a = Config.BORDER_COLOR_3.getAlpha();
-            if(colorR != null)r = Utils.parseInt(colorR);if(colorG != null)g = Utils.parseInt(colorG);if(colorB != null)b = Utils.parseInt(colorB);if(colorA != null)a = Utils.parseInt(colorA);
-            Config.BORDER_COLOR_3 = new Color(r, g, b, a);
-            mainView.borders2.material.setColor(Config.BORDER_COLOR_3);
-        }
-        {
-            String colorR = this.borderColor4R.setTextboxValueString(Integer.toString(Config.BORDER_COLOR_4.getRed()));
-            String colorG = this.borderColor4G.setTextboxValueString(Integer.toString(Config.BORDER_COLOR_4.getGreen()));
-            String colorB = this.borderColor4B.setTextboxValueString(Integer.toString(Config.BORDER_COLOR_4.getBlue()));
-            String colorA = this.borderColor4A.setTextboxValueString(Integer.toString(Config.BORDER_COLOR_4.getAlpha()));
-            int r = Config.BORDER_COLOR_4.getRed();
-            int g = Config.BORDER_COLOR_4.getGreen();
-            int b = Config.BORDER_COLOR_4.getBlue();
-            int a = Config.BORDER_COLOR_4.getAlpha();
-            if(colorR != null)r = Utils.parseInt(colorR);if(colorG != null)g = Utils.parseInt(colorG);if(colorB != null)b = Utils.parseInt(colorB);if(colorA != null)a = Utils.parseInt(colorA);
-            Config.BORDER_COLOR_4 = new Color(r, g, b, a);
-            mainView.borders3.material.setColor(Config.BORDER_COLOR_4);
-        }
-        {
-            String colorR = this.earthColorR.setTextboxValueString(Integer.toString(Config.EARTH_COLOR.getRed()));
-            String colorG = this.earthColorG.setTextboxValueString(Integer.toString(Config.EARTH_COLOR.getGreen()));
-            String colorB = this.earthColorB.setTextboxValueString(Integer.toString(Config.EARTH_COLOR.getBlue()));
-            String colorA = this.earthColorA.setTextboxValueString(Integer.toString(Config.EARTH_COLOR.getAlpha()));
-            int r = Config.EARTH_COLOR.getRed();
-            int g = Config.EARTH_COLOR.getGreen();
-            int b = Config.EARTH_COLOR.getBlue();
-            int a = Config.EARTH_COLOR.getAlpha();
-            if(colorR != null)r = Utils.parseInt(colorR);if(colorG != null)g = Utils.parseInt(colorG);if(colorB != null)b = Utils.parseInt(colorB);if(colorA != null)a = Utils.parseInt(colorA);
-            Config.EARTH_COLOR = new Color(r, g, b, a);
-            mainView.earth.material.setOverlayColor(Config.EARTH_COLOR);
-        }
-        {
-            String colorR = this.podColorR.setTextboxValueString(Integer.toString(Config.POD_COLOR.getRed()));
-            String colorG = this.podColorG.setTextboxValueString(Integer.toString(Config.POD_COLOR.getGreen()));
-            String colorB = this.podColorB.setTextboxValueString(Integer.toString(Config.POD_COLOR.getBlue()));
-            String colorA = this.podColorA.setTextboxValueString(Integer.toString(Config.POD_COLOR.getAlpha()));
-            int r = Config.POD_COLOR.getRed();
-            int g = Config.POD_COLOR.getGreen();
-            int b = Config.POD_COLOR.getBlue();
-            int a = Config.POD_COLOR.getAlpha();
-            if(colorR != null)r = Utils.parseInt(colorR);if(colorG != null)g = Utils.parseInt(colorG);if(colorB != null)b = Utils.parseInt(colorB);if(colorA != null)a = Utils.parseInt(colorA);
-            Config.POD_COLOR = new Color(r, g, b, a);
-            mainView.pod.material.setOverlayColor(Config.POD_COLOR);
-        }
-        {
-            String colorR = this.fontColorR.setTextboxValueString(Integer.toString(Config.FONT_COLOR.getRed()));
-            String colorG = this.fontColorG.setTextboxValueString(Integer.toString(Config.FONT_COLOR.getGreen()));
-            String colorB = this.fontColorB.setTextboxValueString(Integer.toString(Config.FONT_COLOR.getBlue()));
-            String colorA = this.fontColorA.setTextboxValueString(Integer.toString(Config.FONT_COLOR.getAlpha()));
-            int r = Config.FONT_COLOR.getRed();
-            int g = Config.FONT_COLOR.getGreen();
-            int b = Config.FONT_COLOR.getBlue();
-            int a = Config.FONT_COLOR.getAlpha();
-            if(colorR != null)r = Utils.parseInt(colorR);if(colorG != null)g = Utils.parseInt(colorG);if(colorB != null)b = Utils.parseInt(colorB);if(colorA != null)a = Utils.parseInt(colorA);
-            Config.FONT_COLOR = new Color(r, g, b, a);
-        }
-        {
-            String colorR = this.primaryColorR.setTextboxValueString(Integer.toString(Config.PRIMARY_COLOR.getRed()));
-            String colorG = this.primaryColorG.setTextboxValueString(Integer.toString(Config.PRIMARY_COLOR.getGreen()));
-            String colorB = this.primaryColorB.setTextboxValueString(Integer.toString(Config.PRIMARY_COLOR.getBlue()));
-            String colorA = this.primaryColorA.setTextboxValueString(Integer.toString(Config.PRIMARY_COLOR.getAlpha()));
-            int r = Config.PRIMARY_COLOR.getRed();
-            int g = Config.PRIMARY_COLOR.getGreen();
-            int b = Config.PRIMARY_COLOR.getBlue();
-            int a = Config.PRIMARY_COLOR.getAlpha();
-            if(colorR != null)r = Utils.parseInt(colorR);if(colorG != null)g = Utils.parseInt(colorG);if(colorB != null)b = Utils.parseInt(colorB);if(colorA != null)a = Utils.parseInt(colorA);
-            Config.PRIMARY_COLOR = new Color(r, g, b, a);
-        }
-        {
-            String colorR = this.secondaryColorR.setTextboxValueString(Integer.toString(Config.SECONDARY_COLOR.getRed()));
-            String colorG = this.secondaryColorG.setTextboxValueString(Integer.toString(Config.SECONDARY_COLOR.getGreen()));
-            String colorB = this.secondaryColorB.setTextboxValueString(Integer.toString(Config.SECONDARY_COLOR.getBlue()));
-            String colorA = this.secondaryColorA.setTextboxValueString(Integer.toString(Config.SECONDARY_COLOR.getAlpha()));
-            int r = Config.SECONDARY_COLOR.getRed();
-            int g = Config.SECONDARY_COLOR.getGreen();
-            int b = Config.SECONDARY_COLOR.getBlue();
-            int a = Config.SECONDARY_COLOR.getAlpha();
-            if(colorR != null)r = Utils.parseInt(colorR);if(colorG != null)g = Utils.parseInt(colorG);if(colorB != null)b = Utils.parseInt(colorB);if(colorA != null)a = Utils.parseInt(colorA);
-            Config.SECONDARY_COLOR = new Color(r, g, b, a);
-        }
-        {
-            String colorR = this.interfacePrimaryColorR.setTextboxValueString(Integer.toString(Config.INTERFACE_PRIMARY_COLOR.getRed()));
-            String colorG = this.interfacePrimaryColorG.setTextboxValueString(Integer.toString(Config.INTERFACE_PRIMARY_COLOR.getGreen()));
-            String colorB = this.interfacePrimaryColorB.setTextboxValueString(Integer.toString(Config.INTERFACE_PRIMARY_COLOR.getBlue()));
-            String colorA = this.interfacePrimaryColorA.setTextboxValueString(Integer.toString(Config.INTERFACE_PRIMARY_COLOR.getAlpha()));
-            int r = Config.INTERFACE_PRIMARY_COLOR.getRed();
-            int g = Config.INTERFACE_PRIMARY_COLOR.getGreen();
-            int b = Config.INTERFACE_PRIMARY_COLOR.getBlue();
-            int a = Config.INTERFACE_PRIMARY_COLOR.getAlpha();
-            if(colorR != null)r = Utils.parseInt(colorR);if(colorG != null)g = Utils.parseInt(colorG);if(colorB != null)b = Utils.parseInt(colorB);if(colorA != null)a = Utils.parseInt(colorA);
-            Config.INTERFACE_PRIMARY_COLOR = new Color(r, g, b, a);
-        }
-        {
-            String colorR = this.interfacePrimaryColor2R.setTextboxValueString(Integer.toString(Config.INTERFACE_PRIMARY_COLOR2.getRed()));
-            String colorG = this.interfacePrimaryColor2G.setTextboxValueString(Integer.toString(Config.INTERFACE_PRIMARY_COLOR2.getGreen()));
-            String colorB = this.interfacePrimaryColor2B.setTextboxValueString(Integer.toString(Config.INTERFACE_PRIMARY_COLOR2.getBlue()));
-            String colorA = this.interfacePrimaryColor2A.setTextboxValueString(Integer.toString(Config.INTERFACE_PRIMARY_COLOR2.getAlpha()));
-            int r = Config.INTERFACE_PRIMARY_COLOR2.getRed();
-            int g = Config.INTERFACE_PRIMARY_COLOR2.getGreen();
-            int b = Config.INTERFACE_PRIMARY_COLOR2.getBlue();
-            int a = Config.INTERFACE_PRIMARY_COLOR2.getAlpha();
-            if(colorR != null)r = Utils.parseInt(colorR);if(colorG != null)g = Utils.parseInt(colorG);if(colorB != null)b = Utils.parseInt(colorB);if(colorA != null)a = Utils.parseInt(colorA);
-            Config.INTERFACE_PRIMARY_COLOR2 = new Color(r, g, b, a);
-        }
-        {
-            String colorR = this.interfaceSecondaryColorR.setTextboxValueString(Integer.toString(Config.INTERFACE_SECONDARY_COLOR.getRed()));
-            String colorG = this.interfaceSecondaryColorG.setTextboxValueString(Integer.toString(Config.INTERFACE_SECONDARY_COLOR.getGreen()));
-            String colorB = this.interfaceSecondaryColorB.setTextboxValueString(Integer.toString(Config.INTERFACE_SECONDARY_COLOR.getBlue()));
-            String colorA = this.interfaceSecondaryColorA.setTextboxValueString(Integer.toString(Config.INTERFACE_SECONDARY_COLOR.getAlpha()));
-            int r = Config.INTERFACE_SECONDARY_COLOR.getRed();
-            int g = Config.INTERFACE_SECONDARY_COLOR.getGreen();
-            int b = Config.INTERFACE_SECONDARY_COLOR.getBlue();
-            int a = Config.INTERFACE_SECONDARY_COLOR.getAlpha();
-            if(colorR != null)r = Utils.parseInt(colorR);if(colorG != null)g = Utils.parseInt(colorG);if(colorB != null)b = Utils.parseInt(colorB);if(colorA != null)a = Utils.parseInt(colorA);
-            Config.INTERFACE_SECONDARY_COLOR = new Color(r, g, b, a);
-        }
-        {
-            String colorR = this.interfaceSecondaryColor2R.setTextboxValueString(Integer.toString(Config.INTERFACE_SECONDARY_COLOR2.getRed()));
-            String colorG = this.interfaceSecondaryColor2G.setTextboxValueString(Integer.toString(Config.INTERFACE_SECONDARY_COLOR2.getGreen()));
-            String colorB = this.interfaceSecondaryColor2B.setTextboxValueString(Integer.toString(Config.INTERFACE_SECONDARY_COLOR2.getBlue()));
-            String colorA = this.interfaceSecondaryColor2A.setTextboxValueString(Integer.toString(Config.INTERFACE_SECONDARY_COLOR2.getAlpha()));
-            int r = Config.INTERFACE_SECONDARY_COLOR2.getRed();
-            int g = Config.INTERFACE_SECONDARY_COLOR2.getGreen();
-            int b = Config.INTERFACE_SECONDARY_COLOR2.getBlue();
-            int a = Config.INTERFACE_SECONDARY_COLOR2.getAlpha();
-            if(colorR != null)r = Utils.parseInt(colorR);if(colorG != null)g = Utils.parseInt(colorG);if(colorB != null)b = Utils.parseInt(colorB);if(colorA != null)a = Utils.parseInt(colorA);
-            Config.INTERFACE_SECONDARY_COLOR2 = new Color(r, g, b, a);
-        }
-        {
-            String colorR = this.interfaceTertiaryColorR.setTextboxValueString(Integer.toString(Config.INTERFACE_TERTIARY_COLOR.getRed()));
-            String colorG = this.interfaceTertiaryColorG.setTextboxValueString(Integer.toString(Config.INTERFACE_TERTIARY_COLOR.getGreen()));
-            String colorB = this.interfaceTertiaryColorB.setTextboxValueString(Integer.toString(Config.INTERFACE_TERTIARY_COLOR.getBlue()));
-            String colorA = this.interfaceTertiaryColorA.setTextboxValueString(Integer.toString(Config.INTERFACE_TERTIARY_COLOR.getAlpha()));
-            int r = Config.INTERFACE_TERTIARY_COLOR.getRed();
-            int g = Config.INTERFACE_TERTIARY_COLOR.getGreen();
-            int b = Config.INTERFACE_TERTIARY_COLOR.getBlue();
-            int a = Config.INTERFACE_TERTIARY_COLOR.getAlpha();
-            if(colorR != null)r = Utils.parseInt(colorR);if(colorG != null)g = Utils.parseInt(colorG);if(colorB != null)b = Utils.parseInt(colorB);if(colorA != null)a = Utils.parseInt(colorA);
-            Config.INTERFACE_TERTIARY_COLOR = new Color(r, g, b, a);
-        }
-        {
-            String colorR = this.interfaceTertiaryColor2R.setTextboxValueString(Integer.toString(Config.INTERFACE_TERTIARY_COLOR2.getRed()));
-            String colorG = this.interfaceTertiaryColor2G.setTextboxValueString(Integer.toString(Config.INTERFACE_TERTIARY_COLOR2.getGreen()));
-            String colorB = this.interfaceTertiaryColor2B.setTextboxValueString(Integer.toString(Config.INTERFACE_TERTIARY_COLOR2.getBlue()));
-            String colorA = this.interfaceTertiaryColor2A.setTextboxValueString(Integer.toString(Config.INTERFACE_TERTIARY_COLOR2.getAlpha()));
-            int r = Config.INTERFACE_TERTIARY_COLOR2.getRed();
-            int g = Config.INTERFACE_TERTIARY_COLOR2.getGreen();
-            int b = Config.INTERFACE_TERTIARY_COLOR2.getBlue();
-            int a = Config.INTERFACE_TERTIARY_COLOR2.getAlpha();
-            if(colorR != null)
-                r = Utils.parseInt(colorR);
-            if(colorG != null)
-                g = Utils.parseInt(colorG);
-            if(colorB != null)
-                b = Utils.parseInt(colorB);
-            if(colorA != null)
-                a = Utils.parseInt(colorA);
-            Config.INTERFACE_TERTIARY_COLOR2 = new Color(r, g, b, a);
-        }
 
         float cursorSize = Utils.parseFloat(this.cursorSize.getText());
         if(cursorSize == 0)

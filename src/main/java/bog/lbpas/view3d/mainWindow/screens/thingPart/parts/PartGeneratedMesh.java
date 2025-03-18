@@ -76,8 +76,8 @@ public abstract class PartGeneratedMesh extends iPart {
         FlagPlayMode = VisibilityFlags.addCheckbox("PLAY_MODE", "Play mode", new Checkbox()
         {
             @Override
-            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement) {
-                super.onClick(mouseInput, pos, button, action, mods, overElement);
+            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement, boolean focusedOther) {
+                super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
                     for (int i = 0; i < view.things.size(); i++)
@@ -91,8 +91,8 @@ public abstract class PartGeneratedMesh extends iPart {
         FlagEditMode = VisibilityFlags.addCheckbox("EDIT_MODE", "Edit mode", new Checkbox()
         {
             @Override
-            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement) {
-                super.onClick(mouseInput, pos, button, action, mods, overElement);
+            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement, boolean focusedOther) {
+                super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
                     for (int i = 0; i < view.things.size(); i++)
@@ -117,8 +117,8 @@ public abstract class PartGeneratedMesh extends iPart {
         NoBevel = partComboBox.addCheckbox("NoBevel", "No Bevel", new Checkbox()
         {
             @Override
-            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement) {
-                super.onClick(mouseInput, pos, button, action, mods, overElement);
+            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement, boolean focusedOther) {
+                super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
                     for (int i = 0; i < view.things.size(); i++)
@@ -132,8 +132,8 @@ public abstract class PartGeneratedMesh extends iPart {
         Sharded = partComboBox.addCheckbox("Sharded", "Sharded", new Checkbox()
         {
             @Override
-            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement) {
-                super.onClick(mouseInput, pos, button, action, mods, overElement);
+            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement, boolean focusedOther) {
+                super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
                     for (int i = 0; i < view.things.size(); i++)
@@ -147,8 +147,8 @@ public abstract class PartGeneratedMesh extends iPart {
         IncludeSides = partComboBox.addCheckbox("IncludeSides", "Include Sides", new Checkbox()
         {
             @Override
-            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement) {
-                super.onClick(mouseInput, pos, button, action, mods, overElement);
+            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement, boolean focusedOther) {
+                super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
                     for (int i = 0; i < view.things.size(); i++)
@@ -327,8 +327,8 @@ public abstract class PartGeneratedMesh extends iPart {
                     gmesh.bevel = null;
                     try{gmesh.bevel = new ResourceDescriptor(bev.trim(), ResourceType.BEVEL);}catch (Exception e){}
 
-                    if((gmesh.bevel.isGUID() && gmesh.bevel.getGUID().getValue() != prevGuidBev) ||
-                            (gmesh.bevel.isHash() && !gmesh.bevel.getSHA1().toString().equalsIgnoreCase(prevSHA1Bev)))
+                    if(gmesh.bevel != null && ((gmesh.bevel.isGUID() && gmesh.bevel.getGUID().getValue() != prevGuidBev) ||
+                            (gmesh.bevel.isHash() && !gmesh.bevel.getSHA1().toString().equalsIgnoreCase(prevSHA1Bev))))
                         thing.reloadModel();
                 }
 

@@ -195,8 +195,8 @@ public abstract class ButtonList<T> extends Element{
         refreshOutline(buttonHeight());
     }
     @Override
-    public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement) {
-        super.onClick(mouseInput, pos, button, action, mods, overElement);
+    public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement, boolean focusedOther) {
+        super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
         if(!overElement)
         {

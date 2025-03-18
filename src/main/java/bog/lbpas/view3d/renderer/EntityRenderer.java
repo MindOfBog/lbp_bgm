@@ -19,6 +19,7 @@ import bog.lbpas.view3d.utils.print;
 import cwlib.enums.Part;
 import cwlib.enums.VisibilityFlags;
 import cwlib.structs.mesh.Bone;
+import cwlib.structs.staticmesh.StaticMeshInfo;
 import cwlib.structs.things.parts.PRenderMesh;
 import cwlib.structs.things.parts.PShape;
 import cwlib.util.Colors;
@@ -49,10 +50,13 @@ public class EntityRenderer implements IRenderer{
     public ArrayList<PointLight> pointLights;
     public ArrayList<SpotLight> spotLights;
     public ArrayList<Entity> throughWallEntities;
+    public ArrayList<Entity> throughWallEntitiesMouse;
     public WindowMan window;
     public ObjectLoader loader;
 
     private Material defaultMaterial = new Material();
+
+    public int drawnThingMeshes = 0;
 
     public EntityRenderer(ObjectLoader loader, WindowMan window) throws Exception
     {
@@ -62,6 +66,7 @@ public class EntityRenderer implements IRenderer{
         pointLights = new ArrayList<>();
         spotLights = new ArrayList<>();
         throughWallEntities = new ArrayList<>();
+        throughWallEntitiesMouse = new ArrayList<>();
         thingShader = new ShaderMan("thingShader");
         solidShader = new ShaderMan("solidShader");
         normalShader = new ShaderMan("normalShader");
@@ -120,6 +125,7 @@ public class EntityRenderer implements IRenderer{
         thingShader.link();
         thingShader.createListUniform("textureSampler", samplerCount);
         thingShader.createUniform("preview");
+        thingShader.createUniform("frontView");
         thingShader.createListUniform("gmatMAP", 100);
         thingShader.createUniform("gmatCount");
         thingShader.createUniform("ambientLight");
@@ -238,6 +244,7 @@ public class EntityRenderer implements IRenderer{
         solidShader.createFragmentShader(solidShaderCode);
         solidShader.link();
         solidShader.createUniform("preview");
+        solidShader.createUniform("frontView");
         solidShader.createUniform("ambientLight");
         solidShader.createMaterialUniform("material");
         solidShader.createUniform("specularPower");
@@ -272,6 +279,7 @@ public class EntityRenderer implements IRenderer{
         normalShader.createFragmentShader(normalShaderCode);
         normalShader.link();
         normalShader.createUniform("preview");
+        normalShader.createUniform("frontView");
         normalShader.createUniform("ambientLight");
         normalShader.createMaterialUniform("material");
         normalShader.createUniform("specularPower");
@@ -337,6 +345,8 @@ public class EntityRenderer implements IRenderer{
     @Override
     public void render(MouseInput mouseInput, View3D mainView)
     {
+        drawnThingMeshes = 0;
+
         if(LoadedData.shouldUpdateShader)
         {
             lastShaderAddedMillis = System.currentTimeMillis();
@@ -421,6 +431,7 @@ public class EntityRenderer implements IRenderer{
                 thingShader.link();
                 thingShader.createListUniform("textureSampler", samplerCount);
                 thingShader.createUniform("preview");
+                thingShader.createUniform("frontView");
                 thingShader.createListUniform("gmatMAP", 100);
                 thingShader.createUniform("gmatCount");
                 thingShader.createUniform("ambientLight");
@@ -465,8 +476,8 @@ public class EntityRenderer implements IRenderer{
             }
         }
 
-        projection = window.updateProjectionMatrix();
         Camera camera = mainView.camera;
+        projection = window.updateProjectionMatrix(camera);
         RenderMan.bindFrameBuffer(mouseFB);
         RenderMan.bindColorTex(mouseCT);
         RenderMan.bindDepthTex(mouseDT);
@@ -508,15 +519,12 @@ public class EntityRenderer implements IRenderer{
                     if (models != null)
                         for (Model model : models)
                             if (model != null) {
+                                if(model.attribs == null)
+                                    continue;
                                 GL30.glBindVertexArray(model.vao);
-                                GL20.glEnableVertexAttribArray(0);
-                                GL20.glEnableVertexAttribArray(1);
-                                GL20.glEnableVertexAttribArray(2);
-                                if (model.hasBones) {
-                                    GL20.glEnableVertexAttribArray(3);
-                                    GL20.glEnableVertexAttribArray(4);
-                                }
-                                GL20.glEnableVertexAttribArray(5);
+
+                                for(int attribute : model.attribs)
+                                    GL20.glEnableVertexAttribArray(attribute);
 
                                 RenderMan.disableCulling();
 
@@ -525,11 +533,11 @@ public class EntityRenderer implements IRenderer{
                                 shaderMousePick.setUniform("bones", model.hasBones ? ((Thing) entity).getBones() : null, model.hasBones ? model.mesh.getBones() : null);
                                 shaderMousePick.setUniform("hasBones", model.hasBones);
 
-                                // Mouse picker render to FBO
+                                // Mouse picker render to FBO normal
 
-                                GL11.glDrawElements(GL11.GL_TRIANGLES, model.vertexCount, GL11.GL_UNSIGNED_INT, 0L);
+                                model.drawModel();
 
-                                unbind();
+                                unbind(model);
                             }
                 }
             }
@@ -540,9 +548,9 @@ public class EntityRenderer implements IRenderer{
 
         ArrayList<Integer> testForThroughWallEntities = new ArrayList<>();
 
-        for (int i = 0; i < throughWallEntities.size(); i++)
+        for (int i = 0; i < throughWallEntitiesMouse.size(); i++)
         {
-            Entity entity = throughWallEntities.get(i);
+            Entity entity = throughWallEntitiesMouse.get(i);
             if(entity != null)
                 if (entity.testForMouse)
                 {
@@ -553,7 +561,7 @@ public class EntityRenderer implements IRenderer{
 
         for (int i : testForThroughWallEntities)
         {
-            Entity entity = throughWallEntities.get(i);
+            Entity entity = throughWallEntitiesMouse.get(i);
             shaderMousePick.setUniform("arrayIndex", new Vector2i(i + 1, 2));
             if(entity != null)
                 {
@@ -562,26 +570,23 @@ public class EntityRenderer implements IRenderer{
                         for(Model model : models)
                             if(model != null)
                             {
+                                if(model.attribs == null)
+                                    continue;
                                 GL30.glBindVertexArray(model.vao);
-                                GL20.glEnableVertexAttribArray(0);
-                                GL20.glEnableVertexAttribArray(1);
-                                GL20.glEnableVertexAttribArray(2);
-                                if(model.hasBones) {
-                                    GL20.glEnableVertexAttribArray(3);
-                                    GL20.glEnableVertexAttribArray(4);
-                                }
-                                GL20.glEnableVertexAttribArray(5);
+
+                                for(int attribute : model.attribs)
+                                    GL20.glEnableVertexAttribArray(attribute);
 
                                 prepareMousePick(entity, camera);
 
                                 shaderMousePick.setUniform("bones", model.hasBones ? ((Thing)entity).getBones() : null, model.hasBones ? model.mesh.getBones() : null);
                                 shaderMousePick.setUniform("hasBones", model.hasBones);
 
-                                // Mouse picker render to FBO
+                                // Mouse picker render to FBO tools
 
-                                GL11.glDrawElements(GL11.GL_TRIANGLES, model.vertexCount, GL11.GL_UNSIGNED_INT, 0L);
+                                model.drawModel();
 
-                                unbind();
+                                unbind(model);
                             }
                 }
         }
@@ -620,7 +625,7 @@ public class EntityRenderer implements IRenderer{
                         }
                         else if(outY == 2)
                         {
-                            throughWallEntities.get(outX).highlighted = true;
+                            throughWallEntitiesMouse.get(outX).setHighlighted(true);
                         }
                     }
 
@@ -633,6 +638,8 @@ public class EntityRenderer implements IRenderer{
                     }
                 }catch (Exception e){e.printStackTrace();}
         }
+
+        throughWallEntitiesMouse.clear();
 
         RenderMan.bindFrameBuffer(mouseFB);
         GL11.glClearColor(0,0,0,0);
@@ -655,10 +662,11 @@ public class EntityRenderer implements IRenderer{
         lastShader.setUniform("rimColor2", mainView.rimColor2);
         lastShader.setUniform("fogNear", mainView.fogNear);
         lastShader.setUniform("fogFar", mainView.fogFar);
-        lastShader.setUniform("camPos", mainView.camera.pos);
+        lastShader.setUniform("camPos", mainView.camera.getPos());
         lastShader.setUniform("sunPos", mainView.sunPos);
         lastShader.setUniform("noCulling", Config.NO_CULLING);
         lastShader.setUniform("preview", Config.PREVIEW_MODE);
+        lastShader.setUniform("frontView", Config.FRONT_VIEW);
 
         boolean outline = false;
 
@@ -676,20 +684,59 @@ public class EntityRenderer implements IRenderer{
                         outline = true;
                     }
 
+                    boolean isThing = entity instanceof Thing;
+
+                    if(isThing)
+                    {
+                        Thing thing = ((Thing)entity);
+
+                        PRenderMesh rmesh = thing.thing.getPart(Part.RENDER_MESH);
+                        if(rmesh != null && !Utils.isBitwiseBool(rmesh.visibilityFlags, VisibilityFlags.PLAY_MODE) && Config.PREVIEW_MODE)
+                            continue;
+
+                        Vector4f color = new Vector4f(1f);
+                        if(thing.thing.hasPart(Part.RENDER_MESH))
+                            color = Colors.RGBA32.fromARGB(((PRenderMesh)thing.thing.getPart(Part.RENDER_MESH)).editorColor);
+                        if(thing.thing.hasPart(Part.SHAPE))
+                        {
+                            PShape shape = thing.thing.getPart(Part.SHAPE);
+                            Vector4f col = Colors.RGBA32.fromARGB(shape.color);
+                            if(shape.brightness != Float.NaN) {
+                                col.y *= shape.brightness;
+                                col.z *= shape.brightness;
+                                col.w *= shape.brightness;
+                            }
+                            if(shape.colorOpacity != Float.NaN)
+                                col.x *= ((128f + shape.colorOpacity) / 255f);
+                            Vector4f colOff = Colors.RGBA32.fromARGB(shape.colorOff);
+                            if(shape.brightnessOff != Float.NaN) {
+                                colOff.y *= shape.brightnessOff;
+                                colOff.z *= shape.brightnessOff;
+                                colOff.w *= shape.brightnessOff;
+                            }
+                            if(shape.colorOffOpacity != Float.NaN)
+                                colOff.x *= (128f + shape.colorOffOpacity) / 255f;
+                            color.mul(System.currentTimeMillis() % 2000 <= 1000 ? col : colOff);
+                        }
+                        lastShader.setUniform("thingColor", color);
+
+                        if(thing.staticMesh != null && thing.staticMesh.size() >= 1 && thing.staticMesh.get(0).staticMesh != null)
+                        {
+                            StaticMeshInfo info = thing.staticMesh.get(0).staticMesh.getMeshInfo();
+                        }
+                    }
+
                     if(models != null)
                         for(Model model : models)
                             if (model != null)
                             {
-                                boolean isThing = entity instanceof Thing;
+                                if(model.attribs == null)
+                                    continue;
+
+                                drawnThingMeshes++;
+
                                 bind(model, lastShader, isThing);
                                 prepare(entity, camera, lastShader, model);
-
-                                if(isThing)
-                                {
-                                    PRenderMesh rmesh = ((Thing)entity).thing.getPart(Part.RENDER_MESH);
-                                    if(rmesh != null && !Utils.isBitwiseBool(rmesh.visibilityFlags, VisibilityFlags.PLAY_MODE) && Config.PREVIEW_MODE)
-                                        continue;
-                                }
 
                                 if (model.material.overlayColor != null) {
                                     lastShader.setUniform("highlightMode", 1);
@@ -699,43 +746,14 @@ public class EntityRenderer implements IRenderer{
                                 lastShader.setUniform("bones", model.hasBones ? ((Thing)entity).getBones() : null, model.hasBones ? model.mesh.getBones() : null);
                                 lastShader.setUniform("hasBones", model.hasBones);
 
-                                if(isThing)
-                                {
-                                    Vector4f color = new Vector4f(1f);
-                                    if(((Thing) entity).thing.hasPart(Part.RENDER_MESH))
-                                        color = Colors.RGBA32.fromARGB(((PRenderMesh)((Thing) entity).thing.getPart(Part.RENDER_MESH)).editorColor);
-                                    if(((Thing) entity).thing.hasPart(Part.SHAPE))
-                                    {
-                                        PShape shape = ((Thing) entity).thing.getPart(Part.SHAPE);
-                                        Vector4f col = Colors.RGBA32.fromARGB(shape.color);
-                                        if(shape.brightness != Float.NaN) {
-                                            col.y *= shape.brightness;
-                                            col.z *= shape.brightness;
-                                            col.w *= shape.brightness;
-                                        }
-                                        if(shape.colorOpacity != Float.NaN)
-                                            col.x *= ((128f + shape.colorOpacity) / 255f);
-                                        Vector4f colOff = Colors.RGBA32.fromARGB(shape.colorOff);
-                                        if(shape.brightnessOff != Float.NaN) {
-                                            colOff.y *= shape.brightnessOff;
-                                            colOff.z *= shape.brightnessOff;
-                                            colOff.w *= shape.brightnessOff;
-                                        }
-                                        if(shape.colorOffOpacity != Float.NaN)
-                                            colOff.x *= (128f + shape.colorOffOpacity) / 255f;
-                                        color.mul(System.currentTimeMillis() % 2000 <= 1000 ? col : colOff);
-                                    }
-                                    lastShader.setUniform("thingColor", color);
-                                }
-
                                 // Main render
 
-                                GL11.glDrawElements(GL11.GL_TRIANGLES, model.vertexCount, GL11.GL_UNSIGNED_INT, 0L);
+                                model.drawModel();
 
                                 lastShader.setUniform("highlightMode", 0);
 
                                 lastShader.setUniform("material", defaultMaterial);
-                                unbind();
+                                unbind(model);
                             }
                 }
 
@@ -766,6 +784,8 @@ public class EntityRenderer implements IRenderer{
                         for(Model model : models)
                             if (model != null)
                             {
+                                if(model.attribs == null)
+                                    continue;
                                 bind(model, lastShader, false);
                                 prepare(entity, camera, lastShader, model);
 
@@ -777,11 +797,13 @@ public class EntityRenderer implements IRenderer{
                                 lastShader.setUniform("bones", (cwlib.structs.things.Thing[])null, (Bone[])null);
                                 lastShader.setUniform("hasBones", false);
 
-                                GL11.glDrawElements(GL11.GL_TRIANGLES, model.vertexCount, GL11.GL_UNSIGNED_INT, 0L);
+                                //render basic meshes
+
+                                model.drawModel();
 
                                 lastShader.setUniform("highlightMode", 0);
 
-                                unbind();
+                                unbind(model);
                             }
                 }
 
@@ -809,6 +831,8 @@ public class EntityRenderer implements IRenderer{
                     for(Model model : models)
                         if (model != null)
                         {
+                            if(model.attribs == null)
+                                continue;
                             boolean isThing = entity instanceof Thing;
                             bindNoCullColor(model, isThing);
                             Matrix4f mat = new Matrix4f(Transformation.createTransformationMatrix(entity));
@@ -817,7 +841,8 @@ public class EntityRenderer implements IRenderer{
                             lastShader.setUniform("bones", model.hasBones ? ((Thing)entity).getBones() : null, model.hasBones ? model.mesh.getBones() : null);
                             lastShader.setUniform("hasBones", model.hasBones);
                             //render entities to outline FBO
-                            GL11.glDrawElements(GL11.GL_TRIANGLES, model.vertexCount, GL11.GL_UNSIGNED_INT, 0L);
+                            model.drawModel();
+                            unbind(model);
                         }
             }
 
@@ -852,7 +877,8 @@ public class EntityRenderer implements IRenderer{
                     if(models != null)
                         for(Model model : models)
                             if (model != null) {
-
+                                if(model.attribs == null)
+                                    continue;
                                 boolean isThing = entity instanceof Thing;
                                 bindThroughWalls(model, afterPPShader, isThing);
                                 prepare(entity, mainView.camera, afterPPShader, model);
@@ -867,12 +893,13 @@ public class EntityRenderer implements IRenderer{
 
                                 //Through wall
 
-                                GL11.glDrawElements(GL11.GL_TRIANGLES, model.vertexCount, GL11.GL_UNSIGNED_INT, 0L);
+                                model.drawModel();
+
                                 afterPPShader.setUniform("highlightMode", 0);
 
-                                unbind();
+                                unbind(model);
                             }
-                }catch (Exception e){System.err.println("Failed rendering throughwall-entity " + i + ".");e.printStackTrace();}
+                }catch (Exception e){print.error("Failed rendering throughwall-entity " + i + ".");print.stackTrace(e);}
 
         afterPPShader.unbind();
         throughWallEntities.clear();
@@ -881,21 +908,9 @@ public class EntityRenderer implements IRenderer{
     public void bind(Model model, ShaderMan shader, boolean isThing)
     {
         GL30.glBindVertexArray(model.vao);
-        GL20.glEnableVertexAttribArray(0);
-        GL20.glEnableVertexAttribArray(1);
-        GL20.glEnableVertexAttribArray(2);
-        if(model.hasBones)
-        {
-            GL20.glEnableVertexAttribArray(3);
-            GL20.glEnableVertexAttribArray(4);
-        }
-        GL20.glEnableVertexAttribArray(5);
-        GL20.glEnableVertexAttribArray(6);
 
-//        if(model.material.disableCulling || Config.NO_CULLING)
-//            RenderMan.disableCulling();
-//        else
-//            RenderMan.enableCulling();
+        for(int attribute : model.attribs)
+            GL20.glEnableVertexAttribArray(attribute);
 
         shader.setUniform("material", model.material);
 
@@ -922,15 +937,9 @@ public class EntityRenderer implements IRenderer{
     public void bindNoCullColor(Model model, boolean isThing)
     {
         GL30.glBindVertexArray(model.vao);
-        GL20.glEnableVertexAttribArray(0);
-        GL20.glEnableVertexAttribArray(1);
-        GL20.glEnableVertexAttribArray(2);
-        if(model.hasBones) {
-            GL20.glEnableVertexAttribArray(3);
-            GL20.glEnableVertexAttribArray(4);
-        }
-        GL20.glEnableVertexAttribArray(5);
-        GL20.glEnableVertexAttribArray(6);
+
+        for(int attribute : model.attribs)
+            GL20.glEnableVertexAttribArray(attribute);
 
         RenderMan.disableCulling();
     }
@@ -938,15 +947,9 @@ public class EntityRenderer implements IRenderer{
     public void bindThroughWalls(Model model, ShaderMan shader, boolean isThing)
     {
         GL30.glBindVertexArray(model.vao);
-        GL20.glEnableVertexAttribArray(0);
-        GL20.glEnableVertexAttribArray(1);
-        GL20.glEnableVertexAttribArray(2);
-        if(model.hasBones) {
-            GL20.glEnableVertexAttribArray(3);
-            GL20.glEnableVertexAttribArray(4);
-        }
-        GL20.glEnableVertexAttribArray(5);
-        GL20.glEnableVertexAttribArray(6);
+
+        for(int attribute : model.attribs)
+            GL20.glEnableVertexAttribArray(attribute);
 
         shader.setUniform("material", model.material);
 
@@ -965,13 +968,10 @@ public class EntityRenderer implements IRenderer{
 
     }
 
-    public void unbind()
+    public void unbind(Model model)
     {
-        GL20.glDisableVertexAttribArray(0);
-        GL20.glDisableVertexAttribArray(1);
-        GL20.glDisableVertexAttribArray(2);
-        GL20.glDisableVertexAttribArray(3);
-        GL20.glDisableVertexAttribArray(4);
+        for(int attribute : model.attribs)
+            GL20.glDisableVertexAttribArray(attribute);
 
         if(isCW)
         {
@@ -1024,10 +1024,6 @@ public class EntityRenderer implements IRenderer{
         thingShader.cleanup();
         solidShader.cleanup();
         shaderMousePick.cleanup();
-
-//        for(Material material : LoadedData.loadedGfxMaterials.values())
-//            if(material.customShader != null)
-//                material.customShader.cleanup();
     }
 
     public void unbindFrameBuffer()

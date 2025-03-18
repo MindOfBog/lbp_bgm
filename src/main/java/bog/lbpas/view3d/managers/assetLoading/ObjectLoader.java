@@ -2,9 +2,12 @@ package bog.lbpas.view3d.managers.assetLoading;
 
 import bog.lbpas.Main;
 import bog.lbpas.view3d.core.*;
+import bog.lbpas.view3d.core.types.Thing;
 import bog.lbpas.view3d.utils.Utils;
+import bog.lbpas.view3d.utils.print;
 import cwlib.resources.RBevel;
 import cwlib.resources.RMesh;
+import cwlib.resources.RStaticMesh;
 import cwlib.structs.things.parts.PShape;
 import cwlib.types.data.ResourceDescriptor;
 import org.joml.*;
@@ -16,6 +19,7 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * @author Bog
@@ -172,7 +176,7 @@ public class ObjectLoader {
                     gmats);
         }catch (Exception e)
         {
-            e.printStackTrace();
+            print.stackTrace(e);
         }
 
         return model;
@@ -182,6 +186,12 @@ public class ObjectLoader {
         Model model = new Model();
         modelLoader.digest(new AsyncModelMan.ModelDataRMesh(model, mesh));
         return model;
+    }
+
+    public ArrayList<Model> loadStaticMesh(RStaticMesh mesh, Thing thing) throws Exception {
+        ArrayList<Model> models = new ArrayList<>();
+        modelLoader.digest(new AsyncModelMan.ModelDataStaticMesh(models, mesh, thing));
+        return models;
     }
 
     public Model generateMaterialMesh(Model model, ResourceDescriptor parentGmat, PShape shape, RBevel bevel, Matrix4f transformation)
@@ -250,7 +260,7 @@ public class ObjectLoader {
         storeDataInAttribList(2, 3, normals),
         storeDataInAttribList(5, 3, tangents)};
         unbind();
-        return new Model(vao, vbos, indices.length, indices);
+        return new Model(vao, vbos, indices.length, indices, new int[]{0, 1, 2, 5});
     }
 
     public Model loadModel(float[] vertices, float[] textureCoords, float[] normals, int[] indices)
@@ -262,7 +272,7 @@ public class ObjectLoader {
                 storeDataInAttribList(1, 4, textureCoords),
                 storeDataInAttribList(2, 3, normals)};
         unbind();
-        return new Model(vao, vbos, indices.length, indices);
+        return new Model(vao, vbos, indices.length, indices, new int[]{0, 1, 2});
     }
 
     public Model loadModel(float[] vertices, float[] textureCoords, float[] normals, int[] indices, int[] joints, float[] weights, float[] tangents)
@@ -277,7 +287,7 @@ public class ObjectLoader {
                 storeDataInAttribList(4, 4, weights),
                 storeDataInAttribList(5, 3, tangents)};
         unbind();
-        return new Model(vao, vbos, indices.length, indices);
+        return new Model(vao, vbos, indices.length, indices, new int[]{0, 1, 2, 3, 4, 5});
     }
 
     public void loadModel(Model model, float[] vertices, float[] textureCoords, float[] normals, int[] indices, int[] joints, float[] weights, float[] tangents, int[] gmats)
@@ -298,6 +308,7 @@ public class ObjectLoader {
         model.vbos = vbos;
         model.vertexCount = indices.length;
         model.indices = indices;
+        model.attribs = new int[]{0, 1, 2, 3, 4, 5, 6};
     }
 
     public void loadModel(Model model, float[] vertices, float[] textureCoords, float[] normals, int[] indices, float[] tangents, int[] gmats)
@@ -316,6 +327,22 @@ public class ObjectLoader {
         model.vbos = vbos;
         model.indices = indices;
         model.vertexCount = indices.length;
+        model.attribs = new int[]{0, 1, 2, 5, 6};
+    }
+
+    public void loadModel(Model model, float[] vertices, int[] indices)
+    {
+        int vao = createVAO();
+        int[] vbos = new int[]{
+                storeIndicesBuffer(indices),
+                storeDataInAttribList(0, 3, vertices)};
+        unbind();
+
+        model.vao = vao;
+        model.vbos = vbos;
+        model.indices = indices;
+        model.vertexCount = indices.length;
+        model.attribs = new int[]{0};
     }
 
     public Model loadModel(float[] vertices)
@@ -323,7 +350,7 @@ public class ObjectLoader {
         int vao = createVAO();
         int[] vbos = new int[]{storeDataInAttribList(0, 2, vertices)};
         unbind();
-        return new Model(vao, vbos, vertices.length/2);
+        return new Model(vao, vbos, vertices.length/2, new int[]{0});
     }
 
     public Model loadModel(float[] vertices, float[] textureCoords)
@@ -333,7 +360,7 @@ public class ObjectLoader {
                 storeDataInAttribList(0, 2, vertices),
                 storeDataInAttribList(1, 2, textureCoords)};
         unbind();
-        return new Model(vao, vbos, vertices.length/2);
+        return new Model(vao, vbos, vertices.length/2, new int[]{0, 1});
     }
 
     public Model loadModel(int[] verts, float[] textureCoords)
@@ -346,7 +373,7 @@ public class ObjectLoader {
                 verts[0],
                 storeDataInAttribList(1, 2, textureCoords)};
         unbind();
-        return new Model(vao, vbos, verts[1]/2);
+        return new Model(vao, vbos, verts[1]/2, new int[]{1});
     }
 
     public int loadTexture(String filename) throws Exception
@@ -432,6 +459,9 @@ public class ObjectLoader {
 
     public int storeDataInAttribList(int attribNo, int vertexCount, float[] data)
     {
+        if(data == null)
+            return -1;
+
         int vbo = GL15.glGenBuffers();
         vbos.add(vbo);
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo);
@@ -444,6 +474,9 @@ public class ObjectLoader {
 
     public int storeDataInAttribList(int attribNo, int vertexCount, int[] data)
     {
+        if(data == null)
+            return -1;
+
         int vbo = GL15.glGenBuffers();
         vbos.add(vbo);
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo);

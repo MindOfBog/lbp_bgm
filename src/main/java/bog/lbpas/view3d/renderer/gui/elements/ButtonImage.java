@@ -31,7 +31,7 @@ public abstract class ButtonImage extends Element{
     Vector2f prevSize;
     Model outlineRect;
 
-    Vector2f imageSize;
+    public Vector2f imageSize;
 
     public ButtonImage(String id, Vector2f pos, Vector2f size, RenderMan renderer, ObjectLoader loader, WindowMan window)
     {
@@ -99,7 +99,7 @@ public abstract class ButtonImage extends Element{
     }
 
     @Override
-    public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overOther) {
+    public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overOther, boolean focusedOther) {
 
         if(!overOther)
         {
@@ -113,7 +113,7 @@ public abstract class ButtonImage extends Element{
                 setClicked(false);
         }
 
-        super.onClick(mouseInput, pos, button, action, mods, overOther);
+        super.onClick(mouseInput, pos, button, action, mods, overOther, focusedOther);
     }
 
     public abstract void clickedButton(int button, int action, int mods);

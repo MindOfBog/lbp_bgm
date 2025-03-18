@@ -33,7 +33,7 @@ public class Circle extends Triangle{
     }
 
     @Override
-    public int getType() {
-        return 5;
+    public Type getType() {
+        return Type.CIRCLE;
     }
 }

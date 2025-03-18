@@ -174,7 +174,7 @@ public class Textbox extends Element{
     }
 
     @Override
-    public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overOther) {
+    public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overOther, boolean focusedOther) {
 
         if(isMouseOverElement(pos))
         {
@@ -235,7 +235,7 @@ public class Textbox extends Element{
             selectedText[1] = -1;
         }
 
-        super.onClick(mouseInput, pos, button, action, mods, overOther);
+        super.onClick(mouseInput, pos, button, action, mods, overOther, focusedOther);
     }
 
     int[] selectedText = {-1, -1};
