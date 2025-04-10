@@ -3,11 +3,15 @@ package bog.lbpas.view3d.managers.assetLoading;
 import bog.lbpas.Main;
 import bog.lbpas.view3d.core.*;
 import bog.lbpas.view3d.core.types.Thing;
+import bog.lbpas.view3d.mainWindow.View3D;
+import bog.lbpas.view3d.utils.FilePicker;
 import bog.lbpas.view3d.utils.Utils;
 import bog.lbpas.view3d.utils.print;
+import common.FileChooser;
 import cwlib.resources.RBevel;
 import cwlib.resources.RMesh;
 import cwlib.resources.RStaticMesh;
+import cwlib.structs.things.parts.PGeneratedMesh;
 import cwlib.structs.things.parts.PShape;
 import cwlib.types.data.ResourceDescriptor;
 import org.joml.*;
@@ -15,6 +19,7 @@ import org.lwjgl.opengl.*;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -39,10 +44,10 @@ public class ObjectLoader {
         modelLoader.loadDigestedMeshes();
     }
 
-    public void loaderThread()
+    public void loaderThread(View3D view)
     {
         textureLoader.digestImages();
-        modelLoader.digestMeshes();
+        modelLoader.digestMeshes(view);
     }
 
     public Model loadOBJModel(String fileName)
@@ -194,11 +199,11 @@ public class ObjectLoader {
         return models;
     }
 
-    public Model generateMaterialMesh(Model model, ResourceDescriptor parentGmat, PShape shape, RBevel bevel, Matrix4f transformation)
+    public Model generateMaterialMesh(Model model, PGeneratedMesh generatedMesh, PShape shape, RBevel bevel, Matrix4f transformation)
     {
         if(model == null)
             model = new Model();
-        modelLoader.digest(new AsyncModelMan.ModelDataShape(model, parentGmat, shape, bevel, transformation));
+        modelLoader.digest(new AsyncModelMan.ModelDataShape(model, generatedMesh, shape, bevel, transformation));
         return model;
     }
 
@@ -382,6 +387,22 @@ public class ObjectLoader {
         textures.add(id);
         textureLoader.digest(new AsyncTextureMan.FilepathImageData(
                 filename,
+                GL11.GL_LINEAR_MIPMAP_LINEAR,
+                GL11.GL_LINEAR,
+                id));
+        return id;
+    }
+
+    public int loadTextureFilePicker() throws Exception
+    {
+        File[] file = FileChooser.openFile(null, null, false, false);
+        if(file.length < 1)
+            return -1;
+
+        int id = GL11.glGenTextures();
+        textures.add(id);
+        textureLoader.digest(new AsyncTextureMan.FilepathImageData(
+                file[0].getPath(),
                 GL11.GL_LINEAR_MIPMAP_LINEAR,
                 GL11.GL_LINEAR,
                 id));

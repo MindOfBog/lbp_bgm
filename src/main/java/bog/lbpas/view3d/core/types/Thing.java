@@ -5,6 +5,7 @@ import bog.lbpas.view3d.core.Model;
 import bog.lbpas.view3d.mainWindow.LoadedData;
 import bog.lbpas.view3d.utils.CWLibUtils.SkeletonUtils;
 import bog.lbpas.view3d.utils.print;
+import cwlib.enums.LethalType;
 import cwlib.enums.Part;
 import cwlib.resources.RBevel;
 import cwlib.resources.RMesh;
@@ -205,12 +206,19 @@ public class Thing extends Entity{
 
     public void generateShape(PShape shape, PGeneratedMesh generatedMesh)
     {
-        RBevel bev = LoadedData.loadBevel(generatedMesh == null ? null : generatedMesh.bevel);
+        boolean lethal = shape.lethalType == LethalType.GAS ||
+                            shape.lethalType == LethalType.GAS2 ||
+                            shape.lethalType == LethalType.GAS3 ||
+                            shape.lethalType == LethalType.GAS4 ||
+                            shape.lethalType == LethalType.GAS5 ||
+                            shape.lethalType == LethalType.GAS6;
+
+        RBevel bev = LoadedData.loadBevel(generatedMesh == null || lethal || (shape.thickness == 10 && shape.material.isGUID() && shape.material.getGUID().getValue() == 10724) ? null : generatedMesh.bevel);
 
         if(this.shapeMesh == null)
             this.shapeMesh = new Model();
         this.shapeMesh = loader.generateMaterialMesh(this.shapeMesh,
-                generatedMesh == null ? null : generatedMesh.gfxMaterial,
+                generatedMesh,
                 shape, bev,
                 new Matrix4f(this.getTransformation())
         );

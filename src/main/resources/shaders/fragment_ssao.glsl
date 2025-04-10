@@ -1,4 +1,4 @@
-#version 140
+#version 330
 
 in vec2 textureCoords1;
 
@@ -7,6 +7,7 @@ out vec4 out_Color;
 //following code was shamelessly stolen from user "Leadwerks" -> https://community.khronos.org/t/screen-space-ambient-occlusion/54406/12 (and tweaked a bit)
 
 uniform sampler2D depthTexture;
+
 uniform sampler2D colorTexture;
 
 uniform float zRatio;
@@ -76,7 +77,8 @@ void main(void)
 	}
 	else
 	{
-		out_Color = vec4(texture(depthTexture, textureCoords1).rgb * texture(colorTexture, textureCoords1).rgb, 1.0f);
-		out_Color = mix(fogColor, out_Color, texture(colorTexture, textureCoords1).a);
+		vec4 colorTex = texture(colorTexture, textureCoords1);
+		out_Color = vec4(texture(depthTexture, textureCoords1).rgb * colorTex.rgb, 1.0f);
+		out_Color = mix(fogColor, out_Color, colorTex.a);
 	}
 }

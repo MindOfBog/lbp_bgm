@@ -13,6 +13,7 @@ import bog.lbpas.view3d.renderer.gui.ingredients.Quad;
 import bog.lbpas.view3d.utils.Config;
 import bog.lbpas.view3d.utils.MousePicker;
 import bog.lbpas.view3d.utils.Utils;
+import bog.lbpas.view3d.utils.print;
 import org.joml.Math;
 import org.joml.*;
 import org.lwjgl.glfw.GLFW;
@@ -418,6 +419,7 @@ public class Transformation3D{
                 renderer.processGuiElement(new Quad(crosshair, new Vector2f((int)(screenPos.x - 7.5f), (int)(screenPos.y - 7.5f)), new Vector2f(15, 15)).staticTexture());
             }
 
+
             if(hasSelection)
             {
                 if(selected == ToolType.INVALID.value)
@@ -527,51 +529,18 @@ public class Transformation3D{
         {
             if(selected == -1)
             {
-                MouseInput mi = null;
-                MousePicker posPicker = null;
-                Vector3f pos = null;
+                this.currentPosition = currentPosition;
 
-                if(!Config.FRONT_VIEW)
-                {
-                    mi = new MouseInput(null);
-                    this.currentPosition = currentPosition;
-                    screenPos = view.camera.worldToScreen(this.currentPosition, view.window);
-
-                    if(screenPos != null && screenPos.z == 0)
-                    {
-                        mi.currentPos = new Vector2d(screenPos.x, screenPos.y);
-                        posPicker = new MousePicker(mi, view.window);
-                        posPicker.update(view.camera);
-                        pos = new Vector3f(posPicker.getPointOnRay(posPicker.currentRay, 6500));
-
-                        LineX.setTransformation(LineX.getTransformation().setTranslation(0, currentPosition.y, currentPosition.z));
-                        LineY.setTransformation(LineY.getTransformation().setTranslation(currentPosition.x, 0, currentPosition.z));
-                        LineZ.setTransformation(LineZ.getTransformation().setTranslation(currentPosition.x, currentPosition.y, 0));
-                    }
-                }
-                else
-                {
-                    LineX.setTransformation(LineX.getTransformation().setTranslation(0, currentPosition.y, currentPosition.z));
-                    LineY.setTransformation(LineY.getTransformation().setTranslation(currentPosition.x, 0, currentPosition.z));
-                    LineZ.setTransformation(LineZ.getTransformation().setTranslation(currentPosition.x, currentPosition.y, 0));
-                }
+                LineX.setTransformation(LineX.getTransformation().setTranslation(0, currentPosition.y, currentPosition.z));
+                LineY.setTransformation(LineY.getTransformation().setTranslation(currentPosition.x, 0, currentPosition.z));
+                LineZ.setTransformation(LineZ.getTransformation().setTranslation(currentPosition.x, currentPosition.y, 0));
 
                 float zoom = (java.lang.Math.max(view.camera.getPos().z / 1000f, 0.0f));
 
-                for (int i = 0; i < tools.size(); i++) {
-                    if(Config.FRONT_VIEW)
-                    {
-                        tools.get(i).setTransformation(new Matrix4f().identity().setTranslation(currentPosition).rotate(tools.get(i).getTransformation().getRotation(new AxisAngle4f())).scale(10f * zoom));
-                        toolsMousePicking.get(i).setTransformation(new Matrix4f().identity().setTranslation(currentPosition).rotate(toolsMousePicking.get(i).getTransformation().getRotation(new AxisAngle4f())).scale(10f * zoom));
-                    }
-                    else
-                    {
-                        if(screenPos != null && screenPos.z == 0)
-                        {
-                            tools.get(i).setTransformation(new Matrix4f().identity().setTranslation(pos).rotate(tools.get(i).getTransformation().getRotation(new AxisAngle4f())).scale(50f));
-                            toolsMousePicking.get(i).setTransformation(new Matrix4f().identity().setTranslation(pos).rotate(toolsMousePicking.get(i).getTransformation().getRotation(new AxisAngle4f())).scale(50f));
-                        }
-                    }
+                for (int i = 0; i < tools.size(); i++)
+                {
+                    tools.get(i).setTransformation(new Matrix4f().identity().setTranslation(currentPosition).rotate(tools.get(i).getTransformation().getRotation(new AxisAngle4f())).scale(Config.FRONT_VIEW ? 10f * zoom : 0.01f * view.camera.getPos().distance(currentPosition)));
+                    toolsMousePicking.get(i).setTransformation(new Matrix4f().identity().setTranslation(currentPosition).rotate(toolsMousePicking.get(i).getTransformation().getRotation(new AxisAngle4f())).scale(Config.FRONT_VIEW ? 10f * zoom : 0.01f * view.camera.getPos().distance(currentPosition)));
                 }
             }
         }

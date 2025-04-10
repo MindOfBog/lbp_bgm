@@ -4,6 +4,7 @@ import bog.lbpas.view3d.managers.assetLoading.ObjectLoader;
 import bog.lbpas.view3d.core.Model;
 import bog.lbpas.view3d.managers.WindowMan;
 import org.joml.Vector2f;
+import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 import java.awt.*;
@@ -83,6 +84,24 @@ public class LineStrip extends Drawable{
             for(int i = 0; i < positions.length; i++)
             {
                 Vector2f pos = positions[i];
+                processed[i * 2] = pos.x / (window.width / 2f) - 1 + 1 / window.width;
+                processed[i * 2 + 1] = -pos.y / (window.height / 2f) + 1 - 1 / window.height;
+            }
+
+            return loader.loadModel(processed);
+        }
+        return null;
+    }
+
+    public static Model processVerts(Vector3f[] positions, ObjectLoader loader, WindowMan window)
+    {
+        if(window != null && !window.isMinimized) {
+
+            float[] processed = new float[positions.length * 2];
+
+            for(int i = 0; i < positions.length; i++)
+            {
+                Vector2f pos = new Vector2f(positions[i].x, positions[i].y);
                 processed[i * 2] = pos.x / (window.width / 2f) - 1 + 1 / window.width;
                 processed[i * 2 + 1] = -pos.y / (window.height / 2f) + 1 - 1 / window.height;
             }

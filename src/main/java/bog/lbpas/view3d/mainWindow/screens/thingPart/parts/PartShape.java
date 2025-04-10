@@ -119,17 +119,17 @@ public abstract class PartShape extends iPart {
 
         Panel thicknessPanel = partComboBox.addPanel("thicknessPanel");
         thicknessPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("thicknstr", "Thickness:", 10, view.renderer), 0.55f));
-        Thickness = new Textbox("ShapeThickness", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
+        Thickness = new Textbox("ShapeThickness", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window).noLetters().noOthers();
         thicknessPanel.elements.add(new Panel.PanelElement(Thickness, 0.45f));
 
         Panel bevelSizePanel = partComboBox.addPanel("bevelSizePanel");
         bevelSizePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("bevelaizestr", "Bevel Size:", 10, view.renderer), 0.55f));
-        BevelSize = new Textbox("ShapeBevelSize", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
+        BevelSize = new Textbox("ShapeBevelSize", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window).noLetters().noOthers();
         bevelSizePanel.elements.add(new Panel.PanelElement(BevelSize, 0.45f));
 
         Panel shapeColorShininessPanel = partComboBox.addPanel("shapeColorShininessPanel");
         shapeColorShininessPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("shapecolshininess", "Color Shine:", 10, view.renderer), 0.55f));
-        ColorShininess = new Textbox("ShapeColorShininess", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
+        ColorShininess = new Textbox("ShapeColorShininess", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window).noLetters().noOthers();
         shapeColorShininessPanel.elements.add(new Panel.PanelElement(ColorShininess, 0.45f));
 
         Panel shapecolor = partComboBox.addPanel("shapecolor");

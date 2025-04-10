@@ -5,8 +5,10 @@ import bog.lbpas.view3d.core.Texture;
 import bog.lbpas.view3d.core.types.Thing;
 import bog.lbpas.view3d.mainWindow.ConstantTextures;
 import bog.lbpas.view3d.mainWindow.LoadedData;
+import bog.lbpas.view3d.mainWindow.View3D;
 import bog.lbpas.view3d.utils.Utils;
 import bog.lbpas.view3d.utils.print;
+import cwlib.enums.MappingMode;
 import cwlib.enums.PrimitiveType;
 import cwlib.resources.RBevel;
 import cwlib.resources.RGfxMaterial;
@@ -18,6 +20,7 @@ import cwlib.structs.mesh.Primitive;
 import cwlib.structs.staticmesh.StaticMeshInfo;
 import cwlib.structs.staticmesh.StaticPrimitive;
 import cwlib.structs.things.components.shapes.Polygon;
+import cwlib.structs.things.parts.PGeneratedMesh;
 import cwlib.structs.things.parts.PShape;
 import cwlib.types.data.ResourceDescriptor;
 import io.github.earcut4j.Earcut;
@@ -28,6 +31,7 @@ import java.awt.*;
 import java.lang.Math;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class AsyncModelMan {
@@ -102,7 +106,7 @@ public class AsyncModelMan {
         }
     }
 
-    public void digestMeshes()
+    public void digestMeshes(View3D view)
     {
         digestionOBJ();
         digestionRMesh();
@@ -116,11 +120,12 @@ public class AsyncModelMan {
 
                 extrudeShape(
                         shapeData.model,
-                        shapeData.parentGmat,
+                        shapeData.generatedMesh,
                         shapeData.shape,
                         shapeData.bevel,
                         shapeData.transformation,
-                        loader);
+                        loader,
+                        view);
 
                 toLoad.add(shapeData.model);
                 toDigestShape.remove(i);
@@ -623,21 +628,28 @@ public class AsyncModelMan {
         }
     }
 
-    public static void extrudeShape(Model model, ResourceDescriptor parentGmat, PShape shape, RBevel bevel, Matrix4f transformation, ObjectLoader loader) {
+    public static void extrudeShape(Model model, PGeneratedMesh generatedMesh, PShape shape, RBevel bevel, Matrix4f transformation, ObjectLoader loader, View3D view) {
+
+        ResourceDescriptor parentGmat = generatedMesh == null ? null : generatedMesh.gfxMaterial;
 
         Polygon polygon = shape.polygon;
         float thickness = shape.thickness;
         int[] loops = polygon.loops;
         Vector3f[] polygonVertices = polygon.vertices;
 
-        ensureWindingOrder(polygonVertices, loops, transformation);
+        if(!view.MaterialEditing.vertexTool.isSelected())
+            ensureWindingOrder(polygonVertices, loops, transformation);
 
         BevelVertex offset = bevel.vertices.get(bevel.vertices.size() - 1);
         float bevelSize = bevel.fixedBevelSize;
         if(bevelSize == -1)
             bevelSize = shape.bevelSize;
 
-        float offZ = offset.z * bevelSize;
+        bevelSize *= 2;
+
+        float offZ = zQuadratic(offset.z, bevelSize, thickness, false, 0, bevel.smoothWithFront);
+        boolean stretchBevel = Math.abs(offZ - thickness) > 0.1f;
+        float offZS = zQuadratic(offset.z, bevelSize, thickness, stretchBevel, offZ, bevel.smoothWithFront);
 
         int material = 0;
 
@@ -657,7 +669,7 @@ public class AsyncModelMan {
             else material = LoadedData.getMaterial(parentGmat, loader, textures, gmatMAP);
         }catch (Exception e){print.stackTrace(e);}
 
-        int count = (polygonVertices.length * bevel.vertices.size()) + (polygonVertices.length * (bevel.vertices.size() - 1));
+        int count = polygonVertices.length + (polygonVertices.length * (bevel.vertices.size() - 1) * 4);
 
         float[] vertices = new float[count * 3],
                 texCoords = new float[count * 4],
@@ -666,35 +678,55 @@ public class AsyncModelMan {
         int[] gmats = new int[count];
 
         Matrix4f invTransform = transformation.invert(new Matrix4f());
-        float uvScale = 0.0038f;
-        Vector3f scale = transformation.getScale(new Vector3f());
+        float uvScale = 0.002f;
+        Vector2f uvOffset0 = generatedMesh == null || generatedMesh.uvOffset == null ? new Vector2f(0) : new Vector2f(generatedMesh.uvOffset.x, generatedMesh.uvOffset.y);
+        Vector2f uvOffset1 = generatedMesh == null || generatedMesh.uvOffset == null ? new Vector2f(0) : new Vector2f(generatedMesh.uvOffset.z, generatedMesh.uvOffset.w);
+        Vector3f scale = (transformation.getScale(new Vector3f()));
+        Vector3f translation = transformation.getTranslation(new Vector3f());
+
+        ArrayList<Vector4f> offsetLines = new ArrayList<>();
+
+        //subdivision
+        int l = 0;
+
+        if(bevel.relaxStrength > 0.0f)
+            for (int loop : loops)
+            {
+                for (int i = 0; i < loop; i++)
+                {
+                    Vector3f curVert = new Vector3f(polygonVertices[l]);
+                    curVert.mulProject(transformation, curVert);
+                    int p = (l - i) + (((i - 1) % loop + loop) % loop);
+                    Vector3f prevVert = new Vector3f(polygonVertices[p]);
+                    prevVert.mulProject(transformation, prevVert);
+                    int n =  (l - i) + (((i + 1) % loop + loop) % loop);
+                    Vector3f nextVert = new Vector3f(polygonVertices[n]);
+                    nextVert.mulProject(transformation, nextVert);
+
+
+
+                    l++;
+                }
+            }
 
         //push in verts
-        int l = 0;
+        l = 0;
         for (int loop : loops)
         {
             for (int i = 0; i < loop; i++)
             {
                 Vector3f curVert = new Vector3f(polygonVertices[l]);
                 curVert.mulProject(transformation, curVert);
-                int p = l - 1;
-                if (p < l - i)
-                    p = l + (loop - 1 - i);
+                int p = (l - i) + (((i - 1) % loop + loop) % loop);
                 Vector3f prevVert = new Vector3f(polygonVertices[p]);
                 prevVert.mulProject(transformation, prevVert);
-                int k = l - 2;
-                if (k < l - i)
-                    k = l + (loop - 2 - i);
+                int k = (l - i) + (((i - 2) % loop + loop) % loop);
                 Vector3f prevPrevVert = new Vector3f(polygonVertices[k]);
                 prevPrevVert.mulProject(transformation, prevPrevVert);
-                int n = l + 1;
-                if (n >= l + (loop - i))
-                    n = l - i;
+                int n =  (l - i) + (((i + 1) % loop + loop) % loop);
                 Vector3f nextVert = new Vector3f(polygonVertices[n]);
                 nextVert.mulProject(transformation, nextVert);
-                int n2 = l + 2;
-                if (n2 >= l + (loop - i))
-                    n2 = l - i + 1;
+                int n2 = (l - i) + (((i + 2) % loop + loop) % loop);
                 Vector3f nextNextVert = new Vector3f(polygonVertices[n2]);
                 nextNextVert.mulProject(transformation, nextNextVert);
 
@@ -708,47 +740,52 @@ public class AsyncModelMan {
                         new Vector2f(prevVert.x, prevVert.y),
                         new Vector2f(curVert.x, curVert.y), offset.y * bevelSize);
 
-                Vector2f newPosNext = Utils.offsetAndFindIntersection(
-                        new Vector2f(curVert.x, curVert.y),
-                        new Vector2f(nextVert.x, nextVert.y),
-                        new Vector2f(nextNextVert.x, nextNextVert.y), offset.y * bevelSize);
+                for(int o = 0; o < offsetLines.size(); o++)
+                {
+                    Vector4f line = offsetLines.get(o);
 
-                Vector2f dir = new Vector2f(prevVert.x, prevVert.y).sub(new Vector2f(curVert.x, curVert.y)).normalize();
-                Vector2f dirOffset = new Vector2f(newPosPrev.x, newPosPrev.y).sub(new Vector2f(newPos.x, newPos.y)).normalize();
+                    float s1_x = line.z - line.x;
+                    float s1_y = line.w - line.y;
 
-//                boolean bugged = dir.dot(dirOffset) <= -Math.cos(90);
-//                float dist = (offset.y * bevelSize) * 0.9f;
-//                int iteration = 0;
-//                while(bugged && iteration < 100)
-//                {
-//                    newPos = Utils.offsetAndFindIntersection(
-//                            new Vector2f(prevVert.x, prevVert.y),
-//                            new Vector2f(curVert.x, curVert.y),
-//                            new Vector2f(nextVert.x, nextVert.y), dist);
-//                    print.neutral(dist + " : " + iteration);
-//                    dist *= 0.9f;
-//                    iteration++;
-//
-//                    dirOffset = new Vector2f(newPosPrev.x, newPosPrev.y).sub(new Vector2f(newPos.x, newPos.y)).normalize();
-//                    bugged = dir.dot(dirOffset) <= -Math.cos(90);
-//
-//                    if(dist > -0.01f || iteration >= 100)
-//                    {
-//                        newPos = new Vector2f(curVert.x, curVert.y);
-//                        bugged = false;
-//                    }
-//                }
+                    float s2_x = curVert.x - newPos.x;
+                    float s2_y = curVert.y - newPos.y;
 
-                Vector3f newVertex = new Vector3f(newPos.x, newPos.y, transformation.getTranslation(new Vector3f()).z + thickness).mulProject(invTransform);
+                    if(-s2_x * s1_y + s1_x * s2_y == 0)
+                        continue;
+
+                    float s = (-s1_y * (line.x - newPos.x) + s1_x * (line.y - newPos.y)) / (-s2_x * s1_y + s1_x * s2_y);
+                    float t = ( s2_x * (line.y - newPos.y) - s2_y * (line.x - newPos.x)) / (-s2_x * s1_y + s1_x * s2_y);
+
+                    if(s >= 0 && s <= 1 && t >= 0 && t <= 1)
+                    {
+                        Vector2f from = new Vector2f(line.x + (t * s1_x), line.y + (t * s1_y));
+                        Vector2f direc = new Vector2f(curVert.x, curVert.y).sub(from).normalize();
+                        newPos = from.add(direc.mul(0.1f));
+                    }
+                }
+
+                if(i != 0)
+                {
+                    Vector3f prev = new Vector3f(vertices[(l - 1) * 3], vertices[(l - 1) * 3 + 1], vertices[(l - 1) * 3 + 2]).mulProject(transformation);
+                    offsetLines.add(new Vector4f(newPos.x, newPos.y, prev.x, prev.y));
+
+                    if(i == loop - 1)
+                    {
+                        Vector3f first = new Vector3f(vertices[(l - (loop - 1)) * 3], vertices[(l - (loop - 1)) * 3 + 1], vertices[(l - (loop - 1)) * 3 + 2]).mulProject(transformation);
+                        offsetLines.add(new Vector4f(newPos.x, newPos.y, first.x, first.y));
+                    }
+                }
+
+                Vector3f newVertex = new Vector3f(newPos.x, newPos.y, transformation.getTranslation(new Vector3f()).z + offZS + shape.zBias).mulProject(invTransform);
 
                 vertices[l * 3] = newVertex.x;
                 vertices[l * 3 + 1] = newVertex.y;
-                vertices[l * 3 + 2] = newVertex.z + (shape.zBias * 2);
+                vertices[l * 3 + 2] = newVertex.z;
 
-                texCoords[l * 4] = newVertex.x * uvScale * scale.x;
-                texCoords[l * 4 + 1] = newVertex.y * uvScale * scale.y;
-                texCoords[l * 4 + 2] = newVertex.x * uvScale * scale.x;
-                texCoords[l * 4 + 3] = newVertex.y * uvScale * scale.y;
+                texCoords[l * 4] = newVertex.x * uvScale * scale.x + uvOffset0.x;
+                texCoords[l * 4 + 1] = 1 - (newVertex.y * uvScale * scale.y + uvOffset0.y);
+                texCoords[l * 4 + 2] = newVertex.x * uvScale * scale.x + uvOffset1.x;
+                texCoords[l * 4 + 3] = 1 - (newVertex.y * uvScale * scale.y + uvOffset1.y);
 
                 normals[l * 3] = 0.0f;
                 normals[l * 3 + 1] = 0.0f;
@@ -758,60 +795,6 @@ public class AsyncModelMan {
                 l++;
             }
         }
-
-        //temporary bandage for buggy corners
-//        for(int asd = 0; asd < 1; asd++){
-//        int lo = 0;
-//        for(int loop : loops)
-//        {
-//            for(int i = 0; i < loop; i++)
-//            {
-//                int p = lo + i;
-//                int p1 = (i - 1);
-//                if(p1 < 0)
-//                    p1 = loop - 1;
-//                p1 = lo + p1;
-//
-//                Vector3f position = new Vector3f(vertices[p * 3], vertices[p * 3 + 1], vertices[p * 3 + 2]);
-//                position.mulProject(transformation, position);
-//                Vector3f positionPrev = new Vector3f(vertices[p1 * 3], vertices[p1* 3 + 1], vertices[p1 * 3 + 2]);
-//                positionPrev.mulProject(transformation, positionPrev);
-//
-//                Vector3f curVert = new Vector3f(polygonVertices[p]);
-//                curVert.mulProject(transformation, curVert);
-//                Vector3f prevVert = new Vector3f(polygonVertices[p1]);
-//                prevVert.mulProject(transformation, prevVert);
-//
-//                Vector2f dir = new Vector2f(positionPrev.x, positionPrev.y).sub(new Vector2f(position.x, position.y)).normalize();
-//                Vector2f dirOffset = new Vector2f(prevVert.x, prevVert.y).sub(new Vector2f(curVert.x, curVert.y)).normalize();
-//
-//                if(dir.dot(dirOffset) <= -Math.cos(90))
-//                {
-//                    float[] temp = new float[]{vertices[p1 * 3], vertices[p1* 3 + 1], vertices[p1 * 3 + 2]};
-//
-//                    vertices[p1 * 3] = vertices[p * 3];
-//                    vertices[p1* 3 + 1] = vertices[p * 3 + 1];
-//                    vertices[p1 * 3 + 2] = vertices[p * 3 + 2];
-//
-//                    vertices[p * 3] = temp[0];
-//                    vertices[p * 3 + 1] = temp[1];
-//                    vertices[p * 3 + 2] = temp[2];
-//
-//                    temp = new float[]{texCoords[p * 4], texCoords[p * 4 + 1], texCoords[p * 4 + 2], texCoords[p * 4 + 3]};
-//
-//                    texCoords[p * 4] = texCoords[p1 * 4];
-//                    texCoords[p * 4 + 1] = texCoords[p1 * 4 + 1];
-//                    texCoords[p * 4 + 2] = texCoords[p1 * 4 + 2];
-//                    texCoords[p * 4 + 3] = texCoords[p1 * 4 + 3];
-//
-//                    texCoords[p1 * 4] = temp[0];
-//                    texCoords[p1 * 4 + 1] = temp[1];
-//                    texCoords[p1 * 4 + 2] = temp[2];
-//                    texCoords[p1 * 4 + 3] = temp[3];
-//                }
-//            }
-//            lo += loop;
-//        }}
 
         double[] flat = new double[polygonVertices.length * 2];
         for (int i = 0; i < polygonVertices.length; i++) {
@@ -831,122 +814,139 @@ public class AsyncModelMan {
 
         Model[] bevels = new Model[bevel.vertices.size() - 1];
 
-        for (int i = 0; i < bevels.length; i++) {
+        //extrude bevel
+        for (int i = bevels.length - 1; i >= 0; i--) {
             BevelVertex current = bevel.vertices.get(i);
             BevelVertex next = bevel.vertices.get(i + 1);
 
             Vector2f curPos = new Vector2f((current.y - offset.y) * bevelSize, current.z);
             Vector2f nextPos = new Vector2f((next.y - offset.y) * bevelSize, next.z);
 
-            int c = polygonVertices.length * 2;
+            int c = polygonVertices.length * 4;
 
             float[] vertis = new float[c * 3];
             float[] textureCoords = new float[c * 4];
             float[] normas = new float[vertis.length];
             float[] tanges = new float[vertis.length];
-            int[] indices = new int[vertis.length];
+            int[] indices = new int[vertis.length / 2];
 
             l = 0;
             for (int loop : loops) {
                 for (int i3 = 0; i3 < loop; i3++) {
+
                     Vector3f curVert = new Vector3f(vertices[l * 3], vertices[l * 3 + 1], vertices[l * 3 + 2]);
                     curVert.mulProject(transformation, curVert);
-                    int p = l - 1;
-                    if (p < l - i3)
-                        p = l + loop - 1 - i3;
-                    Vector3f prevVert = new Vector3f(vertices[p * 3], vertices[p * 3 + 1], vertices[p * 3 + 2]);
-                    prevVert.mulProject(transformation, prevVert);
-                    int n1 = l + 1;
-                    if (n1 >= l + loop - i3)
-                        n1 = l - i3;
-                    Vector3f nextVert = new Vector3f(vertices[n1 * 3], vertices[n1 * 3 + 1], vertices[n1 * 3 + 2]);
-                    nextVert.mulProject(transformation, nextVert);
-                    Vector2f firstVert1 = Utils.offsetAndFindIntersection(new Vector2f(prevVert.x, prevVert.y), new Vector2f(curVert.x, curVert.y), new Vector2f(nextVert.x, nextVert.y), current.y * bevelSize - offset.y * bevelSize);
 
-                    float zThicknessFirst = curPos.y * bevelSize;
-                    zThicknessFirst -= (Math.abs(curPos.y) < 0.01f ? thickness - offZ : curPos.y < 0 ? (thickness - offZ) * 2 : 0);
+                    Vector3f origVert = new Vector3f(polygonVertices[l]);
+                    origVert.mulProject(transformation, origVert);
 
-                    if(!(Math.abs(curPos.y) < 0.01f))
-                    {
-                        if(curPos.y < 0)
-                        {
-                            if(zThicknessFirst > -(thickness - offZ))
-                                zThicknessFirst = -(thickness - offZ);
-                        }
-                        else
-                        {
-                            if(zThicknessFirst < -(thickness - offZ))
-                                zThicknessFirst = -(thickness - offZ);
-                        }
-                    }
+                    Vector2f originalVert = new Vector2f(origVert.x, origVert.y);
+                    Vector2f currentVert = new Vector2f(curVert.x, curVert.y);
+                    Vector2f dir = new Vector2f(originalVert).sub(currentVert).normalize();
 
-                    zThicknessFirst -= offZ;
-
-                    Vector3f firstVert = new Vector3f(firstVert1.x, firstVert1.y, curVert.z + zThicknessFirst);
+                    Vector2f firstVert1 = new Vector2f(currentVert).add(new Vector2f(dir).mul(current.y * bevelSize - offset.y * bevelSize));
+                    Vector3f firstVert = new Vector3f(firstVert1.x, firstVert1.y, curVert.z + zQuadratic(curPos.y, bevelSize, thickness, stretchBevel, offZ, bevel.smoothWithFront) - offZS);
 
                     firstVert.mulProject(invTransform, firstVert);
-                    vertis[l * 6] = firstVert.x;
-                    vertis[l * 6 + 1] = firstVert.y;
-                    vertis[l * 6 + 2] = firstVert.z;
-                    Vector2f secondVert1 = Utils.offsetAndFindIntersection(new Vector2f(prevVert.x, prevVert.y), new Vector2f(curVert.x, curVert.y), new Vector2f(nextVert.x, nextVert.y), next.y * bevelSize - offset.y * bevelSize);
+                    vertis[l * 12 + 0] = firstVert.x;
+                    vertis[l * 12 + 1] = firstVert.y;
+                    vertis[l * 12 + 2] = firstVert.z;
 
-                    float zThicknessSecond = nextPos.y * bevelSize;
-                    zThicknessSecond -= (Math.abs(nextPos.y) < 0.01f ? thickness - offZ : nextPos.y < 0 ? (thickness - offZ) * 2 : 0);
-
-                    if(!(Math.abs(nextPos.y) < 0.01f))
-                    {
-                        if(nextPos.y < 0)
-                        {
-                            if(zThicknessSecond > -(thickness - offZ))
-                                zThicknessSecond = -(thickness - offZ);
-                        }
-                        else
-                        {
-                            if(zThicknessSecond < -(thickness - offZ))
-                                zThicknessSecond = -(thickness - offZ);
-                        }
-                    }
-
-                    zThicknessSecond -= offZ;
-
-                    Vector3f secondVert = new Vector3f(secondVert1.x, secondVert1.y, curVert.z + zThicknessSecond);
+                    Vector2f secondVert1 = new Vector2f(currentVert).add(new Vector2f(dir).mul(next.y * bevelSize - offset.y * bevelSize));
+                    Vector3f secondVert = new Vector3f(secondVert1.x, secondVert1.y, curVert.z + zQuadratic(nextPos.y, bevelSize, thickness, stretchBevel, offZ, bevel.smoothWithFront) - offZS);
 
                     secondVert.mulProject(invTransform, secondVert);
-                    vertis[l * 6 + 3] = secondVert.x;
-                    vertis[l * 6 + 4] = secondVert.y;
-                    vertis[l * 6 + 5] = secondVert.z;
+                    vertis[l * 12 + 3] = secondVert.x;
+                    vertis[l * 12 + 4] = secondVert.y;
+                    vertis[l * 12 + 5] = secondVert.z;
 
-                    int i4 = l + 1;
-                    if (i4 >= l + loop - i3)
-                        i4 = l - i3;
+                    int i4 = (l - i3) + (((i3 - 1) % loop + loop) % loop);
+
+                    vertis[i4 * 12 + 6] = vertis[l * 12 + 0];
+                    vertis[i4 * 12 + 7] = vertis[l * 12 + 1];
+                    vertis[i4 * 12 + 8] = vertis[l * 12 + 2];
+
+                    vertis[i4 * 12 + 9] = vertis[l * 12 + 3];
+                    vertis[i4 * 12 + 10] = vertis[l * 12 + 4];
+                    vertis[i4 * 12 + 11] = vertis[l * 12 + 5];
 
                     if(transformation.determinant() < 0)
                     {
-                        indices[l * 6 + 0] = l * 2;
-                        indices[l * 6 + 1] = i4 * 2;
-                        indices[l * 6 + 2] = i4 * 2 + 1;
-                        indices[l * 6 + 3] = i4 * 2 + 1;
-                        indices[l * 6 + 4] = l * 2 + 1;
-                        indices[l * 6 + 5] = l * 2;
+                        indices[l * 6 + 0] = l * 4 + 0;
+                        indices[l * 6 + 1] = l * 4 + 2;
+                        indices[l * 6 + 2] = l * 4 + 3;
+
+                        indices[l * 6 + 3] = l * 4 + 3;
+                        indices[l * 6 + 4] = l * 4 + 1;
+                        indices[l * 6 + 5] = l * 4 + 0;
                     }
                     else
                     {
-                        indices[l * 6] = i4 * 2 + 1;
-                        indices[l * 6 + 1] = i4 * 2;
-                        indices[l * 6 + 2] = l * 2;
-                        indices[l * 6 + 3] = l * 2;
-                        indices[l * 6 + 4] = l * 2 + 1;
-                        indices[l * 6 + 5] = i4 * 2 + 1;
+                        indices[l * 6 + 0] = l * 4 + 3;
+                        indices[l * 6 + 1] = l * 4 + 2;
+                        indices[l * 6 + 2] = l * 4 + 0;
+
+                        indices[l * 6 + 3] = l * 4 + 0;
+                        indices[l * 6 + 4] = l * 4 + 1;
+                        indices[l * 6 + 5] = l * 4 + 3;
                     }
 
-                    textureCoords[l * 8] = firstVert.x * uvScale * scale.x;
-                    textureCoords[l * 8 + 1] = firstVert.y * uvScale * scale.y;
-                    textureCoords[l * 8 + 2] = firstVert.x * uvScale * scale.x;
-                    textureCoords[l * 8 + 3] = firstVert.y * uvScale * scale.y;
-                    textureCoords[l * 8 + 4] = secondVert.x * uvScale * scale.x;
-                    textureCoords[l * 8 + 5] = secondVert.y * uvScale * scale.y;
-                    textureCoords[l * 8 + 6] = secondVert.x * uvScale * scale.x;
-                    textureCoords[l * 8 + 7] = secondVert.y * uvScale * scale.y;
+                    Vector2f newFirst = new Vector2f(firstVert.x, firstVert.y).mul(uvScale).mul(scale.x, scale.y);
+                    Vector2f newSecond = new Vector2f(secondVert.x, secondVert.y).mul(uvScale).mul(scale.x, scale.y);
+
+                    Vector2f DaveUV0v1 = new Vector2f(newFirst.x + uvOffset0.x, 1 - (newFirst.y + uvOffset0.y));
+                    Vector2f DaveUV0v2 = new Vector2f(newSecond.x + uvOffset0.x, 1 - (newSecond.y + uvOffset0.y));
+
+                    Vector2f DaveUV1v1 = new Vector2f(newFirst.x + uvOffset1.x, 1 - (newFirst.y + uvOffset1.y));
+                    Vector2f DaveUV1v2 = new Vector2f(newSecond.x + uvOffset1.x, 1 - (newSecond.y + uvOffset1.y));
+
+                    switch(current.mappingMode)//todo
+                    {
+                        case CYLINDER:
+                        {
+                            Vector2f UV0v1 = DaveUV0v1;
+                            Vector2f UV0v2 = DaveUV0v2;
+
+                            textureCoords[l * 16] = UV0v1.x;
+                            textureCoords[l * 16 + 1] = UV0v1.y;
+                            textureCoords[l * 16 + 4] = UV0v2.x;
+                            textureCoords[l * 16 + 5] = UV0v2.y;
+
+                            textureCoords[i4 * 16 + 8] = UV0v1.x;
+                            textureCoords[i4 * 16 + 9] = UV0v1.y;
+                            textureCoords[i4 * 16 + 12] = UV0v2.x;
+                            textureCoords[i4 * 16 + 13] = UV0v2.y;
+                        }
+                        break;
+                        case DAVE:
+                        default:
+                        {
+                            Vector2f UV0v1 = DaveUV0v1;
+                            Vector2f UV0v2 = DaveUV0v2;
+
+                            textureCoords[l * 16] = UV0v1.x;
+                            textureCoords[l * 16 + 1] = UV0v1.y;
+                            textureCoords[l * 16 + 4] = UV0v2.x;
+                            textureCoords[l * 16 + 5] = UV0v2.y;
+
+                            textureCoords[i4 * 16 + 8] = UV0v1.x;
+                            textureCoords[i4 * 16 + 9] = UV0v1.y;
+                            textureCoords[i4 * 16 + 12] = UV0v2.x;
+                            textureCoords[i4 * 16 + 13] = UV0v2.y;
+                        }
+                        break;
+                    }
+
+                    textureCoords[l * 16 + 2] = DaveUV1v1.x;
+                    textureCoords[l * 16 + 3] = DaveUV1v1.y;
+                    textureCoords[l * 16 + 6] = DaveUV1v2.x;
+                    textureCoords[l * 16 + 7] = DaveUV1v2.y;
+
+                    textureCoords[i4 * 16 + 10] = DaveUV1v1.x;
+                    textureCoords[i4 * 16 + 11] = DaveUV1v1.y;
+                    textureCoords[i4 * 16 + 14] = DaveUV1v2.x;
+                    textureCoords[i4 * 16 + 15] = DaveUV1v2.y;
+
                     Vector3f deltaPos1 = (new Vector3f(vertis[indices[l * 6 + 1] * 3], vertis[indices[l * 6 + 1] * 3 + 1], vertis[indices[l * 6 + 1] * 3 + 2])).sub(new Vector3f(vertis[indices[l * 6] * 3], vertis[indices[l * 6] * 3 + 1], vertis[indices[l * 6] * 3 + 2]), new Vector3f());
                     Vector3f deltaPos2 = (new Vector3f(vertis[indices[l * 6 + 2] * 3], vertis[indices[l * 6 + 2] * 3 + 1], vertis[indices[l * 6 + 2] * 3 + 2])).sub(new Vector3f(vertis[indices[l * 6] * 3], vertis[indices[l * 6] * 3 + 1], vertis[indices[l * 6] * 3 + 2]), new Vector3f());
                     Vector4f uv0 = new Vector4f(textureCoords[indices[l * 6] * 2], textureCoords[indices[l * 6] * 2 + 1], textureCoords[indices[l * 6] * 2], textureCoords[indices[l * 6] * 2 + 1]);
@@ -1015,7 +1015,7 @@ public class AsyncModelMan {
 
                 int[] gmts = new int[vertis.length/3];
                 for(int g = 0; g < gmts.length; g++)
-                    gmts[g] = mat;
+                    gmts[g] = current.mappingMode == MappingMode.HIDDEN ? 0 : mat;
                 bevels[i].gmats = gmts;
             } catch (Exception e) {
                 print.stackTrace(e);
@@ -1053,12 +1053,21 @@ public class AsyncModelMan {
             if(v.x != -1)
                 gmatCount++;
 
-        for(int i = polygonVertices.length * 3; i < vertices.length/3; i++)
+        //smooth normals
+        for(int i = 0; i < vertices.length/3; i++)
         {
             float x = vertices[i * 3];
             float y = vertices[i * 3 + 1];
             float z = vertices[i * 3 + 2];
             Vector3f vertex = new Vector3f(x, y, z);
+
+            float dx = normals[i * 3];
+            float dy = normals[i * 3 + 1];
+            float dz = normals[i * 3 + 2];
+
+            Vector3f newDir = new Vector3f(dx, dy, dz);
+
+            ArrayList<Vector3i> closeVerts = new ArrayList<>();
 
             for(int o = i + 1; o < vertices.length/3; o++)
             {
@@ -1069,25 +1078,28 @@ public class AsyncModelMan {
 
                 float dist = vertex.distance(vertex2);
 
-                if(dist < 0.0001)
+                if(dist < 0.01)
                 {
-                    float dx = normals[i * 3];
-                    float dy = normals[i * 3 + 1];
-                    float dz = normals[i * 3 + 2];
                     float dx2 = normals[o * 3];
                     float dy2 = normals[o * 3 + 1];
                     float dz2 = normals[o * 3 + 2];
 
-                    Vector3f newDir = new Vector3f(dx, dy, dz).add(new Vector3f(dx2, dy2, dz2)).normalize();
-
-                    normals[i * 3] = newDir.x;
-                    normals[i * 3 + 1] = newDir.y;
-                    normals[i * 3 + 2] = newDir.z;
-                    normals[o * 3] = newDir.x;
-                    normals[o * 3 + 1] = newDir.y;
-                    normals[o * 3 + 2] = newDir.z;
-                    break;
+                    closeVerts.add(new Vector3i(o * 3, o * 3 + 1, o * 3 + 2));
+                    newDir.add(new Vector3f(dx2, dy2, dz2));
                 }
+            }
+
+            newDir.div(closeVerts.size() + 1);
+
+            normals[i * 3] = newDir.x;
+            normals[i * 3 + 1] = newDir.y;
+            normals[i * 3 + 2] = newDir.z;
+
+            for(Vector3i indexNormal : closeVerts)
+            {
+                normals[indexNormal.x] = newDir.x;
+                normals[indexNormal.y] = newDir.y;
+                normals[indexNormal.z] = newDir.z;
             }
         }
 
@@ -1102,6 +1114,21 @@ public class AsyncModelMan {
         model.material.texCount = texCount;
         model.material.gmatMAP = gmatMAP;
         model.material.gmatCount = gmatCount;
+    }
+
+    private static float zQuadratic(float value, float bevelSize, float thickness, boolean stretch, float zOffset, boolean smoothWithFront)
+    {
+        float out = Math.signum(value) * (float) Math.pow(Math.abs(value), bevelSize / thickness);
+
+        if((smoothWithFront && stretch && out * thickness < zOffset) || (!smoothWithFront && stretch && out * thickness <= zOffset))
+        {
+            float normalizedValue = (value + 1) / 2.0f;
+            float exponentialResult = (float) Math.exp(normalizedValue - 1);
+            float scaledResult = (exponentialResult - 1/(float)Math.E) * 3f / (1 - 1/(float)Math.E);
+            out = scaledResult - 1;
+        }
+
+        return org.joml.Math.clamp(-thickness, thickness, out * thickness);
     }
 
     private static Vector3f normalFromIndices(Vector3f a, Vector3f b, Vector3f c)
@@ -1211,13 +1238,13 @@ public class AsyncModelMan {
     public static class ModelDataShape
     {
         Model model;
-        ResourceDescriptor parentGmat;
+        PGeneratedMesh generatedMesh;
         PShape shape;
         RBevel bevel;
         Matrix4f transformation;
 
-        public ModelDataShape(Model model, ResourceDescriptor parentGmat, PShape shape, RBevel bevel, Matrix4f transformation) {
-            this.parentGmat = parentGmat;
+        public ModelDataShape(Model model, PGeneratedMesh generatedMesh, PShape shape, RBevel bevel, Matrix4f transformation) {
+            this.generatedMesh = generatedMesh;
             this.shape = shape;
             this.bevel = bevel;
             this.transformation = transformation;

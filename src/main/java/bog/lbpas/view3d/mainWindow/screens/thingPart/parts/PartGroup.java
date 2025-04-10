@@ -226,6 +226,9 @@ public abstract class PartGroup extends iPart {
 
         for(int i : selected)
         {
+            if(i >= things.size())
+                continue;
+
             bog.lbpas.view3d.core.types.Thing thing = things.get(i);
             PGroup group = thing.thing.getPart(Part.GROUP);
 
@@ -289,6 +292,9 @@ public abstract class PartGroup extends iPart {
 
         for(int i : selected)
         {
+            if(i >= things.size())
+                continue;
+
             bog.lbpas.view3d.core.types.Thing thing = things.get(i);
             PGroup group = thing.thing.getPart(Part.GROUP);
 

@@ -50,14 +50,12 @@ public class RenderMan {
         {
             @Override
             public void unbindFrameBuffer() {
-                bindFrameBuffer(screenBuffer);
-                bindColorTex(screenTexture);
-                bindDepthTex(screenDepth);
+                screenBuffer.bind();
             }
 
             @Override
-            public int[] getOutlineFB() {
-                return new int[]{outlineFB, outlineCT, outlineDT};
+            public FBO getOutlineFBO() {
+                return outlineBuffer1;
             }
         };
         entityRenderer.init();
@@ -65,33 +63,143 @@ public class RenderMan {
         {
             @Override
             public void unbindFrameBuffer() {
-                bindFrameBuffer(screenBuffer);
-                bindColorTex(screenTexture);
-                bindDepthTex(screenDepth);
+                screenBuffer2.bind();
             }
         };
         guiRenderer.init();
-        screenBuffer = initFrameBuffer();
-        screenTexture = initColorTex(window);
-        screenDepth = initDepthTex(window);
 
-        blurBuffer = initFrameBuffer();
-        blurTexture = initColorTex(window);
-        blurDepth = initDepthTex(window);
+        screenBuffer = new FBO()
+        {
+            @Override
+            public int initBuffer() {
+                return initMultiSampleFrameBuffer();
+            }
 
-        outlineFB = initFrameBuffer();
-        outlineCT = initColorTex(window);
-        outlineDT = initDepthTex(window);
-        outlineFB2 = initFrameBuffer();
-        outlineCT2 = initColorTex(window);
-        outlineDT2 = initDepthTex(window);
+            @Override
+            public int initColorTexture() {
+                return initMultiSampleColorTexture(window);
+            }
 
-        ssaoBuffer = initFrameBuffer();
-        ssaoTexture = initColorTex(window);
-        ssaoDepth = initDepthTex(window);
-        ssaoBuffer2 = initFrameBuffer();
-        ssaoTexture2 = initColorTex(window);
-        ssaoDepth2 = initDepthTex(window);
+            @Override
+            public int initDepthTexture() {
+                return initMultiSampleDepthTexture(window);
+            }
+
+            @Override
+            public void bind() {
+                bindMultiSampleFrameBuffer(buffer);
+                bindMultiSampleColorTex(colorTexture);
+                bindMultiSampleDepthTex(depthTexture);
+            }
+        };
+
+        screenBuffer2 = new FBO()
+        {
+            @Override
+            public int initBuffer() {
+                return initFrameBuffer();
+            }
+
+            @Override
+            public int initColorTexture() {
+                return initColorTex(window);
+            }
+
+            @Override
+            public int initDepthTexture() {
+                return initDepthTex(window);
+            }
+        };
+
+        blurBuffer = new FBO()
+        {
+            @Override
+            public int initBuffer() {
+                return initFrameBuffer();
+            }
+
+            @Override
+            public int initColorTexture() {
+                return initColorTex(window);
+            }
+
+            @Override
+            public int initDepthTexture() {
+                return initDepthTex(window);
+            }
+        };
+
+        outlineBuffer1 = new FBO()
+        {
+            @Override
+            public int initBuffer() {
+                return initFrameBuffer();
+            }
+
+            @Override
+            public int initColorTexture() {
+                return initColorTex(window);
+            }
+
+            @Override
+            public int initDepthTexture() {
+                return initDepthTex(window);
+            }
+        };
+
+        outlineBuffer2 = new FBO()
+        {
+            @Override
+            public int initBuffer() {
+                return initFrameBuffer();
+            }
+
+            @Override
+            public int initColorTexture() {
+                return initColorTex(window);
+            }
+
+            @Override
+            public int initDepthTexture() {
+                return initDepthTex(window);
+            }
+        };
+
+        ssaoBuffer1 = new FBO()
+        {
+            @Override
+            public int initBuffer() {
+                return initFrameBuffer();
+            }
+
+            @Override
+            public int initColorTexture() {
+                return initColorTex(window);
+            }
+
+            @Override
+            public int initDepthTexture() {
+                return initDepthTex(window);
+            }
+        };
+
+        ssaoBuffer2 = new FBO()
+        {
+            @Override
+            public int initBuffer() {
+                return initFrameBuffer();
+            }
+
+            @Override
+            public int initColorTexture() {
+                return initColorTex(window);
+            }
+
+            @Override
+            public int initDepthTexture() {
+                return initDepthTex(window);
+            }
+        };
 
         shaderOutline.createFragmentShader(Utils.loadResource("/shaders/fragment_outline.glsl"));
         shaderOutline.createVertexShader(Utils.loadResource("/shaders/vertex_outline.glsl"));
@@ -118,28 +226,16 @@ public class RenderMan {
         shaderSSAO.createUniform("start");
     }
 
-    int screenBuffer = -1;
-    int screenTexture = -1;
-    int screenDepth = -1;
+    FBO screenBuffer;
+    FBO screenBuffer2;
 
-    int blurBuffer = -1;
-    int blurTexture = -1;
-    int blurDepth = -1;
+    FBO blurBuffer;
 
-    int outlineFB = -1;
-    int outlineCT = -1;
-    int outlineDT = -1;
-    int outlineFB2 = -1;
-    int outlineCT2 = -1;
-    int outlineDT2 = -1;
+    FBO outlineBuffer1;
+    FBO outlineBuffer2;
 
-    int ssaoBuffer = -1;
-    int ssaoTexture = -1;
-    int ssaoDepth = -1;
-
-    int ssaoBuffer2 = -1;
-    int ssaoTexture2 = -1;
-    int ssaoDepth2 = -1;
+    FBO ssaoBuffer1;
+    FBO ssaoBuffer2;
 
     ShaderMan shaderOutline;
 
@@ -148,38 +244,48 @@ public class RenderMan {
     public void resize()
     {
         entityRenderer.resize();
-        GL11.glDeleteTextures(new int[]{screenTexture, screenDepth, blurTexture, blurDepth, outlineCT, outlineDT, outlineDT2, ssaoTexture, ssaoDepth});
         GL11.glViewport(0, 0, window.width, window.height);
-        GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, screenBuffer);
-        GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, outlineFB);
-        outlineCT = RenderMan.initColorTex(window);
-        GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, outlineFB2);
-        outlineCT2 = RenderMan.initColorTex(window);
-        screenTexture = initColorTex(window);
-        screenDepth = initDepthTex(window);
-        blurTexture = initColorTex(window);
-        blurDepth = initDepthTex(window);
-        outlineDT = RenderMan.initDepthTex(window);
-        outlineDT2 = RenderMan.initDepthTex(window);
-        ssaoTexture = initColorTex(window);
-        ssaoDepth = initDepthTex(window);
-        ssaoTexture2 = initColorTex(window);
-        ssaoDepth2 = initDepthTex(window);
+        screenBuffer.resize();
+        screenBuffer2.resize();
+        blurBuffer.resize();
+        outlineBuffer1.resize();
+        outlineBuffer2.resize();
+        ssaoBuffer1.resize();
+        ssaoBuffer2.resize();
     }
 
+    int prevAASamples = Config.MSAA_SAMPLES;
     public void render(MouseInput mouseInput, View3D mainView)
     {
+        if(prevAASamples != Config.MSAA_SAMPLES)
+        {
+            resize();
+            prevAASamples = Config.MSAA_SAMPLES;
+        }
+
         clear();
-        bindFrameBuffer(screenBuffer);
-        bindColorTex(screenTexture);
-        bindDepthTex(screenDepth);
+        screenBuffer.bind();
         clear();
         entityRenderer.render(mouseInput, mainView);
         if(!Main.debug || !((Checkbox) ((Settings) mainView.Settings).debug.tabElements.get(4)).isChecked)
             doSSAO(mainView);
         doOutlines();
         entityRenderer.renderAfterPP(mainView);
-        guiRenderer.render(screenTexture, blurBuffer, blurTexture, blurDepth);
+
+        GL30.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, screenBuffer.buffer);
+        GL30.glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, screenBuffer2.buffer);
+        clear();
+
+        GL30.glBlitFramebuffer(
+                0, 0, window.width, window.height,
+                0, 0, window.width, window.height,
+                GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT,
+                GL11.GL_NEAREST
+        );
+
+        screenBuffer2.bind();
+
+        guiRenderer.render(screenBuffer2, blurBuffer);
 
         ShaderMan shader = guiRenderer.guiShader;
         shader.bind();
@@ -190,7 +296,7 @@ public class RenderMan {
         GL20.glEnableVertexAttribArray(0);
 
         GL13.glActiveTexture(GL13.GL_TEXTURE0);
-        GL11.glBindTexture(GL11.GL_TEXTURE_2D, screenTexture);
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, screenBuffer2.colorTexture);
 
         shader.setUniform("hasCoords", false);
         shader.setUniform("guiTexture", 0);
@@ -210,21 +316,32 @@ public class RenderMan {
         shader.unbind();
     }
 
+    public void loaderThread()
+    {
+        if(entityRenderer != null)
+            entityRenderer.loaderThread();
+    }
+
     private void doSSAO(View3D mainView)
     {
         RenderMan.disableCulling();
+
+        GL30.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, screenBuffer.buffer);
+        GL30.glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, screenBuffer2.buffer);
+        clear();
+
+        GL30.glBlitFramebuffer(
+                0, 0, window.width, window.height,
+                0, 0, window.width, window.height,
+                GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT,
+                GL11.GL_NEAREST
+        );
 
         shaderSSAO.bind();
         GL11.glEnable(GL11.GL_DEPTH_TEST);
         GL11.glDisable(GL11.GL_BLEND);
 
-        bindFrameBuffer(ssaoBuffer);
-        bindColorTex(ssaoTexture);
-        bindDepthTex(ssaoDepth);
-
-        GL11.glClearColor(0,0,0,0);
-        GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
-        GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
+        ssaoBuffer1.bind();
         clear();
 
         GL30.glBindVertexArray(GuiRenderer.defaultQuad.vao);
@@ -232,7 +349,7 @@ public class RenderMan {
         GL20.glEnableVertexAttribArray(1);
 
         GL13.glActiveTexture(GL13.GL_TEXTURE0);
-        GL11.glBindTexture(GL11.GL_TEXTURE_2D, screenDepth);
+        GL32.glBindTexture(GL32.GL_TEXTURE_2D, screenBuffer2.depthTexture);
 
         shaderSSAO.setUniform("start", true);
         shaderSSAO.setUniform("hasCoords", false);
@@ -250,13 +367,7 @@ public class RenderMan {
         ShaderMan shader = guiRenderer.guiShader;
         shader.bind();
 
-        bindFrameBuffer(ssaoBuffer2);
-        bindColorTex(ssaoTexture2);
-        bindDepthTex(ssaoDepth2);
-
-        GL11.glClearColor(0,0,0,0);
-        GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
-        GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
+        ssaoBuffer2.bind();
         clear();
 
         shader.setUniform("hasCoords", false);
@@ -268,7 +379,7 @@ public class RenderMan {
 
         GL30.glBindVertexArray(GuiRenderer.defaultQuad.vao);
         GL13.glActiveTexture(GL13.GL_TEXTURE0);
-        GL11.glBindTexture(GL11.GL_TEXTURE_2D, ssaoTexture);
+        GL32.glBindTexture(GL32.GL_TEXTURE_2D, ssaoBuffer1.colorTexture);
 
         shader.setUniform("isBlur", true);
         shader.setUniform("isGaussian", true);
@@ -279,13 +390,7 @@ public class RenderMan {
         //vertical blur pass
         GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, GuiRenderer.defaultQuad.vertexCount);
 
-        bindFrameBuffer(ssaoBuffer);
-        bindColorTex(ssaoTexture);
-        bindDepthTex(ssaoDepth);
-
-        GL11.glClearColor(0,0,0,0);
-        GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
-        GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
+        ssaoBuffer1.bind();
         clear();
 
         shader.setUniform("hasCoords", false);
@@ -296,7 +401,7 @@ public class RenderMan {
 
         GL30.glBindVertexArray(GuiRenderer.defaultQuad.vao);
         GL13.glActiveTexture(GL13.GL_TEXTURE0);
-        GL11.glBindTexture(GL11.GL_TEXTURE_2D, ssaoTexture2);
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, ssaoBuffer2.colorTexture);
 
         shader.setUniform("pixelSize", 1.0f/window.width);
         shader.setUniform("vertical", false);
@@ -305,13 +410,11 @@ public class RenderMan {
 
         shader.setUniform("isBlur", false);
 
-        bindFrameBuffer(screenBuffer);
-        bindColorTex(screenTexture);
-        bindDepthTex(screenDepth);
+        screenBuffer.bind();
 
         shaderSSAO.bind();
         shaderSSAO.setUniform("hasCoords", true);
-        shaderSSAO.setUniform("depthTexture", 0);
+        shaderSSAO.setUniform("processedTexture", 0);
         shaderSSAO.setUniform("colorTexture", 1);
         shaderSSAO.setUniform("transformationMatrix", Transformation.createTransformationMatrix(
                 new Vector2f(),
@@ -325,10 +428,10 @@ public class RenderMan {
 
         GL30.glBindVertexArray(GuiRenderer.defaultQuad.vao);
         GL13.glActiveTexture(GL13.GL_TEXTURE0);
-        GL11.glBindTexture(GL11.GL_TEXTURE_2D, ssaoTexture);
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, ssaoBuffer1.colorTexture);
 
         GL13.glActiveTexture(GL13.GL_TEXTURE1);
-        GL11.glBindTexture(GL11.GL_TEXTURE_2D, screenTexture);
+        GL32.glBindTexture(GL32.GL_TEXTURE_2D, screenBuffer2.colorTexture);
 
         //final pass
         GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, GuiRenderer.defaultQuad.vertexCount);
@@ -346,9 +449,7 @@ public class RenderMan {
     {
         int radius = Math.round((Config.OUTLINE_DISTANCE * 2f - 1f) * 10f);
 
-        bindFrameBuffer(outlineFB2);
-        bindColorTex(outlineCT2);
-        bindDepthTex(outlineDT2);
+        outlineBuffer2.bind();
 
         GL11.glClearColor(0,0,0,0);
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
@@ -356,27 +457,21 @@ public class RenderMan {
 
         shaderOutline.bind();
 
-        drawOutline(outlineCT, -1, shaderOutline, window.width, radius, false, Config.OUTLINE_COLOR);
+        drawOutline(outlineBuffer1.colorTexture, -1, shaderOutline, window.width, radius, false, Config.OUTLINE_COLOR);
 
-        bindFrameBuffer(screenBuffer);
-        bindColorTex(screenTexture);
-        bindDepthTex(screenDepth);
+        screenBuffer.bind();
 
         GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
 
-        drawOutline(outlineCT2, outlineCT, shaderOutline, window.height, radius, true, Config.OUTLINE_COLOR);
+        drawOutline(outlineBuffer2.colorTexture, outlineBuffer1.colorTexture, shaderOutline, window.height, radius, true, Config.OUTLINE_COLOR);
 
-        bindFrameBuffer(outlineFB);
-        bindColorTex(outlineCT);
-        bindDepthTex(outlineDT);
+        outlineBuffer1.bind();
 
         GL11.glClearColor(0,0,0,0);
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
         GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
 
-        bindFrameBuffer(screenBuffer);
-        bindColorTex(screenTexture);
-        bindDepthTex(screenDepth);
+        screenBuffer.bind();
     }
 
     public static void enableCulling()
@@ -444,6 +539,14 @@ public class RenderMan {
         shaderOutline.cleanup();
         entityRenderer.cleanup();
         guiRenderer.cleanup();
+
+        screenBuffer.cleanup();
+        screenBuffer2.cleanup();
+        blurBuffer.cleanup();
+        outlineBuffer1.cleanup();
+        outlineBuffer2.cleanup();
+        ssaoBuffer1.cleanup();
+        ssaoBuffer2.cleanup();
     }
 
     public void drawLine(ObjectLoader loader, Vector2i pos1, Vector2i pos2, boolean smooth)
@@ -660,10 +763,28 @@ public class RenderMan {
         GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT0, GL11.GL_TEXTURE_2D, colorTexture, 0);
     }
 
-    public static void bindDepthTex(int mouseDepthTexture)
+    public static void bindDepthTex(int depthTexture)
     {
-        GL11.glBindTexture(GL11.GL_TEXTURE_2D, mouseDepthTexture);
-        GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_DEPTH_ATTACHMENT, GL11.GL_TEXTURE_2D, mouseDepthTexture, 0);
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, depthTexture);
+        GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_DEPTH_ATTACHMENT, GL11.GL_TEXTURE_2D, depthTexture, 0);
+    }
+
+    public static void bindMultiSampleFrameBuffer(int frameBuffer)
+    {
+        GL32.glBindFramebuffer(GL32.GL_FRAMEBUFFER, frameBuffer);
+        GL32.glDrawBuffers(GL32.GL_COLOR_ATTACHMENT0);
+    }
+
+    public static void bindMultiSampleColorTex(int colorTexture)
+    {
+        GL32.glBindTexture(GL32.GL_TEXTURE_2D_MULTISAMPLE, colorTexture);
+        GL32.glFramebufferTexture2D(GL32.GL_FRAMEBUFFER, GL32.GL_COLOR_ATTACHMENT0, GL32.GL_TEXTURE_2D_MULTISAMPLE, colorTexture, 0);
+    }
+
+    public static void bindMultiSampleDepthTex(int depthTexture)
+    {
+        GL32.glBindTexture(GL32.GL_TEXTURE_2D_MULTISAMPLE, depthTexture);
+        GL32.glFramebufferTexture2D(GL32.GL_FRAMEBUFFER, GL32.GL_DEPTH_ATTACHMENT, GL32.GL_TEXTURE_2D_MULTISAMPLE, depthTexture, 0);
     }
 
     public static int initColorTex(WindowMan window)
@@ -709,6 +830,31 @@ public class RenderMan {
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL30.GL_DEPTH_TEXTURE_MODE, GL11.GL_LUMINANCE);
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL30.GL_TEXTURE_COMPARE_MODE, GL11.GL_NONE);
         GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_DEPTH_ATTACHMENT, GL11.GL_TEXTURE_2D, depthTexture, 0);
+        return depthTexture;
+    }
+
+    public static int initMultiSampleFrameBuffer()
+    {
+        int frameBuffer = GL30.glGenFramebuffers();
+        GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, frameBuffer);
+        GL30.glDrawBuffers(GL30.GL_COLOR_ATTACHMENT0);
+
+        return frameBuffer;
+    }
+
+    public static int initMultiSampleColorTexture(WindowMan window) {
+        int colorTexture = GL30.glGenTextures();
+        GL30.glBindTexture(GL32.GL_TEXTURE_2D_MULTISAMPLE, colorTexture);
+        GL32.glTexImage2DMultisample(GL32.GL_TEXTURE_2D_MULTISAMPLE, Config.MSAA_SAMPLES, GL11.GL_RGBA8, window.width, window.height, true);
+        GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT0, GL32.GL_TEXTURE_2D_MULTISAMPLE, colorTexture, 0);
+        return colorTexture;
+    }
+
+    public static int initMultiSampleDepthTexture(WindowMan window) {
+        int depthTexture = GL30.glGenTextures();
+        GL30.glBindTexture(GL32.GL_TEXTURE_2D_MULTISAMPLE, depthTexture);
+        GL32.glTexImage2DMultisample(GL32.GL_TEXTURE_2D_MULTISAMPLE, Config.MSAA_SAMPLES, GL30.GL_DEPTH_COMPONENT24, window.width, window.height, true);
+        GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_DEPTH_ATTACHMENT, GL32.GL_TEXTURE_2D_MULTISAMPLE, depthTexture, 0);
         return depthTexture;
     }
 

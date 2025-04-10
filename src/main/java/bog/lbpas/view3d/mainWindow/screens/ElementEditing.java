@@ -63,7 +63,9 @@ public class ElementEditing extends GuiScreen {
 
     public DropDownTab helpers;
     public Checkbox levelBorders;
-    public Checkbox podHelper;
+    public Radiobutton podHelperLBP1;
+    public Radiobutton podHelperLBP2;
+    public Radiobutton podHelperLBP3;
 
     public DropDownTab availableAssets;
     public ButtonList assetList;
@@ -163,7 +165,7 @@ public class ElementEditing extends GuiScreen {
                     if (name != null && selected.size() >= 1)
                         for (int i : selected)
                             mainView.things.get(i).thing.name = name;
-                } catch (Exception e) {e.printStackTrace();}
+                } catch (Exception e) {print.stackTrace(e);}
 
                 Thing parent = mainView.getSelectedParent();
                 String parentName = parent == null ? "None" : parent.name;
@@ -392,7 +394,7 @@ public class ElementEditing extends GuiScreen {
                         try {
                             currentSelectionParts.addPart((Part) object, mainView.things);
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            print.stackTrace(e);
                         }
                     }
                 }
@@ -470,12 +472,158 @@ public class ElementEditing extends GuiScreen {
 
         helpers = new DropDownTab("helpers", "Helpers", new Vector2f(10, 21 + 10 + camPos.getFullHeight() + 3), new Vector2f(200, getFontHeight(10) + 4), 10, renderer, loader, window).closed();
         levelBorders = helpers.addCheckbox("levelBorders", "Level borders", Config.LEVEL_BORDERS);
-        podHelper = helpers.addCheckbox("podHelper", "Pod helper", Config.POD_HELPER);
-        helpers.addButton("Pod cam", new bog.lbpas.view3d.renderer.gui.elements.Button("podCam") {
+        ComboBox podHelpers = helpers.addComboBox("podHelpers", "Pod helpers", 200);
+
+        podHelperLBP1 = (Radiobutton) podHelpers.addCheckbox(new Radiobutton("podHelperLBP1", "LBP1", 10, renderer, loader, window)
+        {
+            @Override
+            public void check() {
+                super.check();
+                Config.POD_HELPER = isChecked ? 1 : 0;
+            }
+
+            @Override
+            public void onCheck() {
+                if(podHelperLBP2 != null && isChecked)
+                    podHelperLBP2.isChecked = false;
+                if(podHelperLBP3 != null && isChecked)
+                    podHelperLBP3.isChecked = false;
+
+                if(isChecked)
+                {
+                    Vector3f posi = new Vector3f(-1100.0f, -318, 9453);
+                    Vector3f rota = new Vector3f(-100, -1f, 3.35f);
+                    Vector3f scal = new Vector3f(1f);
+                    mainView.POD_EARTH.get(0).setTransformation(new Matrix4f().identity()
+                            .translate(posi)
+                            .rotateAffineXYZ(Math.toRadians(rota.x), Math.toRadians(rota.y), Math.toRadians(rota.z))
+                            .scale(scal));
+                }
+            }
+        }.checked(Config.POD_HELPER == 1));
+        podHelperLBP2 = (Radiobutton) podHelpers.addCheckbox(new Radiobutton("podHelperLBP2", "LBP2", 10, renderer, loader, window)
+        {
+            @Override
+            public void check() {
+                super.check();
+                Config.POD_HELPER = isChecked ? 2 : 0;
+            }
+
+            @Override
+            public void onCheck() {
+                if(podHelperLBP1 != null && isChecked)
+                    podHelperLBP1.isChecked = false;
+                if(podHelperLBP3 != null && isChecked)
+                    podHelperLBP3.isChecked = false;
+
+                if(isChecked)
+                {
+                    Vector3f posi = new Vector3f(-565.0f, -550.0f, 12490.0f);
+                    Vector3f rota = new Vector3f(-97.5f, 0.0f, 0.0f);
+                    Vector3f scal = new Vector3f(1f);
+                    mainView.POD_EARTH.get(0).setTransformation(new Matrix4f().identity()
+                            .translate(posi)
+                            .rotateAffineXYZ(Math.toRadians(rota.x), Math.toRadians(rota.y), Math.toRadians(rota.z))
+                            .scale(scal));
+
+                    posi = new Vector3f(-1930.71f, 460.38f, 0f);
+                    rota = new Vector3f(0.0f);
+                    scal = new Vector3f(0.95f);
+                    mainView.POD_EARTH.get(1).setTransformation(new Matrix4f().identity()
+                            .translate(posi)
+                            .rotateAffineXYZ(Math.toRadians(rota.x), Math.toRadians(rota.y), Math.toRadians(rota.z))
+                            .scale(scal));
+                }
+            }
+        }.checked(Config.POD_HELPER == 2));
+        podHelperLBP3 = (Radiobutton) podHelpers.addCheckbox(new Radiobutton("podHelperLBP3", "LBP3", 10, renderer, loader, window)
+        {
+            @Override
+            public void check() {
+                super.check();
+                Config.POD_HELPER = isChecked ? 3 : 0;
+            }
+
+            @Override
+            public void onCheck() {
+                if(podHelperLBP2 != null && isChecked)
+                    podHelperLBP2.isChecked = false;
+                if(podHelperLBP1 != null && isChecked)
+                    podHelperLBP1.isChecked = false;
+
+                if(isChecked)
+                {
+                    Vector3f posi = new Vector3f(25.0f, 260.0f, 13490.0f);
+                    Vector3f rota = new Vector3f(-105.0f, 0.0f, 0.0f);
+                    Vector3f scal = new Vector3f(1f);
+                    mainView.POD_EARTH.get(0).setTransformation(new Matrix4f().identity()
+                            .translate(posi)
+                            .rotateAffineXYZ(Math.toRadians(rota.x), Math.toRadians(rota.y), Math.toRadians(rota.z))
+                            .scale(scal));
+
+                    posi = new Vector3f(30.71f, 60.38f, 243.31f);
+                    rota = new Vector3f(0.0f);
+                    scal = new Vector3f(1.5f);
+                    mainView.POD_EARTH.get(1).setTransformation(new Matrix4f().identity()
+                            .translate(posi)
+                            .rotateAffineXYZ(Math.toRadians(rota.x), Math.toRadians(rota.y), Math.toRadians(rota.z))
+                            .scale(scal));
+                }
+            }
+        }.checked(Config.POD_HELPER == 3));
+
+        podHelpers.addButton("podCam", "Pod cam", new bog.lbpas.view3d.renderer.gui.elements.Button("podCam") {
             @Override
             public void clickedButton(int button, int action, int mods) {
-                mainView.camera.setPos(new Vector3f(4.673651f, 1565.6465f, 13882.88f));
-                mainView.camera.setRot(new Vector3f(5.800001f, 0.20008372f, 0.0f));
+                if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
+                    switch (Config.POD_HELPER)
+                    {
+                        case 1:
+                            mainView.camera.setPos(new Vector3f(-1120.5f, 938, 9914));
+                            mainView.camera.setRot(new Vector3f(1.2f, -2.4f, 0.0f));
+                            break;
+                        case 2:
+                            mainView.camera.setPos(new Vector3f(-546.8f, 795.4f, 12972.6f));
+                            mainView.camera.setRot(new Vector3f(3.0f, -0.8f, 0.0f));
+                            break;
+                        case 3:
+                            mainView.camera.setPos(new Vector3f(4.7f, 1565.6f, 13882.9f));
+                            mainView.camera.setRot(new Vector3f(5.8f, 0.2f, 0.0f));
+                            break;
+                    }
+            }
+        });
+
+        ComboBox thingTemplates = helpers.addComboBox("thingTemplates", "Thing templates", 200);
+
+        thingTemplates.addButton("levelBG", "Level BG", new Button() {
+            @Override
+            public void clickedButton(int button, int action, int mods) {
+                if(action == GLFW.GLFW_PRESS && button == GLFW.GLFW_MOUSE_BUTTON_1)
+                    try {
+                        RPlan plan = new Resource(ElementEditing.class.getResourceAsStream("/other/level_bg_template.plan").readAllBytes()).loadResource(RPlan.class);
+                        if (plan == null) return;
+                        Thing[] things = plan.getThings();
+
+                        mainView.addThings(things);
+                    } catch (Exception ex) {print.stackTrace(ex);}
+            }
+        });
+
+        thingTemplates.addButton("lbp1Pod", "LBP1 Pod BG", new Button() {
+            @Override
+            public void clickedButton(int button, int action, int mods) {
+                if(action == GLFW.GLFW_PRESS && button == GLFW.GLFW_MOUSE_BUTTON_1)
+                    try
+                    {
+                        RLevel level = new Resource(ElementEditing.class.getResourceAsStream("/other/lbp1_pod_template.bin").readAllBytes()).loadResource(RLevel.class);
+                        if (level == null)
+                            return;
+                        ArrayList<Thing> things = ((PWorld)level.world.getPart(Part.WORLD)).things;
+                        things.remove(level.world);
+
+                        mainView.addThings(things);
+                    }catch (Exception ex) {print.stackTrace(ex);}
             }
         });
 
@@ -672,7 +820,8 @@ public class ElementEditing extends GuiScreen {
                     if (descriptor.getType() == ResourceType.PLAN) {
                         if(entry.translatedFor != LoadedData.loadedTranslation)
                         {
-                            long titleKey = LoadedData.loadPlan(descriptor).inventoryData.titleKey;
+                            RPlan plan = LoadedData.loadPlan(descriptor);
+                            long titleKey = plan == null ? -1 : plan.inventoryData.titleKey;
                             String translatedTitle = LoadedData.loadedTranslationTable.translate(titleKey);
                             if((translatedTitle == null || translatedTitle.isEmpty() || translatedTitle.isBlank()) && LoadedData.loadedPatchTranslationTable != null)
                                 translatedTitle = LoadedData.loadedPatchTranslationTable.translate(titleKey);
@@ -773,7 +922,7 @@ public class ElementEditing extends GuiScreen {
 
                         return true;
                     }
-                } catch (Exception e) {e.printStackTrace();}
+                } catch (Exception e) {print.stackTrace(e);}
 
                 return false;
             }
@@ -1031,7 +1180,7 @@ public class ElementEditing extends GuiScreen {
                                 Thing[] things = plan.getThings();
 
                                 mainView.addThings(things);
-                            } catch (Exception ex) {ex.printStackTrace();}
+                            } catch (Exception ex) {print.stackTrace(ex);}
                             break;
                         case "bin":
                             try
@@ -1043,7 +1192,7 @@ public class ElementEditing extends GuiScreen {
                                 things.remove(level.world);
 
                                 mainView.addThings(things);
-                            }catch (Exception ex) {ex.printStackTrace();}
+                            }catch (Exception ex) {print.stackTrace(ex);}
                             break;
                         default:
                             System.err.println("Unknown file type.");
@@ -1503,7 +1652,7 @@ public class ElementEditing extends GuiScreen {
                     Vector3f ppos = mainView.getSelectedPosition();
                     Vector3f currentPosOnX = mouseInput.mousePicker.getPointOnPlaneX(ppos.x);
 
-                    if(currentPosOnX != null)
+                    if(currentPosOnX != null && ppos != null && elementTool.initPosYZ != null)
                     {
                         mainView.setSelectedPosition(new Vector3f(ppos.x, ppos.y + (currentPosOnX.y - elementTool.initPosYZ.y), ppos.z + (currentPosOnX.z - elementTool.initPosYZ.z)));
                         elementTool.initPosYZ = currentPosOnX;
@@ -1515,7 +1664,7 @@ public class ElementEditing extends GuiScreen {
                     Vector3f ppos = mainView.getSelectedPosition();
                     Vector3f currentPosOnY = mouseInput.mousePicker.getPointOnPlaneY(ppos.y);
 
-                    if(currentPosOnY != null)
+                    if(currentPosOnY != null && ppos != null && elementTool.initPosZX != null)
                     {
                         mainView.setSelectedPosition(new Vector3f(ppos.x + (currentPosOnY.x - elementTool.initPosZX.x), ppos.y, ppos.z + (currentPosOnY.z - elementTool.initPosZX.z)));
                         elementTool.initPosZX = currentPosOnY;
@@ -1527,7 +1676,7 @@ public class ElementEditing extends GuiScreen {
                     Vector3f ppos = mainView.getSelectedPosition();
                     Vector3f currentPosOnZ = mouseInput.mousePicker.getPointOnPlaneZ(ppos.z);
 
-                    if(currentPosOnZ != null)
+                    if(currentPosOnZ != null && ppos != null && elementTool.initPosXY != null)
                     {
                         mainView.setSelectedPosition(new Vector3f(ppos.x + (currentPosOnZ.x - elementTool.initPosXY.x), ppos.y + (currentPosOnZ.y - elementTool.initPosXY.y), ppos.z));
                         elementTool.initPosXY = currentPosOnZ;
@@ -1770,7 +1919,6 @@ public class ElementEditing extends GuiScreen {
         super.secondaryThread();
 
         Config.LEVEL_BORDERS = levelBorders.isChecked;
-        Config.POD_HELPER = podHelper.isChecked;
 
         currentSelectionParts.addParts(mainView.things);
     }
@@ -1798,10 +1946,10 @@ public class ElementEditing extends GuiScreen {
             }
         }
 
-//        if(key == GLFW.GLFW_KEY_O && action == GLFW.GLFW_PRESS)//todo
-//            for(Entity e : mainView.things)
-//                if(e.selected)
-//                    ((bog.lbpas.view3d.core.types.Thing) e).exportModelOBJ();
+        if(key == GLFW.GLFW_KEY_O && action == GLFW.GLFW_PRESS)//todo
+            for(Entity e : mainView.things)
+                if(e.selected)
+                    ((bog.lbpas.view3d.core.types.Thing) e).exportModelOBJ();
 
         return elementFocused;
     }

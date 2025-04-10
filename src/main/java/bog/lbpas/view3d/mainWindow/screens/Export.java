@@ -405,7 +405,7 @@ public class Export extends GuiScreen {
         earthRBPlan = new Radiobutton()
         {
             @Override
-            public void check() {
+            public void onCheck() {
                 moonRBPlan.isChecked = false;
                 adventureRBPlan.isChecked = false;
                 externalRBPlan.isChecked = false;
@@ -414,7 +414,7 @@ public class Export extends GuiScreen {
         moonRBPlan = new Radiobutton()
         {
             @Override
-            public void check() {
+            public void onCheck() {
                 earthRBPlan.isChecked = false;
                 adventureRBPlan.isChecked = false;
                 externalRBPlan.isChecked = false;
@@ -423,7 +423,7 @@ public class Export extends GuiScreen {
         adventureRBPlan = new Radiobutton()
         {
             @Override
-            public void check() {
+            public void onCheck() {
                 moonRBPlan.isChecked = false;
                 earthRBPlan.isChecked = false;
                 externalRBPlan.isChecked = false;
@@ -432,7 +432,7 @@ public class Export extends GuiScreen {
         externalRBPlan = new Radiobutton()
         {
             @Override
-            public void check() {
+            public void onCheck() {
                 moonRBPlan.isChecked = false;
                 adventureRBPlan.isChecked = false;
                 earthRBPlan.isChecked = false;
@@ -448,7 +448,7 @@ public class Export extends GuiScreen {
         nonSackboyRBPlan = new Radiobutton()
         {
             @Override
-            public void check() {
+            public void onCheck() {
                 giantRBPlan.isChecked = false;
                 dwarfRBPlan.isChecked = false;
                 birdRBPlan.isChecked = false;
@@ -458,7 +458,7 @@ public class Export extends GuiScreen {
         giantRBPlan = new Radiobutton()
         {
             @Override
-            public void check() {
+            public void onCheck() {
                 nonSackboyRBPlan.isChecked = false;
                 dwarfRBPlan.isChecked = false;
                 birdRBPlan.isChecked = false;
@@ -468,7 +468,7 @@ public class Export extends GuiScreen {
         dwarfRBPlan = new Radiobutton()
         {
             @Override
-            public void check() {
+            public void onCheck() {
                 giantRBPlan.isChecked = false;
                 nonSackboyRBPlan.isChecked = false;
                 birdRBPlan.isChecked = false;
@@ -478,7 +478,7 @@ public class Export extends GuiScreen {
         birdRBPlan = new Radiobutton()
         {
             @Override
-            public void check() {
+            public void onCheck() {
                 giantRBPlan.isChecked = false;
                 dwarfRBPlan.isChecked = false;
                 nonSackboyRBPlan.isChecked = false;
@@ -488,7 +488,7 @@ public class Export extends GuiScreen {
         quadRBPlan = new Radiobutton()
         {
             @Override
-            public void check() {
+            public void onCheck() {
                 giantRBPlan.isChecked = false;
                 dwarfRBPlan.isChecked = false;
                 birdRBPlan.isChecked = false;
@@ -505,7 +505,7 @@ public class Export extends GuiScreen {
         madeByMeRBPlan = new Radiobutton()
         {
             @Override
-            public void check() {
+            public void onCheck() {
                 madeByAnyRBPlan.isChecked = false;
                 madeByOthersRBPlan.isChecked = false;
             }
@@ -513,7 +513,7 @@ public class Export extends GuiScreen {
         madeByOthersRBPlan = new Radiobutton()
         {
             @Override
-            public void check() {
+            public void onCheck() {
                 madeByMeRBPlan.isChecked = false;
                 madeByAnyRBPlan.isChecked = false;
             }
@@ -521,7 +521,7 @@ public class Export extends GuiScreen {
         madeByAnyRBPlan = new Radiobutton()
         {
             @Override
-            public void check() {
+            public void onCheck() {
                 madeByMeRBPlan.isChecked = false;
                 madeByOthersRBPlan.isChecked = false;
             }

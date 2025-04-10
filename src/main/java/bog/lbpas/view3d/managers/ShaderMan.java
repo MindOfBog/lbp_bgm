@@ -53,6 +53,19 @@ public class ShaderMan {
         return true;
     }
 
+    public boolean createUniform(String uniformName, int uniformLocation) throws Exception
+    {
+        if(uniformLocation < 0)
+        {
+            if(Main.debug)
+                print.error("Could not find uniform " + uniformName + ".");
+            return false;
+        }
+
+        uniforms.put(uniformName, uniformLocation);
+        return true;
+    }
+
     public void createDirectionalLightUniform(String uniformName) throws Exception
     {
         createUniform(uniformName + ".color");

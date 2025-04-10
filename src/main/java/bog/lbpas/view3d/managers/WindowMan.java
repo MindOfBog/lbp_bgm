@@ -14,9 +14,7 @@ import org.joml.Vector2i;
 import org.joml.Vector4f;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.*;
-import org.lwjgl.opengl.GL;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GLUtil;
+import org.lwjgl.opengl.*;
 import org.lwjgl.system.MemoryUtil;
 
 import javax.imageio.ImageIO;
@@ -32,6 +30,7 @@ public class WindowMan {
     public String title;
     public int width, height, minWidth, minHeight;
     public long window;
+    public long sharedContext;
     public boolean resize, vSync;
     public Matrix4f projectionMatrix;
     public boolean isMinimized = false;
@@ -97,6 +96,10 @@ public class WindowMan {
 
         if(window == MemoryUtil.NULL)
             throw new RuntimeException("Failed to create GLFW window.");
+
+        sharedContext = GLFW.glfwCreateWindow(1, 1, "sharedContext", MemoryUtil.NULL, window);
+        if(sharedContext == MemoryUtil.NULL)
+            throw new RuntimeException("Failed to create shared context.");
 
         GLFW.glfwSetFramebufferSizeCallback(window, (window, width, height) ->
         {

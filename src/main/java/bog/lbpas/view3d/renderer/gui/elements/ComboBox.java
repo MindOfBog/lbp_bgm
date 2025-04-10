@@ -190,6 +190,25 @@ public class ComboBox extends Element{
         return button;
     }
 
+    public Button addButton(String buttonText, Button button)
+    {
+        if(!containsElementByID(button.id))
+        {
+            button.buttonText = buttonText;
+            button.pos = new Vector2f(0, 0);
+            if(button.size == null)
+                button.size = new Vector2f(tabWidth - 4, getFontHeight(fontSize) + 4);
+            else
+                button.size.x = tabWidth - 4;
+            button.fontSize = fontSize;
+            button.renderer = renderer;
+            button.window = window;
+            button.loader = loader;
+            comboElements.add(button);
+        }
+        return button;
+    }
+
     public ElementList addElementList(ElementList elementList)
     {
         if(!containsElementByID(elementList.id))

@@ -1,6 +1,7 @@
 package bog.lbpas.view3d.renderer;
 
 import bog.lbpas.Main;
+import bog.lbpas.view3d.managers.*;
 import bog.lbpas.view3d.managers.assetLoading.ObjectLoader;
 import bog.lbpas.view3d.core.*;
 import bog.lbpas.view3d.core.types.Entity;
@@ -8,10 +9,6 @@ import bog.lbpas.view3d.core.types.Thing;
 import bog.lbpas.view3d.mainWindow.LoadedData;
 import bog.lbpas.view3d.mainWindow.View3D;
 import bog.lbpas.view3d.mainWindow.screens.ElementEditing;
-import bog.lbpas.view3d.managers.MouseInput;
-import bog.lbpas.view3d.managers.RenderMan;
-import bog.lbpas.view3d.managers.ShaderMan;
-import bog.lbpas.view3d.managers.WindowMan;
 import bog.lbpas.view3d.utils.Config;
 import bog.lbpas.view3d.utils.Transformation;
 import bog.lbpas.view3d.utils.Utils;
@@ -315,25 +312,33 @@ public class EntityRenderer implements IRenderer{
         shaderMousePick.createUniform("triangleOffset");
         shaderMousePick.createUniform("arrayIndex");
 
-        mouseFB = RenderMan.initFrameBufferINT();
-        mouseCT = RenderMan.initColorTexINT(window);
-        mouseDT = RenderMan.initDepthTex(window);
+        mouseBuffer = new FBO() {
+            @Override
+            public int initBuffer() {
+                return RenderMan.initFrameBufferINT();
+            }
+
+            @Override
+            public int initColorTexture() {
+                return RenderMan.initColorTexINT(window);
+            }
+
+            @Override
+            public int initDepthTexture() {
+                return RenderMan.initDepthTex(window);
+            }
+        };
     }
 
-    int mouseFB = -1;
-    int mouseCT = -1;
-    int mouseDT = -1;
+    FBO mouseBuffer;
 
     public void resize()
     {
-        GL11.glDeleteTextures(new int[]{mouseCT, mouseDT});
         GL11.glViewport(0, 0, window.width, window.height);
-        GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, mouseFB);
-        mouseCT = RenderMan.initColorTexINT(window);
-        mouseDT = RenderMan.initDepthTex(window);
+        mouseBuffer.resize();
     }
 
-    public int[] getOutlineFB()
+    public FBO getOutlineFBO()
     {return null;}
 
     long lastShaderAddedMillis = System.currentTimeMillis();
@@ -342,10 +347,8 @@ public class EntityRenderer implements IRenderer{
     Matrix4f projection;
     public boolean triggerMousePick = false;
 
-    @Override
-    public void render(MouseInput mouseInput, View3D mainView)
+    public void loaderThread()
     {
-        drawnThingMeshes = 0;
 
         if(LoadedData.shouldUpdateShader)
         {
@@ -356,11 +359,12 @@ public class EntityRenderer implements IRenderer{
 
         if(actuallUpdateShader && System.currentTimeMillis() - lastShaderAddedMillis > 1000l)
         {
-            thingShader.cleanup();
+            boolean success = false;
             String shaderCode = "";
+            ShaderMan tempShader = null;
             try
             {
-                thingShader = new ShaderMan("thingShader");
+                tempShader = new ShaderMan("thingShader");
 
                 String switchStatement = "int gmatIndex = getGmatIndex(fragGmat);\n\n" +
                         "    switch (fragGmat) {\n";
@@ -373,7 +377,7 @@ public class EntityRenderer implements IRenderer{
 
                 switchStatement += "        default:if(fragGmat != -1)ambientC = vec4(0.5f);break;\n    }\n\n";
 
-                thingShader.createVertexShader(vertex);
+                tempShader.createVertexShader(vertex);
                 shaderCode = Utils.loadResource("/shaders/fragment.glsl").replaceAll("//%&AMBIENTC",
                         switchStatement +
                                 "    if(material.hasTexture == 1 && !custom)\n" +
@@ -427,42 +431,43 @@ public class EntityRenderer implements IRenderer{
                                 "        specularC = ambientC;\n" +
                                 "    }\n");
 
-                thingShader.createFragmentShader(shaderCode);
-                thingShader.link();
-                thingShader.createListUniform("textureSampler", samplerCount);
-                thingShader.createUniform("preview");
-                thingShader.createUniform("frontView");
-                thingShader.createListUniform("gmatMAP", 100);
-                thingShader.createUniform("gmatCount");
-                thingShader.createUniform("ambientLight");
-                thingShader.createMaterialUniform("material");
-                thingShader.createUniform("highlightMode");
-                thingShader.createUniform("highlightColor");
-                thingShader.createUniform("brightnessMul");
-                thingShader.createUniform("specularPower");
-                thingShader.createDirectionalLightListUniform("directionalLights", 5);
-                thingShader.createUniform("directionalLightsSize");
-                thingShader.createPointLightListUniform("pointLights", 50);
-                thingShader.createUniform("pointLightsSize");
-                thingShader.createSpotLightListUniform("spotLights", 50);
-                thingShader.createUniform("spotLightsSize");
-                thingShader.createUniform("thingColor");
-                thingShader.createUniform("rimColor");
-                thingShader.createUniform("rimColor2");
-                thingShader.createUniform("fogNear");
-                thingShader.createUniform("fogFar");
-                thingShader.createUniform("camPos");
-                thingShader.createUniform("sunPos");
-                thingShader.createUniform("noCulling");
+                tempShader.createFragmentShader(shaderCode);
+                tempShader.link();
+                tempShader.createListUniform("textureSampler", samplerCount);
+                tempShader.createUniform("preview");
+                tempShader.createUniform("frontView");
+                tempShader.createListUniform("gmatMAP", 100);
+                tempShader.createUniform("gmatCount");
+                tempShader.createUniform("ambientLight");
+                tempShader.createMaterialUniform("material");
+                tempShader.createUniform("highlightMode");
+                tempShader.createUniform("highlightColor");
+                tempShader.createUniform("brightnessMul");
+                tempShader.createUniform("specularPower");
+                tempShader.createDirectionalLightListUniform("directionalLights", 5);
+                tempShader.createUniform("directionalLightsSize");
+                tempShader.createPointLightListUniform("pointLights", 50);
+                tempShader.createUniform("pointLightsSize");
+                tempShader.createSpotLightListUniform("spotLights", 50);
+                tempShader.createUniform("spotLightsSize");
+                tempShader.createUniform("thingColor");
+                tempShader.createUniform("rimColor");
+                tempShader.createUniform("rimColor2");
+                tempShader.createUniform("fogNear");
+                tempShader.createUniform("fogFar");
+                tempShader.createUniform("camPos");
+                tempShader.createUniform("sunPos");
+                tempShader.createUniform("noCulling");
 
-                thingShader.createUniform("transformationMatrix");
-                thingShader.createUniform("projectionMatrix");
-                thingShader.createUniform("viewMatrix");
-                thingShader.createListUniform("bones", 100);
-                thingShader.createUniform("hasBones");
-                thingShader.createUniform("triangleOffset");
+                tempShader.createUniform("transformationMatrix");
+                tempShader.createUniform("projectionMatrix");
+                tempShader.createUniform("viewMatrix");
+                tempShader.createListUniform("bones", 100);
+                tempShader.createUniform("hasBones");
+                tempShader.createUniform("triangleOffset");
 
                 actuallUpdateShader = false;
+                success = true;
             }catch (Exception e){
                 print.stackTrace(e);
 
@@ -474,13 +479,24 @@ public class EntityRenderer implements IRenderer{
                     print.neutral("Shader copied to clipboard.");
                 }
             }
+
+            if(success && tempShader != null)
+            {
+                thingShader.cleanup();
+                thingShader = tempShader;
+            }
         }
+    }
+
+    @Override
+    public void render(MouseInput mouseInput, View3D mainView)
+    {
+        drawnThingMeshes = 0;
 
         Camera camera = mainView.camera;
         projection = window.updateProjectionMatrix(camera);
-        RenderMan.bindFrameBuffer(mouseFB);
-        RenderMan.bindColorTex(mouseCT);
-        RenderMan.bindDepthTex(mouseDT);
+        mouseBuffer.bind();
+        RenderMan.clear();
 
         shaderMousePick.bind();
         shaderMousePick.setUniform("projectionMatrix", projection);
@@ -592,13 +608,9 @@ public class EntityRenderer implements IRenderer{
         }
 
         RenderMan.disableCulling();
-        unbindFrameBuffer();
 
         if(hasMousePick)
         {
-            GL30.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, mouseFB);
-            GL11.glReadBuffer(GL30.GL_COLOR_ATTACHMENT0);
-
             int[] buffer = new int[3];
 
             GL30.glReadPixels((int)mouseInput.currentPos.x, (int)(window.height - mouseInput.currentPos.y), 1, 1, GL30.GL_RGB_INTEGER, GL30.GL_INT, buffer);
@@ -641,9 +653,6 @@ public class EntityRenderer implements IRenderer{
 
         throughWallEntitiesMouse.clear();
 
-        RenderMan.bindFrameBuffer(mouseFB);
-        GL11.glClearColor(0,0,0,0);
-        GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
         unbindFrameBuffer();
 
         ShaderMan lastShader = Config.VIEWER_SHADING == 0 ? thingShader : Config.VIEWER_SHADING == 1 ? solidShader : normalShader;
@@ -814,9 +823,7 @@ public class EntityRenderer implements IRenderer{
 
         if(outline)
         {
-            RenderMan.bindFrameBuffer(getOutlineFB()[0]);
-            RenderMan.bindColorTex(getOutlineFB()[1]);
-            RenderMan.bindDepthTex(getOutlineFB()[2]);
+            getOutlineFBO().bind();
 
             GL11.glClearColor(0,0,0,0);
             GL11.glClear(GL11.GL_COLOR_BUFFER_BIT);
@@ -1024,6 +1031,8 @@ public class EntityRenderer implements IRenderer{
         thingShader.cleanup();
         solidShader.cleanup();
         shaderMousePick.cleanup();
+
+        mouseBuffer.cleanup();
     }
 
     public void unbindFrameBuffer()

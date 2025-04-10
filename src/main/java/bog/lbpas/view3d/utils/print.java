@@ -1,54 +1,104 @@
 package bog.lbpas.view3d.utils;
 
+import org.joml.*;
+
 public class print {
+
+    public static void print(Object message, boolean line)
+    {
+        String messageString = getString(message);
+
+        if(line)
+            System.out.println(messageString);
+        else
+            System.out.print(messageString);
+    }
+
+    private static String getString(Object message)
+    {
+        if(message instanceof int[])
+        {
+            int[] intArray = (int[]) message;
+            String build = "int[]{";
+            for(int i = 0; i < intArray.length; i++)
+                build += intArray[i] + (i == intArray.length - 1 ? "" : ", ");
+            build += "}";
+            return build;
+        }
+        else if(message instanceof float[])
+        {
+            float[] floatArray = (float[]) message;
+            String build = "float[]{";
+            for(int i = 0; i < floatArray.length; i++)
+                build += floatArray[i] + (i == floatArray.length - 1 ? "f" : "f, ");
+            build += "}";
+            return build;
+        }
+        else if(message instanceof Vector3f)
+        {
+            Vector3f vector = (Vector3f) message;
+            return "Vector3f(" + vector.x + "f, " + vector.y + "f, " + vector.z + "f)";
+        }
+        else if(message instanceof Vector2f)
+        {
+            Vector2f vector = (Vector2f) message;
+            return "Vector2f(" + vector.x + "f, " + vector.y + "f)";
+        }
+        else if(message instanceof Vector3d)
+        {
+            Vector3d vector = (Vector3d) message;
+            return "Vector3d(" + vector.x + "d, " + vector.y + "d, " + vector.z + "d)";
+        }
+        else if(message instanceof Vector2d)
+        {
+            Vector2d vector = (Vector2d) message;
+            return "Vector2d(" + vector.x + "d, " + vector.y + "d)";
+        }
+        else if(message instanceof Vector3i)
+        {
+            Vector3i vector = (Vector3i) message;
+            return "Vector3i(" + vector.x + ", " + vector.y + ", " + vector.z + ")";
+        }
+        else if(message instanceof Vector2i)
+        {
+            Vector2i vector = (Vector2i) message;
+            return "Vector2i(" + vector.x + ", " + vector.y + ")";
+        }
+
+        return String.valueOf(message);
+    }
 
     public static void error(Object message)
     {
-        System.out.print(Consts.ANSI_RED);
-        System.out.print(message);
-        System.out.println(Consts.ANSI_RESET);
+        print(Consts.ANSI_RED, false);
+        print(message, false);
+        print(Consts.ANSI_RESET, true);
     }
 
     public static void warning(Object message)
     {
-        System.out.print(Consts.ANSI_YELLOW);
-        System.out.print(message);
-        System.out.println(Consts.ANSI_RESET);
+        print(Consts.ANSI_YELLOW, false);
+        print(message, false);
+        print(Consts.ANSI_RESET, true);
     }
 
     public static void line(Object message)
     {
-        System.out.println(message);
-    }
-
-    public static void line(float[] floatArray)
-    {
-        System.out.print("float[]{");
-        for(int i = 0; i < floatArray.length; i++)
-            System.out.print(floatArray[i] + (i == floatArray.length - 1 ? "f" : "f, "));
-        System.out.print("}\n");
-    }
-
-    public static void line(int[] intArray)
-    {
-        System.out.print("int[]{");
-        for(int i = 0; i < intArray.length; i++)
-            System.out.print(intArray[i] + (i == intArray.length - 1 ? "" : ", "));
-        System.out.print("}\n");
+        print(message, true);
     }
 
     public static void success(Object message)
     {
-        System.out.print(Consts.ANSI_GREEN);
-        System.out.print(message);
-        System.out.println(Consts.ANSI_RESET);
+        print(Consts.ANSI_GREEN, false);
+        print(message, false);
+        print(Consts.ANSI_RESET, true);
     }
 
     public static void neutral(Object message)
     {
-        System.out.print(Consts.ANSI_CYAN);
-        System.out.print(message);
-        System.out.println(Consts.ANSI_RESET);
+        print(Consts.ANSI_CYAN,false);
+        print(message, false);
+        print(Consts.ANSI_RESET, true);
     }
 
     public static void stackTrace(Exception e)

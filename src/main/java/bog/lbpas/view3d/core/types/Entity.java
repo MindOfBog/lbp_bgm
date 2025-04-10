@@ -11,8 +11,12 @@ import java.util.Arrays;
 public class Entity {
     public ArrayList<Model> model;
     private Matrix4f transformation;
+
     public Matrix4f prevTransformation = new Matrix4f();
     public float prevThickness = -1;
+    public float prevBevSize = -1;
+    public float prevZBias = -1;
+
     public boolean testForMouse = false;
     public boolean highlighted = false;
     public boolean selected = false;

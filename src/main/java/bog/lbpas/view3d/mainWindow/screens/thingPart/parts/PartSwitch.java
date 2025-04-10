@@ -1040,6 +1040,10 @@ public abstract class PartSwitch extends iPart {
         for(int i = 0; i < things.size(); i++)
         {
             Thing thing = things.get(i);
+
+            if(thing == null)
+                continue;
+
             if(thing.thing.hasPart(part) && thing.selected)
             {
                 PSwitch pSwitch = ((PSwitch)thing.thing.getPart(part));
@@ -1221,6 +1225,10 @@ public abstract class PartSwitch extends iPart {
         for(int i = 0; i < things.size(); i++)
         {
             Thing thing = things.get(i);
+
+            if(thing == null)
+                continue;
+
             if(thing.thing.hasPart(part) && thing.selected)
             {
                 PSwitch pSwitch = ((PSwitch)thing.thing.getPart(part));

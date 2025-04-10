@@ -10,6 +10,8 @@ import com.github.weisj.jsvg.geometry.size.FloatSize;
 import com.github.weisj.jsvg.parser.SVGLoader;
 import org.joml.*;
 import org.joml.Math;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.MemoryUtil;
 
 import javax.crypto.*;
@@ -19,6 +21,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.RescaleOp;
 import java.io.*;
+import java.lang.reflect.Array;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -745,9 +748,9 @@ public class Utils {
         float t = (diff.x * dir2.y - diff.y * dir2.x) / det;
         Vector2f intersection = new Vector2f(offsetP12).add(new Vector2f(dir1).mul(t));
 
-        if(intersection.distance(p2) > java.lang.Math.pow(distance, 1.4f))
+        if(intersection.distance(p2) > distance)
         {
-            Vector2f dir = new Vector2f(intersection).sub(p2).normalize();
+            Vector2f dir = new Vector2f(p2).sub(intersection).normalize();
             intersection = new Vector2f(p2).add(dir.mul(distance));
         }
 
@@ -1007,5 +1010,65 @@ public class Utils {
     {
         Vector3f color = hsv2rgbVec(hsv);
         return new Color(Math.clamp(0f, 1f, color.x), Math.clamp(0f, 1f, color.y), Math.clamp(0f, 1f, color.z), alpha);
+    }
+
+    public static float smoothStep(float x, float edge0, float edge1) {
+        float t = Math.max(0.0f, Math.min(1.0f, (x - edge0) / (edge1 - edge0)));
+        return t * t * (3.0f - 2.0f * t);
+    }
+
+    public static void checkOpenGLErrors(String stage) {
+        int error;
+        while ((error = GL11.glGetError()) != GL11.GL_NO_ERROR) {
+            String errorMessage = "Unknown Error";
+            switch (error) {
+                case GL11.GL_INVALID_ENUM:
+                    errorMessage = "Invalid Enum";
+                    break;
+                case GL11.GL_INVALID_VALUE:
+                    errorMessage = "Invalid Value";
+                    break;
+                case GL11.GL_INVALID_OPERATION:
+                    errorMessage = "Invalid Operation";
+                    break;
+                case GL11.GL_STACK_OVERFLOW:
+                    errorMessage = "Stack Overflow";
+                    break;
+                case GL11.GL_STACK_UNDERFLOW:
+                    errorMessage = "Stack Underflow";
+                    break;
+                case GL11.GL_OUT_OF_MEMORY:
+                    errorMessage = "Out of Memory";
+                    break;
+                case GL30.GL_INVALID_FRAMEBUFFER_OPERATION:
+                    errorMessage = "Invalid Framebuffer Operation";
+                    break;
+            }
+            print.error("OpenGL Error at " + stage + ": " + errorMessage + " (" + error + ")");
+        }
+    }
+
+    public static <T> T[] concat(T[] a, T[] b) {
+        int aLen = a.length;
+        int bLen = b.length;
+
+        @SuppressWarnings("unchecked")
+        T[] c = (T[]) Array.newInstance(a.getClass().getComponentType(), aLen + bLen);
+        System.arraycopy(a, 0, c, 0, aLen);
+        System.arraycopy(b, 0, c, aLen, bLen);
+
+        return c;
+    }
+
+    public static int[] concat(int[] a, int[] b) {
+        int aLen = a.length;
+        int bLen = b.length;
+
+        @SuppressWarnings("unchecked")
+        int[] c = (int[]) Array.newInstance(a.getClass().getComponentType(), aLen + bLen);
+        System.arraycopy(a, 0, c, 0, aLen);
+        System.arraycopy(b, 0, c, aLen, bLen);
+
+        return c;
     }
 }

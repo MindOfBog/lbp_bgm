@@ -1,6 +1,7 @@
 package bog.lbpas.view3d.mainWindow.screens;
 
 import bog.lbpas.Main;
+import bog.lbpas.view3d.core.Texture;
 import bog.lbpas.view3d.mainWindow.View3D;
 import bog.lbpas.view3d.managers.InputMan;
 import bog.lbpas.view3d.managers.MouseInput;
@@ -17,7 +18,10 @@ import bog.lbpas.view3d.utils.Config;
 import bog.lbpas.view3d.utils.Cursors;
 import bog.lbpas.view3d.utils.Utils;
 import org.joml.Vector2f;
+import org.joml.Vector2i;
+import org.joml.Vector3d;
 import org.lwjgl.glfw.GLFW;
+import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
 
@@ -45,6 +49,7 @@ public class Settings extends GuiScreen{
     public Textbox sensitivity;
     public Textbox zNear;
     public Textbox zFar;
+    public Textbox msaa;
     public ColorPicker outlineColor;
     public ColorPicker borderColor1;
     public ColorPicker borderColor2;
@@ -69,6 +74,7 @@ public class Settings extends GuiScreen{
     public Slider outlineSize;
 
     public Checkbox debugScissorTest;
+    public Checkbox debugOverlayImage;
 
     public void init() {
         rendererSettings = new DropDownTab("rendererSettings", "Renderer Settings", new Vector2f(10, 21 + 10), new Vector2f(200, getFontHeight(10) + 4), 10, renderer, loader, window).closed();
@@ -99,6 +105,14 @@ public class Settings extends GuiScreen{
         zFar.noLetters().noOthers();
         zFar.setText(Float.toString(Config.Z_FAR));
         zFarPanel.elements.add(new Panel.PanelElement(zFar, 0.475f));
+
+        Panel msaaPanel = rendererSettings.addPanel("msaaPanel");
+        msaaPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "AA Samples:", 10, renderer), 0.525f));
+        msaa = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
+        msaa.noLetters().noOthers();
+        msaa.numberLimits(1, 8);
+        msaa.setText(Float.toString(Config.Z_FAR));
+        msaaPanel.elements.add(new Panel.PanelElement(msaa, 0.475f));
 
         rendererSettings.addString("outlineSizeLabel", "Outline Size:");
         outlineSize = rendererSettings.addSlider("outlineSize", Config.OUTLINE_DISTANCE, 0.525f, 1.1f);
@@ -857,9 +871,30 @@ public class Settings extends GuiScreen{
             debug.addCheckbox("threads", "Threads");
             debug.addCheckbox("noSSAO", "Disable SSAO");
             debugScissorTest = debug.addCheckbox("debugScissorTest", "Scissor Test");
+            debugOverlayImage = debug.addCheckbox("debugOverlayImage", "Overlay Image");
+            debug.addButton("Pick Image", new Button() {
+                @Override
+                public void clickedButton(int button, int action, int mods) {
+                    if(action == GLFW.GLFW_PRESS && button == GLFW.GLFW_MOUSE_BUTTON_1)
+                    try{
+                        int newImage = loader.loadTextureFilePicker();
+
+                        if(overlayImage != null)
+                        {
+                            GL11.glDeleteTextures(overlayImage.id);
+                            overlayImage.id = newImage;
+                        }
+                        else
+                            overlayImage = new Texture(newImage);
+                    }catch (Exception e){}
+                }
+            });
+
             this.guiElements.add(debug);
         }
     }
+
+    public Texture overlayImage;
 
     @Override
     public void secondaryThread() {
@@ -874,35 +909,29 @@ public class Settings extends GuiScreen{
             Config.FOV = (float) Math.toRadians(fovSlider.x);
         }
 
-        String fps = this.fps.setTextboxValueString(Float.toString(Config.FRAMERATE));
-        if(fps != null)
-            try{
-                Config.FRAMERATE = Float.parseFloat(fps);
-            }catch (Exception e){}
+        Vector2i fps = this.fps.setTextboxValueInt(Config.FRAMERATE);
+        if(fps.y == 1)
+            Config.FRAMERATE = fps.x;
 
-        String moveSpeed = this.moveSpeed.setTextboxValueString(Float.toString(Config.CAMERA_MOVE_SPEED));
-        if(moveSpeed != null)
-            try{
-                Config.CAMERA_MOVE_SPEED = Float.parseFloat(moveSpeed);
-            }catch (Exception e){}
+        Vector2f moveSpeed = this.moveSpeed.setTextboxValueFloat(Config.CAMERA_MOVE_SPEED);
+        if(moveSpeed.y == 1)
+            Config.CAMERA_MOVE_SPEED = moveSpeed.x;
 
-        String sensitivity = this.sensitivity.setTextboxValueString(Float.toString(Config.MOUSE_SENS));
-        if(sensitivity != null)
-            try{
-                Config.MOUSE_SENS = Float.parseFloat(sensitivity);
-            }catch (Exception e){}
+        Vector2f sensitivity = this.sensitivity.setTextboxValueFloat(Config.MOUSE_SENS);
+        if(sensitivity.y == 1)
+            Config.MOUSE_SENS = sensitivity.x;
 
-        String zNear = this.zNear.setTextboxValueString(Float.toString(Config.Z_NEAR));
-        if(zNear != null)
-            try{
-                Config.Z_NEAR = Float.parseFloat(zNear);
-            }catch (Exception e){}
+        Vector2f zNear = this.zNear.setTextboxValueFloat(Config.Z_NEAR);
+        if(zNear.y == 1)
+            Config.Z_NEAR = zNear.x;
 
-        String zFar = this.zFar.setTextboxValueString(Float.toString(Config.Z_FAR));
-        if(zFar != null)
-            try{
-                Config.Z_FAR = Float.parseFloat(zFar);
-            }catch (Exception e){}
+        Vector2f zFar = this.zFar.setTextboxValueFloat(Config.Z_FAR);
+        if(zFar.y == 1)
+            Config.Z_FAR = zFar.x;
+
+        Vector2i msaa = this.msaa.setTextboxValueInt(Config.MSAA_SAMPLES);
+        if(msaa.y == 1)
+            Config.MSAA_SAMPLES = msaa.x;
 
         Vector2f outlineDistSlider = outlineSize.setSliderValue(Config.OUTLINE_DISTANCE);
         if(outlineDistSlider.y == 1)

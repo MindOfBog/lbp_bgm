@@ -196,6 +196,9 @@ public abstract class PartGeneratedMesh extends iPart {
 
         for(int i : selected)
         {
+            if(i >= things.size())
+                break;
+
             Thing thing = things.get(i);
             PGeneratedMesh gmesh = thing.thing.getPart(Part.GENERATED_MESH);
 
@@ -301,7 +304,11 @@ public abstract class PartGeneratedMesh extends iPart {
             Vector2f uv1x = UV1X.setTextboxValueFloat(uvOffset.z);
             Vector2f uv1y = UV1Y.setTextboxValueFloat(uvOffset.w);
 
-            for (int i : selected) {
+            for(int i : selected) {
+
+                if(i >= things.size())
+                    break;
+
                 Thing thing = things.get(i);
                 PGeneratedMesh gmesh = thing.thing.getPart(Part.GENERATED_MESH);
 

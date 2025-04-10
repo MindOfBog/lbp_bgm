@@ -100,7 +100,7 @@ public class View3D implements ILogic {
 
         initMillis = System.currentTimeMillis();
 
-        notificationFeed = new NotificationFeed(false, new Vector2f(this.window.width - 248 - 400, this.window.height - 8), 400, renderer, loader, window)
+        notificationFeed = new NotificationFeed(false, 12, new Vector2f(this.window.width - 248 - 400, this.window.height - 8), 400, renderer, loader, window)
         {
             @Override
             public void draw(MouseInput mouseInput, boolean overElement) {
@@ -110,26 +110,24 @@ public class View3D implements ILogic {
             }
         };
 
-        createUI();
-
         borders = loader.loadOBJModelDirect("/models/border.obj");
         borders.material = new Material(Config.BORDER_COLOR_1, 0f).disableCulling(true);
-        BORDERS.add(new Entity(borders, new Vector3f(21219f, 1557f, 10f), new Vector3f(0, 0, 0), new Vector3f(1f, 1f, 1f), loader));
-        BORDERS.add(new Entity(borders, new Vector3f(21219f, 1557f, -390f), new Vector3f(0, 0, 0), new Vector3f(1f, 1f, 1f), loader));
+        BORDERS.add(new Entity(borders, new Vector3f(21219f, 1557f, 10f), new Vector3f(0), new Vector3f(1f), loader));
+        BORDERS.add(new Entity(borders, new Vector3f(21219f, 1557f, -390f), new Vector3f(0), new Vector3f(1f), loader));
 
         borders1 = new Model(borders);
         borders1.material = new Material(Config.BORDER_COLOR_2, 0f).disableCulling(true);
-        BORDERS.add(new Entity(borders1, new Vector3f(21219f, 1557f, -190f), new Vector3f(0, 0, 0), new Vector3f(1f, 1f, 1f), loader));
+        BORDERS.add(new Entity(borders1, new Vector3f(21219f, 1557f, -190f), new Vector3f(0), new Vector3f(1f), loader));
 
         borders2 = new Model(borders);
         borders2.material = new Material(Config.BORDER_COLOR_3, 0f).disableCulling(true);
         for(int layer = 0; layer < 7; layer++)
-            BORDERS.add(new Entity(borders2, new Vector3f(21219f, 1557f, -590f + -400f * layer), new Vector3f(0, 0, 0), new Vector3f(1f, 1f, 1f), loader));
+            BORDERS.add(new Entity(borders2, new Vector3f(21219f, 1557f, -590f + -400f * layer), new Vector3f(0), new Vector3f(1f), loader));
 
         borders3 = new Model(borders);
         borders3.material = new Material(Config.BORDER_COLOR_4, 0f).disableCulling(true);
         for(int layer = 0; layer < 6; layer++)
-            BORDERS.add(new Entity(borders3, new Vector3f(21219f, 1557f, -790f + -400f * layer), new Vector3f(0, 0, 0), new Vector3f(1f, 1f, 1f), loader));
+            BORDERS.add(new Entity(borders3, new Vector3f(21219f, 1557f, -790f + -400f * layer), new Vector3f(0), new Vector3f(1f), loader));
 
         bone = loader.loadOBJModelDirect("/models/bone.obj");
         bone.material = new Material(Color.white, 0f);
@@ -137,11 +135,13 @@ public class View3D implements ILogic {
         pod = loader.loadOBJModelDirect("/models/pod.obj");
         pod.material = new Material(new Texture[]{new Texture(loader.loadResourceTexture("/textures/pod.png", GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR))});
         pod.material.overlayColor = new Vector4f(Config.POD_COLOR.getRed() / 255f, Config.POD_COLOR.getGreen() / 255f, Config.POD_COLOR.getBlue() / 255f, Config.POD_COLOR.getAlpha() / 255f);
-        POD_EARTH.add(new Entity(pod, new Vector3f(25.0f, 260.0f, 13490.0f), new Vector3f(-105.0f, 0.0f, 0.0f), new Vector3f(1f, 1f, 1f), loader));
+        POD_EARTH.add(new Entity(pod, new Vector3f(25.0f, 260.0f, 13490.0f), new Vector3f(-105.0f, 0.0f, 0.0f), new Vector3f(1f), loader));
         earth = loader.loadOBJModelDirect("/models/earth.obj");
         earth.material = new Material(new Texture[]{new Texture(loader.loadResourceTexture("/textures/earth.png", GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR))});
         earth.material.overlayColor = new Vector4f(Config.EARTH_COLOR.getRed() / 255f, Config.EARTH_COLOR.getGreen() / 255f, Config.EARTH_COLOR.getBlue() / 255f, Config.EARTH_COLOR.getAlpha() / 255f);
-        POD_EARTH.add(new Entity(earth, new Vector3f(30.71f, 60.38f, 243.31f), new Vector3f(0, 0, 0), new Vector3f(1.5f, 1.5f, 1.5f), loader));
+        POD_EARTH.add(new Entity(earth, new Vector3f(30.71f, 60.38f, 243.31f), new Vector3f(0), new Vector3f(1.5f), loader));
+
+        createUI();
 
         modelLoadNotif = new Notification() {
             @Override
@@ -198,7 +198,7 @@ public class View3D implements ILogic {
 
                 if(!loader.modelLoader.isLoadingSomething())
                 {
-                    int count = loader.textureLoader.totalDigestionCount - initialCount;
+                    int count = loader.textureLoader.totalDigestionCount - initialCount + 1;
                     pushSuccess("Done!", "Loaded " + count + (count == 1 ? " texture." : " textures."));
                     closeNotification();
                 }
@@ -235,7 +235,6 @@ public class View3D implements ILogic {
         entryDigestionNotif = new Notification() {
             @Override
             public void draw(MouseInput mouseInput, boolean overElement) {
-
                 super.draw(mouseInput, overElement);
 
                 if(!LoadedData.shouldSetupList)
@@ -288,8 +287,6 @@ public class View3D implements ILogic {
 
     @Override
     public void update(MouseInput mouseInput) {
-//     todo   if(window.width != 1920 || window.height != 1080)
-//            window.setWindowSize(1920, 1080);
         ConstantTextures.mainThread();
         loader.primaryThread();
 
@@ -403,9 +400,10 @@ public class View3D implements ILogic {
             for(Entity entity : BORDERS)
                 renderer.processBasicMeshes(entity);
 
-        if(Config.POD_HELPER)
-            for(Entity entity : POD_EARTH)
-                renderer.processBasicMeshes(entity);
+        if(Config.POD_HELPER != 0)
+            for(int i = 0; i < POD_EARTH.size(); i++)
+                if(Config.POD_HELPER > 1 || i == 0)
+                    renderer.processBasicMeshes(POD_EARTH.get(i));
 
 //        Vector3f pos = new Vector3f(0, 0, 0);
 //        try {
@@ -466,9 +464,9 @@ public class View3D implements ILogic {
         if(!introPlayed)
             return;
 
-        boolean elementFocused = overrideScreen.onClick(mouseInput, button, action, mods);
+        boolean elementFocused = currentScreen.onClick(mouseInput, button, action, mods);
         if(!elementFocused)
-            elementFocused = currentScreen.onClick(mouseInput, button, action, mods);
+            elementFocused = overrideScreen.onClick(mouseInput, button, action, mods);
 
         if(!window.isKeyPressed(GLFW.GLFW_KEY_LEFT_CONTROL))
         {
@@ -514,9 +512,9 @@ public class View3D implements ILogic {
     @Override
     public void onMouseMove(MouseInput mouseInput, double x, double y)
     {
-        boolean elementFocused = overrideScreen.onMouseMove(mouseInput, x, y);
+        boolean elementFocused = currentScreen.onMouseMove(mouseInput, x, y);
         if(!elementFocused)
-            elementFocused = currentScreen.onMouseMove(mouseInput, x, y);
+            elementFocused = overrideScreen.onMouseMove(mouseInput, x, y);
     }
 
     @Override
@@ -525,9 +523,9 @@ public class View3D implements ILogic {
         if(!introPlayed)
             return;
 
-        boolean elementFocused = overrideScreen.onKey(key, scancode, action, mods);
+        boolean elementFocused = currentScreen.onKey(key, scancode, action, mods);
         if(!elementFocused)
-            elementFocused = currentScreen.onKey(key, scancode, action, mods);
+            elementFocused = overrideScreen.onKey(key, scancode, action, mods);
 
         if(key != GLFW.GLFW_KEY_LEFT_CONTROL && !window.isKeyPressed(GLFW.GLFW_KEY_LEFT_CONTROL))
         {
@@ -637,11 +635,11 @@ public class View3D implements ILogic {
         loader.cleanup();
     }
 
-    public GuiScreen ElementEditing;
-    public GuiScreen Export;
-    public GuiScreen Archive;
-    public GuiScreen Settings;
-    public GuiScreen MaterialEditing;
+    public ElementEditing ElementEditing;
+    public Export Export;
+    public Archive Archive;
+    public Settings Settings;
+    public MaterialEditing MaterialEditing;
 
     private void createUI() {
 
@@ -1100,6 +1098,9 @@ public class View3D implements ILogic {
 
         if(Main.debug)
         {
+            if(((Settings)this.Settings).debugOverlayImage.isChecked && (((Settings)this.Settings).overlayImage != null))
+                renderer.drawImageStatic(((Settings)this.Settings).overlayImage.id, 0, 0, window.width, window.height, new Color(1f, 1f, 1f, 0.6f));
+
             if(((Settings)this.Settings).debugScissorTest.isChecked) {
                 renderer.startScissor(20, 50, 120 - 20, 150 - 50);
                 renderer.drawRect(0, 0, window.width, window.height, Color.red);
@@ -1300,6 +1301,14 @@ public class View3D implements ILogic {
                 things.get(i).thing.parent = null;
             if(things.get(i).thing.groupHead == thing.thing)
                 things.get(i).thing.groupHead = null;
+
+            if(things.get(i).renderMesh != null)
+            {
+                Thing[] boneThings = ((PRenderMesh)things.get(i).thing.getPart(Part.RENDER_MESH)).boneThings;
+                for(int bt = 0; bt < boneThings.length; bt++)
+                    if(boneThings[bt] == thing.thing)
+                        boneThings[bt] = null;
+            }
         }
 
         things.remove(index);
@@ -1417,7 +1426,7 @@ public class View3D implements ILogic {
         int index = -1;
         for(int i = 0; i < things.size(); i++)
         {
-            if(things.get(i).selected)
+            if(things.get(i) != null && things.get(i).selected)
             {
                 if(index != -1 && group != things.get(i).thing.groupHead)
                     return null;
@@ -1996,6 +2005,9 @@ public class View3D implements ILogic {
         if(things != null)
             for(int t = 0; t < things.size(); t++)
             {
+                if(t >= things.size())
+                    break;
+
                 bog.lbpas.view3d.core.types.Thing thing = things.get(t);
 
                 if(thing == null || thing.thing == null)
@@ -2014,16 +2026,22 @@ public class View3D implements ILogic {
 
                 if(thing.thing.hasPart(Part.SHAPE))
                 {
-                    float thickness = ((PShape)thing.thing.getPart(Part.SHAPE)).thickness;
+                    PShape shape = ((PShape)thing.thing.getPart(Part.SHAPE));
+                    float thickness = shape.thickness;
+                    float bevelSize = shape.bevelSize;
+                    float zBias = shape.zBias;
 
-                    if(thickness != thing.prevThickness)
+                    if(thickness != thing.prevThickness || bevelSize != thing.prevBevSize || zBias != thing.prevZBias)
                     {
                         thing.reloadModel();
                         thing.prevThickness = thickness;
+                        thing.prevBevSize = bevelSize;
+                        thing.prevZBias = zBias;
                     }
                 }
             }
-        loader.loaderThread();
+        loader.loaderThread(this);
+        renderer.loaderThread();
         if(Export != null)
             ((Export)Export).loaderThread();
     }

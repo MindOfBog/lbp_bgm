@@ -24,6 +24,8 @@ void main(){
 
 	out_Color = vec4(0.0);
 
+    float avgAlpha = 0.0f;
+
 	for(int i = -radius; i <= radius; i++)
     {
         vec2 coords = centerTexCoords;
@@ -34,8 +36,9 @@ void main(){
             coords = centerTexCoords + vec2(pixelSize * i, 0.0);
 
         vec4 coordColor = texture(originalTexture, coords);
-        if(coordColor.a != 0.0)
-            out_Color.a = 1.0;
+
+        if(coordColor.a != 0.0f)
+            out_Color.a = 1.0f;
     }
 
     out_Color.r = color.r;

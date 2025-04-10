@@ -6,9 +6,9 @@ import bog.lbpas.view3d.managers.EngineMan;
 import bog.lbpas.view3d.managers.WindowMan;
 import bog.lbpas.view3d.utils.*;
 import cwlib.enums.Part;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL20;
-import org.lwjgl.opengl.GL30;
+import org.lwjgl.glfw.GLFW;
+import org.lwjgl.opengl.*;
+import org.lwjgl.system.MemoryUtil;
 
 /**
  * @author Bog
@@ -82,15 +82,22 @@ public class Main {
 
         loaderThread = new Thread() {
             long lastMillis = 0;
-
             public void run() {
+
+                GLFW.glfwMakeContextCurrent(window.sharedContext);
+                GL.createCapabilities();
+                Utils.checkOpenGLErrors("binding shared context");
+
+                if(Main.debug)
+                    GLUtil.setupDebugMessageCallback(System.out);
+
                 while (true)
                 {
                     try
                     {
-                        if(System.currentTimeMillis() - lastMillis > 500)
+                        view.loaderThread();
+                        if(System.currentTimeMillis() - lastMillis > 50)
                         {
-                            view.loaderThread();
                             FilePicker.loadingThread((View3D) engine.viewLogic);
                             lastMillis = System.currentTimeMillis();
                         }

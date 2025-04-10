@@ -1,5 +1,6 @@
 package bog.lbpas.view3d.renderer.gui;
 
+import bog.lbpas.view3d.managers.FBO;
 import bog.lbpas.view3d.managers.assetLoading.ObjectLoader;
 import bog.lbpas.view3d.core.Model;
 import bog.lbpas.view3d.managers.RenderMan;
@@ -65,7 +66,7 @@ public class GuiRenderer {
 
     public ArrayList<Drawable> elements = new ArrayList<>();
 
-    public void render(int screenTexture, int blurBuffer, int blurTexture, int blurDepth)
+    public void render(FBO screenBuffer, FBO blurBuffer)
     {
         guiShader.bind();
 
@@ -95,7 +96,7 @@ public class GuiRenderer {
 
                     if (element.texture != -1) {
                         GL13.glActiveTexture(GL13.GL_TEXTURE0);
-                        GL11.glBindTexture(GL11.GL_TEXTURE_2D, element.texture == -69 ? screenTexture : element.texture);
+                        GL11.glBindTexture(GL11.GL_TEXTURE_2D, element.texture == -69 ? screenBuffer.colorTexture : element.texture);
                     }
 
                     guiShader.setUniform("hasCoords", element.hasTexCoords);
@@ -145,7 +146,7 @@ public class GuiRenderer {
                         GL20.glEnableVertexAttribArray(1);
 
                     GL13.glActiveTexture(GL13.GL_TEXTURE0);
-                    GL11.glBindTexture(GL11.GL_TEXTURE_2D, element.texture == -69 ? screenTexture : element.texture);
+                    GL11.glBindTexture(GL11.GL_TEXTURE_2D, element.texture == -69 ? screenBuffer.colorTexture : element.texture);
 
                     guiShader.setUniform("hasCoords", element.hasTexCoords);
                     guiShader.setUniform("guiTexture", 0);
@@ -382,7 +383,7 @@ public class GuiRenderer {
 
                     if (element.texture != -1) {
                         GL13.glActiveTexture(GL13.GL_TEXTURE0);
-                        GL11.glBindTexture(GL11.GL_TEXTURE_2D, element.texture == -69 ? screenTexture : element.texture);
+                        GL11.glBindTexture(GL11.GL_TEXTURE_2D, element.texture == -69 ? screenBuffer.colorTexture : element.texture);
                     }
 
                     guiShader.setUniform("hasCoords", element.hasTexCoords);
@@ -435,9 +436,9 @@ public class GuiRenderer {
                 {
                     Blur blur = (Blur) drawable;
                     if (blur.start)
-                        startBlur(screenTexture, blurBuffer, blurTexture, blurDepth, blur);
+                        startBlur(screenBuffer.colorTexture, blurBuffer.buffer, blurBuffer.colorTexture, blurBuffer.depthTexture, blur);
                     else
-                        endBlur(blurTexture);
+                        endBlur(blurBuffer.colorTexture);
                 }
                 break;
                 case COLOR_PICKER:

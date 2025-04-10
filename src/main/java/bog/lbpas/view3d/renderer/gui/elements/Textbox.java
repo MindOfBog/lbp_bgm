@@ -497,7 +497,7 @@ public class Textbox extends Element{
                 currentSelection = text.length();
         }
 
-        if(numberLimits.length == 2)
+        if(numberLimits.length == 2 && !isFocused())
         {
             float min = numberLimits[0];
             float max = numberLimits[1];
@@ -622,11 +622,36 @@ public class Textbox extends Element{
         else
             try
             {
-                return new Vector2f(Float.parseFloat(this.getText()), 1);
+                float number = Utils.parseFloat(text);
+
+                if(numberLimits.length == 2)
+                {
+                    float min = numberLimits[0];
+                    float max = numberLimits[1];
+
+                    if(number > max)
+                        number = max;
+                    if(number < min)
+                        number = min;
+                }
+
+                return new Vector2f(number, 1);
             }
             catch (Exception e)
             {
-                return new Vector2f(0, 1);
+                float number = 0;
+
+                if(numberLimits.length == 2)
+                {
+                    float min = numberLimits[0];
+                    float max = numberLimits[1];
+
+                    if(number > max)
+                        number = max;
+                    if(number < min)
+                        number = min;
+                }
+                return new Vector2f(number, 1);
             }
 
         return new Vector2f(0, 0);
@@ -643,11 +668,37 @@ public class Textbox extends Element{
         else
             try
             {
-                return new Vector2i(Integer.parseInt(this.getText()), 1);
+                int number = Utils.parseInt(text);
+
+                if(numberLimits.length == 2)
+                {
+                    float min = numberLimits[0];
+                    float max = numberLimits[1];
+
+                    if(number > max)
+                        number = (int) max;
+                    if(number < min)
+                        number = (int) min;
+                }
+
+                return new Vector2i(number, 1);
             }
             catch (Exception e)
             {
-                return new Vector2i(0, 1);
+                int number = 0;
+
+                if(numberLimits.length == 2)
+                {
+                    float min = numberLimits[0];
+                    float max = numberLimits[1];
+
+                    if(number > max)
+                        number = (int) max;
+                    if(number < min)
+                        number = (int) min;
+                }
+
+                return new Vector2i(number, 1);
             }
 
         return new Vector2i(0, 0);

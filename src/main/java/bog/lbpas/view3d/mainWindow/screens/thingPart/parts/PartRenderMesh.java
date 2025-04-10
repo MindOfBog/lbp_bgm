@@ -4,6 +4,7 @@ import bog.lbpas.view3d.core.types.Thing;
 import bog.lbpas.view3d.mainWindow.View3D;
 import bog.lbpas.view3d.managers.MouseInput;
 import bog.lbpas.view3d.renderer.gui.elements.*;
+import bog.lbpas.view3d.renderer.gui.elements.Button;
 import bog.lbpas.view3d.renderer.gui.elements.Checkbox;
 import bog.lbpas.view3d.renderer.gui.elements.Panel;
 import bog.lbpas.view3d.utils.Config;
@@ -11,6 +12,7 @@ import bog.lbpas.view3d.utils.Utils;
 import cwlib.enums.Part;
 import cwlib.enums.ResourceType;
 import cwlib.enums.ShadowType;
+import cwlib.structs.mesh.Bone;
 import cwlib.structs.things.parts.PRenderMesh;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.util.Colors;
@@ -50,15 +52,159 @@ public abstract class PartRenderMesh extends iPart {
     public Textbox DistanceFront;
     public Textbox DistanceSide;
 
+    public ArrayList<String> bones;
+    int selectedBone = 0;
+    ComboBox setThingCombo;
+
     @Override
     public void init(View3D view) {
 
-//      TODO  mesh.boneThings = serializer.thingarray(mesh.boneThings);
+        bones = new ArrayList<>();
 
         Panel meshPanel = partComboBox.addPanel("meshPanel");
         meshPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("meshstr", "Mesh:", 10, view.renderer), 0.55f));
         Mesh = new Textbox("RMeshMesh", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
         meshPanel.elements.add(new Panel.PanelElement(Mesh, 0.45f));
+
+        ComboBox boneThings = partComboBox.addComboBox("boneThingsPanel", "Bone Things", 200);
+        boneThings.addList("bones", new ButtonList(bones, 10, view.renderer, view.loader, view.window) {
+            int hovering = -1;
+
+            @Override
+            public void clickedButton(Object object, int index, int button, int action, int mods) {
+                selectedBone = index;
+            }
+
+            @Override
+            public void hoveringButton(Object object, int index) {
+                hovering = index;
+            }
+
+            @Override
+            public boolean isHighlighted(Object object, int index) {
+                return hovering == index;
+            }
+
+            @Override
+            public boolean isSelected(Object object, int index) {
+                return selectedBone == index;
+            }
+
+            @Override
+            public String buttonText(Object object, int index) {
+                return (String) object;
+            }
+
+            @Override
+            public boolean searchFilter(Object object, int index) {
+                return true;
+            }
+
+            @Override
+            public void draw(MouseInput mouseInput, boolean overElement) {
+                hovering = -1;
+                super.draw(mouseInput, overElement);
+            }
+
+            @Override
+            public int buttonHeight() {
+                return super.buttonHeight() + 4;
+            }
+        }, 250);
+
+        Panel setBoneThingPanel = boneThings.addPanel("setBoneThingPanel");
+        setBoneThingPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("setBoneThingstr", "Thing:", 10, view.renderer), 0.275f));
+        setThingCombo = new ComboBox("setThingCombo", "None", 10, 200, view.renderer, view.loader, view.window)
+        {
+            @Override
+            public int[] getParentTransform() {
+                return boneThings.getTabPosWidth();
+            }
+        };
+
+        Button clearParent = setThingCombo.addButton("clearParent", "None", new Button() {
+            @Override
+            public void clickedButton(int button, int action, int mods) {
+                if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
+                {
+                    for(int i = 0; i < view.things.size(); i++)
+                        if(view.things.get(i).selected)
+                            if(view.things.get(i).renderMesh != null)
+                            {
+                                PRenderMesh rmesh = view.things.get(i).thing.getPart(Part.RENDER_MESH);
+                                rmesh.boneThings[selectedBone] = null;
+                            }
+                    setThingCombo.tabTitle = "None";
+                }
+            }
+        });
+
+        Textbox searchBoneThings = new Textbox("searchBoneThings", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
+        Panel searchBoneThingsPanel = setThingCombo.addPanel("searchBoneThingsPanel");
+        searchBoneThingsPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("srchPrnt", "Search:", 10, view.renderer), 0.4f));
+        searchBoneThingsPanel.elements.add(new Panel.PanelElement(searchBoneThings, 0.6f));
+
+        setThingCombo.addList("boneThingList", new ButtonList(view.things, 10, view.renderer, view.loader, view.window) {
+
+            int hovering = -1;
+
+            @Override
+            public void draw(MouseInput mouseInput, boolean overElement) {
+                hovering = -1;
+                super.draw(mouseInput, overElement);
+            }
+
+            @Override
+            public void clickedButton(Object object, int index, int button, int action, int mods) {
+                if(button == GLFW.GLFW_MOUSE_BUTTON_1)
+                {
+                    if(action == GLFW.GLFW_PRESS)
+                    {
+                        for(int i = 0; i < view.things.size(); i++)
+                            if(view.things.get(i).selected)
+                                if(view.things.get(i).renderMesh != null)
+                                {
+                                    PRenderMesh rmesh = view.things.get(i).thing.getPart(Part.RENDER_MESH);
+                                    rmesh.boneThings[selectedBone] = ((bog.lbpas.view3d.core.types.Thing)object).thing;
+                                }
+                        setThingCombo.tabTitle = ((bog.lbpas.view3d.core.types.Thing)object).thing.name;
+                    }
+                }
+            }
+
+            @Override
+            public void hoveringButton(Object object, int index) {
+                hovering = index;
+            }
+
+            @Override
+            public boolean isHighlighted(Object object, int index) {
+                return hovering == index;
+            }
+
+            @Override
+            public boolean isSelected(Object object, int index) {
+                return ((bog.lbpas.view3d.core.types.Thing)object).thing == view.getSelectedParent();
+            }
+
+            @Override
+            public String buttonText(Object object, int index) {
+                String name = ((bog.lbpas.view3d.core.types.Thing)object).thing.name;
+                return name == null ? "null" : name;
+            }
+
+            @Override
+            public boolean searchFilter(Object object, int index) {
+                return buttonText(object, index).toLowerCase().contains(searchBoneThings.getText().toLowerCase());
+            }
+
+            @Override
+            public int buttonHeight() {
+                return super.buttonHeight() + 4;
+            }
+        }, 295);
+
+        setBoneThingPanel.elements.add(new Panel.PanelElement(setThingCombo, 0.725f));
 
         Panel animPanel = partComboBox.addPanel("animPanel");
         animPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("animstr", "Animation:", 10, view.renderer), 0.55f));
@@ -277,12 +423,23 @@ public abstract class PartRenderMesh extends iPart {
         float distanceSide = Float.NEGATIVE_INFINITY;
         edColor = null;
 
+        bones.clear();
+
         for(int i : selected) {
             Thing thing = things.get(i);
             PRenderMesh rmesh = thing.thing.getPart(Part.RENDER_MESH);
 
             if (rmesh == null)
                 continue;
+
+            if(selected.size() == 1)
+            {
+                setThingCombo.tabTitle = rmesh.boneThings[selectedBone] == null ? "None" : rmesh.boneThings[selectedBone].name;
+                for(Bone bt : thing.renderMesh.mesh.getBones())
+                    bones.add(bt.getName());
+            }
+            else
+                setThingCombo.tabTitle = "";
 
             String msh = rmesh.mesh == null ? "" : rmesh.mesh.isGUID() ? rmesh.mesh.getGUID().toString() : rmesh.mesh.getSHA1().toString();
             if (mesh == null)
@@ -449,6 +606,8 @@ public abstract class PartRenderMesh extends iPart {
     public void selectionChange() {
         super.selectionChange();
         EditorColor.updateColorValues();
+        selectedBone = 0;
+        setThingCombo.tabTitle = "None";
     }
 
     @Override

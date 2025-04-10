@@ -27,7 +27,6 @@ public class Config {
     public static Vector3f AMBIENT_LIGHT = new Vector3f(1f, 1f, 1f);
     public static float SPECULAR_POWER = 10f;
     public static float FRAMERATE = 120;
-    public static int AA_SAMPLES = 4;
     public static float OUTLINE_DISTANCE = 0.6f;
     public static Color OUTLINE_COLOR = new Color(252, 173, 3);
     public static Color BORDER_COLOR_1 = new Color(156, 0, 0, 166);
@@ -56,7 +55,7 @@ public class Config {
     public static InputMan SHADING = new InputMan(GLFW.GLFW_KEY_Z, false);
     public static InputMan CAMERA = new InputMan(GLFW.GLFW_MOUSE_BUTTON_MIDDLE, true);
     public static boolean LEVEL_BORDERS = true;
-    public static boolean POD_HELPER = false;
+    public static int POD_HELPER = 0;
     public static String FONT_HEADER = "Arial";
     public static String FONT_TEXT = "Arial";
     public static String CURSOR = "Adwaita";
@@ -68,6 +67,7 @@ public class Config {
     public static boolean WINDOW_MAXIMIZED = false;
     public static boolean FRONT_VIEW = false;
     public static boolean SHOW_FPS = false;
+    public static int MSAA_SAMPLES = 1;
 
     private static String buildSettings()
     {
@@ -121,6 +121,7 @@ public class Config {
         builtString += "WINDOW_HEIGHT:" + WINDOW_HEIGHT + ";";
         builtString += "WINDOW_MAXIMIZED:" + WINDOW_MAXIMIZED + ";";
         builtString += "SHOW_FPS:" + SHOW_FPS + ";";
+        builtString += "MSAA_SAMPLES:" + MSAA_SAMPLES + ";";
 
         return builtString;
     }
@@ -205,7 +206,7 @@ public class Config {
                         case "SHADING" : SHADING = new InputMan(Integer.parseInt(d[1]), Boolean.parseBoolean(d[0])); break;
                         case "CAMERA" : CAMERA = new InputMan(Integer.parseInt(d[1]), Boolean.parseBoolean(d[0])); break;
                         case "LEVEL_BORDERS" : LEVEL_BORDERS = Boolean.parseBoolean(data); break;
-                        case "POD_HELPER" : POD_HELPER = Boolean.parseBoolean(data); break;
+                        case "POD_HELPER" : POD_HELPER = Utils.parseInt(data); break;
                         case "FONT_HEADER" : FONT_HEADER = data; break;
                         case "FONT_TEXT" : FONT_TEXT = data; break;
                         case "CURSOR" : CURSOR = data; break;
@@ -216,6 +217,7 @@ public class Config {
                         case "WINDOW_HEIGHT" : WINDOW_HEIGHT = Integer.parseInt(data); break;
                         case "WINDOW_MAXIMIZED" : WINDOW_MAXIMIZED = Boolean.parseBoolean(data); break;
                         case "SHOW_FPS" : SHOW_FPS = Boolean.parseBoolean(data); break;
+                        case "MSAA_SAMPLES" : MSAA_SAMPLES = Integer.parseInt(data); break;
                     }
                 }
 
@@ -625,6 +627,14 @@ public class Config {
                         break loop;
                     }
                     break;
+                case 47:
+                    if(!o.equals(MSAA_SAMPLES))
+                    {
+                        hasChanged = true;
+                        updateVariables();
+                        break loop;
+                    }
+                    break;
             }
         }
         if(variables.size() == 0)
@@ -682,5 +692,6 @@ public class Config {
         variables.add(WINDOW_HEIGHT);
         variables.add(WINDOW_MAXIMIZED);
         variables.add(SHOW_FPS);
+        variables.add(MSAA_SAMPLES);
     }
 }

@@ -21,6 +21,11 @@ public class Radiobutton extends Checkbox{
         super(id, text, pos, fontSize, renderer, loader, window);
     }
 
+    public Radiobutton(String id, String text, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window)
+    {
+        super(id, text, new Vector2f(), fontSize, renderer, loader, window);
+    }
+
     public Radiobutton()
     {
     }
@@ -45,6 +50,13 @@ public class Radiobutton extends Checkbox{
     public Radiobutton checked()
     {
         this.isChecked = true;
+        onCheck();
+        return this;
+    }
+    public Radiobutton checked(boolean checked)
+    {
+        this.isChecked = checked;
+        onCheck();
         return this;
     }
 
@@ -55,8 +67,6 @@ public class Radiobutton extends Checkbox{
 
     @Override
     public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement, boolean focusedOther) {
-        super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
-
         if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
             check();
     }
@@ -64,5 +74,11 @@ public class Radiobutton extends Checkbox{
     public void check()
     {
         this.isChecked = !this.isChecked;
+        onCheck();
+    }
+
+    public void onCheck()
+    {
+
     }
 }

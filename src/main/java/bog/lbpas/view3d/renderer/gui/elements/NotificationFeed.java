@@ -13,9 +13,11 @@ public class NotificationFeed extends Element{
 
     boolean downwardFeed = true;
     public ArrayList<Notification> notifications;
+    int maxNotifications;
 
-    public NotificationFeed(boolean downwardFeed, Vector2f pos, float width, RenderMan renderer, ObjectLoader loader, WindowMan window) {
+    public NotificationFeed(boolean downwardFeed, int maxNotifications, Vector2f pos, float width, RenderMan renderer, ObjectLoader loader, WindowMan window) {
         this.downwardFeed = downwardFeed;
+        this.maxNotifications = maxNotifications;
         this.pos = pos;
         this.size = new Vector2f(width);
         this.notifications = new ArrayList<>();
@@ -24,7 +26,8 @@ public class NotificationFeed extends Element{
         this.window = window;
     }
 
-    public NotificationFeed(Vector2f pos, float width, RenderMan renderer, ObjectLoader loader, WindowMan window) {
+    public NotificationFeed(int maxNotifications, Vector2f pos, float width, RenderMan renderer, ObjectLoader loader, WindowMan window) {
+        this.maxNotifications = maxNotifications;
         this.pos = pos;
         this.size = new Vector2f(width);
         this.notifications = new ArrayList<>();
@@ -39,6 +42,9 @@ public class NotificationFeed extends Element{
             return;
         notification.init("notif-" + notifications.size(), new Vector2f(this.pos.x, 0), this.size.x, 10, this.renderer, this.loader, this.window);
         notifications.add(notification);
+
+        if(notifications.size() > maxNotifications)
+            notifications.remove(0);
     }
 
     @Override

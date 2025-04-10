@@ -20,7 +20,7 @@ import java.util.ArrayList;
 public abstract class PartPos extends iPart {
 
     public PartPos(int tabWidth, float comboWidth, float panelHeight, float closeWidth, float finalGap, DropDownTab tab, View3D view) {
-        super(cwlib.enums.Part.POS, "PPos", "Pos", tabWidth, comboWidth, panelHeight, closeWidth, finalGap, tab, view);
+        super(cwlib.enums.Part.POS, "PPos", "Position", tabWidth, comboWidth, panelHeight, closeWidth, finalGap, tab, view);
     }
 
     public Textbox PositionX;
