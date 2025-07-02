@@ -1,5 +1,6 @@
 package bog.lbpas.view3d.mainWindow.screens.thingPart.parts;
 
+import bog.lbpas.view3d.core.Texture;
 import bog.lbpas.view3d.mainWindow.ConstantTextures;
 import bog.lbpas.view3d.mainWindow.View3D;
 import bog.lbpas.view3d.managers.MouseInput;
@@ -26,7 +27,7 @@ public abstract class iPart {
 
     public cwlib.enums.Part part;
 
-    public iPart(Part part, String id, String name, int tabWidth, float comboWidth, float panelHeight, float closeWidth, float finalGap, DropDownTab tab, View3D view) {
+    public iPart(Part part, String id, String name, int tabWidth, float comboWidth, float panelHeight, float closeWidth, float finalGap, Element tab, View3D view) {
         this.part = part;
         this.id = id;
         this.name = name;
@@ -35,7 +36,7 @@ public abstract class iPart {
         {
             @Override
             public int[] getParentTransform() {
-                return new int[]{Math.round(tab.pos.x), Math.round(tab.pos.y), Math.round(tab.size.x)};
+                return tab instanceof DropDownTab ? new int[]{Math.round(tab.pos.x), Math.round(tab.pos.y), Math.round(tab.size.x)} : ((ComboBox)tab).getTabPosWidth();
             }
 
             @Override
@@ -72,8 +73,8 @@ public abstract class iPart {
             }
 
             @Override
-            public void getImage() {
-                buttonImage = ConstantTextures.getTexture(ConstantTextures.WINDOW_CLOSE, 23, 23, view.loader);
+            public Texture getImage() {
+                return ConstantTextures.getTexture(ConstantTextures.WINDOW_CLOSE, 23, 23, view.loader);
             }
         }, closeWidth));
 

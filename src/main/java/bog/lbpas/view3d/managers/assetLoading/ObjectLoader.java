@@ -409,7 +409,7 @@ public class ObjectLoader {
         return id;
     }
 
-    public int loadTexture(BufferedImage image, int minFilter, int magFilter) throws Exception
+    public Texture loadTexture(BufferedImage image, int minFilter, int magFilter) throws Exception
     {
         int id = GL11.glGenTextures();
         textures.add(id);
@@ -418,18 +418,17 @@ public class ObjectLoader {
                 minFilter,
                 magFilter,
                 id));
-        return id;
+        return new Texture(id, this, image);
     }
 
     public Texture loadTexture2(BufferedImage image, int minFilter, int magFilter)
     {
-        Texture texture = new Texture(-1);
+        Texture texture = new Texture(image);
         textureLoader.digest(new AsyncTextureMan.BufferedImageData2(image, texture, minFilter, magFilter));
-//        while(texture.id == -1){}//System.err.println(texture.id);}
         return texture;
     }
 
-    public int loadResourceTexture(String resourcePath, int minFilter, int magFilter) throws Exception
+    public Texture loadResourceTexture(String resourcePath, int minFilter, int magFilter) throws Exception
     {
         return loadTexture(ImageIO.read(Main.class.getResourceAsStream(resourcePath)), minFilter, magFilter);
     }

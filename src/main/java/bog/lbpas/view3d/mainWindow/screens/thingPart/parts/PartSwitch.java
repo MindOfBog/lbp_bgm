@@ -33,7 +33,7 @@ import java.util.List;
  */
 public abstract class PartSwitch extends iPart {
 
-    public PartSwitch(int tabWidth, float comboWidth, float panelHeight, float closeWidth, float finalGap, DropDownTab tab, View3D view) {
+    public PartSwitch(int tabWidth, float comboWidth, float panelHeight, float closeWidth, float finalGap, Element tab, View3D view) {
         super(cwlib.enums.Part.SWITCH, "PSwitch", "Switch", tabWidth, comboWidth, panelHeight, closeWidth, finalGap, tab, view);
     }
 

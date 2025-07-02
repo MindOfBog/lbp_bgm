@@ -39,6 +39,21 @@ public abstract class FBO {
         GL30.glDeleteBuffers(buffer);
     }
 
+    public void blit(FBO destination, int[] src, int[] dst, int mask)
+    {
+        GL30.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, buffer);
+        GL30.glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, destination.buffer);
+
+        GL11.glClear(mask);
+
+        GL30.glBlitFramebuffer(
+                src[0], src[1], src[2], src[3],
+                dst[0], dst[1], dst[2], dst[3],
+                mask,
+                GL11.GL_NEAREST
+        );
+    }
+
     public abstract int initBuffer();
     public abstract int initColorTexture();
     public abstract int initDepthTexture();

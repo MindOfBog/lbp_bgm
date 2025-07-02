@@ -1,6 +1,7 @@
 package bog.lbpas.view3d.mainWindow.screens;
 
 import bog.lbpas.view3d.core.Model;
+import bog.lbpas.view3d.core.Texture;
 import bog.lbpas.view3d.core.Transformation3D;
 import bog.lbpas.view3d.core.types.Entity;
 import bog.lbpas.view3d.core.types.Thing;
@@ -12,7 +13,6 @@ import bog.lbpas.view3d.renderer.gui.cursor.ECursor;
 import bog.lbpas.view3d.renderer.gui.elements.*;
 import bog.lbpas.view3d.renderer.gui.elements.Button;
 import bog.lbpas.view3d.renderer.gui.elements.Panel;
-import bog.lbpas.view3d.renderer.gui.ingredients.LineStrip;
 import bog.lbpas.view3d.utils.*;
 import cwlib.enums.Part;
 import cwlib.resources.RBevel;
@@ -207,7 +207,6 @@ public class MaterialEditing extends GuiScreen {
                 if(action == GLFW.GLFW_PRESS)
                 {
                     Config.FRONT_VIEW = !Config.FRONT_VIEW;
-                    this.buttonImage = Config.FRONT_VIEW ? ConstantTextures.getTexture(ConstantTextures.FRONT_VIEW, org.joml.Math.round(this.imageSize.x), org.joml.Math.round(this.imageSize.y), loader) : ConstantTextures.getTexture(ConstantTextures.FRONT_VIEW_OFF, org.joml.Math.round(this.imageSize.x), org.joml.Math.round(this.imageSize.y), loader);
                 }
             }
 
@@ -226,8 +225,8 @@ public class MaterialEditing extends GuiScreen {
             }
 
             @Override
-            public void getImage() {
-                buttonImage = Config.FRONT_VIEW ? ConstantTextures.getTexture(ConstantTextures.FRONT_VIEW, org.joml.Math.round(this.imageSize.x), org.joml.Math.round(this.imageSize.y), loader) : ConstantTextures.getTexture(ConstantTextures.FRONT_VIEW_OFF, org.joml.Math.round(this.imageSize.x), Math.round(this.imageSize.y), loader);
+            public Texture getImage() {
+                return Config.FRONT_VIEW ? ConstantTextures.getTexture(ConstantTextures.FRONT_VIEW, org.joml.Math.round(this.imageSize.x), org.joml.Math.round(this.imageSize.y), loader) : ConstantTextures.getTexture(ConstantTextures.FRONT_VIEW_OFF, org.joml.Math.round(this.imageSize.x), Math.round(this.imageSize.y), loader);
             }
         };
 
@@ -437,9 +436,9 @@ public class MaterialEditing extends GuiScreen {
                         else
                         {
                             if(selectedVertices.contains(screenPositions.get(positions.get(i))))
-                                renderer.drawImageStatic(ConstantTextures.getTexture(ConstantTextures.CORNER_EDIT, 20, 20, loader), (int)(screenPoint.x - 10), (int)(screenPoint.y - 10), 20, 20, Config.OUTLINE_COLOR);
+                                renderer.drawImageStatic(ConstantTextures.getTexture(ConstantTextures.CORNER_EDIT, 20, 20, loader), (int)(screenPoint.x - 10), (int)(screenPoint.y - 10), 20, 20, Config.OUTLINE_COLOR, loader);
                             else
-                                renderer.drawImageStatic(ConstantTextures.getTexture(ConstantTextures.CORNER_EDIT_PICK, 16, 16, loader), (int)(screenPoint.x - 8), (int)(screenPoint.y - 8), 16, 16, Config.OUTLINE_COLOR.darker().darker());
+                                renderer.drawImageStatic(ConstantTextures.getTexture(ConstantTextures.CORNER_EDIT_PICK, 16, 16, loader), (int)(screenPoint.x - 8), (int)(screenPoint.y - 8), 16, 16, Config.OUTLINE_COLOR.darker().darker(), loader);
                         }
                     }
                 }
@@ -486,7 +485,7 @@ public class MaterialEditing extends GuiScreen {
 
                     if(!overOther && point != null && point.distance(mousePoint) < 15 && !(vertexTool.isHovering() && selectedVertices != null && selectedVertices.size() > 0) && !(vertexTool.isSelected() && this.selectedVertices != null && this.selectedVertices.size() > 0))
                     {
-                        renderer.drawImageStatic(ConstantTextures.getTexture(ConstantTextures.CORNER_EDIT_PICK, 30, 30, loader), (int)(point.x - 15), (int)(point.y - 15), 30, 30, Config.OUTLINE_COLOR);
+                        renderer.drawImageStatic(ConstantTextures.getTexture(ConstantTextures.CORNER_EDIT_PICK, 30, 30, loader), (int)(point.x - 15), (int)(point.y - 15), 30, 30, Config.OUTLINE_COLOR, loader);
                         Cursors.setCursor(ECursor.copy);
                     }
                     else
@@ -496,7 +495,7 @@ public class MaterialEditing extends GuiScreen {
                 if(closest != -1)
                 {
                     int closest = screenPositions.get(positions.get(this.closest));
-                    renderer.drawImageStatic(this.selectedVertices.contains(closest) ? ConstantTextures.getTexture(ConstantTextures.CORNER_EDIT, 30, 30, loader) : ConstantTextures.getTexture(ConstantTextures.CORNER_EDIT_PICK, 30, 30, loader), (int) (positions.get(this.closest).x - 15), (int) (positions.get(this.closest).y - 15), 30, 30, Config.OUTLINE_COLOR);
+                    renderer.drawImageStatic(this.selectedVertices.contains(closest) ? ConstantTextures.getTexture(ConstantTextures.CORNER_EDIT, 30, 30, loader) : ConstantTextures.getTexture(ConstantTextures.CORNER_EDIT_PICK, 30, 30, loader), (int) (positions.get(this.closest).x - 15), (int) (positions.get(this.closest).y - 15), 30, 30, Config.OUTLINE_COLOR, loader);
                     Cursors.setCursor(ECursor.hand2);
                     this.closest = closest;
                 }

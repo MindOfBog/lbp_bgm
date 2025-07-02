@@ -1,5 +1,8 @@
 package bog.lbpas.view3d.mainWindow.screens;
 
+import bog.lbpas.view3d.core.Texture;
+import bog.lbpas.view3d.mainWindow.ConstantTextures;
+import bog.lbpas.view3d.mainWindow.LoadedData;
 import bog.lbpas.view3d.mainWindow.View3D;
 import bog.lbpas.view3d.mainWindow.screens.thingPart.ThingPart;
 import bog.lbpas.view3d.managers.MouseInput;
@@ -8,8 +11,13 @@ import bog.lbpas.view3d.renderer.gui.elements.Button;
 import bog.lbpas.view3d.renderer.gui.elements.*;
 import bog.lbpas.view3d.renderer.gui.elements.Checkbox;
 import bog.lbpas.view3d.renderer.gui.elements.Panel;
+import bog.lbpas.view3d.utils.Consts;
+import bog.lbpas.view3d.utils.FilePicker;
 import bog.lbpas.view3d.utils.Utils;
 import bog.lbpas.view3d.utils.print;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import cwlib.enums.*;
 import cwlib.io.serializer.SerializationData;
 import cwlib.resources.RLevel;
@@ -24,34 +32,59 @@ import cwlib.structs.things.components.script.ScriptInstance;
 import cwlib.structs.things.components.script.ScriptObject;
 import cwlib.structs.things.parts.*;
 import cwlib.types.Resource;
+import cwlib.types.archives.FileArchive;
 import cwlib.types.data.*;
-import cwlib.types.mods.Mod;
+import cwlib.types.databases.FileDB;
+import cwlib.types.databases.FileDBRow;
+import cwlib.types.save.BigSave;
 import cwlib.util.Colors;
+import cwlib.util.GsonUtils;
+import cwlib.util.Images;
+import gr.zdimensions.jsquish.Squish;
 import org.joml.*;
 import org.lwjgl.glfw.GLFW;
 import toolkit.utilities.FileChooser;
 
+import javax.activation.DataHandler;
+import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.File;
-import java.io.IOException;
+import java.io.InputStream;
+import java.io.Serializable;
 import java.lang.Math;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 /**
  * @author Bog
  */
-public class Export extends GuiScreen {
+public class ProjectManager extends GuiScreen {
 
     View3D mainView;
 
-    public Export(View3D mainView)
+    public ProjectManager(View3D mainView)
     {
         super(mainView.renderer, mainView.loader, mainView.window);
         this.mainView = mainView;
         init();
     }
 
-    DropDownTab planExport;
+    public DropDownTab project;
+    public FileTree modFileTree;
+    public Textbox projectSavePath;
+    public ComboBox buildScene;
+    public ComboBox planExport;
     Textbox userCreatedNamePlan;
     Textarea userCreatedDescriptionPlan;
     Textbox titleKeyPlan;
@@ -111,36 +144,37 @@ public class Export extends GuiScreen {
     Textbox dateAddedMinutePlan;
     Textbox dateAddedSecondPlan;
 
-    Checkbox compressionFlagsIntPlan;
-    Checkbox compressionFlagsVecPlan;
-    Checkbox compressionFlagsMatPlan;
-    Checkbox selectionOnlyExportPlan;
+    public Checkbox compressionFlagsIntPlan;
+    public Checkbox compressionFlagsVecPlan;
+    public Checkbox compressionFlagsMatPlan;
+    public Checkbox selectionOnlyExportPlan;
 
-    Checkbox rawFileOutPlan;
-    Textbox customRevisionPlanHead;
-    Textbox customRevisionPlanID;
-    Textbox customRevisionPlanRev;
+    public Textbox customRevisionPlanHead;
+    public Textbox customRevisionPlanID;
+    public Textbox customRevisionPlanRev;
     Button customRevisionPlanExport;
-    Textbox projectPathPlan;
-    Textbox namePlan;
 
-    DropDownTab binExport;
-    Textbox projectPathBin;
-    Textbox nameBin;
-    Checkbox compressionFlagsIntBin;
-    Checkbox compressionFlagsVecBin;
-    Checkbox compressionFlagsMatBin;
+    public ComboBox binExport;
+    public Checkbox compressionFlagsIntBin;
+    public Checkbox compressionFlagsVecBin;
+    public Checkbox compressionFlagsMatBin;
 
-    Checkbox rawFileOutBin;
-    Textbox customRevisionBinHead;
-    Textbox customRevisionBinID;
-    Textbox customRevisionBinRev;
+    public Textbox customRevisionBinHead;
+    public Textbox customRevisionBinID;
+    public Textbox customRevisionBinRev;
     Button customRevisionBinExport;
-    Checkbox selectionOnlyExportBin;
+    public Checkbox selectionOnlyExportBin;
 
     Thing worldThing;
     ArrayList<bog.lbpas.view3d.core.types.Thing> worldThingA;
     ThingPart thingPart;
+
+    Checkbox isBumpTexImport;
+    Checkbox mipmapsTexImport;
+    Checkbox gtfTexImport;
+    int formatTexImport = 2;
+    public ArrayList<Texture> listTexImport;
+    public ElementList textureListTexImport;
 
     public void init()
     {
@@ -154,9 +188,616 @@ public class Export extends GuiScreen {
         worldThingA.get(0).selected = true;
 
         typePlan = new ArrayList<>();
-
         creatorHistoryListPlan = new ArrayList<>();
-        planExport = new DropDownTab("planExport", "Export Plan", new Vector2f(10, 21 + 10), new Vector2f(450, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window);
+
+        project = new DropDownTab("project", "Project", new Vector2f(10, 21 + 10), new Vector2f(400, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window);
+
+        ElementList projectFileTree = project.addElementList("projectFileTree", 300);
+
+        buildScene = new ComboBox("buildScene", "Build Scene", new Vector2f(), null, 10, 100, renderer, loader, window);
+
+        ComboBox importTextures = new ComboBox("texture", "Texture(s)", new Vector2f(), null, 10, 250, renderer, loader, window);
+
+        importTextures.addButton("open", "Open", new Button() {
+            @Override
+            public void clickedButton(int button, int action, int mods) {
+                if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_RELEASE)
+                    FilePicker.loadProjectTextures();
+            }
+        });
+
+        textureListTexImport = importTextures.addElementList("textureListTexImport", 200);
+        listTexImport = new ArrayList<>();
+
+        Panel formatPanel = importTextures.addPanel("formatPanel");
+        formatPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("formatStr", "Format:", 10, renderer), 0.4f));
+        ComboBox imgFormat = new ComboBox("formatCombo", "DXT5", 10, 100, renderer, loader, window);
+        formatPanel.elements.add(new Panel.PanelElement(imgFormat, 0.6f));
+        imgFormat.addButton("DXT1", new Button() {
+            @Override
+            public void clickedButton(int button, int action, int mods) {
+                if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
+                {
+                    formatTexImport = 0;
+                    imgFormat.tabTitle = "DXT1";
+                }
+            }
+        });
+        imgFormat.addButton("DXT3", new Button() {
+            @Override
+            public void clickedButton(int button, int action, int mods) {
+                if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
+                {
+                    formatTexImport = 1;
+                    imgFormat.tabTitle = "DXT3";
+                }
+            }
+        });
+        imgFormat.addButton("DXT5", new Button() {
+            @Override
+            public void clickedButton(int button, int action, int mods) {
+                if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
+                {
+                    formatTexImport = 2;
+                    imgFormat.tabTitle = "DXT5";
+                }
+            }
+        });
+
+        isBumpTexImport = importTextures.addCheckbox("isBump", "Is Bump (noSRGB)");
+        mipmapsTexImport= importTextures.addCheckbox("mipmaps", "Mipmaps").checked();
+
+        importTextures.addSeparator("sep2");
+
+        gtfTexImport = importTextures.addCheckbox("gtf", "GTF Texture (LBP 2/3)");
+
+        importTextures.addButton("buildTex", "Build", new Button() {
+            @Override
+            public void clickedButton(int button, int action, int mods) {
+
+                if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
+                {
+                    for(int i = 0; i < listTexImport.size(); i++)
+                    {
+                        Texture texture = listTexImport.get(i);
+                        Panel texPanel = (Panel) textureListTexImport.elements.get(i);
+                        ComboBoxImage optionsCombo = (ComboBoxImage) texPanel.elements.get(2).element;
+                        Textbox fileName = (Textbox) optionsCombo.comboElements.get(0);
+
+                        if(texture.image == null)
+                            continue;
+
+                        boolean noSRGB = isBumpTexImport.isChecked;
+                        boolean genMips = mipmapsTexImport.isChecked;
+                        boolean useGTF = gtfTexImport.isChecked;
+
+                        Squish.CompressionType type = null;
+                        switch (formatTexImport) {
+                            case 0: type = Squish.CompressionType.DXT1; break;
+                            case 1: type = Squish.CompressionType.DXT3; break;
+                            case 2: type = Squish.CompressionType.DXT5; break;
+                        }
+
+                        if (useGTF)
+                        {
+                            byte[] imageData = Images.toGTF(texture.image, type, noSRGB, genMips);
+
+                            FileDBRow row = LoadedData.PROJECT_DATA.add(modFileTree.getPath(modFileTree.getSelectedItem()) + "/" + fileName.getText(), imageData);
+                            FileTree.TreeItem newItem = ((FileTree.TreeFolder)modFileTree.getSelectedItem()).addItem(String.valueOf(((FileTree.TreeFolder)modFileTree.getSelectedItem()).children.size()), row, fileName.getText(), ((FileTree.TreeFolder)modFileTree.getSelectedItem()).size.y);
+                        }
+                        else
+                        {
+                            byte[] imageData = Images.toTEX(texture.image, type, noSRGB, genMips);
+
+                            FileDBRow row = LoadedData.PROJECT_DATA.add(modFileTree.getPath(modFileTree.getSelectedItem()) + "/" + fileName.getText(), imageData);
+                            FileTree.TreeItem newItem = ((FileTree.TreeFolder)modFileTree.getSelectedItem()).addItem(String.valueOf(((FileTree.TreeFolder)modFileTree.getSelectedItem()).children.size()), row, fileName.getText(), ((FileTree.TreeFolder)modFileTree.getSelectedItem()).size.y);
+                        }
+                    }
+
+                    listTexImport.clear();
+                    textureListTexImport.elements.clear();
+                }
+
+            }
+        });
+
+        modFileTree = projectFileTree.addFileTree(new FileTree("modFileTree", "Some kind of mod", getFontHeight(10) * 1.25f + 2, new Vector2f(), new Vector2f(), 10, renderer, loader, window) {
+            @Override
+            public int[] getParentTransform() {
+                return new int[]{(int) Math.round(project.pos.x), (int) Math.round(project.pos.y), (int) Math.round(project.size.x)};
+            }
+
+            @Override
+            public void rename(TreeItem treeItem) {
+
+                if(treeItem.item == null)
+                    return;
+
+                String path = getPath(treeItem);
+                ((FileDBRow) treeItem.item).setPath(path);
+
+                if(treeItem instanceof TreeFolder)
+                    renameChildren(treeItem);
+
+                LoadedData.shouldSetupList = true;
+            }
+
+            private void renameChildren(TreeItem treeItem)
+            {
+                TreeFolder folderItem = (TreeFolder) treeItem;
+                for(TreeItem child : folderItem.children)
+                {
+                    String path = getPath(child);
+                    ((FileDBRow) child.item).setPath(path);
+
+                    if(child instanceof TreeFolder)
+                        renameChildren(child);
+                }
+            }
+
+            @Override
+            public void delete(TreeItem treeItem) {
+                if(treeItem instanceof TreeFolder)
+                    deleteChildren(treeItem);
+
+                treeItem.parent.children.remove(treeItem);
+                LoadedData.PROJECT_DATA.entries.remove(treeItem.item);
+
+                LoadedData.shouldSetupList = true;
+            }
+
+            private void deleteChildren(TreeItem treeItem)
+            {
+                TreeFolder folderItem = (TreeFolder) treeItem;
+                for(TreeItem child : folderItem.children)
+                {
+                    if(child instanceof TreeFolder)
+                        deleteChildren(child);
+
+                    LoadedData.PROJECT_DATA.remove((FileDBRow) child.item);
+                }
+            }
+
+            @Override
+            public void copy(TreeItem treeItem) {
+                FileDBRow row = (FileDBRow) treeItem.item;
+
+                if(row == null || row.getSHA1() == null || !LoadedData.PROJECT_DATA.archive.exists(row.getSHA1()))
+                    return;
+
+                byte[] bytes = LoadedData.PROJECT_DATA.archive.extract(row.getSHA1());
+
+                if(bytes == null)
+                    return;
+
+                try {
+                    FileClipboard dataPackage = new FileClipboard(treeItem.itemName.getText(), bytes);
+                    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+                    clipboard.setContents(new DataPackageTransferable(dataPackage), null);
+                }catch (Exception e){print.stackTrace(e);}
+            }
+
+            @Override
+            public void replace(TreeItem treeItem) {
+                FilePicker.replaceProjectItem(treeItem);
+            }
+
+            @Override
+            public void paste(TreeFolder treeFolder) {
+
+                String name = "";
+                byte[] bytes = new byte[]{};
+                try
+                {
+                    Clipboard clipbrd = Toolkit.getDefaultToolkit().getSystemClipboard();
+                    Transferable transferable = clipbrd.getContents(null);
+                    if (transferable.isDataFlavorSupported(DataPackageTransferable.DATA_FLAVOR)) {
+                        FileClipboard retrieved = (FileClipboard) transferable.getTransferData(DataPackageTransferable.DATA_FLAVOR);
+                        name = retrieved.name;
+                        bytes = retrieved.bytes;
+                    }
+                }catch (Exception e){}
+
+                if(name == null || name.isEmpty() || name.isBlank())
+                    return;
+
+                String path = getPath(treeFolder);
+                FileDBRow row = LoadedData.PROJECT_DATA.add(((path == null || path.isEmpty() || path.isBlank()) ? "" : path + "/") + name, bytes);
+                FileTree.TreeItem newItem = treeFolder.addItem(String.valueOf(treeFolder.children.size()), row, name, this.itemHeight);
+
+            }
+
+            @Override
+            public void newFolder(TreeFolder treeFolder) {
+                String path = getPath(treeFolder);
+                FileDBRow row = LoadedData.PROJECT_DATA.newFileDBRow(((path == null || path.isEmpty() || path.isBlank()) ? "" : path + "/"));
+
+                TreeFolder newFolder = treeFolder.addFolder(String.valueOf(treeFolder.children.size()), row, "", this.itemHeight);
+                newFolder.itemName.setFocused(true);
+                treeFolder.selected = false;
+                newFolder.selected = true;
+            }
+
+            @Override
+            public void addOptionsItem(ComboBox comboBox, TreeItem treeItem) {
+                comboBox.addComboBox("mod", "Modify", 10);
+                comboBox.addSeparator("sep");
+                super.addOptionsItem(comboBox, treeItem);
+            }
+
+            @Override
+            public void addOptionsFolder(ComboBox comboBox, TreeFolder folder) {
+                comboBox.addButton("load", "Load Asset(s)", new Button() {
+                    @Override
+                    public void clickedButton(int button, int action, int mods) {
+                        if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
+                        {
+                            String path = getPath(folder);
+                            FilePicker.loadProjectAssets(((path == null || path.isEmpty() || path.isBlank()) ? "" : path + "/"), folder);
+                        }
+                    }
+                });
+                comboBox.comboElements.add(buildScene);
+                ComboBox importCombo = comboBox.addComboBox("import", "Import", 200);
+
+                importCombo.comboElements.add(importTextures);
+
+                importCombo.addButton("model", "Model", new Button() {
+                    @Override
+                    public void clickedButton(int button, int action, int mods) {
+                        if(action == GLFW.GLFW_RELEASE)
+                            mainView.pushWarning("Trolled", "we not there yet twin...\nI'm lazy");
+                    }
+                });
+
+                comboBox.addSeparator("sep");
+                super.addOptionsFolder(comboBox, folder);
+            }
+
+            @Override
+            public Texture getRootIcon(String itemName, boolean extended, Vector2f size)
+            {
+                int s = org.joml.Math.round(size.y);
+                return ConstantTextures.getTexture(extended ? ConstantTextures.ICON_GROUP_GEAR_OPEN : ConstantTextures.ICON_GROUP_GEAR, s, s, loader);
+            }
+            @Override
+            public Texture getItemIcon(String itemName, Vector2f size) {
+                int s = org.joml.Math.round(size.y);
+
+                int ind = itemName.lastIndexOf(".");
+
+                if(ind != -1)
+                switch(itemName.toLowerCase().substring(ind + 1))
+                {
+                    case "bev":
+                        return ConstantTextures.getTexture(ConstantTextures.FILE_BEVEL, s, s, loader);
+                    case "gmat":
+                    case "gmt":
+                        return ConstantTextures.getTexture(ConstantTextures.FILE_GFX_MATERIAL, s, s, loader);
+                    case "mat":
+                        return ConstantTextures.getTexture(ConstantTextures.FILE_MATERIAL, s, s, loader);
+                    case "mol":
+                    case "smh":
+                        return ConstantTextures.getTexture(ConstantTextures.FILE_MODEL, s, s, loader);
+                    case "plan":
+                    case "pln":
+                        return ConstantTextures.getTexture(ConstantTextures.FILE_PLAN, s, s, loader);
+                    case "ff":
+                        return ConstantTextures.getTexture(ConstantTextures.FILE_SCRIPT, s, s, loader);
+                    case "sph":
+                        return ConstantTextures.getTexture(ConstantTextures.FILE_SOFTBODY, s, s, loader);
+                    case "tex":
+                        return ConstantTextures.getTexture(ConstantTextures.FILE_TEXTURE, s, s, loader);
+                }
+
+                return ConstantTextures.getTexture(ConstantTextures.FILE_UNKNOWN, s, s, loader);
+            }
+        });
+
+        Button exportMod = project.addButton("Export .MOD", new Button() {
+            @Override
+            public void clickedButton(int button, int action, int mods) {
+
+                for(int i = LoadedData.PROJECT_DATA.entries.size() - 1; i >= 0; i--)
+                    if(!LoadedData.PROJECT_DATA.archive.exists(LoadedData.PROJECT_DATA.entries.get(i).getSHA1()))
+                        LoadedData.PROJECT_DATA.entries.remove(i);
+
+                FilePicker.saveMod();
+            }
+        });
+        exportMod.size.y = getFontHeight(10) * 2f;
+
+        project.addSeparator("sep");
+        Panel projectSavePathPanel = project.addPanel("projectSavePathPanel");
+        projectSavePathPanel.elements.add(new Panel.PanelElement(
+                new DropDownTab.StringElement("projectSavePathStr", "Project Path:", 10, mainView.renderer),
+                0.3f));
+        projectSavePath = new Textbox("projectSavePath", new Vector2f(), new Vector2f(getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window);
+
+        try {
+            projectSavePath.setText(Paths.get(this.getClass().getProtectionDomain().getCodeSource().getLocation().toURI()).getParent().toString() + File.separator + "Some kind of project.jar");
+        } catch (URISyntaxException e) {print.stackTrace(e);}
+
+        float panelWidth = org.joml.Math.floor(project.size.x - 5f);
+        float fileBrowseButton = projectSavePathPanel.size.y / panelWidth;
+        float spacer = 1f / panelWidth;
+        float leftSpace = 0.7f - (fileBrowseButton + spacer);
+
+        projectSavePathPanel.elements.add(new Panel.PanelElement(projectSavePath, leftSpace));
+        projectSavePathPanel.elements.add(new Panel.PanelElement(null, spacer));
+        ButtonImage browseProjectSave = new ButtonImage("", mainView.renderer, mainView.loader, mainView.window) {
+            @Override
+            public void clickedButton(int button, int action, int mods) {
+                FilePicker.selectProjectLocation();
+            }
+
+            @Override
+            public Texture getImage() {
+                return ConstantTextures.getTexture(ConstantTextures.ICON_GROUP, Math.round(this.imageSize.x), Math.round(this.imageSize.y), loader);
+            }
+        };
+        projectSavePathPanel.elements.add(new Panel.PanelElement(browseProjectSave, fileBrowseButton));
+
+        Button saveProject = project.addButton("Save Project", new Button() {
+            @Override
+            public void clickedButton(int button, int action, int mods) {
+
+                if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS) {
+
+                    String projectPath = projectSavePath.getText();
+                    if (!projectPath.endsWith(".jar"))
+                        projectPath += ".jar";
+
+                    JsonObject jsonFile = new JsonObject();
+
+                    JsonArray camPosRot = new JsonArray();
+                    camPosRot.add(mainView.camera.getPos().x);
+                    camPosRot.add(mainView.camera.getPos().y);
+                    camPosRot.add(mainView.camera.getPos().z);
+                    camPosRot.add(mainView.camera.getRotation().x);
+                    camPosRot.add(mainView.camera.getRotation().y);
+                    camPosRot.add(mainView.camera.getRotation().z);
+
+                    jsonFile.add("cameraPosRot", camPosRot);
+
+                    JsonObject scene = new JsonObject();
+
+                    {
+                        scene.addProperty("loadedEntitiesSearch", mainView.ElementEditing.loadedEntitiesSearch.getText());
+                    }
+                    {
+                        DropDownTab tab = mainView.ElementEditing.camPos;
+                        JsonObject tabData = new JsonObject();
+                        JsonArray tabPos = new JsonArray();
+                        tabPos.add(tab.pos.x);
+                        tabPos.add(tab.pos.y);
+                        tabData.add("tabPos", tabPos);
+                        tabData.addProperty("tabExtended", tab.extended);
+                        scene.add("tabCamPos", tabData);
+                    }
+                    {
+                        DropDownTab tab = mainView.ElementEditing.helpers;
+                        JsonObject tabData = new JsonObject();
+                        JsonArray tabPos = new JsonArray();
+                        tabPos.add(tab.pos.x);
+                        tabPos.add(tab.pos.y);
+                        tabData.add("tabPos", tabPos);
+                        tabData.addProperty("tabExtended", tab.extended);
+                        scene.add("tabHelpers", tabData);
+                    }
+                    {
+                        DropDownTab tab = mainView.ElementEditing.availableAssets;
+                        JsonObject tabData = new JsonObject();
+                        JsonArray tabPos = new JsonArray();
+                        tabPos.add(tab.pos.x);
+                        tabPos.add(tab.pos.y);
+                        tabData.add("tabPos", tabPos);
+                        tabData.addProperty("tabExtended", tab.extended);
+
+                        tabData.addProperty("assetSearch", mainView.ElementEditing.availableAssetsSearch.getText());
+
+                        JsonArray filters = new JsonArray();
+                        filters.add(mainView.ElementEditing.filterPlans.isChecked);
+                        filters.add(mainView.ElementEditing.filterLevels.isChecked);
+                        filters.add(mainView.ElementEditing.filterMeshes.isChecked);
+                        filters.add(mainView.ElementEditing.filterMaterials.isChecked);
+                        tabData.add("assetFilter", filters);
+
+                        scene.add("tabAssets", tabData);
+                    }
+                    {
+                        DropDownTab tab = mainView.ElementEditing.currentSelection;
+                        JsonObject tabData = new JsonObject();
+                        JsonArray tabPos = new JsonArray();
+                        tabPos.add(tab.pos.x);
+                        tabPos.add(tab.pos.y);
+                        tabData.add("tabPos", tabPos);
+                        tabData.addProperty("tabExtended", tab.extended);
+                        scene.add("tabCurrentSelection", tabData);
+                    }
+
+                    jsonFile.add("scene", scene);
+
+                    JsonObject archive = new JsonObject();
+
+                    {
+                        JsonObject archivePaths = new JsonObject();
+
+                        JsonArray map = new JsonArray();
+                        for (FileDB m : LoadedData.MAPs)
+                            map.add(m.getFile().toPath().toString());
+                        archivePaths.add("map", map);
+
+                        JsonArray farc = new JsonArray();
+                        for (FileArchive f : LoadedData.FARCs)
+                            farc.add(f.getFile().toPath().toString());
+                        archivePaths.add("farc", farc);
+
+                        JsonArray fart = new JsonArray();
+                        for (BigSave f : LoadedData.BIGFARTs)
+                            fart.add(f.getFile().toPath().toString());
+                        archivePaths.add("fart", fart);
+
+                        JsonObject translation = new JsonObject();
+                        translation.addProperty("main", LoadedData.loadedTranslation);
+                        translation.addProperty("patch", LoadedData.loadedPatchTranslation);
+                        archivePaths.add("translation", translation);
+
+                        archive.add("archivePaths", archivePaths);
+                    }
+                    {
+                        DropDownTab tab = mainView.Archive.mapList;
+                        JsonObject tabData = new JsonObject();
+                        JsonArray tabPos = new JsonArray();
+                        tabPos.add(tab.pos.x);
+                        tabPos.add(tab.pos.y);
+                        tabData.add("tabPos", tabPos);
+                        tabData.addProperty("tabExtended", tab.extended);
+                        archive.add("tabMaps", tabData);
+                    }
+                    {
+                        DropDownTab tab = mainView.Archive.farcList;
+                        JsonObject tabData = new JsonObject();
+                        JsonArray tabPos = new JsonArray();
+                        tabPos.add(tab.pos.x);
+                        tabPos.add(tab.pos.y);
+                        tabData.add("tabPos", tabPos);
+                        tabData.addProperty("tabExtended", tab.extended);
+                        archive.add("tabFarcs", tabData);
+                    }
+                    {
+                        DropDownTab tab = mainView.Archive.fartList;
+                        JsonObject tabData = new JsonObject();
+                        JsonArray tabPos = new JsonArray();
+                        tabPos.add(tab.pos.x);
+                        tabPos.add(tab.pos.y);
+                        tabData.add("tabPos", tabPos);
+                        tabData.addProperty("tabExtended", tab.extended);
+                        archive.add("tabFarts", tabData);
+                    }
+                    {
+                        DropDownTab tab = mainView.Archive.translations;
+                        JsonObject tabData = new JsonObject();
+                        JsonArray tabPos = new JsonArray();
+                        tabPos.add(tab.pos.x);
+                        tabPos.add(tab.pos.y);
+                        tabData.add("tabPos", tabPos);
+                        tabData.addProperty("tabExtended", tab.extended);
+                        tabData.addProperty("search", mainView.Archive.searchTransl.getText());
+                        archive.add("tabTranslations", tabData);
+                    }
+
+                    jsonFile.add("archive", archive);
+
+                    JsonObject project = new JsonObject();
+
+                    {
+                        DropDownTab tab = mainView.ProjectManager.project;
+                        JsonObject tabData = new JsonObject();
+                        JsonArray tabPos = new JsonArray();
+                        tabPos.add(tab.pos.x);
+                        tabPos.add(tab.pos.y);
+                        tabData.add("tabPos", tabPos);
+                        tabData.addProperty("tabExtended", tab.extended);
+                        project.add("tabProject", tabData);
+                    }
+                    {
+                        JsonObject plan = new JsonObject();
+                        plan.addProperty("extended", mainView.ProjectManager.planExport.extended);
+                        plan.addProperty("selection", mainView.ProjectManager.selectionOnlyExportPlan.isChecked);
+                        plan.addProperty("ints", mainView.ProjectManager.compressionFlagsIntPlan.isChecked);
+                        plan.addProperty("vecs", mainView.ProjectManager.compressionFlagsVecPlan.isChecked);
+                        plan.addProperty("mats", mainView.ProjectManager.compressionFlagsMatPlan.isChecked);
+                        plan.addProperty("head", mainView.ProjectManager.customRevisionPlanHead.getText());
+                        plan.addProperty("id", mainView.ProjectManager.customRevisionPlanID.getText());
+                        plan.addProperty("rev", mainView.ProjectManager.customRevisionPlanRev.getText());
+
+                        project.add("plan", plan);
+                    }
+                    {
+                        JsonObject bin = new JsonObject();
+                        bin.addProperty("extended", mainView.ProjectManager.binExport.extended);
+                        bin.addProperty("selection", mainView.ProjectManager.selectionOnlyExportBin.isChecked);
+                        bin.addProperty("ints", mainView.ProjectManager.compressionFlagsIntBin.isChecked);
+                        bin.addProperty("vecs", mainView.ProjectManager.compressionFlagsVecBin.isChecked);
+                        bin.addProperty("mats", mainView.ProjectManager.compressionFlagsMatBin.isChecked);
+                        bin.addProperty("head", mainView.ProjectManager.customRevisionBinHead.getText());
+                        bin.addProperty("id", mainView.ProjectManager.customRevisionBinID.getText());
+                        bin.addProperty("rev", mainView.ProjectManager.customRevisionBinRev.getText());
+
+                        project.add("bin", bin);
+                    }
+
+                    jsonFile.add("project", project);
+
+                    byte[] sceneBuilderPlan = Resource.compress(buildPlan(new Revision(Branch.MIZUKI.getHead(), Branch.MIZUKI.getID(), Branch.MIZUKI.getRevision()), false).build());
+                    byte[] sceneBuilderBin = Resource.compress(buildBin(new Revision(Branch.MIZUKI.getHead(), Branch.MIZUKI.getID(), Branch.MIZUKI.getRevision()), false));
+                    byte[] dataMap = LoadedData.PROJECT_DATA.build();
+                    byte[] dataFarc = LoadedData.PROJECT_DATA.archive.build(false);
+
+                    byte[] worldPlan = Resource.compress(buildPlan(new Revision(Branch.MIZUKI.getHead(), Branch.MIZUKI.getID(), Branch.MIZUKI.getRevision()), true).build());
+                    JsonElement element = GsonUtils.GSON.toJsonTree(mainView.selectedThingsBuiltThingArray);
+                    jsonFile.add("selectedThings", element.getAsJsonArray());
+
+                    byte[] dataJson = jsonFile.toString().getBytes();
+
+                    try (InputStream resourceStream = this.getClass().getResourceAsStream("/projectLoader/project_loader.jar");
+                         ZipInputStream zipInputStream = new ZipInputStream(resourceStream);
+                         ZipOutputStream zipOutputStream = new ZipOutputStream(Files.newOutputStream(Path.of(projectPath)))) {
+
+                        ZipEntry entry;
+                        while ((entry = zipInputStream.getNextEntry()) != null) {
+                            zipOutputStream.putNextEntry(new ZipEntry(entry.getName()));
+                            byte[] buffer = new byte[1024];
+                            int bytesRead;
+                            while ((bytesRead = zipInputStream.read(buffer)) != -1) {
+                                zipOutputStream.write(buffer, 0, bytesRead);
+                            }
+                            zipOutputStream.closeEntry();
+                        }
+
+                        JsonObject launcherJson = new JsonObject();
+                        launcherJson.addProperty("programJar", Paths.get(this.getClass().getProtectionDomain().getCodeSource().getLocation().toURI()).toString());
+
+                        zipOutputStream.putNextEntry(new ZipEntry("launcher.json"));
+                        zipOutputStream.write(launcherJson.toString().getBytes());
+                        zipOutputStream.closeEntry();
+
+                        zipOutputStream.putNextEntry(new ZipEntry("data.json"));
+                        zipOutputStream.write(dataJson);
+                        zipOutputStream.closeEntry();
+
+                        zipOutputStream.putNextEntry(new ZipEntry("sceneBuilder.plan"));
+                        zipOutputStream.write(sceneBuilderPlan);
+                        zipOutputStream.closeEntry();
+
+                        zipOutputStream.putNextEntry(new ZipEntry("sceneBuilder.bin"));
+                        zipOutputStream.write(sceneBuilderBin);
+                        zipOutputStream.closeEntry();
+
+                        zipOutputStream.putNextEntry(new ZipEntry("data.map"));
+                        zipOutputStream.write(dataMap);
+                        zipOutputStream.closeEntry();
+
+                        zipOutputStream.putNextEntry(new ZipEntry("data.farc"));
+                        zipOutputStream.write(dataFarc);
+                        zipOutputStream.closeEntry();
+
+                        zipOutputStream.putNextEntry(new ZipEntry("world.plan"));
+                        zipOutputStream.write(worldPlan);
+                        zipOutputStream.closeEntry();
+
+                    } catch (Exception e) {
+                        print.stackTrace(e);
+                        mainView.pushError("Saving Project Error", e.getLocalizedMessage());
+                    }
+
+                    mainView.pushSuccess("Project saved!", "Successfully saved \"" + Path.of(projectPath).getFileName() + "\"");
+                }
+            }
+        });
+        saveProject.size.y = getFontHeight(10) * 2f;
+        planExport = buildScene.addComboBox("planExport", "Plan", 450);
 
         Panel userCreatedNamePlanPanel = planExport.addPanel("userCreatedNamePlanPanel");
         userCreatedNamePlanPanel.elements.add(new Panel.PanelElement(
@@ -199,7 +840,7 @@ public class Export extends GuiScreen {
         {
             @Override
             public int[] getParentTransform() {
-                return new int[]{(int) java.lang.Math.round(planExport.pos.x), (int) java.lang.Math.round(planExport.pos.y), (int) java.lang.Math.round(planExport.size.x)};
+                return planExport.getTabPosWidth();
             }
         };
         creatorPlanPanel.elements.add(new Panel.PanelElement(null, 0.002f));
@@ -214,6 +855,7 @@ public class Export extends GuiScreen {
             public void clickedButton(int button, int action, int mods) {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && creatorHistoryAddPlan.getText() != null)
                     creatorHistoryListPlan.add(creatorHistoryAddPlan.getText());
+                print.warning(creatorHistoryListPlan.size());
             }
         }, 0.19f));
 
@@ -353,7 +995,7 @@ public class Export extends GuiScreen {
         {
             @Override
             public int[] getParentTransform() {
-                return new int[]{(int) java.lang.Math.round(planExport.pos.x), (int) java.lang.Math.round(planExport.pos.y), (int) java.lang.Math.round(planExport.size.x)};
+                return planExport.getTabPosWidth();
             }
         };
 
@@ -395,7 +1037,7 @@ public class Export extends GuiScreen {
         {
             @Override
             public int[] getParentTransform() {
-                return new int[]{(int) java.lang.Math.round(planExport.pos.x), (int) java.lang.Math.round(planExport.pos.y), (int) java.lang.Math.round(planExport.size.x)};
+                return planExport.getTabPosWidth();
             }
         };
         typePlanPanel.elements.add(new Panel.PanelElement(planSubType, 0.3f));
@@ -925,18 +1567,6 @@ public class Export extends GuiScreen {
 
         planExport.addSeparator("exportSeparator").size.y = 11;
 
-        Panel projectDir = planExport.addPanel("projectDir");
-        projectDir.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("path", "Project Path:", 10, renderer), 0.4f));
-        projectPathPlan = new Textbox("projectPathPlan", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-        projectPathPlan.setText("project_name/");
-        projectDir.elements.add(new Panel.PanelElement(projectPathPlan, 0.6f));
-
-        Panel planName = planExport.addPanel("planName");
-        planName.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("name", "File Name:", 10, renderer), 0.4f));
-        namePlan = new Textbox("namePlan", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-        namePlan.setText("some_kind_of_.plan");
-        planName.elements.add(new Panel.PanelElement(namePlan, 0.6f));
-
         selectionOnlyExportPlan = planExport.addCheckbox("selectionOnlyExportPlan", "Selection Only");
 
         planExport.addString("compressionFlagsStr", "Compression Flags:");
@@ -964,7 +1594,7 @@ public class Export extends GuiScreen {
         {
             @Override
             public int[] getParentTransform() {
-                return new int[]{(int) java.lang.Math.round(planExport.pos.x), (int) java.lang.Math.round(planExport.pos.y), (int) java.lang.Math.round(planExport.size.x)};
+                return planExport.getTabPosWidth();
             }
         };
 
@@ -1006,112 +1636,121 @@ public class Export extends GuiScreen {
         metadataPanel.elements.add(new Panel.PanelElement(null, gap));
         metadataPanel.elements.add(new Panel.PanelElement(templateMetadata, (1f-gap)/2f));
 
-        ComboBox exportCombo = planExport.addComboBox("exportCombo", "Export", 200);
-
-        rawFileOutPlan = exportCombo.addCheckbox("rawFileOutPlan", "Export .plan only");
-        exportCombo.addSeparator("rawFileOutSep").size.y = 5;
-
-        exportCombo.size.y = 35;
-
+        ComboBox exportCombo = planExport.addComboBox("exportCombo", "Build", 200);
         exportCombo.size.y = 35;
 
         exportCombo.addButton("lbp1", "LBP1", new Button() {
             @Override
             public void clickedButton(int button, int action, int mods) {
-                if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS) {
-                    byte[] data = Resource.compress(buildPlan(new Revision(Branch.LEERDAMMER.getHead(), Branch.LEERDAMMER.getID(), Branch.LEERDAMMER.getRevision())).build());
+                if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_RELEASE) {
 
-                    if(rawFileOutPlan.isChecked)
-                    {
-                        File file = FileChooser.openFile(projectPathPlan.getText(), "plan", true, false)[0];
-                        try {
-                            java.nio.file.Files.write(file.toPath(), data, new java.nio.file.OpenOption[0]);
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                    else
-                    {
-                        File file = FileChooser.openFile(projectPathPlan.getText(), "mod", true, false)[0];
-                        Mod mod = new Mod();
-                        mod.add(projectPathPlan.getText() + namePlan.getText(), data, new GUID(Math.round(Math.random() * 1000000.0D)));
-                        mod.save(file);
-                    }
+                    FileTree.TreeFolder folder = (FileTree.TreeFolder) modFileTree.getSelectedItem();
+
+                    if(folder == null)
+                        return;
+
+                    byte[] data = Resource.compress(buildPlan(new Revision(Branch.LEERDAMMER.getHead(), Branch.LEERDAMMER.getID(), Branch.LEERDAMMER.getRevision()), true).build());
+
+                    String path = modFileTree.getPath(folder);
+
+                    FileDBRow row = LoadedData.PROJECT_DATA.add(path + "/.plan", data);
+
+                    String nameText = userCreatedNamePlan.getText();
+
+                    FileTree.TreeItem planItem = folder.addItem(String.valueOf(folder.children.size()), row, nameText + ".plan", modFileTree.itemHeight);
+                    planItem.itemName.setFocused(true);
+                    planItem.itemName.setSelection(nameText.length());
+                    folder.selected = false;
+                    planItem.selected = true;
+                    folder.optionsCombo.extended = false;
+
+                    LoadedData.shouldSetupList = true;
                 }
             }
         });
         exportCombo.addButton("lbp2", "LBP2", new Button() {
             @Override
             public void clickedButton(int button, int action, int mods) {
-                if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS) {
-                    byte[] data = Resource.compress(buildPlan(new Revision(Revisions.LBP2_MAX)).build());
+                if (button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_RELEASE) {
 
-                    if(rawFileOutPlan.isChecked)
-                    {
-                        File file = FileChooser.openFile(projectPathPlan.getText(), "plan", true, false)[0];
-                        try {
-                            java.nio.file.Files.write(file.toPath(), data, new java.nio.file.OpenOption[0]);
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                    else
-                    {
-                        File file = FileChooser.openFile(projectPathPlan.getText(), "mod", true, false)[0];
-                        Mod mod = new Mod();
-                        mod.add(projectPathPlan.getText() + namePlan.getText(), data, new GUID(Math.round(Math.random() * 1000000.0D)));
-                        mod.save(file);
-                    }
+                    FileTree.TreeFolder folder = (FileTree.TreeFolder) modFileTree.getSelectedItem();
+
+                    if (folder == null)
+                        return;
+
+                    byte[] data = Resource.compress(buildPlan(new Revision(Revisions.LBP2_MAX), true).build());
+
+                    String path = modFileTree.getPath(folder);
+
+                    FileDBRow row = LoadedData.PROJECT_DATA.add(path + "/.plan", data);
+
+                    String nameText = userCreatedNamePlan.getText();
+
+                    FileTree.TreeItem planItem = folder.addItem(String.valueOf(folder.children.size()), row, nameText + ".plan", modFileTree.itemHeight);
+                    planItem.itemName.setFocused(true);
+                    planItem.itemName.setSelection(nameText.length());
+                    folder.selected = false;
+                    planItem.selected = true;
+                    folder.optionsCombo.extended = false;
+
+                    LoadedData.shouldSetupList = true;
                 }
             }
         });
         exportCombo.addButton("lbpv", "LBP Vita", new Button() {
             @Override
             public void clickedButton(int button, int action, int mods) {
-                if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS) {
-                    byte[] data = Resource.compress(buildPlan(new Revision(Branch.DOUBLE11.getHead(), Branch.DOUBLE11.getID(), Branch.DOUBLE11.getRevision())).build());
+                if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_RELEASE) {
 
-                    if(rawFileOutPlan.isChecked)
-                    {
-                        File file = FileChooser.openFile(projectPathPlan.getText(), "plan", true, false)[0];
-                        try {
-                            java.nio.file.Files.write(file.toPath(), data, new java.nio.file.OpenOption[0]);
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                    else
-                    {
-                        File file = FileChooser.openFile(projectPathPlan.getText(), "mod", true, false)[0];
-                        Mod mod = new Mod();
-                        mod.add(projectPathPlan.getText() + namePlan.getText(), data, new GUID(Math.round(Math.random() * 1000000.0D)));
-                        mod.save(file);
-                    }
+                    FileTree.TreeFolder folder = (FileTree.TreeFolder) modFileTree.getSelectedItem();
+
+                    if(folder == null)
+                        return;
+
+                    byte[] data = Resource.compress(buildPlan(new Revision(Branch.DOUBLE11.getHead(), Branch.DOUBLE11.getID(), Branch.DOUBLE11.getRevision()), true).build());
+
+                    String path = modFileTree.getPath(folder);
+
+                    FileDBRow row = LoadedData.PROJECT_DATA.add(path + "/.plan", data);
+
+                    String nameText = userCreatedNamePlan.getText();
+
+                    FileTree.TreeItem planItem = folder.addItem(String.valueOf(folder.children.size()), row, nameText + ".plan", modFileTree.itemHeight);
+                    planItem.itemName.setFocused(true);
+                    planItem.itemName.setSelection(nameText.length());
+                    folder.selected = false;
+                    planItem.selected = true;
+                    folder.optionsCombo.extended = false;
+
+                    LoadedData.shouldSetupList = true;
                 }
             }
         });
         exportCombo.addButton("lbp3", "LBP3", new Button() {
             @Override
             public void clickedButton(int button, int action, int mods) {
-                if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS) {
-                    byte[] data = Resource.compress(buildPlan(new Revision(Revisions.LBP3_MAX)).build());
+                if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_RELEASE) {
+                    FileTree.TreeFolder folder = (FileTree.TreeFolder) modFileTree.getSelectedItem();
 
-                    if(rawFileOutPlan.isChecked)
-                    {
-                        File file = FileChooser.openFile(projectPathPlan.getText(), "plan", true, false)[0];
-                        try {
-                            java.nio.file.Files.write(file.toPath(), data, new java.nio.file.OpenOption[0]);
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                    else
-                    {
-                        File file = FileChooser.openFile(projectPathPlan.getText(), "mod", true, false)[0];
-                        Mod mod = new Mod();
-                        mod.add(projectPathPlan.getText() + namePlan.getText(), data, new GUID(Math.round(Math.random() * 1000000.0D)));
-                        mod.save(file);
-                    }
+                    if(folder == null)
+                        return;
+
+                    byte[] data = Resource.compress(buildPlan(new Revision(Revisions.LBP3_MAX), true).build());
+
+                    String path = modFileTree.getPath(folder);
+
+                    FileDBRow row = LoadedData.PROJECT_DATA.add(path + "/.plan", data);
+
+                    String nameText = userCreatedNamePlan.getText();
+
+                    FileTree.TreeItem planItem = folder.addItem(String.valueOf(folder.children.size()), row, nameText + ".plan", modFileTree.itemHeight);
+                    planItem.itemName.setFocused(true);
+                    planItem.itemName.setSelection(nameText.length());
+                    folder.selected = false;
+                    planItem.selected = true;
+                    folder.optionsCombo.extended = false;
+
+                    LoadedData.shouldSetupList = true;
                 }
             }
         });
@@ -1134,10 +1773,16 @@ public class Export extends GuiScreen {
         customRevisionPlanRev = new Textbox("customRevisionPlanRev", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
         customRevPanelRev.elements.add(new Panel.PanelElement(customRevisionPlanRev, 0.5f));
 
-        customRevisionPlanExport = exportCombo.addButton("customRevisionPlanExport", "Export", new Button() {
+        customRevisionPlanExport = exportCombo.addButton("customRevisionPlanExport", "Build", new Button() {
             @Override
             public void clickedButton(int button, int action, int mods) {
-                if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS) {
+                if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_RELEASE) {
+
+                    FileTree.TreeFolder folder = (FileTree.TreeFolder) modFileTree.getSelectedItem();
+
+                    if(folder == null)
+                        return;
+
                     RPlan plan;
 
                     String head = customRevisionPlanHead.getText();
@@ -1145,35 +1790,31 @@ public class Export extends GuiScreen {
                     String revision = customRevisionPlanRev.getText();
 
                     if(!((head.isEmpty() || head.isBlank() || head.equalsIgnoreCase(" ")) && (id.isEmpty() || id.isBlank() || id.equalsIgnoreCase(" "))))
-                        plan = buildPlan(new Revision(Utils.parseIntA(head), Utils.parseIntA(id), Utils.parseIntA(revision)));
+                        plan = buildPlan(new Revision(Utils.parseIntA(head), Utils.parseIntA(id), Utils.parseIntA(revision)), true);
                     else
-                        plan = buildPlan(new Revision(Utils.parseIntA(revision)));
+                        plan = buildPlan(new Revision(Utils.parseIntA(revision)), true);
 
                     byte[] data = Resource.compress(plan.build());
 
-                    if(rawFileOutPlan.isChecked)
-                    {
-                        File file = FileChooser.openFile(projectPathPlan.getText(), "plan", true, false)[0];
-                        try {
-                            java.nio.file.Files.write(file.toPath(), data, new java.nio.file.OpenOption[0]);
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                    else
-                    {
-                        File file = FileChooser.openFile(projectPathPlan.getText(), "mod", true, false)[0];
-                        Mod mod = new Mod();
-                        mod.add(projectPathPlan.getText() + namePlan.getText(), data, new GUID(Math.round(Math.random() * 1000000.0D)));
-                        mod.save(file);
-                    }
+                    String path = modFileTree.getPath(folder);
+
+                    FileDBRow row = LoadedData.PROJECT_DATA.add(path + "/.plan", data);
+
+                    String nameText = userCreatedNamePlan.getText();
+
+                    FileTree.TreeItem planItem = folder.addItem(String.valueOf(folder.children.size()), row, nameText + ".plan", modFileTree.itemHeight);
+                    planItem.itemName.setFocused(true);
+                    planItem.itemName.setSelection(nameText.length());
+                    folder.selected = false;
+                    planItem.selected = true;
+                    folder.optionsCombo.extended = false;
+
+                    LoadedData.shouldSetupList = true;
                 }
             }
         });
 
-        this.guiElements.add(planExport);
-
-        binExport = new DropDownTab("binExport", "Export Bin", new Vector2f(7 * 2 + 3 + 450, 21 + 10), new Vector2f(450, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window);
+        binExport = buildScene.addComboBox("binExport", "Bin", 450);// = new DropDownTab("binExport", "Export Bin", new Vector2f(7 * 2 + 3 + 450, 21 + 10), new Vector2f(450, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window);
 
         Panel addPartsPanel = binExport.addPanel("addPartsPanel");
         addPartsPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("addpartsstr", "Parts:", 10, mainView.renderer), 0.5f));
@@ -1182,7 +1823,7 @@ public class Export extends GuiScreen {
         {
             @Override
             public int[] getParentTransform() {
-                return new int[]{(int) java.lang.Math.round(binExport.pos.x), (int) java.lang.Math.round(binExport.pos.y), (int) java.lang.Math.round(binExport.size.x)};
+                return binExport.getTabPosWidth();
             }
         };
         ArrayList<Part> pList = new ArrayList<>();
@@ -1297,25 +1938,13 @@ public class Export extends GuiScreen {
 
             @Override
             public int[] getParentTransform() {
-                return new int[]{(int) Math.round(binExport.pos.x), (int) Math.round(binExport.pos.y), (int) Math.round(binExport.size.x)};
+                return binExport.getTabPosWidth();
             }
         });
 
         thingPart = new ThingPart(mainView, binParts, binExport, worldThingA);
 
         binExport.addSeparator("exportSeparator").size.y = 11;
-
-        Panel projectDirBin = binExport.addPanel("projectDirBin ");
-        projectDirBin.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("path", "Project Path:", 10, renderer), 0.4f));
-        projectPathBin = new Textbox("projectPathPlan", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-        projectPathBin.setText("project_name/");
-        projectDirBin.elements.add(new Panel.PanelElement(projectPathBin, 0.6f));
-
-        Panel binName = binExport.addPanel("binName");
-        binName.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("name", "File Name:", 10, renderer), 0.4f));
-        nameBin = new Textbox("nameBin", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-        nameBin.setText("level.bin");
-        binName.elements.add(new Panel.PanelElement(nameBin, 0.6f));
 
         selectionOnlyExportBin = binExport.addCheckbox("selectionOnlyExportBin", "Selection Only");
 
@@ -1344,7 +1973,7 @@ public class Export extends GuiScreen {
         {
             @Override
             public int[] getParentTransform() {
-                return new int[]{(int) java.lang.Math.round(binExport.pos.x), (int) java.lang.Math.round(binExport.pos.y), (int) java.lang.Math.round(binExport.size.x)};
+                return binExport.getTabPosWidth();
             }
         };
 
@@ -1367,110 +1996,115 @@ public class Export extends GuiScreen {
         metadataPanelBin.elements.add(new Panel.PanelElement(null, gap));
         metadataPanelBin.elements.add(new Panel.PanelElement(templateMetadataBin, (1f-gap)/2f));
 
-        ComboBox exportComboBin = binExport.addComboBox("exportComboBin", "Export", 200);
-
-        rawFileOutBin = exportComboBin.addCheckbox("rawFileOutBin", "Export .bin only");
-        exportComboBin.addSeparator("rawFileOutSep").size.y = 5;
+        ComboBox exportComboBin = binExport.addComboBox("exportComboBin", "Build", 200);
 
         exportComboBin.size.y = 35;
 
         exportComboBin.addButton("lbp1", "LBP1", new Button() {
             @Override
             public void clickedButton(int button, int action, int mods) {
-                if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS) {
-                    byte[] data = Resource.compress(buildBin(new Revision(Branch.LEERDAMMER.getHead(), Branch.LEERDAMMER.getID(), Branch.LEERDAMMER.getRevision())));
+                if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_RELEASE) {
 
-                    if(rawFileOutBin.isChecked)
-                    {
-                        File file = FileChooser.openFile(projectPathBin.getText(), "bin", true, false)[0];
-                        try {
-                            java.nio.file.Files.write(file.toPath(), data, new java.nio.file.OpenOption[0]);
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                    else
-                    {
-                        File file = FileChooser.openFile(projectPathBin.getText(), "mod", true, false)[0];
-                        Mod mod = new Mod();
-                        mod.add(projectPathBin.getText() + nameBin.getText(), data, new GUID(Math.round(Math.random() * 1000000.0D)));
-                        mod.save(file);
-                    }
+                    FileTree.TreeFolder folder = (FileTree.TreeFolder) modFileTree.getSelectedItem();
+
+                    if(folder == null)
+                        return;
+
+                    byte[] data = Resource.compress(buildBin(new Revision(Branch.LEERDAMMER.getHead(), Branch.LEERDAMMER.getID(), Branch.LEERDAMMER.getRevision()), true));
+
+                    String path = modFileTree.getPath(folder);
+
+                    FileDBRow row = LoadedData.PROJECT_DATA.add(path + "/.bin", data);
+
+                    FileTree.TreeItem binItem = folder.addItem(String.valueOf(folder.children.size()), row, ".bin", modFileTree.itemHeight);
+                    binItem.itemName.setFocused(true);
+                    binItem.itemName.setSelection(0);
+                    folder.selected = false;
+                    binItem.selected = true;
+                    folder.optionsCombo.extended = false;
+
+                    LoadedData.shouldSetupList = true;
                 }
             }
         });
         exportComboBin.addButton("lbp2", "LBP2", new Button() {
             @Override
             public void clickedButton(int button, int action, int mods) {
-                if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS) {
-                    byte[] data = Resource.compress(buildBin(new Revision(Revisions.LBP2_MAX)));
+                if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_RELEASE) {
 
-                    if(rawFileOutBin.isChecked)
-                    {
-                        File file = FileChooser.openFile(projectPathBin.getText(), "bin", true, false)[0];
-                        try {
-                            java.nio.file.Files.write(file.toPath(), data, new java.nio.file.OpenOption[0]);
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                    else
-                    {
-                        File file = FileChooser.openFile(projectPathBin.getText(), "mod", true, false)[0];
-                        Mod mod = new Mod();
-                        mod.add(projectPathBin.getText() + nameBin.getText(), data, new GUID(Math.round(Math.random() * 1000000.0D)));
-                        mod.save(file);
-                    }
+                    FileTree.TreeFolder folder = (FileTree.TreeFolder) modFileTree.getSelectedItem();
+
+                    if(folder == null)
+                        return;
+
+                    byte[] data = Resource.compress(buildBin(new Revision(Revisions.LBP2_MAX), true));
+
+                    String path = modFileTree.getPath(folder);
+
+                    FileDBRow row = LoadedData.PROJECT_DATA.add(path + "/.bin", data);
+
+                    FileTree.TreeItem binItem = folder.addItem(String.valueOf(folder.children.size()), row, ".bin", modFileTree.itemHeight);
+                    binItem.itemName.setFocused(true);
+                    binItem.itemName.setSelection(0);
+                    folder.selected = false;
+                    binItem.selected = true;
+                    folder.optionsCombo.extended = false;
+
+                    LoadedData.shouldSetupList = true;
                 }
             }
         });
         exportComboBin.addButton("lbpv", "LBP Vita", new Button() {
             @Override
             public void clickedButton(int button, int action, int mods) {
-                if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS) {
-                    byte[] data = Resource.compress(buildBin(new Revision(Branch.DOUBLE11.getHead(), Branch.DOUBLE11.getID(), Branch.DOUBLE11.getRevision())));
+                if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_RELEASE) {
 
-                    if(rawFileOutBin.isChecked)
-                    {
-                        File file = FileChooser.openFile(projectPathBin.getText(), "bin", true, false)[0];
-                        try {
-                            java.nio.file.Files.write(file.toPath(), data, new java.nio.file.OpenOption[0]);
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                    else
-                    {
-                        File file = FileChooser.openFile(projectPathBin.getText(), "mod", true, false)[0];
-                        Mod mod = new Mod();
-                        mod.add(projectPathBin.getText() + nameBin.getText(), data, new GUID(Math.round(Math.random() * 1000000.0D)));
-                        mod.save(file);
-                    }
+                    FileTree.TreeFolder folder = (FileTree.TreeFolder) modFileTree.getSelectedItem();
+
+                    if(folder == null)
+                        return;
+
+                    byte[] data = Resource.compress(buildBin(new Revision(Branch.DOUBLE11.getHead(), Branch.DOUBLE11.getID(), Branch.DOUBLE11.getRevision()), true));
+
+                    String path = modFileTree.getPath(folder);
+
+                    FileDBRow row = LoadedData.PROJECT_DATA.add(path + "/.bin", data);
+
+                    FileTree.TreeItem binItem = folder.addItem(String.valueOf(folder.children.size()), row, ".bin", modFileTree.itemHeight);
+                    binItem.itemName.setFocused(true);
+                    binItem.itemName.setSelection(0);
+                    folder.selected = false;
+                    binItem.selected = true;
+                    folder.optionsCombo.extended = false;
+
+                    LoadedData.shouldSetupList = true;
                 }
             }
         });
         exportComboBin.addButton("lbp3", "LBP3", new Button() {
             @Override
             public void clickedButton(int button, int action, int mods) {
-                if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS) {
-                    byte[] data = Resource.compress(buildBin(new Revision(Revisions.LBP3_MAX)));
+                if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_RELEASE) {
 
-                    if(rawFileOutBin.isChecked)
-                    {
-                        File file = FileChooser.openFile(projectPathBin.getText(), "bin", true, false)[0];
-                        try {
-                            java.nio.file.Files.write(file.toPath(), data, new java.nio.file.OpenOption[0]);
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                    else
-                    {
-                        File file = FileChooser.openFile(projectPathBin.getText(), "mod", true, false)[0];
-                        Mod mod = new Mod();
-                        mod.add(projectPathBin.getText() + nameBin.getText(), data, new GUID(Math.round(Math.random() * 1000000.0D)));
-                        mod.save(file);
-                    }
+                    FileTree.TreeFolder folder = (FileTree.TreeFolder) modFileTree.getSelectedItem();
+
+                    if(folder == null)
+                        return;
+
+                    byte[] data = Resource.compress(buildBin(new Revision(Revisions.LBP3_MAX), true), true);
+
+                    String path = modFileTree.getPath(folder);
+
+                    FileDBRow row = LoadedData.PROJECT_DATA.add(path + "/.bin", data);
+
+                    FileTree.TreeItem binItem = folder.addItem(String.valueOf(folder.children.size()), row, ".bin", modFileTree.itemHeight);
+                    binItem.itemName.setFocused(true);
+                    binItem.itemName.setSelection(0);
+                    folder.selected = false;
+                    binItem.selected = true;
+                    folder.optionsCombo.extended = false;
+
+                    LoadedData.shouldSetupList = true;
                 }
             }
         });
@@ -1493,10 +2127,16 @@ public class Export extends GuiScreen {
         customRevisionBinRev = new Textbox("customRevisionBinRev", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
         customRevPanelRevBin.elements.add(new Panel.PanelElement(customRevisionBinRev, 0.5f));
 
-        customRevisionBinExport = exportComboBin.addButton("customRevisionBinExport", "Export", new Button() {
+        customRevisionBinExport = exportComboBin.addButton("customRevisionBinExport", "Build", new Button() {
             @Override
             public void clickedButton(int button, int action, int mods) {
-                if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS) {
+                if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_RELEASE) {
+
+                    FileTree.TreeFolder folder = (FileTree.TreeFolder) modFileTree.getSelectedItem();
+
+                    if(folder == null)
+                        return;
+
                     SerializationData bin;
 
                     String head = customRevisionBinHead.getText();
@@ -1504,116 +2144,33 @@ public class Export extends GuiScreen {
                     String revision = customRevisionBinRev.getText();
 
                     if(!((head.isEmpty() || head.isBlank() || head.equalsIgnoreCase(" ")) && (id.isEmpty() || id.isBlank() || id.equalsIgnoreCase(" "))))
-                        bin = buildBin(new Revision(Utils.parseIntA(head), Utils.parseIntA(id), Utils.parseIntA(revision)));
+                        bin = buildBin(new Revision(Utils.parseIntA(head), Utils.parseIntA(id), Utils.parseIntA(revision)), true);
                     else
-                        bin = buildBin(new Revision(Utils.parseIntA(revision)));
+                        bin = buildBin(new Revision(Utils.parseIntA(revision)), true);
 
                     byte[] data = Resource.compress(bin);
 
-                    if(rawFileOutBin.isChecked)
-                    {
-                        File file = FileChooser.openFile(projectPathBin.getText(), "bin", true, false)[0];
-                        try {
-                            java.nio.file.Files.write(file.toPath(), data, new java.nio.file.OpenOption[0]);
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                    else
-                    {
-                        File file = FileChooser.openFile(projectPathBin.getText(), "mod", true, false)[0];
-                        Mod mod = new Mod();
-                        mod.add(projectPathBin.getText() + nameBin.getText(), data, new GUID(Math.round(Math.random() * 1000000.0D)));
-                        mod.save(file);
-                    }
+                    String path = modFileTree.getPath(folder);
+
+                    FileDBRow row = LoadedData.PROJECT_DATA.add(path + "/.bin", data);
+
+                    FileTree.TreeItem binItem = folder.addItem(String.valueOf(folder.children.size()), row, ".bin", modFileTree.itemHeight);
+                    binItem.itemName.setFocused(true);
+                    binItem.itemName.setSelection(0);
+                    folder.selected = false;
+                    binItem.selected = true;
+                    folder.optionsCombo.extended = false;
+
+                    LoadedData.shouldSetupList = true;
                 }
             }
         });
 
-        this.guiElements.add(binExport);
+        this.guiElements.add(project);
     }
 
-    public RPlan buildPlan(Revision revision)
+    public RPlan buildPlan(Revision revision, boolean includeThings)
     {
-//        ArrayList<Thing> things = new ArrayList();
-
-//        int UID = 1;
-//
-//        Thing lighting = new Thing(UID);
-//        lighting.setPart(Part.POS, new PPos());
-//
-//        PLevelSettings settings = LevelSettingsUtils.translate(levelSettings.get(levelSettings.size() - 1));
-//
-//        ArrayList<LevelSettings> presets = new ArrayList<>();
-//        for(LevelSettings preset : levelSettings)
-//            presets.add(LevelSettingsUtils.clone(preset));
-//
-//        settings.presets = presets;
-//        Textbox amb = ((Textbox)((DropDownTab)LevelSettingsEditing.getElementByID("presetEditor")).getElementByID("ambiance"));
-//        settings.backdropAmbience = amb == null || amb.getText().isEmpty() ? "ambiences/amb_empty_world" : amb.getText();
-//
-//        lighting.setPart(Part.LEVEL_SETTINGS, settings);
-//
-//        UID++;
-//
-//        Thing borderStart = new Thing(UID);
-//
-//        PPos bStart = new PPos();
-//        bStart.worldPosition = new Matrix4f().identity().translate(new Vector3f(-31147.4453125f, 3143.436279296875f, 0f))
-//                .rotate(new Quaternionf(0, 0, 0, 1))
-//                .scale(new Vector3f(11.509700775146484f, 1496.25048828125f, 1f));
-//        bStart.localPosition = bStart.worldPosition;
-//
-//        borderStart.setPart(Part.POS, bStart);
-//
-//        PScriptName bStartName = new PScriptName();
-//        bStartName.name = "BorderStart";
-//
-//        borderStart.setPart(Part.SCRIPT_NAME, bStartName);
-//
-//        UID++;
-//
-//        Thing borderEnd = new Thing(UID);
-//
-//        PPos bEnd = new PPos();
-//        bEnd.worldPosition = new Matrix4f().identity().translate(new Vector3f(69882.4609375f, 3103.467041015625f, 0f))
-//                .rotate(new Quaternionf(0, 0, 0, 1))
-//                .scale(new Vector3f(11.509700775146484f, 1481.7734375f, 1f));
-//        bEnd.localPosition = bEnd.worldPosition;
-//
-//        borderEnd.setPart(Part.POS, bEnd);
-//
-//        PScriptName bEndName = new PScriptName();
-//        bEndName.name = "BorderEnd";
-//
-//        borderEnd.setPart(Part.SCRIPT_NAME, bEndName);
-//
-//        UID++;
-//
-//        things.add(lighting);
-//        things.add(borderStart);
-//        things.add(borderEnd);
-//
-//        //main objects
-//        for(Entity entity : this.things)
-//        {
-//            Thing thing = ((bog.lbpas.view3d.core.types.Thing) entity).thing;
-//            thing.UID = UID;
-//
-//            PPos thingPos = new PPos();
-//            thingPos.worldPosition = new Matrix4f(entity.getTransformation());
-//            thingPos.localPosition = thingPos.worldPosition;
-//
-//            thing.setPart(Part.POS, thingPos);
-//
-//            thing.parent = lighting;
-//            thing.groupHead = lighting;
-//
-//            things.add(thing);
-//
-//            UID++;
-//        }
-
         RPlan plan = new RPlan();
         plan.revision = revision;
 
@@ -1622,7 +2179,7 @@ public class Export extends GuiScreen {
         Utils.setBitwiseBool(plan.compressionFlags, CompressionFlags.USE_COMPRESSED_VECTORS, compressionFlagsVecPlan.isChecked);
         Utils.setBitwiseBool(plan.compressionFlags, CompressionFlags.USE_COMPRESSED_MATRICES, compressionFlagsMatPlan.isChecked);
 
-        plan.setThings(mainView.buildThingArray(selectionOnlyExportPlan.isChecked));
+        plan.setThings(includeThings ? mainView.buildThingArray(selectionOnlyExportPlan.isChecked) : new Thing[0]);
 
         ResourceDescriptor icon = new ResourceDescriptor(2551, ResourceType.TEXTURE);
         String planIcon = iconPlan.getText();
@@ -1676,7 +2233,10 @@ public class Export extends GuiScreen {
             for(Element e : subTypeList.elements)
                 if(e instanceof Checkbox)
                     Utils.setBitwiseBool(plan.inventoryData.subType, InventoryObjectSubType.class.getDeclaredField(e.id).getInt(new InventoryObjectSubType()), ((Checkbox)e).isChecked);
-        } catch (Exception ex) {print.error(ex);}
+        } catch (Exception ex) {
+            print.error(ex);
+            mainView.pushError("Build Plan Error", ex.getLocalizedMessage());
+        }
 
         plan.inventoryData.titleKey = Utils.parseLong(titleKeyPlan.getText());
         plan.inventoryData.descriptionKey = Utils.parseLong(descriptionKeyPlan.getText());
@@ -1720,13 +2280,18 @@ public class Export extends GuiScreen {
         return plan;
     }
 
-    public SerializationData buildBin(Revision revision)
+    public SerializationData buildBin(Revision revision, boolean includeThings)
     {
         RLevel level = new RLevel();
 
         level.world = this.worldThing;
+
+        if(!level.world.hasPart(Part.WORLD))
+            level.world.setPart(Part.WORLD, new PWorld());
+
         PWorld world = ((PWorld)level.world.getPart(Part.WORLD));
-        world.things = mainView.buildThingArrayList(selectionOnlyExportBin.isChecked);
+
+        world.things = includeThings ? mainView.buildThingArrayList(selectionOnlyExportBin.isChecked) : new ArrayList<>();
         world.things.add(0, worldThing);
         world.thingUIDCounter = world.things.get(world.things.size() - 1).UID;
 
@@ -2030,11 +2595,14 @@ public class Export extends GuiScreen {
         }
 
         if(lvl != null)
-        {
             if(lvl.world != null)
-                for(Part part : Part.values())
-                    worldThing.setPart(part, lvl.world.getPart(part));
-        }
+                importMetadataBin(lvl);
+    }
+
+    public void importMetadataBin(RLevel lvl)
+    {
+        for(Part part : Part.values())
+            worldThing.setPart(part, lvl.world.getPart(part));
     }
 
     private void importMetadataPlan()
@@ -2058,72 +2626,74 @@ public class Export extends GuiScreen {
         }
 
         if(pln != null)
+            importMetadataPlan(pln);
+    }
+
+    public void importMetadataPlan(RPlan pln)
+    {
+        if(pln.inventoryData.userCreatedDetails != null)
         {
-            if(pln.inventoryData.userCreatedDetails != null)
-            {
-                userCreatedNamePlan.setText(pln.inventoryData.userCreatedDetails.name);
-                userCreatedDescriptionPlan.setText(pln.inventoryData.userCreatedDetails.description);
-            }
-            titleKeyPlan.setText(String.valueOf(pln.inventoryData.titleKey));
-            descriptionKeyPlan.setText(String.valueOf(pln.inventoryData.descriptionKey));
-            creatorPlan.setText(pln.inventoryData.creator.toString());
-            creatorHistoryListPlan = new ArrayList<String>(List.of(pln.inventoryData.creationHistory.creators));
-            iconPlan.setText(pln.inventoryData.icon.toString());
-            allowEmitPlan.isChecked = pln.inventoryData.allowEmit || Utils.isBitwiseBool(pln.inventoryData.flags, InventoryItemFlags.ALLOW_EMIT);
-            shareablePlan.isChecked = pln.inventoryData.shareable;
-            copyrightPlan.isChecked = pln.inventoryData.copyright || Utils.isBitwiseBool(pln.inventoryData.flags, InventoryItemFlags.COPYRIGHT);
-            categoryPlan.setText(String.valueOf(pln.inventoryData.category));
-            categoryTagPlan.setText(pln.inventoryData.categoryTag);
-            categoryIndexPlan.setText(String.valueOf(pln.inventoryData.categoryIndex));
-            locationPlan.setText(String.valueOf(pln.inventoryData.location));
-            locationTagPlan.setText(pln.inventoryData.locationTag);
-            locationIndexPlan.setText(String.valueOf(pln.inventoryData.locationIndex));
+            userCreatedNamePlan.setText(pln.inventoryData.userCreatedDetails.name);
+            userCreatedDescriptionPlan.setText(pln.inventoryData.userCreatedDetails.description);
+        }
+        titleKeyPlan.setText(String.valueOf(pln.inventoryData.titleKey));
+        descriptionKeyPlan.setText(String.valueOf(pln.inventoryData.descriptionKey));
+        creatorPlan.setText(pln.inventoryData.creator.toString());
+        creatorHistoryListPlan.clear();
+        creatorHistoryListPlan.addAll(List.of(pln.inventoryData.creationHistory.creators));
+        iconPlan.setText(pln.inventoryData.icon.toString());
+        allowEmitPlan.isChecked = pln.inventoryData.allowEmit || Utils.isBitwiseBool(pln.inventoryData.flags, InventoryItemFlags.ALLOW_EMIT);
+        shareablePlan.isChecked = pln.inventoryData.shareable;
+        copyrightPlan.isChecked = pln.inventoryData.copyright || Utils.isBitwiseBool(pln.inventoryData.flags, InventoryItemFlags.COPYRIGHT);
+        categoryPlan.setText(String.valueOf(pln.inventoryData.category));
+        categoryTagPlan.setText(pln.inventoryData.categoryTag);
+        categoryIndexPlan.setText(String.valueOf(pln.inventoryData.categoryIndex));
+        locationPlan.setText(String.valueOf(pln.inventoryData.location));
+        locationTagPlan.setText(pln.inventoryData.locationTag);
+        locationIndexPlan.setText(String.valueOf(pln.inventoryData.locationIndex));
 
-            for(Checkbox c : typePlan)
-                c.isChecked = pln.inventoryData.type.contains(InventoryObjectType.valueOf(c.id));
+        for(Checkbox c : typePlan)
+            c.isChecked = pln.inventoryData.type.contains(InventoryObjectType.valueOf(c.id));
 
-            try {
-                for(Element e : subTypeList.elements)
-                    if(e instanceof Checkbox)
-                        ((Checkbox)e).isChecked = Utils.isBitwiseBool(pln.inventoryData.subType, InventoryObjectSubType.class.getDeclaredField(e.id).getInt(new InventoryObjectSubType()));
-            } catch (Exception ex) {print.error(ex);}
+        try {
+            for(Element e : subTypeList.elements)
+                if(e instanceof Checkbox)
+                    ((Checkbox)e).isChecked = Utils.isBitwiseBool(pln.inventoryData.subType, InventoryObjectSubType.class.getDeclaredField(e.id).getInt(new InventoryObjectSubType()));
+        } catch (Exception ex) {print.error(ex);}
 
-            used.isChecked = Utils.isBitwiseBool(pln.inventoryData.flags, InventoryItemFlags.USED);
-            hiddenItem.isChecked = Utils.isBitwiseBool(pln.inventoryData.flags, InventoryItemFlags.HIDDEN_ITEM);
-            restrictedLevel.isChecked = Utils.isBitwiseBool(pln.inventoryData.flags, InventoryItemFlags.RESTRICTED_LEVEL);
-            restrictedPod.isChecked = Utils.isBitwiseBool(pln.inventoryData.flags, InventoryItemFlags.RESTRICTED_POD);
-            disableLoopPreview.isChecked = Utils.isBitwiseBool(pln.inventoryData.flags, InventoryItemFlags.DISABLE_LOOP_PREVIEW);
+        used.isChecked = Utils.isBitwiseBool(pln.inventoryData.flags, InventoryItemFlags.USED);
+        hiddenItem.isChecked = Utils.isBitwiseBool(pln.inventoryData.flags, InventoryItemFlags.HIDDEN_ITEM);
+        restrictedLevel.isChecked = Utils.isBitwiseBool(pln.inventoryData.flags, InventoryItemFlags.RESTRICTED_LEVEL);
+        restrictedPod.isChecked = Utils.isBitwiseBool(pln.inventoryData.flags, InventoryItemFlags.RESTRICTED_POD);
+        disableLoopPreview.isChecked = Utils.isBitwiseBool(pln.inventoryData.flags, InventoryItemFlags.DISABLE_LOOP_PREVIEW);
 
-            toolTypePln = pln.inventoryData.toolType;
+        toolTypePln = pln.inventoryData.toolType;
 
-            numUsesPlan.setText(String.valueOf(pln.inventoryData.numUses));
-            lastUsedPlan.setText(String.valueOf(pln.inventoryData.lastUsed));
-            fluffCostPlan.setText(String.valueOf(pln.inventoryData.fluffCost));
-            makeSizeProportionalPlan.isChecked = pln.inventoryData.makeSizeProportional;
-            primaryIndexPlan.setText(String.valueOf(pln.inventoryData.primaryIndex));
-            translationTagPlan.setText(pln.inventoryData.translationTag);
+        numUsesPlan.setText(String.valueOf(pln.inventoryData.numUses));
+        lastUsedPlan.setText(String.valueOf(pln.inventoryData.lastUsed));
+        fluffCostPlan.setText(String.valueOf(pln.inventoryData.fluffCost));
+        makeSizeProportionalPlan.isChecked = pln.inventoryData.makeSizeProportional;
+        primaryIndexPlan.setText(String.valueOf(pln.inventoryData.primaryIndex));
+        translationTagPlan.setText(pln.inventoryData.translationTag);
 
-            Vector4f color = Colors.RGBA32.toVector(pln.inventoryData.colour);
-            rColorPlan.setText(String.valueOf(Math.round(color.x * 255f)));
-            gColorPlan.setText(String.valueOf(Math.round(color.y * 255f)));
-            bColorPlan.setText(String.valueOf(Math.round(color.z * 255f)));
-            aColorPlan.setText(String.valueOf(Math.round(color.w * 255f)));
+        Vector4f color = Colors.RGBA32.toVector(pln.inventoryData.colour);
+        rColorPlan.setText(String.valueOf(Math.round(color.x * 255f)));
+        gColorPlan.setText(String.valueOf(Math.round(color.y * 255f)));
+        bColorPlan.setText(String.valueOf(Math.round(color.z * 255f)));
+        aColorPlan.setText(String.valueOf(Math.round(color.w * 255f)));
 
-            if(pln.inventoryData.highlightSound != null)
-                highlightSoundPlan.setText(pln.inventoryData.highlightSound.toString());
+        if(pln.inventoryData.highlightSound != null)
+            highlightSoundPlan.setText(pln.inventoryData.highlightSound.toString());
 
-            if(pln.inventoryData.dateAdded != 0)
-            {
-                Date date = new Date(pln.inventoryData.dateAdded / 1000);
-                dateAddedDayPlan.setText(String.valueOf(date.getDate()));
-                dateAddedMonthPlan.setText(String.valueOf(date.getMonth()));
-                dateAddedYearPlan.setText(String.valueOf(date.getYear()));
-                dateAddedHourPlan.setText(String.valueOf(date.getHours()));
-                dateAddedMinutePlan.setText(String.valueOf(date.getMinutes()));
-                dateAddedSecondPlan.setText(String.valueOf(date.getSeconds()));
-            }
-
-            namePlan.setText(name);
+        if(pln.inventoryData.dateAdded != 0)
+        {
+            Date date = new Date(pln.inventoryData.dateAdded / 1000);
+            dateAddedDayPlan.setText(String.valueOf(date.getDate()));
+            dateAddedMonthPlan.setText(String.valueOf(date.getMonth()));
+            dateAddedYearPlan.setText(String.valueOf(date.getYear()));
+            dateAddedHourPlan.setText(String.valueOf(date.getHours()));
+            dateAddedMinutePlan.setText(String.valueOf(date.getMinutes()));
+            dateAddedSecondPlan.setText(String.valueOf(date.getSeconds()));
         }
     }
 
@@ -2141,6 +2711,45 @@ public class Export extends GuiScreen {
         {
             importMetadataBin();
             importBinMeta = false;
+        }
+    }
+
+    static class FileClipboard implements Serializable {
+        private static final long serialVersionUID = 1L;
+        String name;
+        byte[] bytes;
+
+        public FileClipboard(String name, byte[] bytes) {
+            this.name = name;
+            this.bytes = bytes;
+        }
+    }
+
+    static class DataPackageTransferable implements Transferable {
+        private final FileClipboard dataPackage;
+
+        private static final DataFlavor DATA_FLAVOR = new DataFlavor(FileClipboard.class, "FileClipboard");
+
+        public DataPackageTransferable(FileClipboard dataPackage) {
+            this.dataPackage = dataPackage;
+        }
+
+        @Override
+        public DataFlavor[] getTransferDataFlavors() {
+            return new DataFlavor[]{DATA_FLAVOR};
+        }
+
+        @Override
+        public boolean isDataFlavorSupported(DataFlavor flavor) {
+            return DATA_FLAVOR.equals(flavor);
+        }
+
+        @Override
+        public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException {
+            if (!DATA_FLAVOR.equals(flavor)) {
+                throw new UnsupportedFlavorException(flavor);
+            }
+            return dataPackage;
         }
     }
 }

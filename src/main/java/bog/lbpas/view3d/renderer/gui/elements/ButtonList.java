@@ -308,7 +308,7 @@ public abstract class ButtonList<T> extends Element{
                 }
 
             renderer.drawRect(x, Math.round(posY), newHeight, newHeight, !hovering ? buttonColor(object, i) : buttonColorHighlighted(object, i));
-            renderer.drawImageStatic(ConstantTextures.getTexture(ConstantTextures.WINDOW_CLOSE, newHeight, newHeight, loader), x, Math.round(posY), newHeight, newHeight);
+            renderer.drawImageStatic(ConstantTextures.getTexture(ConstantTextures.WINDOW_CLOSE, newHeight, newHeight, loader), x, Math.round(posY), newHeight, newHeight, loader);
             renderer.drawRectOutline(new Vector2f(x, Math.round(posY)), outlineButtonExtra, !hovering ? buttonColor2(object, i) : buttonColorHighlighted2(object, i), false);
         }
         if(draggable)
@@ -329,7 +329,7 @@ public abstract class ButtonList<T> extends Element{
                 }
 
             renderer.drawRect(Math.round(pos.x + 4) + newWidth + 2, Math.round(posY), newHeight, newHeight, !hovering ? buttonColor(object, i) : buttonColorHighlighted(object, i));
-            renderer.drawImageStatic(ConstantTextures.getTexture(ConstantTextures.DRAG, newHeight, newHeight, loader), Math.round(pos.x + 4) + newWidth + 2, Math.round(posY), newHeight, newHeight);
+            renderer.drawImageStatic(ConstantTextures.getTexture(ConstantTextures.DRAG, newHeight, newHeight, loader), Math.round(pos.x + 4) + newWidth + 2, Math.round(posY), newHeight, newHeight, loader);
             renderer.drawRectOutline(new Vector2f(Math.round(pos.x + 4) + newWidth + 2, Math.round(posY)), outlineButtonExtra, !hovering ? buttonColor2(object, i) : buttonColorHighlighted2(object, i), false);
         }
     }

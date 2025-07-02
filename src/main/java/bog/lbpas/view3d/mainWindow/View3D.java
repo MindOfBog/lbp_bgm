@@ -26,6 +26,7 @@ import cwlib.structs.mesh.Bone;
 import cwlib.structs.things.Thing;
 import cwlib.structs.things.parts.*;
 import cwlib.types.data.ResourceDescriptor;
+import cwlib.types.data.Revision;
 import cwlib.types.databases.FileDBRow;
 import cwlib.types.databases.FileEntry;
 import cwlib.util.GsonUtils;
@@ -98,8 +99,6 @@ public class View3D implements ILogic {
         BORDERS = new ArrayList<>();
         POD_EARTH = new ArrayList<>();
 
-        initMillis = System.currentTimeMillis();
-
         notificationFeed = new NotificationFeed(false, 12, new Vector2f(this.window.width - 248 - 400, this.window.height - 8), 400, renderer, loader, window)
         {
             @Override
@@ -133,11 +132,11 @@ public class View3D implements ILogic {
         bone.material = new Material(Color.white, 0f);
 
         pod = loader.loadOBJModelDirect("/models/pod.obj");
-        pod.material = new Material(new Texture[]{new Texture(loader.loadResourceTexture("/textures/pod.png", GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR))});
+        pod.material = new Material(new Texture[]{loader.loadResourceTexture("/textures/pod.png", GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR)});
         pod.material.overlayColor = new Vector4f(Config.POD_COLOR.getRed() / 255f, Config.POD_COLOR.getGreen() / 255f, Config.POD_COLOR.getBlue() / 255f, Config.POD_COLOR.getAlpha() / 255f);
         POD_EARTH.add(new Entity(pod, new Vector3f(25.0f, 260.0f, 13490.0f), new Vector3f(-105.0f, 0.0f, 0.0f), new Vector3f(1f), loader));
         earth = loader.loadOBJModelDirect("/models/earth.obj");
-        earth.material = new Material(new Texture[]{new Texture(loader.loadResourceTexture("/textures/earth.png", GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR))});
+        earth.material = new Material(new Texture[]{loader.loadResourceTexture("/textures/earth.png", GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR)});
         earth.material.overlayColor = new Vector4f(Config.EARTH_COLOR.getRed() / 255f, Config.EARTH_COLOR.getGreen() / 255f, Config.EARTH_COLOR.getBlue() / 255f, Config.EARTH_COLOR.getAlpha() / 255f);
         POD_EARTH.add(new Entity(earth, new Vector3f(30.71f, 60.38f, 243.31f), new Vector3f(0), new Vector3f(1.5f), loader));
 
@@ -337,7 +336,7 @@ public class View3D implements ILogic {
                 e.resize();
             for(Element e : Archive.guiElements)
                 e.resize();
-            for(Element e : Export.guiElements)
+            for(Element e : ProjectManager.guiElements)
                 e.resize();
             for(Element e : Settings.guiElements)
                 e.resize();
@@ -636,7 +635,7 @@ public class View3D implements ILogic {
     }
 
     public ElementEditing ElementEditing;
-    public Export Export;
+    public ProjectManager ProjectManager;
     public Archive Archive;
     public Settings Settings;
     public MaterialEditing MaterialEditing;
@@ -670,10 +669,10 @@ public class View3D implements ILogic {
             }
         };
         xCoord += w - 1;
-        Button export = new Button("export", "Export", new Vector2f(xCoord, yCoord), new Vector2f(w, 21), 10, renderer, loader, window) {
+        Button project = new Button("project", "Project", new Vector2f(xCoord, yCoord), new Vector2f(w, 21), 10, renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
-                if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)setCurrentScreen(Export);
+                if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)setCurrentScreen(ProjectManager);
             }
 
             @Override
@@ -706,8 +705,8 @@ public class View3D implements ILogic {
             }
 
             @Override
-            public void getImage() {
-                buttonImage = ConstantTextures.getTexture(ConstantTextures.WINDOW_MINIMIZE, 23, 23, loader);
+            public Texture getImage() {
+                return ConstantTextures.getTexture(ConstantTextures.WINDOW_MINIMIZE, 23, 23, loader);
             }
         };
 
@@ -717,15 +716,9 @@ public class View3D implements ILogic {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
                 {
                     if(this.window.isMaximized)
-                    {
                         this.window.restore();
-                        this.buttonImage = ConstantTextures.getTexture(ConstantTextures.WINDOW_MAXIMIZE, 23, 23, loader);
-                    }
                     else
-                    {
                         this.window.maximize();
-                        this.buttonImage = ConstantTextures.getTexture(ConstantTextures.WINDOW_RESTORE, 23, 23, loader);
-                    }
                 }
             }
 
@@ -738,15 +731,11 @@ public class View3D implements ILogic {
             @Override
             public void secondThread() {
                 super.secondThread();
-                updateImage();
             }
 
             @Override
-            public void getImage() {
-                if(this.window.isMaximized)
-                    this.buttonImage = ConstantTextures.getTexture(ConstantTextures.WINDOW_RESTORE, 23, 23, loader);
-                else
-                    this.buttonImage = ConstantTextures.getTexture(ConstantTextures.WINDOW_MAXIMIZE, 23, 23, loader);
+            public Texture getImage() {
+                return ConstantTextures.getTexture(this.window.isMaximized ? ConstantTextures.WINDOW_RESTORE : ConstantTextures.WINDOW_MAXIMIZE, 23, 23, loader);
             }
         };
 
@@ -765,8 +754,8 @@ public class View3D implements ILogic {
             }
 
             @Override
-            public void getImage() {
-                buttonImage = ConstantTextures.getTexture(ConstantTextures.WINDOW_CLOSE, 23, 23, loader);
+            public Texture getImage() {
+                return ConstantTextures.getTexture(ConstantTextures.WINDOW_CLOSE, 23, 23, loader);
             }
         };
 
@@ -793,15 +782,9 @@ public class View3D implements ILogic {
                             if(currentMs - prevMs[0] <= 500)
                             {
                                 if(this.window.isMaximized)
-                                {
                                     this.window.restore();
-                                    restMaxButton.buttonImage = ConstantTextures.getTexture(ConstantTextures.WINDOW_MAXIMIZE, 23, 23, loader);
-                                }
                                 else
-                                {
                                     this.window.maximize();
-                                    restMaxButton.buttonImage = ConstantTextures.getTexture(ConstantTextures.WINDOW_RESTORE, 23, 23, loader);
-                                }
                                 prevMs[0] = 0;
                             }
                             else
@@ -875,7 +858,7 @@ public class View3D implements ILogic {
         ElementEditing.guiElements.add(closeButton);
         ElementEditing.guiElements.add(elementEditing);
         ElementEditing.guiElements.add(archive);
-        ElementEditing.guiElements.add(export);
+        ElementEditing.guiElements.add(project);
         ElementEditing.guiElements.add(settingss);
 
         Archive = new Archive(this);
@@ -887,20 +870,20 @@ public class View3D implements ILogic {
         Archive.guiElements.add(closeButton);
         Archive.guiElements.add(elementEditing);
         Archive.guiElements.add(archive);
-        Archive.guiElements.add(export);
+        Archive.guiElements.add(project);
         Archive.guiElements.add(settingss);
 
-        Export = new Export(this);
+        ProjectManager = new ProjectManager(this);
 
-        Export.guiElements.add(notificationFeed);
-        Export.guiElements.add(titleBar);
-        Export.guiElements.add(minimizeButton);
-        Export.guiElements.add(restMaxButton);
-        Export.guiElements.add(closeButton);
-        Export.guiElements.add(elementEditing);
-        Export.guiElements.add(archive);
-        Export.guiElements.add(export);
-        Export.guiElements.add(settingss);
+        ProjectManager.guiElements.add(notificationFeed);
+        ProjectManager.guiElements.add(titleBar);
+        ProjectManager.guiElements.add(minimizeButton);
+        ProjectManager.guiElements.add(restMaxButton);
+        ProjectManager.guiElements.add(closeButton);
+        ProjectManager.guiElements.add(elementEditing);
+        ProjectManager.guiElements.add(archive);
+        ProjectManager.guiElements.add(project);
+        ProjectManager.guiElements.add(settingss);
 
         Settings = new Settings(this);
 
@@ -911,7 +894,7 @@ public class View3D implements ILogic {
         Settings.guiElements.add(closeButton);
         Settings.guiElements.add(elementEditing);
         Settings.guiElements.add(archive);
-        Settings.guiElements.add(export);
+        Settings.guiElements.add(project);
         Settings.guiElements.add(settingss);
 
         MaterialEditing = new MaterialEditing(this);
@@ -926,8 +909,6 @@ public class View3D implements ILogic {
     }
 
     public boolean introPlayed = false;
-
-
 
     public void pushNotification(Notification notification)
     {
@@ -1081,10 +1062,10 @@ public class View3D implements ILogic {
         renderer.doBlur(Consts.GAUSSIAN_RADIUS, Consts.GAUSSIAN_KERNEL, 3, 3, window.width, 20);
         renderer.drawRect(3, 3, window.width - 6, 20, Config.PRIMARY_COLOR);
 
-        renderer.drawRect(0, 0, 3, window.height, Config.PRIMARY_COLOR);
+        renderer.drawRect(0, 3, 3, window.height - 6, Config.PRIMARY_COLOR);
         renderer.drawRect(0, 0, window.width, 3, Config.PRIMARY_COLOR);
         renderer.drawRect(0, window.height - 3, window.width, window.height, Config.PRIMARY_COLOR);
-        renderer.drawRect(window.width - 3, 0, window.width, window.height, Config.PRIMARY_COLOR);
+        renderer.drawRect(window.width - 3, 3, window.width, window.height - 6, Config.PRIMARY_COLOR);
 
         renderer.drawString(Consts.TITLE + (Config.SHOW_FPS ? " | FPS: " + EngineMan.avgFPS : ""), Config.FONT_COLOR, 7 + 3, (int)(11 - (FontRenderer.getFontHeight(10) / 2) + 3), 10);
 //        drawString("entRen ent: " + renderer.entityRenderer.entities.size(), Config.FONT_COLOR, 10, 32, 10);
@@ -1195,7 +1176,7 @@ public class View3D implements ILogic {
 
             if (out != 0) {
                 renderer.drawRect(0, 0, window.width, window.height, new Color(1f, 1f, 1f, out));
-                renderer.drawImageStatic(ConstantTextures.getTexture(ConstantTextures.ICON, 461, 461, loader), window.width / 2 - 461 / 2, window.height / 2 - 461 / 2, 461, 461);
+                renderer.drawImageStatic(ConstantTextures.getTexture(ConstantTextures.ICON, 461, 461, loader), window.width / 2 - 461 / 2, window.height / 2 - 461 / 2, 461, 461, loader);
                 renderer.drawRect(0, 0, window.width, window.height, new Color(1f, 1f, 1f, in));
             } else introPlayed = true;
         }
@@ -1262,6 +1243,7 @@ public class View3D implements ILogic {
             if(entity.selected)
             {
                 Thing thing = ((bog.lbpas.view3d.core.types.Thing) entity).thing;
+                GsonUtils.REVISION = new Revision(Branch.MIZUKI.getHead(), Branch.MIZUKI.getID(), Branch.MIZUKI.getRevision());
                 copySelection += GsonUtils.toJSON(thing) + Consts.LEFT_ARROW_WITH_SMALL_CIRCLE;
             }
 
@@ -1275,6 +1257,43 @@ public class View3D implements ILogic {
             Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
             clipboard.setContents(selection, selection);
         }catch (Exception e){e.printStackTrace();}
+    }
+
+    public void pasteClipboard()
+    {
+        String clipboard = "";
+
+        for(Entity entity : things)
+            if(entity.selected)
+                entity.selected = false;
+
+        try
+        {
+            String cb = (String) Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);
+
+            if(!cb.substring(0, 5).equalsIgnoreCase("LBPAS"))
+                return;
+
+            clipboard = Utils.decrypt(cb.substring(5));
+        }catch (Exception e){e.printStackTrace();}
+
+        if(clipboard.equalsIgnoreCase(""))
+            return;
+
+        String[] objects = clipboard.split(String.valueOf(Consts.LEFT_ARROW_WITH_SMALL_CIRCLE));
+
+        ArrayList<Thing> things = new ArrayList<>();
+
+        for(int i = 0; i < objects.length; i++)
+        {
+            String json = objects[i];
+            if(json == "")
+                continue;
+
+            things.add(GsonUtils.GSON.fromJson(json, Thing.class));
+        }
+
+        addThings(things, null);
     }
 
     public void deleteSelected()
@@ -1314,43 +1333,6 @@ public class View3D implements ILogic {
         things.remove(index);
     }
 
-    public void pasteClipboard()
-    {
-        String clipboard = "";
-
-        for(Entity entity : things)
-            if(entity.selected)
-                entity.selected = false;
-
-        try
-        {
-            String cb = (String) Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);
-
-            if(!cb.substring(0, 5).equalsIgnoreCase("LBPAS"))
-                return;
-
-            clipboard = Utils.decrypt(cb.substring(5));
-        }catch (Exception e){e.printStackTrace();}
-
-        if(clipboard.equalsIgnoreCase(""))
-            return;
-
-        String[] objects = clipboard.split(String.valueOf(Consts.LEFT_ARROW_WITH_SMALL_CIRCLE));
-
-        ArrayList<Thing> things = new ArrayList<>();
-
-        for(int i = 0; i < objects.length; i++)
-        {
-            String json = objects[i];
-            if(json == "")
-                continue;
-
-            things.add(GsonUtils.GSON.fromJson(json, Thing.class));
-        }
-
-        addThings(things);
-    }
-
     public void setSelectedPosition(Vector3f pos)
     {
         boolean hasSelection = false;
@@ -1388,6 +1370,8 @@ public class View3D implements ILogic {
             if(things.get(i).selected)
             {
                 things.get(i).thing.parent = parent;
+                if(things.get(i).thing.hasPart(Part.POS))
+                    ((PPos)things.get(i).thing.getPart(Part.POS)).recomputeLocalPos(things.get(i).thing);
             }
     }
 
@@ -1840,8 +1824,14 @@ public class View3D implements ILogic {
         return "";
     }
 
+    public ArrayList<Integer> selectedThingsBuiltThingArray;
     public ArrayList<Thing> buildThingArrayList(boolean selectionOnly)
     {
+        if(selectedThingsBuiltThingArray == null)
+            selectedThingsBuiltThingArray = new ArrayList<>();
+        else
+            selectedThingsBuiltThingArray.clear();
+
         ArrayList<Thing> things = new ArrayList();
 
         int UID = 1;
@@ -1854,6 +1844,8 @@ public class View3D implements ILogic {
             Thing thing = ((bog.lbpas.view3d.core.types.Thing) entity).thing;
             thing.UID = UID;
             things.add(thing);
+            if(entity.selected)
+                selectedThingsBuiltThingArray.add(thing.UID);
             UID++;
         }
         return things;
@@ -1873,7 +1865,7 @@ public class View3D implements ILogic {
         this.currentScreen = this.currentScreen.previousScreen;
     }
 
-    public void addThings(List<Thing> things)
+    public void addThings(List<Thing> things, List<Number> selectedUIDs)
     {
         for(bog.lbpas.view3d.core.types.Thing t : this.things)
             t.selected = false;
@@ -1882,97 +1874,7 @@ public class View3D implements ILogic {
             if (thing != null)
             {
                 if(thing.name == null)
-                {
-                    ResourceDescriptor ent = null;
-
-                    if(thing.hasPart(Part.RENDER_MESH) && ((PRenderMesh)thing.getPart(Part.RENDER_MESH)).mesh != null)
-                    {
-                        ent = ((PRenderMesh)thing.getPart(Part.RENDER_MESH)).mesh;
-                    }
-                    else if(thing.hasPart(Part.GENERATED_MESH) && ((PGeneratedMesh)thing.getPart(Part.GENERATED_MESH)).gfxMaterial != null)
-                    {
-                        ent = ((PGeneratedMesh)thing.getPart(Part.GENERATED_MESH)).gfxMaterial;
-                    }
-                    else if(thing.hasPart(Part.SCRIPT_NAME) && ((PScriptName)thing.getPart(Part.SCRIPT_NAME)).name != null)
-                    {
-                        thing.name = ((PScriptName)thing.getPart(Part.SCRIPT_NAME)).name;
-                    }
-                    else if(thing.hasPart(Part.SCRIPT) && ((PScript)thing.getPart(Part.SCRIPT)).instance.script != null)
-                    {
-                        ent = ((PScript)thing.getPart(Part.SCRIPT)).instance.script;
-                    }
-                    else if(thing.hasPart(Part.EFFECTOR))
-                    {
-                        thing.name = "Effector";
-                    }
-                    else if(thing.hasPart(Part.LEVEL_SETTINGS))
-                    {
-                        thing.name = "Level Settings";
-                    }
-                    else if(thing.hasPart(Part.SHAPE))
-                    {
-                        thing.name = "Shape";
-                    }
-                    else if(thing.hasPart(Part.CHECKPOINT))
-                    {
-                        thing.name = "Checkpoint";
-                    }
-                    else if(thing.hasPart(Part.TRIGGER) && ((PTrigger)thing.getPart(Part.TRIGGER)).triggerType != null)
-                    {
-                        thing.name = ((PTrigger)thing.getPart(Part.TRIGGER)).triggerType.name();
-                        thing.name = "Trigger " + thing.name.substring(0, 1).toUpperCase() + thing.name.substring(1).toLowerCase();
-                    }
-                    else if(thing.hasPart(Part.EMITTER))
-                    {
-                        thing.name = "Emitter";
-                    }
-                    else if(thing.hasPart(Part.GROUP))
-                    {
-                        thing.name = "Group";
-                    }
-                    else if(thing.hasPart(Part.AUDIO_WORLD))
-                    {
-                        thing.name = "Audio";
-                    }
-                    else if(thing.hasPart(Part.SPRITE_LIGHT))
-                    {
-                        thing.name = "Light";
-                    }
-                    else if(thing.hasPart(Part.SWITCH_INPUT))
-                    {
-                        thing.name = "Switch Input";
-                    }
-                    else if(thing.hasPart(Part.SWITCH))
-                    {
-                        thing.name = "Switch";
-                    }
-                    else if(thing.hasPart(Part.JOINT))
-                    {
-                        thing.name = "Joint";
-                    }
-                    else if(thing.hasPart(Part.SWITCH_KEY))
-                    {
-                        thing.name = "Tag";
-                    }
-
-                    if(ent != null)
-                    {
-                        FileEntry e = LoadedData.getDigestedEntry(ent);
-
-                        if(e != null)
-                        {
-                            String name = e.getName();
-
-                            int extInd = name.lastIndexOf(".");
-                            boolean nameIsHash = name.substring(0, extInd != -1 ? extInd : name.length()).equalsIgnoreCase(e.getSHA1().toString());
-
-                            if (!(e instanceof FileDBRow) && nameIsHash)
-                                name = name.substring(name.length() - 12);
-
-                            thing.name = name.substring(0, name.lastIndexOf("."));
-                        }
-                    }
-                }
+                    buildThingName(thing);
 
                 if(thing.hasPart(Part.RENDER_MESH) && ((PRenderMesh)thing.getPart(Part.RENDER_MESH)).mesh != null)
                 {
@@ -1989,15 +1891,121 @@ public class View3D implements ILogic {
                         }
                 }
 
+                boolean selected = false;
+                if(selectedUIDs != null)
+                    for (Number num : selectedUIDs) {
+                        if (num == null) {
+                            continue;
+                        }
+                        if (Integer.compare(num.intValue(), thing.UID) == 0) {
+                            selected = true;
+                        }
+                    }
+                else
+                    selected = true;
+
                 bog.lbpas.view3d.core.types.Thing th = new bog.lbpas.view3d.core.types.Thing(thing, loader);
-                th.selected = true;
+                th.selected = selected;
                 this.things.add(th);
             }
     }
 
-    public void addThings(Thing[] things)
+    public void buildThingName(Thing thing)
     {
-        addThings(Arrays.asList(things));
+        ResourceDescriptor ent = null;
+
+        if(thing.hasPart(Part.RENDER_MESH) && ((PRenderMesh)thing.getPart(Part.RENDER_MESH)).mesh != null)
+        {
+            ent = ((PRenderMesh)thing.getPart(Part.RENDER_MESH)).mesh;
+        }
+        else if(thing.hasPart(Part.GENERATED_MESH) && ((PGeneratedMesh)thing.getPart(Part.GENERATED_MESH)).gfxMaterial != null)
+        {
+            ent = ((PGeneratedMesh)thing.getPart(Part.GENERATED_MESH)).gfxMaterial;
+        }
+        else if(thing.hasPart(Part.SCRIPT_NAME) && ((PScriptName)thing.getPart(Part.SCRIPT_NAME)).name != null)
+        {
+            thing.name = ((PScriptName)thing.getPart(Part.SCRIPT_NAME)).name;
+        }
+        else if(thing.hasPart(Part.SCRIPT) && ((PScript)thing.getPart(Part.SCRIPT)).instance.script != null)
+        {
+            ent = ((PScript)thing.getPart(Part.SCRIPT)).instance.script;
+        }
+        else if(thing.hasPart(Part.EFFECTOR))
+        {
+            thing.name = "Effector";
+        }
+        else if(thing.hasPart(Part.LEVEL_SETTINGS))
+        {
+            thing.name = "Level Settings";
+        }
+        else if(thing.hasPart(Part.SHAPE))
+        {
+            thing.name = "Shape";
+        }
+        else if(thing.hasPart(Part.CHECKPOINT))
+        {
+            thing.name = "Checkpoint";
+        }
+        else if(thing.hasPart(Part.TRIGGER) && ((PTrigger)thing.getPart(Part.TRIGGER)).triggerType != null)
+        {
+            thing.name = ((PTrigger)thing.getPart(Part.TRIGGER)).triggerType.name();
+            thing.name = "Trigger " + thing.name.substring(0, 1).toUpperCase() + thing.name.substring(1).toLowerCase();
+        }
+        else if(thing.hasPart(Part.EMITTER))
+        {
+            thing.name = "Emitter";
+        }
+        else if(thing.hasPart(Part.GROUP))
+        {
+            thing.name = "Group";
+        }
+        else if(thing.hasPart(Part.AUDIO_WORLD))
+        {
+            thing.name = "Audio";
+        }
+        else if(thing.hasPart(Part.SPRITE_LIGHT))
+        {
+            thing.name = "Light";
+        }
+        else if(thing.hasPart(Part.SWITCH_INPUT))
+        {
+            thing.name = "Switch Input";
+        }
+        else if(thing.hasPart(Part.SWITCH))
+        {
+            thing.name = "Switch";
+        }
+        else if(thing.hasPart(Part.JOINT))
+        {
+            thing.name = "Joint";
+        }
+        else if(thing.hasPart(Part.SWITCH_KEY))
+        {
+            thing.name = "Tag";
+        }
+
+        if(ent != null)
+        {
+            FileEntry e = LoadedData.getDigestedEntry(ent);
+
+            if(e != null)
+            {
+                String name = e.getName();
+
+                int extInd = name.lastIndexOf(".");
+                boolean nameIsHash = name.substring(0, extInd != -1 ? extInd : name.length()).equalsIgnoreCase(e.getSHA1().toString());
+
+                if (!(e instanceof FileDBRow) && nameIsHash)
+                    name = name.substring(name.length() - 12);
+
+                thing.name = name.substring(0, name.lastIndexOf("."));
+            }
+        }
+    }
+
+    public void addThings(Thing[] things, List<Number> selectedUIDs)
+    {
+        addThings(Arrays.asList(things), selectedUIDs);
     }
 
     public void loaderThread()
@@ -2042,7 +2050,7 @@ public class View3D implements ILogic {
             }
         loader.loaderThread(this);
         renderer.loaderThread();
-        if(Export != null)
-            ((Export)Export).loaderThread();
+        if(ProjectManager != null)
+            ((ProjectManager) ProjectManager).loaderThread();
     }
 }

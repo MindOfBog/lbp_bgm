@@ -5,10 +5,7 @@ import bog.lbpas.view3d.core.Model;
 import bog.lbpas.view3d.core.Texture;
 import bog.lbpas.view3d.utils.Utils;
 import bog.lbpas.view3d.utils.print;
-import cwlib.enums.BoxType;
-import cwlib.enums.GfxMaterialFlags;
-import cwlib.enums.MappingMode;
-import cwlib.enums.ResourceType;
+import cwlib.enums.*;
 import cwlib.resources.*;
 import cwlib.structs.bevel.BevelVertex;
 import cwlib.structs.gmat.MaterialBox;
@@ -16,12 +13,15 @@ import cwlib.structs.texture.CellGcmTexture;
 import cwlib.types.Resource;
 import cwlib.types.archives.Fat;
 import cwlib.types.archives.FileArchive;
+import cwlib.types.archives.SaveArchive;
 import cwlib.types.data.GUID;
 import cwlib.types.data.ResourceDescriptor;
+import cwlib.types.data.Revision;
 import cwlib.types.data.SHA1;
 import cwlib.types.databases.FileDB;
 import cwlib.types.databases.FileDBRow;
 import cwlib.types.databases.FileEntry;
+import cwlib.types.mods.Mod;
 import cwlib.types.save.BigSave;
 import cwlib.types.save.SaveEntry;
 import executables.gfx.GfxAssembler;
@@ -39,12 +39,15 @@ import java.util.HashSet;
  */
 public class LoadedData {
 
+    public static Mod PROJECT_DATA;
+
     public static ArrayList<FileDB> MAPs;
     public static ArrayList<FileArchive> FARCs;
     public static ArrayList<BigSave> BIGFARTs;
     public static RTranslationTable loadedTranslationTable;
     public static RTranslationTable loadedPatchTranslationTable;
     public static long loadedTranslation = -1;
+    public static long loadedPatchTranslation = -1;
     public static ArrayList<RSlotList> slotLists;
     public static ArrayList<RPacks> packs;
     public static ArrayList<FileEntry> digestedEntries;
@@ -62,10 +65,14 @@ public class LoadedData {
     public static Texture missingTexture;
 
     private static View3D mainView;
-
-
+    
     public static void init(View3D view)
     {
+        if(PROJECT_DATA == null)
+            PROJECT_DATA = new Mod(new Revision(
+                    Branch.MIZUKI.getHead(),
+                    Branch.MIZUKI.getID(),
+                    Branch.MIZUKI.getRevision()));
         mainView = view;
         loadedModels = new HashMap<>();
         loadedStaticModels = new HashMap<>();
@@ -91,7 +98,7 @@ public class LoadedData {
                 for (int y = 0; y < img.getHeight(); y++)
                     img.setRGB(x, y, new Color((float)(x / 255f), (float)(y / 255f), 0f, 0.5f).getRGB());
 
-            missingTexture = new Texture(view.loader.loadTexture(img, GL11.GL_LINEAR_MIPMAP_NEAREST, GL11.GL_LINEAR));
+            missingTexture = view.loader.loadTexture(img, GL11.GL_LINEAR_MIPMAP_NEAREST, GL11.GL_LINEAR);
             loadedTextures.put(null, missingTexture);
         }catch (Exception e){}
 
@@ -316,6 +323,11 @@ public class LoadedData {
 
         if(sha1 == null) return null;
 
+        if(PROJECT_DATA.archive.exists(sha1))
+        {
+            return PROJECT_DATA.archive.extract(sha1);
+        }
+
         for(FileArchive archive : FARCs) {
             if(archive.exists(sha1))
                 return archive.extract(sha1);
@@ -424,6 +436,7 @@ public class LoadedData {
 
                             if(!digestedEntriesGUIDs.contains(descriptor.getGUID().getValue()))
                             {
+                                entry.archive = farc;
                                 digestedEntriesGUIDs.add(descriptor.getGUID().getValue());
                                 digestedEntriesSHA1s.add(descriptor.getSHA1().toString());
                                 digestedEntries.add(entry);
@@ -447,6 +460,7 @@ public class LoadedData {
 
                             if(!digestedEntriesGUIDs.contains(descriptor.getGUID().getValue()))
                             {
+                                entry.archive = farc;
                                 digestedEntriesGUIDs.add(descriptor.getGUID().getValue());
                                 digestedEntriesSHA1s.add(descriptor.getSHA1().toString());
                                 digestedEntries.add(entry);
@@ -468,6 +482,31 @@ public class LoadedData {
 
                     currentEntryDigestion++;
                 }
+
+        for(FileDBRow entry : LoadedData.PROJECT_DATA.entries)
+        {
+            ResourceDescriptor descriptor = new ResourceDescriptor(entry);
+
+            if(!digestedEntriesGUIDs.contains(descriptor.getGUID().getValue()))
+            {
+                entry.archive = LoadedData.PROJECT_DATA.archive;
+                digestedEntriesGUIDs.add(descriptor.getGUID().getValue());
+                digestedEntriesSHA1s.add(descriptor.getSHA1().toString());
+                digestedEntries.add(entry);
+                digestedEntriesDescriptors.add(descriptor);
+                digestedEntriesSHA1.put(descriptor.getSHA1().toString(), entry);
+                digestedEntriesGUID.put(descriptor.getGUID().getValue(), entry);
+
+                if(descriptor.getType() == ResourceType.SLOT_LIST)
+                    try{
+                        slotLists.add(new Resource(LoadedData.PROJECT_DATA.extract(descriptor.getSHA1())).loadResource(RSlotList.class));
+                    }catch (Exception e){}
+                if(descriptor.getType() == ResourceType.PACKS)
+                    try{
+                        packs.add(new Resource(LoadedData.PROJECT_DATA.extract(descriptor.getSHA1())).loadResource(RPacks.class));
+                    }catch (Exception e){}
+            }
+        }
 
         shouldSetupList = false;
     }
@@ -733,7 +772,7 @@ public class LoadedData {
             }
             case BoxType.TEXTURE_SAMPLE:
             default:
-                Texture tex = new Texture(missingTexture.id);
+                Texture tex = new Texture(missingTexture.id, loader);
 
                 boolean isBump = false;
 

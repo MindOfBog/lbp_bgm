@@ -11,6 +11,7 @@ import bog.lbpas.view3d.renderer.gui.ingredients.LineStrip;
 import bog.lbpas.view3d.utils.Config;
 import bog.lbpas.view3d.utils.Consts;
 import bog.lbpas.view3d.utils.Cursors;
+import bog.lbpas.view3d.utils.print;
 import org.joml.Vector2d;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
@@ -27,7 +28,7 @@ public class DropDownTab extends Element{
     String tabTitle = "";
     public ArrayList<Element> tabElements;
     public int fontSize;
-    boolean extended = true;
+    public boolean extended = true;
 
     public boolean resizeX = false;
     public boolean resizeY = false;
@@ -339,30 +340,6 @@ public class DropDownTab extends Element{
         return string;
     }
 
-    public RectangleElement addRect(String id, float height)
-    {
-        if(!containsElementByID(id))
-        {
-            RectangleElement rec = new RectangleElement(id, height, renderer, loader, window);
-            tabElements.add(rec);
-            return rec;
-        }
-        else
-            return (RectangleElement) getElementByID(id);
-    }
-
-    public RectangleElement addRect(String id, float height, Color color)
-    {
-        if(!containsElementByID(id))
-        {
-            RectangleElement rec = new RectangleElement(id, height, color, renderer, loader, window);
-            tabElements.add(rec);
-            return rec;
-        }
-        else
-            return (RectangleElement) getElementByID(id);
-    }
-
     public ButtonList addList(String id, ButtonList buttonList, int height)
     {
         if(!containsElementByID(id))
@@ -375,6 +352,17 @@ public class DropDownTab extends Element{
         }
         else
             return (ButtonList) getElementByID(id);
+    }
+
+    public FileTree addFileTree(FileTree tree){
+        if(!containsElementByID(tree.id))
+        {
+            tabElements.add(tree);
+            tree.size = new Vector2f(size.x - 4, 0);
+            return tree;
+        }
+        else
+            return (FileTree) getElementByID(tree.id);
     }
 
     public SeparatorElement addSeparator(String id)
@@ -396,7 +384,6 @@ public class DropDownTab extends Element{
     public void draw(MouseInput mouseInput, boolean overOther) {
 
         float yOffset = 0;
-
         float fontHeight = getFontHeight(fontSize);
 
         if (dragging) {
@@ -407,7 +394,7 @@ public class DropDownTab extends Element{
         else
         {
             if(isMouseOverTab(mouseInput) && !overOther)
-                Cursors.setCursor(ECursor.hand2);
+                Cursors.setCursor(ECursor.hand1);
         }
 
         if (!renderer.window.isMinimized) {
@@ -425,15 +412,13 @@ public class DropDownTab extends Element{
         if(extended)
             yOffset = updateElements(yOffset);
 
-        if(size.x != prevSize.x || size.y != prevSize.y || prevYOff != yOffset)
+        if(prevSize == null || size.x != prevSize.x || size.y != prevSize.y || prevYOff != yOffset)
         {
             refreshOutline(yOffset);
-            prevSize.x = size.x;
-            prevSize.y = size.y;
+            resize();
+            prevSize = new Vector2f(size);
             prevYOff = yOffset;
         }
-
-        super.draw(mouseInput, overOther);
 
         drawBackdrop(yOffset);
         renderer.drawRect(Math.round(Math.round(pos.x)), Math.round(Math.round(pos.y)), Math.round(Math.round(size.x)), Math.round(Math.round(size.y)), (dragging || (mouseInput.rightButtonPress && isMouseOverTab(mouseInput))) && !overOther ? Config.INTERFACE_TERTIARY_COLOR : (isMouseOverTab(mouseInput) && !overOther ? Config.INTERFACE_SECONDARY_COLOR : Config.INTERFACE_PRIMARY_COLOR));
@@ -847,36 +832,6 @@ public class DropDownTab extends Element{
         }
     }
 
-    public static class RectangleElement extends Element
-    {
-
-        public RectangleElement(String id, float height, RenderMan renderer, ObjectLoader loader, WindowMan window)
-        {
-            this.id = id;
-            this.size = new Vector2f(0, height);
-            this.renderer = renderer;
-            this.loader = loader;
-            this.window = window;
-        }
-
-        public RectangleElement(String id, float height, Color separatorColor, RenderMan renderer, ObjectLoader loader, WindowMan window)
-        {
-            this.id = id;
-            this.size = new Vector2f(0, height);
-            this.renderer = renderer;
-            this.loader = loader;
-            this.window = window;
-        }
-
-        @Override
-        public void draw(MouseInput mouseInput, boolean overElement) {
-            super.draw(mouseInput, overElement);
-
-            renderer.drawRect((int) Math.round(pos.x), (int) Math.round(pos.y), (int) Math.round(size.x), (int) Math.round(size.y), Config.PRIMARY_COLOR);
-//            renderer.drawRectOutline(pos, size, Config.SECONDARY_COLOR, false);
-        }
-    }
-
     public static class SeparatorElement extends Element
     {
         Model line;
@@ -899,7 +854,7 @@ public class DropDownTab extends Element{
 
         @Override
         public void draw(MouseInput mouseInput, boolean overOther) {
-            renderer.drawLine(line, new Vector2f(this.pos.x, this.pos.y + (this.size.y / 2f)), Color.black,false);
+            renderer.drawLine(line, new Vector2f(this.pos.x, this.pos.y + (this.size.y / 2f)), Config.INTERFACE_PRIMARY_COLOR2,false);
         }
     }
 }

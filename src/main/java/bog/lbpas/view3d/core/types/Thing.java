@@ -12,6 +12,7 @@ import cwlib.resources.RMesh;
 import cwlib.resources.RStaticMesh;
 import cwlib.structs.things.parts.*;
 import cwlib.types.data.ResourceDescriptor;
+import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import toolkit.utilities.FileChooser;
@@ -151,7 +152,7 @@ public class Thing extends Entity{
         if(pos == null)
             pos = new PPos();
         pos.worldPosition = transformation;
-        pos.localPosition = transformation;
+        pos.recomputeLocalPos(this.thing);
         this.thing.setPart(Part.POS, pos);
     }
 
@@ -314,11 +315,12 @@ public class Thing extends Entity{
                 for(int i = 0; i < m.vertices.length / 3; i++)
                 {
                     {
-                        float x = m.vertices[i * 3];
-                        float y = m.vertices[i * 3 + 1];
-                        float z = m.vertices[i * 3 + 2];
+                        Vector3f vPos = new Vector3f(m.vertices[i * 3],
+                                m.vertices[i * 3 + 1],
+                                m.vertices[i * 3 + 2]);
+                        vPos = vPos.mulProject(this.getTransformation());
 
-                        v += "v " + x + " " + y + " " + z + "\n";
+                        v += "v " + vPos.x + " " + vPos.y + " " + vPos.z + "\n";
                     }
 
                     if(m.textureCoords != null)
@@ -333,11 +335,12 @@ public class Thing extends Entity{
 
                     if(m.normals != null)
                     {
-                        float x = m.normals[i * 3];
-                        float y = m.normals[i * 3 + 1];
-                        float z = m.normals[i * 3 + 2];
+                        Vector3f vNormal = new Vector3f(m.normals[i * 3],
+                                m.normals[i * 3 + 1],
+                                m.normals[i * 3 + 2]);
+                        vNormal = vNormal.mul(new Matrix3f(new Matrix4f(this.getTransformation()).invert().transpose())).normalize();
 
-                        vn += "vn " + x + " " + y + " " + z + "\n";
+                        vn += "vn " + vNormal.x + " " + vNormal.y + " " + vNormal.z + "\n";
                     }
                     else
                         vn += "vn 0 0 0\n";

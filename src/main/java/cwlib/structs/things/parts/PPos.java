@@ -1,5 +1,6 @@
 package cwlib.structs.things.parts;
 
+import cwlib.enums.Part;
 import cwlib.io.Serializable;
 import cwlib.io.gson.GsonRevision;
 import cwlib.io.gson.TranslationSerializer;
@@ -56,6 +57,22 @@ public class PPos implements Serializable {
         this.animHash = animHash;
         this.worldPosition = wpos;
         this.localPosition = pos;
+    }
+
+    public void recomputeLocalPos(Thing thing)
+    {
+        if (thing.parent == null)
+        {
+            localPosition = new Matrix4f(worldPosition);
+            return;
+        }
+
+        PPos parent = thing.parent.getPart(Part.POS);
+
+        if (parent == null) return;
+
+        Matrix4f inv = parent.worldPosition.invert(new Matrix4f());
+        localPosition = inv.mul(worldPosition);
     }
 
     public Matrix4f getWorldPosition() { return this.worldPosition; }

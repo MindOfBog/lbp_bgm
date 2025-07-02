@@ -19,7 +19,7 @@ public class ThingPart {
 
     ElementList elementList;
 
-    public ThingPart(View3D view, ElementList elements, DropDownTab currentSelectionTab, ArrayList<Thing> things) {
+    public ThingPart(View3D view, ElementList elements, Element currentSelectionTab, ArrayList<Thing> things) {
         elementList = elements;
         initParts(view, currentSelectionTab, things);
     }
@@ -60,7 +60,7 @@ public class ThingPart {
         }
     }
 
-    private void initParts(View3D view, DropDownTab currentSelectionTab, ArrayList<Thing> things)
+    private void initParts(View3D view, Element currentSelectionTab, ArrayList<Thing> things)
     {
         parts = new ArrayList<>();
         int tabWidth = 225;
@@ -398,6 +398,8 @@ public class ThingPart {
         {
             elementList.elements.remove(part.partPanel);
             part.selectionChange();
+
+            part.partPanel.resize();
         }
     }
 

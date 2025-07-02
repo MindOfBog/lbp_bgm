@@ -9,7 +9,6 @@ import bog.lbpas.view3d.renderer.gui.elements.Panel;
 import bog.lbpas.view3d.utils.CWLibUtils.LevelSettingsUtils;
 import bog.lbpas.view3d.utils.Utils;
 import bog.lbpas.view3d.utils.print;
-import com.github.weisj.jsvg.nodes.text.Text;
 import cwlib.enums.Part;
 import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
@@ -18,12 +17,8 @@ import cwlib.resources.RPlan;
 import cwlib.structs.things.Thing;
 import cwlib.structs.things.components.LevelSettings;
 import cwlib.structs.things.parts.PLevelSettings;
-import cwlib.structs.things.parts.PRenderMesh;
-import cwlib.structs.things.parts.PShape;
-import cwlib.structs.things.parts.PTrigger;
 import cwlib.types.Resource;
 import cwlib.types.data.ResourceDescriptor;
-import cwlib.util.Colors;
 import org.joml.*;
 import org.joml.Math;
 import org.lwjgl.glfw.GLFW;
@@ -38,7 +33,7 @@ import java.util.ArrayList;
  */
 public abstract class PartLevelSettings extends iPart {
 
-    public PartLevelSettings(int tabWidth, float comboWidth, float panelHeight, float closeWidth, float finalGap, DropDownTab tab, View3D view) {
+    public PartLevelSettings(int tabWidth, float comboWidth, float panelHeight, float closeWidth, float finalGap, Element tab, View3D view) {
         super(cwlib.enums.Part.LEVEL_SETTINGS, "PLevelSettings", "Level Settings", tabWidth, comboWidth, panelHeight, closeWidth, finalGap, tab, view);
     }
 
@@ -442,38 +437,28 @@ public abstract class PartLevelSettings extends iPart {
 
             @Override
             public Color buttonColor2(Object object, int index) {
-                if(object == null)
-                    return super.buttonColor2(object, index);
-                Vector4f fogcolor = ((LevelSettings)object).fogColor;
-                Color fogcolor1 = new Color(Math.clamp(0, 1, fogcolor.x),
-                        Math.clamp(0, 1, fogcolor.y),
-                        Math.clamp(0, 1, fogcolor.z),
-                        1f);
-                return fogcolor1.darker().darker();
+                return Utils.contrastGrayscale(buttonColor(object, index));
             }
 
             @Override
             public Color buttonColorHighlighted2(Object object, int index) {
-                if(object == null)
-                    return super.buttonColorHighlighted2(object, index);
-                Vector4f fogcolor = ((LevelSettings)object).fogColor;
-                Color fogcolor1 = new Color(Math.clamp(0.1f, 1, fogcolor.x),
-                        Math.clamp(0.1f, 1, fogcolor.y),
-                        Math.clamp(0.1f, 1, fogcolor.z),
-                        1f);
-                return fogcolor1.darker();
+                return Utils.contrastGrayscale(buttonColorHighlighted(object, index));
             }
 
             @Override
             public Color buttonColorSelected2(Object object, int index) {
-                if(object == null)
-                    return super.buttonColor(object, index);
-                Vector4f fogcolor = ((LevelSettings)object).fogColor;
-                Color fogcolor1 = new Color(1f - Math.clamp(0, 1, fogcolor.x),
-                        1f - Math.clamp(0, 1, fogcolor.y),
-                        1f - Math.clamp(0, 1, fogcolor.z),
-                        1f);
-                return fogcolor1;
+                return Utils.contrastGrayscale(buttonColorSelected(object, index));
+            }
+
+            @Override
+            public Color textColor(Object object, int index) {
+
+                if(isHighlighted(object, index))
+                    return Utils.contrastGrayscale(buttonColorHighlighted(object, index));
+                if(isSelected(object, index))
+                    return Utils.contrastGrayscale(buttonColorSelected(object, index));
+
+                return Utils.contrastGrayscale(buttonColor(object, index));
             }
 
             @Override
@@ -644,8 +629,8 @@ public abstract class PartLevelSettings extends iPart {
             rimcolor.elements.add(new Panel.PanelElement(rimColor, 0.3f));
 
             Panel rimcolor2 = presetEditList.addPanel("rimcolor2");
-            rimcolor2.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("editcolorstr", "Sun Color:", 10, view.renderer), 0.7f));
-            rimColor2 = new ColorPicker("sunColor", 10, view.renderer, view.loader, view.window) {
+            rimcolor2.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("editcolorstr", "Rim Color 2:", 10, view.renderer), 0.7f));
+            rimColor2 = new ColorPicker("rimColor2", 10, view.renderer, view.loader, view.window) {
                 @Override
                 public Color getColor() {
                     if(selectedPreset == null)
@@ -873,7 +858,7 @@ public abstract class PartLevelSettings extends iPart {
         float skyHeight = Float.NEGATIVE_INFINITY;
 
         for(int s : selected)
-            if(things.get(s).thing.hasPart(Part.LEVEL_SETTINGS))
+            if(s < things.size() && things.get(s).thing.hasPart(Part.LEVEL_SETTINGS))
             {
                 PLevelSettings levelSettings = ((PLevelSettings)things.get(s).thing.getPart(Part.LEVEL_SETTINGS));
                 presets = levelSettings.presets;
@@ -911,7 +896,7 @@ public abstract class PartLevelSettings extends iPart {
         Vector2f skHigh = backgroundSkyHeight.setTextboxValueFloat(skyHeight);
 
         for(int s : selected)
-            if(things.get(s).thing.hasPart(Part.LEVEL_SETTINGS))
+            if(s < things.size() && things.get(s).thing.hasPart(Part.LEVEL_SETTINGS))
             {
                 PLevelSettings levelSettings = ((PLevelSettings)things.get(s).thing.getPart(Part.LEVEL_SETTINGS));
                 presets = levelSettings.presets;

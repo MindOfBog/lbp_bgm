@@ -31,7 +31,7 @@ import java.util.Arrays;
  */
 public abstract class PartRenderMesh extends iPart {
 
-    public PartRenderMesh(int tabWidth, float comboWidth, float panelHeight, float closeWidth, float finalGap, DropDownTab tab, View3D view) {
+    public PartRenderMesh(int tabWidth, float comboWidth, float panelHeight, float closeWidth, float finalGap, Element tab, View3D view) {
         super(cwlib.enums.Part.RENDER_MESH, "PRenderMesh", "Render Mesh", tabWidth, comboWidth, panelHeight, closeWidth, finalGap, tab, view);
     }
 
@@ -432,7 +432,7 @@ public abstract class PartRenderMesh extends iPart {
             if (rmesh == null)
                 continue;
 
-            if(selected.size() == 1)
+            if(selected.size() == 1 && rmesh.boneThings != null && rmesh.boneThings.length > 0 && thing.renderMesh != null && thing.renderMesh.mesh != null && thing.renderMesh.mesh.getBones() != null && thing.renderMesh.mesh.getBones().length > 0)
             {
                 setThingCombo.tabTitle = rmesh.boneThings[selectedBone] == null ? "None" : rmesh.boneThings[selectedBone].name;
                 for(Bone bt : thing.renderMesh.mesh.getBones())

@@ -21,7 +21,7 @@ import java.util.ArrayList;
  */
 public abstract class PartGeneratedMesh extends iPart {
 
-    public PartGeneratedMesh(int tabWidth, float comboWidth, float panelHeight, float closeWidth, float finalGap, DropDownTab tab, View3D view) {
+    public PartGeneratedMesh(int tabWidth, float comboWidth, float panelHeight, float closeWidth, float finalGap, Element tab, View3D view) {
         super(Part.GENERATED_MESH, "PGeneratedMesh", "Generated Mesh", tabWidth, comboWidth, panelHeight, closeWidth, finalGap, tab, view);
     }
 

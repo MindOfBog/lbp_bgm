@@ -1,5 +1,6 @@
 package bog.lbpas.view3d.mainWindow.screens;
 
+import bog.lbpas.view3d.core.Texture;
 import bog.lbpas.view3d.core.Transformation3D;
 import bog.lbpas.view3d.core.types.Entity;
 import bog.lbpas.view3d.mainWindow.ConstantTextures;
@@ -31,6 +32,7 @@ import cwlib.types.Resource;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.databases.FileDBRow;
 import cwlib.types.databases.FileEntry;
+import cwlib.types.save.SaveEntry;
 import org.joml.Math;
 import org.joml.*;
 import org.lwjgl.glfw.GLFW;
@@ -74,6 +76,10 @@ public class ElementEditing extends GuiScreen {
     public Checkbox filterMaterials;
     public Checkbox filterPlans;
     public Checkbox filterLevels;
+
+    public Checkbox filterGamedata;
+    public Checkbox filterProfiles;
+    public Checkbox filterProject;
 
     public Element loadedEntitiesHitbox;
     public ButtonList loadedEntities;
@@ -137,11 +143,11 @@ public class ElementEditing extends GuiScreen {
             @Override
             public void draw(MouseInput mouseInput, boolean overOther) {
                 super.draw(mouseInput, overOther);
-                if(shouldResize)
-                {
-                    resize();
-                    shouldResize = false;
-                }
+//                if(shouldResize)
+//                {
+//                    resize();
+//                    shouldResize = false;
+//                }
             }
 
             @Override
@@ -605,7 +611,7 @@ public class ElementEditing extends GuiScreen {
                         if (plan == null) return;
                         Thing[] things = plan.getThings();
 
-                        mainView.addThings(things);
+                        mainView.addThings(things, null);
                     } catch (Exception ex) {print.stackTrace(ex);}
             }
         });
@@ -622,7 +628,7 @@ public class ElementEditing extends GuiScreen {
                         ArrayList<Thing> things = ((PWorld)level.world.getPart(Part.WORLD)).things;
                         things.remove(level.world);
 
-                        mainView.addThings(things);
+                        mainView.addThings(things, null);
                     }catch (Exception ex) {print.stackTrace(ex);}
             }
         });
@@ -631,10 +637,15 @@ public class ElementEditing extends GuiScreen {
         Panel assetsPanel = availableAssets.addPanel("assetsPanel");
         assetsPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Search:", 10, renderer), 0.25f));
         availableAssetsSearch = new Textbox("availableAssetsSearch", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
-        assetsPanel.elements.add(new Panel.PanelElement(availableAssetsSearch, 0.4425f));
+        assetsPanel.elements.add(new Panel.PanelElement(availableAssetsSearch, 0.6425f));
         assetsPanel.elements.add(new Panel.PanelElement(null, 0.0075f));
-        ComboBox filters = new ComboBox("filters", "Filters", new Vector2f(), new Vector2f(), 10, 100, renderer, loader, window)
+        ComboBoxImage filters = new ComboBoxImage("filters", new Vector2f(), new Vector2f(), 10, 150, renderer, loader, window)
         {
+            @Override
+            public Texture getImage() {
+                return ConstantTextures.getTexture(ConstantTextures.FILTER, (int) this.size.x, (int) this.size.y, loader);
+            }
+
             @Override
             public int[] getParentTransform() {
                 return new int[]{(int) java.lang.Math.round(availableAssets.pos.x), (int) java.lang.Math.round(availableAssets.pos.y), (int) java.lang.Math.round(availableAssets.size.x)};
@@ -644,9 +655,16 @@ public class ElementEditing extends GuiScreen {
         filterLevels = filters.addCheckbox("filterLevels", "Levels", true);
         filterMeshes = filters.addCheckbox("filterMeshes", "Meshes", true);
         filterMaterials = filters.addCheckbox("filterMaterials", "Materials", true);
-        assetsPanel.elements.add(new Panel.PanelElement(filters, 0.3f));
 
-        assetList = new ButtonList("availableModelsList", LoadedData.digestedEntries, new Vector2f(), new Vector2f(), 10, renderer, loader, window) {
+        filters.addSeparator("sep").size.y = 6;
+
+        filterGamedata = filters.addCheckbox("filterGamedata", "Game data", true);
+        filterProfiles = filters.addCheckbox("filterProfiles", "Profile data", true);
+        filterProject = filters.addCheckbox("filterProject", "Project data", true);
+
+        assetsPanel.elements.add(new Panel.PanelElement(filters, 0.1f));
+
+        assetList = new ButtonList("assetList", LoadedData.digestedEntries, new Vector2f(), new Vector2f(), 10, renderer, loader, window) {
 
             @Override
             public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement, boolean focusedOther) {
@@ -758,18 +776,18 @@ public class ElementEditing extends GuiScreen {
                             if (plan == null) return;
                             Thing[] things = plan.getThings();
 
-                            mainView.addThings(things);
+                            mainView.addThings(things, null);
                         }
                         break;
                         case LEVEL:
                         {
-                            ResourceDescriptor descriptor = new ResourceDescriptor(entry.getSHA1(), ResourceType.MESH);
+                            ResourceDescriptor descriptor = new ResourceDescriptor(entry.getSHA1(), ResourceType.LEVEL);
                             RLevel level = LoadedData.loadLevel(descriptor);
                             if (level == null)
                                 return;
                             ArrayList<Thing> things = ((PWorld)level.world.getPart(Part.WORLD)).things;
 
-                            mainView.addThings(things);
+                            mainView.addThings(things, null);
                         }
                         break;
                         default:
@@ -870,12 +888,14 @@ public class ElementEditing extends GuiScreen {
                 }
 
                 String name = entry.getPath().substring(entry.getPath().lastIndexOf("/") + 1);
+                int extind = entry.getPath().lastIndexOf(".");
+                String ext = extind == -1 ? "" : entry.getPath().substring(extind);
 
                 int extInd = name.lastIndexOf(".");
                 boolean nameIsHash = name.substring(0, extInd != -1 ? extInd : name.length()).equalsIgnoreCase(entry.getSHA1().toString());
 
                 if(!(entry instanceof FileDBRow) && nameIsHash)
-                    return LoadedData.digestedEntriesDescriptors.get(index).getType().getHeader().toLowerCase() + "_" + name.substring(name.length() - 12);
+                    return LoadedData.digestedEntriesDescriptors.get(index).getType().getHeader().toLowerCase() + "_" + name.substring(0, 6) + ext;
 
                 return entry.getName();
             }
@@ -888,6 +908,10 @@ public class ElementEditing extends GuiScreen {
                 FileEntry entry = (FileEntry) object;
                 ResourceDescriptor descriptor = LoadedData.digestedEntriesDescriptors.get(index);
                 try {
+
+                    if((entry instanceof SaveEntry && !filterProfiles.isChecked) ||
+                            (entry instanceof FileDBRow && ((!filterProject.isChecked && ((FileDBRow) entry).archive == LoadedData.PROJECT_DATA.archive) || (!filterGamedata.isChecked && ((FileDBRow) entry).archive != LoadedData.PROJECT_DATA.archive))))
+                        return false;
 
                     if ((descriptor.getType().getValue() == ResourceType.MESH.getValue() && filterMeshes.isChecked) ||
                             (descriptor.getType().getValue() == ResourceType.GFX_MATERIAL.getValue() && filterMaterials.isChecked) ||
@@ -1056,7 +1080,7 @@ public class ElementEditing extends GuiScreen {
 
             @Override
             public String buttonText(Object object, int index) {
-                return ((bog.lbpas.view3d.core.types.Thing) object).thing == null ? "null" : ((bog.lbpas.view3d.core.types.Thing) object).thing.name == null ? "null" : ((bog.lbpas.view3d.core.types.Thing) object).thing.name;
+                return ((bog.lbpas.view3d.core.types.Thing) object).thing == null ? "null" : ((bog.lbpas.view3d.core.types.Thing) object).thing.name == null ? "null" : ((bog.lbpas.view3d.core.types.Thing) object).thing.UID + ((bog.lbpas.view3d.core.types.Thing) object).thing.name;
             }
 
             public void refreshOutline(int height)
@@ -1136,7 +1160,7 @@ public class ElementEditing extends GuiScreen {
                         entity.thing.hasPart(Part.SHAPE) ? ConstantTextures.getTexture(ConstantTextures.ICON_SHAPE, 30, 30, loader) :
                         entity.thing.hasPart(Part.GROUP) ? ConstantTextures.getTexture(ConstantTextures.ICON_GROUP, 30, 30, loader) :
                         ConstantTextures.getTexture(ConstantTextures.ICON_UNKNOWN, 30, 30, loader)
-                        , (int)pos.x - height + 2, posY, height, height);
+                        , (int)pos.x - height + 2, posY, height, height, loader);
                 renderer.drawRectOutline(new Vector2f(pos.x - height + 2, posY), this.outlineButtonExtra, buttonColor2(object, i), false);
             }
 
@@ -1179,7 +1203,7 @@ public class ElementEditing extends GuiScreen {
                                 if (plan == null) return;
                                 Thing[] things = plan.getThings();
 
-                                mainView.addThings(things);
+                                mainView.addThings(things, null);
                             } catch (Exception ex) {print.stackTrace(ex);}
                             break;
                         case "bin":
@@ -1191,7 +1215,7 @@ public class ElementEditing extends GuiScreen {
                                 ArrayList<Thing> things = ((PWorld)level.world.getPart(Part.WORLD)).things;
                                 things.remove(level.world);
 
-                                mainView.addThings(things);
+                                mainView.addThings(things, null);
                             }catch (Exception ex) {print.stackTrace(ex);}
                             break;
                         default:
@@ -1364,8 +1388,8 @@ public class ElementEditing extends GuiScreen {
             }
 
             @Override
-            public void getImage() {
-                buttonImage = ConstantTextures.getTexture(ConstantTextures.TRANSFORMATION_MOVE, 30, 30, loader);
+            public Texture getImage() {
+                return ConstantTextures.getTexture(ConstantTextures.TRANSFORMATION_MOVE, 30, 30, loader);
             }
         }).clicked();
         rotate = new ButtonImage("rotate", new Vector2f(window.width - 345, 21 + 10 + 37), new Vector2f(30, 30), renderer, loader, window) {
@@ -1401,8 +1425,8 @@ public class ElementEditing extends GuiScreen {
             }
 
             @Override
-            public void getImage() {
-                buttonImage = ConstantTextures.getTexture(ConstantTextures.TRANSFORMATION_ROTATE, 30, 30, loader);
+            public Texture getImage() {
+                return ConstantTextures.getTexture(ConstantTextures.TRANSFORMATION_ROTATE, 30, 30, loader);
             }
         };
         scale = new ButtonImage("scale", new Vector2f(window.width - 345, 21 + 10 + 74), new Vector2f(30, 30), renderer, loader, window) {
@@ -1438,8 +1462,8 @@ public class ElementEditing extends GuiScreen {
             }
 
             @Override
-            public void getImage() {
-                buttonImage = ConstantTextures.getTexture(ConstantTextures.TRANSFORMATION_SCALE, 30, 30, loader);
+            public Texture getImage() {
+                return ConstantTextures.getTexture(ConstantTextures.TRANSFORMATION_SCALE, 30, 30, loader);
             }
         };
 
@@ -1449,7 +1473,6 @@ public class ElementEditing extends GuiScreen {
                 if(action == GLFW.GLFW_PRESS)
                 {
                     Config.PREVIEW_MODE = !Config.PREVIEW_MODE;
-                    this.buttonImage = Config.PREVIEW_MODE ? ConstantTextures.getTexture(ConstantTextures.VISIBILITY_OFF, Math.round(this.imageSize.x), Math.round(this.imageSize.y), loader) : ConstantTextures.getTexture(ConstantTextures.VISIBILITY, Math.round(this.imageSize.x), Math.round(this.imageSize.y), loader);
                 }
             }
 
@@ -1468,8 +1491,8 @@ public class ElementEditing extends GuiScreen {
             }
 
             @Override
-            public void getImage() {
-                buttonImage = Config.PREVIEW_MODE ? ConstantTextures.getTexture(ConstantTextures.VISIBILITY_OFF, Math.round(this.imageSize.x), Math.round(this.imageSize.y), loader) : ConstantTextures.getTexture(ConstantTextures.VISIBILITY, Math.round(this.imageSize.x), Math.round(this.imageSize.y), loader);
+            public Texture getImage() {
+                return Config.PREVIEW_MODE ? ConstantTextures.getTexture(ConstantTextures.VISIBILITY_OFF, Math.round(this.imageSize.x), Math.round(this.imageSize.y), loader) : ConstantTextures.getTexture(ConstantTextures.VISIBILITY, Math.round(this.imageSize.x), Math.round(this.imageSize.y), loader);
             }
         };
 
@@ -1479,7 +1502,6 @@ public class ElementEditing extends GuiScreen {
                 if(action == GLFW.GLFW_PRESS)
                 {
                     Config.FRONT_VIEW = !Config.FRONT_VIEW;
-                    this.buttonImage = Config.FRONT_VIEW ? ConstantTextures.getTexture(ConstantTextures.FRONT_VIEW, Math.round(this.imageSize.x), Math.round(this.imageSize.y), loader) : ConstantTextures.getTexture(ConstantTextures.FRONT_VIEW_OFF, Math.round(this.imageSize.x), Math.round(this.imageSize.y), loader);
                 }
             }
 
@@ -1498,8 +1520,8 @@ public class ElementEditing extends GuiScreen {
             }
 
             @Override
-            public void getImage() {
-                buttonImage = Config.FRONT_VIEW ? ConstantTextures.getTexture(ConstantTextures.FRONT_VIEW, Math.round(this.imageSize.x), Math.round(this.imageSize.y), loader) : ConstantTextures.getTexture(ConstantTextures.FRONT_VIEW_OFF, Math.round(this.imageSize.x), Math.round(this.imageSize.y), loader);
+            public Texture getImage() {
+                return Config.FRONT_VIEW ? ConstantTextures.getTexture(ConstantTextures.FRONT_VIEW, Math.round(this.imageSize.x), Math.round(this.imageSize.y), loader) : ConstantTextures.getTexture(ConstantTextures.FRONT_VIEW_OFF, Math.round(this.imageSize.x), Math.round(this.imageSize.y), loader);
             }
         };
 

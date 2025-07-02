@@ -10,6 +10,7 @@ import bog.lbpas.view3d.renderer.gui.ingredients.LineStrip;
 import bog.lbpas.view3d.utils.Config;
 import bog.lbpas.view3d.utils.Consts;
 import bog.lbpas.view3d.utils.Cursors;
+import bog.lbpas.view3d.utils.print;
 import org.joml.Vector2d;
 import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
@@ -102,9 +103,22 @@ public class ComboBox extends Element{
         }
 
 
-        renderer.drawRect(Math.round(pos.x), Math.round(pos.y), Math.round(size.x), Math.round(size.y), ((mouseInput.rightButtonPress || mouseInput.leftButtonPress) && hovering) ? Config.INTERFACE_TERTIARY_COLOR : (hovering ? Config.INTERFACE_SECONDARY_COLOR : Config.INTERFACE_PRIMARY_COLOR));
-        renderer.drawRectOutline(new Vector2f(pos.x, pos.y), outlineSelection, ((mouseInput.rightButtonPress || mouseInput.leftButtonPress) && hovering) ? Config.INTERFACE_TERTIARY_COLOR2 : (hovering ? Config.INTERFACE_SECONDARY_COLOR2 : Config.INTERFACE_PRIMARY_COLOR2), false);
+        renderer.drawRect(Math.round(pos.x), Math.round(pos.y), Math.round(size.x), Math.round(size.y), ((mouseInput.rightButtonPress || mouseInput.leftButtonPress) && hovering) ? Config.INTERFACE_TERTIARY_COLOR : (hovering || extended ? Config.INTERFACE_SECONDARY_COLOR : Config.INTERFACE_PRIMARY_COLOR));
+        renderer.drawRectOutline(new Vector2f(pos.x, pos.y), outlineSelection, ((mouseInput.rightButtonPress || mouseInput.leftButtonPress) && hovering) ? Config.INTERFACE_TERTIARY_COLOR2 : (hovering || extended ? Config.INTERFACE_SECONDARY_COLOR2 : Config.INTERFACE_PRIMARY_COLOR2), false);
 
+        drawComboTab(fontHeight);
+
+        if(extended)
+        {
+            renderer.startScissorEscape();
+            drawBackdrop(yOffset);
+            drawElements(mouseInput, overOther);
+            renderer.endScissorEscape();
+        }
+    }
+
+    public void drawComboTab(float fontHeight)
+    {
         renderer.startScissor(Math.round(pos.x), Math.round(pos.y), Math.round(size.x - size.y), Math.round(size.y));
         renderer.drawString(tabTitle == null ? "" : tabTitle, Config.FONT_COLOR, Math.round(pos.x + (size.y + fontHeight) / 8f), Math.round(pos.y + size.y / 2f - fontHeight / 2f), fontSize);
         renderer.endScissor();
@@ -117,11 +131,6 @@ public class ComboBox extends Element{
             Vector2f p2 = new Vector2f(p1.x - triangleSize, pos.y + size.y / 2f - triangleSize / 2f);
             Vector2f p3 = new Vector2f(p1.x - triangleSize, pos.y + size.y / 2f + triangleSize / 2f);
             renderer.drawTriangle(loader, p1, p2, p3, Config.FONT_COLOR);
-
-            renderer.startScissorEscape();
-            drawBackdrop(yOffset);
-            drawElements(mouseInput, overOther);
-            renderer.endScissorEscape();
         }
         else
         {
@@ -165,7 +174,7 @@ public class ComboBox extends Element{
     public boolean containsElementByID(String id)
     {
         for(int i = 0; i < comboElements.size(); i++)
-            if(comboElements.get(i).id.equalsIgnoreCase(id))
+            if(comboElements.get(i).id != null && comboElements.get(i).id.equalsIgnoreCase(id))
                 return true;
         return false;
     }
@@ -421,18 +430,6 @@ public class ComboBox extends Element{
             comboElements.add(string);
     }
 
-    public void addRect(String id, float height)
-    {
-        if(!containsElementByID(id))
-            comboElements.add(new DropDownTab.RectangleElement(id, height, renderer, loader, window));
-    }
-
-    public void addRect(String id, float height, Color color)
-    {
-        if(!containsElementByID(id))
-            comboElements.add(new DropDownTab.RectangleElement(id, height, color, renderer, loader, window));
-    }
-
     public ButtonList addList(String id, ButtonList buttonList, int height)
     {
         if(!containsElementByID(id))
@@ -518,14 +515,14 @@ public class ComboBox extends Element{
         int[] parentTransform = getParentTransform();
 
         float ypos = !comboElements.isEmpty() && comboElements.get(0).pos != null ? comboElements.get(0).pos.y - 2 : pos.y;
-        float xpos = (parentTransform == null ? pos.x + size.x : parentTransform[0] + parentTransform[2]) + size.y / 2;
+        float xpos = (parentTransform == null ? pos.x + (size == null ? 0 : size.x) : parentTransform[0] + parentTransform[2]) + (size == null ? 0 : size.y) / 2;
 
         int x = (int) Math.round(xpos);
         int y = (int) Math.round(ypos);
         int xSize = (int) Math.round(tabWidth);
 
         if(x + xSize > window.width)
-            x = (int) Math.round((parentTransform == null ? pos.x : parentTransform[0]) - size.y / 2 - xSize);
+            x = (int) Math.round((parentTransform == null ? pos.x : parentTransform[0]) - (size == null ? 0 : size.y) / 2 - xSize);
 
         return new int[]{x, y, xSize};
     }
@@ -606,7 +603,10 @@ public class ComboBox extends Element{
     public boolean isMouseOverTab(Vector2f mousePos)
     {
         if(mousePos == null || pos == null || size == null)
+        {
             return false;
+        }
+
         return mousePos.x > pos.x && mousePos.y > pos.y && mousePos.x < pos.x + size.x && mousePos.y < pos.y + size.y;
     }
 
@@ -787,7 +787,7 @@ public class ComboBox extends Element{
     @Override
     public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overOther, boolean focusedOther) {
 
-        if(((!isMouseOverElement(pos) && autoCollapse) || (!autoCollapse && overOther)) && !(action == GLFW.GLFW_RELEASE && isFocused()))
+        if(((!isMouseOverElement(pos) && autoCollapse) || (!autoCollapse && overOther)) && !(action == GLFW.GLFW_RELEASE && isFocused()) && this.extended)
         {
             this.extended = false;
             for(Element e : comboElements)

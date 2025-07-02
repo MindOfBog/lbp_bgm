@@ -35,7 +35,7 @@ import java.util.Arrays;
  */
 public abstract class PartShape extends iPart {
 
-    public PartShape(int tabWidth, float comboWidth, float panelHeight, float closeWidth, float finalGap, DropDownTab tab, View3D view) {
+    public PartShape(int tabWidth, float comboWidth, float panelHeight, float closeWidth, float finalGap, Element tab, View3D view) {
         super(cwlib.enums.Part.SHAPE, "PShape", "Shape", tabWidth, comboWidth, panelHeight, closeWidth, finalGap, tab, view);
     }
 

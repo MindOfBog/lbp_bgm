@@ -2,6 +2,8 @@ package bog.lbpas.view3d.utils;
 
 import org.joml.*;
 
+import java.util.List;
+
 public class print {
 
     public static void print(Object message, boolean line)
@@ -25,12 +27,30 @@ public class print {
             build += "}";
             return build;
         }
+        if(message instanceof byte[])
+        {
+            byte[] byteArray = (byte[]) message;
+            String build = "byte[]{";
+            for(int i = 0; i < byteArray.length; i++)
+                build += byteArray[i] + (i == byteArray.length - 1 ? "" : ", ");
+            build += "}";
+            return build;
+        }
         else if(message instanceof float[])
         {
             float[] floatArray = (float[]) message;
             String build = "float[]{";
             for(int i = 0; i < floatArray.length; i++)
                 build += floatArray[i] + (i == floatArray.length - 1 ? "f" : "f, ");
+            build += "}";
+            return build;
+        }
+        else if(message instanceof String[])
+        {
+            String[] stringArray = (String[]) message;
+            String build = "String[]{";
+            for(int i = 0; i < stringArray.length; i++)
+                build += "\"" + stringArray[i] + (i == stringArray.length - 1 ? "\"" : "\", ");
             build += "}";
             return build;
         }

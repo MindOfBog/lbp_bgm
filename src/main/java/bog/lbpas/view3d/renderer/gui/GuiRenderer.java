@@ -7,8 +7,10 @@ import bog.lbpas.view3d.managers.RenderMan;
 import bog.lbpas.view3d.managers.ShaderMan;
 import bog.lbpas.view3d.managers.WindowMan;
 import bog.lbpas.view3d.renderer.gui.ingredients.*;
+import bog.lbpas.view3d.utils.Config;
 import bog.lbpas.view3d.utils.Transformation;
 import bog.lbpas.view3d.utils.Utils;
+import bog.lbpas.view3d.utils.print;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 import org.lwjgl.opengl.*;
@@ -435,10 +437,14 @@ public class GuiRenderer {
                 case BLUR:
                 {
                     Blur blur = (Blur) drawable;
-                    if (blur.start)
-                        startBlur(screenBuffer.colorTexture, blurBuffer.buffer, blurBuffer.colorTexture, blurBuffer.depthTexture, blur);
-                    else
-                        endBlur(blurBuffer.colorTexture);
+
+                    if(!Config.DISABLE_BLUR)
+                    {
+                        if (blur.start)
+                            startBlur(screenBuffer.colorTexture, blurBuffer.buffer, blurBuffer.colorTexture, blurBuffer.depthTexture, blur);
+                        else
+                            endBlur(blurBuffer.colorTexture);
+                    }
                 }
                 break;
                 case COLOR_PICKER:

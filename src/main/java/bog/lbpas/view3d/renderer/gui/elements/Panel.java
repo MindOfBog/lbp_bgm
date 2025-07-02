@@ -66,12 +66,18 @@ public class Panel extends Element{
         super.resize();
 
         for(PanelElement e : elements)
+        {
+            if(e.element.size == null)
+                e.element.size = new Vector2f();
+            e.element.size.x = e.width * this.size.x;
+            e.element.size.y = this.size.y;
             e.element.resize();
+        }
+        prevSizeX = this.size.x;
     }
 
     @Override
     public boolean isMouseOverElement(Vector2f mousePos) {
-
         boolean overElement = pos != null && mousePos.x > pos.x && mousePos.y > pos.y && mousePos.x < pos.x + size.x && mousePos.y < pos.y + size.y;
 
         for(PanelElement e : elements)
@@ -86,7 +92,7 @@ public class Panel extends Element{
         boolean overElement = pos != null && mousePos.x > pos.x && mousePos.y > pos.y && mousePos.x < pos.x + size.x && mousePos.y < pos.y + size.y;
 
         for(PanelElement e : elements)
-            if(e.element instanceof ComboBox ? ((ComboBox)e.element).isMouseOverTab(mousePos) : e.element.isMouseOverElement(mousePos))
+            if(e.element instanceof ComboBox || e.element instanceof ComboBoxImage ? ((ComboBox)e.element).isMouseOverTab(mousePos) : e.element.isMouseOverElement(mousePos))
                 overElement = true;
 
         return overElement;
@@ -176,7 +182,7 @@ public class Panel extends Element{
     public void collapsed(boolean collapsed)
     {
         for(PanelElement element : elements)
-            if(element.element instanceof ComboBox)
+            if(element.element instanceof ComboBox || element.element instanceof ComboBoxImage)
                 ((ComboBox)element.element).collapsed(collapsed);
     }
 

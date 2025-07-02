@@ -42,6 +42,7 @@ public class Settings extends GuiScreen{
     public DropDownTab rendererSettings;
     public DropDownTab guiSettings;
     public DropDownTab controls;
+    public DropDownTab performance;
     public DropDownTab debug;
 
     public Textbox fps;
@@ -75,6 +76,12 @@ public class Settings extends GuiScreen{
 
     public Checkbox debugScissorTest;
     public Checkbox debugOverlayImage;
+
+    public Checkbox disableBlur;
+    public Checkbox disableSSAO;
+    public Textbox secondaryThreadTicks;
+    public Textbox loaderThreadTicks;
+    public Textbox entryDigestThreadTicks;
 
     public void init() {
         rendererSettings = new DropDownTab("rendererSettings", "Renderer Settings", new Vector2f(10, 21 + 10), new Vector2f(200, getFontHeight(10) + 4), 10, renderer, loader, window).closed();
@@ -232,7 +239,7 @@ public class Settings extends GuiScreen{
             @Override
             public void setColor(Color color) {
                 Config.EARTH_COLOR = color;
-                mainView.earth.material.setColor(color);
+                mainView.earth.material.setOverlayColor(color);
             }
 
             @Override
@@ -253,7 +260,7 @@ public class Settings extends GuiScreen{
             @Override
             public void setColor(Color color) {
                 Config.POD_COLOR = color;
-                mainView.pod.material.setColor(color);
+                mainView.pod.material.setOverlayColor(color);
             }
 
             @Override
@@ -859,23 +866,52 @@ public class Settings extends GuiScreen{
         sensitivity.setText(Float.toString(Config.MOUSE_SENS));
         sensitivityPanel.elements.add(new Panel.PanelElement(sensitivity, 0.475f));
 
+        performance = new DropDownTab("performance", "Performance", new Vector2f(10, 21 + 10 + 21 + rendererSettings.getFullHeight() + guiSettings.getFullHeight() + controls.getFullHeight()), new Vector2f(200, getFontHeight(10) + 4), 10, renderer, loader, window).closed();
+        disableBlur = performance.addCheckbox("disableBlur", "Disable blur", Config.DISABLE_BLUR);
+        disableSSAO = performance.addCheckbox("disableSSAO", "Disable SSAO", Config.DISABLE_SSAO);
+
+        performance.addString("tickRate", "Thread sleep time:(ms)");
+
+        Panel secondaryThreadTicksPanel = performance.addPanel("secondaryThreadTicksPanel");
+        secondaryThreadTicksPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Secondary:", 10, renderer), 0.7f));
+        secondaryThreadTicks = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
+        secondaryThreadTicks.noLetters().noOthers().numberLimits(0, 5000);
+        secondaryThreadTicks.setText(Integer.toString(Config.SECONDARY_THREAD));
+        secondaryThreadTicksPanel.elements.add(new Panel.PanelElement(secondaryThreadTicks, 0.3f));
+
+        Panel loaderThreadTicksPanel = performance.addPanel("loaderThreadTicksPanel");
+        loaderThreadTicksPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Loader:", 10, renderer), 0.7f));
+        loaderThreadTicks = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
+        loaderThreadTicks.noLetters().noOthers().numberLimits(0, 5000);
+        loaderThreadTicks.setText(Integer.toString(Config.LOADER_THREAD));
+        loaderThreadTicksPanel.elements.add(new Panel.PanelElement(loaderThreadTicks, 0.3f));
+
+        Panel entryDigestThreadTicksPanel = performance.addPanel("entryDigestThreadTicksPanel");
+        entryDigestThreadTicksPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Entry digest:", 10, renderer), 0.7f));
+        entryDigestThreadTicks = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
+        entryDigestThreadTicks.noLetters().noOthers().numberLimits(0, 5000);
+        entryDigestThreadTicks.setText(Integer.toString(Config.ENTRY_DIGEST_THREAD));
+        entryDigestThreadTicksPanel.elements.add(new Panel.PanelElement(entryDigestThreadTicks, 0.3f));
+
         this.guiElements.add(rendererSettings);
         this.guiElements.add(guiSettings);
         this.guiElements.add(controls);
+        this.guiElements.add(performance);
+    }
 
-        if (Main.debug) {
-            debug = new DropDownTab("debug", "Debug", new Vector2f(217, 21 + 10), new Vector2f(200, getFontHeight(10) + 4), 10, renderer, loader, window).closed();
-            debug.addCheckbox("vaoCount", "VAO Count");
-            debug.addCheckbox("vboCount", "VBO Count");
-            debug.addCheckbox("textureCount", "Texture Count");
-            debug.addCheckbox("threads", "Threads");
-            debug.addCheckbox("noSSAO", "Disable SSAO");
-            debugScissorTest = debug.addCheckbox("debugScissorTest", "Scissor Test");
-            debugOverlayImage = debug.addCheckbox("debugOverlayImage", "Overlay Image");
-            debug.addButton("Pick Image", new Button() {
-                @Override
-                public void clickedButton(int button, int action, int mods) {
-                    if(action == GLFW.GLFW_PRESS && button == GLFW.GLFW_MOUSE_BUTTON_1)
+    public void initDebug()
+    {
+        debug = new DropDownTab("debug", "Debug", new Vector2f(217, 21 + 10), new Vector2f(200, getFontHeight(10) + 4), 10, renderer, loader, window).closed();
+        debug.addCheckbox("vaoCount", "VAO Count");
+        debug.addCheckbox("vboCount", "VBO Count");
+        debug.addCheckbox("textureCount", "Texture Count");
+        debug.addCheckbox("threads", "Threads");
+        debugScissorTest = debug.addCheckbox("debugScissorTest", "Scissor Test");
+        debugOverlayImage = debug.addCheckbox("debugOverlayImage", "Overlay Image");
+        debug.addButton("Pick Image", new Button() {
+            @Override
+            public void clickedButton(int button, int action, int mods) {
+                if(action == GLFW.GLFW_PRESS && button == GLFW.GLFW_MOUSE_BUTTON_1)
                     try{
                         int newImage = loader.loadTextureFilePicker();
 
@@ -883,15 +919,15 @@ public class Settings extends GuiScreen{
                         {
                             GL11.glDeleteTextures(overlayImage.id);
                             overlayImage.id = newImage;
+                            overlayImage.loader = loader;
                         }
                         else
-                            overlayImage = new Texture(newImage);
+                            overlayImage = new Texture(newImage, loader);
                     }catch (Exception e){}
-                }
-            });
+            }
+        });
 
-            this.guiElements.add(debug);
-        }
+        this.guiElements.add(debug);
     }
 
     public Texture overlayImage;
@@ -902,6 +938,8 @@ public class Settings extends GuiScreen{
 
         Config.NO_CULLING = culling.isChecked;
         Config.SHOW_FPS = showFPS.isChecked;
+        Config.DISABLE_BLUR = disableBlur.isChecked;
+        Config.DISABLE_SSAO = disableSSAO.isChecked;
 
         Vector2f fovSlider = fov.setSliderValue((float) Math.toDegrees(Config.FOV));
         if(fovSlider.y == 1)
@@ -951,5 +989,15 @@ public class Settings extends GuiScreen{
             Config.CURSOR_SCALE = cursorSize;
             Cursors.updateCursors();
         }
+
+        Vector2i secondaryThreadTicks = this.secondaryThreadTicks.setTextboxValueInt(Config.SECONDARY_THREAD);
+        if(secondaryThreadTicks.y == 1)
+            Config.SECONDARY_THREAD = secondaryThreadTicks.x;
+        Vector2i loaderThreadTicks = this.loaderThreadTicks.setTextboxValueInt(Config.LOADER_THREAD);
+        if(loaderThreadTicks.y == 1)
+            Config.LOADER_THREAD = loaderThreadTicks.x;
+        Vector2i entryDigestThreadTicks = this.entryDigestThreadTicks.setTextboxValueInt(Config.ENTRY_DIGEST_THREAD);
+        if(entryDigestThreadTicks.y == 1)
+            Config.ENTRY_DIGEST_THREAD = entryDigestThreadTicks.x;
     }
 }

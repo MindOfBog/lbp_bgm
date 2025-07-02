@@ -51,7 +51,7 @@ import javax.swing.ImageIcon;
 public class Mod extends FileDB  {
     private static final String LEGACY_PASSWORD = "purchasecollege";
 
-    private SaveArchive archive;
+    public SaveArchive archive;
     
     private ModInfo config = new ModInfo();
     private ArrayList<ModPatch> patches = new ArrayList<>();
@@ -67,6 +67,30 @@ public class Mod extends FileDB  {
             Branch.MIZUKI.getRevision()
         );
         this.archive = new SaveArchive(revision, 0x4);
+    }
+    public Mod(Revision revision) {
+        super(null, DatabaseType.MOD, revision.getVersion());
+        this.archive = new SaveArchive(revision, 0x4);
+    }
+
+    public Mod(byte[] map, byte[] farc)
+    {
+        super(null, DatabaseType.MOD);
+        this.config = new ModInfo();
+
+        this.archive = null;
+        this.archive = new SaveArchive(farc);
+        super.process(new MemoryInputStream(map));
+
+//        for (FileDBRow entry : this.entries) {
+//            if (this.archive != null && archive.exists(entry.getSHA1())) continue;
+//
+//            if (Files.exists(filePath)) {
+//                byte[] fileData = Files.readAllBytes(filePath);
+//                entry.setDetails(fileData);
+//                this.archive.add(fileData);
+//            }
+//        }
     }
 
     public Mod(File file) {

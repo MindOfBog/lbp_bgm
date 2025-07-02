@@ -1,5 +1,6 @@
 package cwlib.types.databases;
 
+import cwlib.types.archives.Fart;
 import cwlib.types.data.GUID;
 import cwlib.types.data.SHA1;
 
@@ -8,6 +9,8 @@ public final class FileDBRow extends FileEntry {
      * Timestamp for when the resource was last modified.
      */
     private long date;
+
+    public Fart archive;
 
     /**
      * Creates a FileDBRow using default parameters for FileDB.

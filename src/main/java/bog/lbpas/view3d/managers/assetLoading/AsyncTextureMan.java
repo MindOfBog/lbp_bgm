@@ -63,6 +63,7 @@ public class AsyncTextureMan {
                 int id = GL11.glGenTextures();
                 loader.textures.add(id);
                 toLoad.get(i).texture.id = id;
+                toLoad.get(i).texture.loader = loader;
                 GL11.glBindTexture(GL11.GL_TEXTURE_2D, id);
                 GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, toLoad.get(i).minFilter);
                 GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, toLoad.get(i).magFilter);

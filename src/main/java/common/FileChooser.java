@@ -53,16 +53,19 @@ public class FileChooser {
         return null;
     }
 
-
     public static File[] openFile(String name, String ext, boolean saveFile, boolean multiple) throws Exception {
+        if (name != null)
+            name = getHomePath(name);
+        return openFiles(name, ext, saveFile, multiple);
+    }
+
+    public static File[] openFiles(String pth, String ext, boolean saveFile, boolean multiple) throws Exception {
         String[] extensions = new String[0];
         if (ext != null)
             extensions = ext.split(",");
-        if (name != null)
-            name = getHomePath(name);
         File[] files;
         if (Config.LEGACY_FD)
-            return openFileLegacy(name, extensions, saveFile, multiple);
+            return openFileLegacy(pth, extensions, saveFile, multiple);
         try (MemoryStack stack = stackPush()) {
             PointerBuffer patterns = null;
             if (extensions != null && extensions.length != 0) {
@@ -74,14 +77,14 @@ public class FileChooser {
 
             String[] paths;
             if (saveFile) {
-                String path = tinyfd_saveFileDialog("Save", name, patterns, "");
+                String path = tinyfd_saveFileDialog("Save", pth, patterns, "");
                 if (path != null) paths = path.split("\\|");
                 else {
                     throw(new FileSystemException("File operation was cancelled by user."));
                 }
             }
             else {
-                String path = tinyfd_openFileDialog("Open File(s)", name, patterns, null, multiple);
+                String path = tinyfd_openFileDialog("Open File(s)", pth, patterns, null, multiple);
                 if (path != null) paths = path.split("\\|");
                 else {
                     throw(new FileSystemException("File operation was cancelled by user."));

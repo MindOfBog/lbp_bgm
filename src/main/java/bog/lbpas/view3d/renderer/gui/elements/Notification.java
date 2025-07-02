@@ -1,6 +1,7 @@
 package bog.lbpas.view3d.renderer.gui.elements;
 
 import bog.lbpas.view3d.core.Model;
+import bog.lbpas.view3d.core.Texture;
 import bog.lbpas.view3d.mainWindow.ConstantTextures;
 import bog.lbpas.view3d.managers.MouseInput;
 import bog.lbpas.view3d.managers.RenderMan;
@@ -97,8 +98,8 @@ public abstract class Notification extends Element{
             }
 
             @Override
-            public void getImage() {
-                buttonImage = ConstantTextures.getTexture(ConstantTextures.WINDOW_CLOSE, 22, 22, loader);
+            public Texture getImage() {
+                return ConstantTextures.getTexture(ConstantTextures.WINDOW_CLOSE, 22, 22, loader);
             }
         };
 
@@ -133,8 +134,8 @@ public abstract class Notification extends Element{
             }
 
             @Override
-            public void getImage() {
-                buttonImage = ConstantTextures.getTexture(ConstantTextures.COPY, 16, 16, loader);
+            public Texture getImage() {
+                return ConstantTextures.getTexture(ConstantTextures.COPY, 16, 16, loader);
             }
         };
     }

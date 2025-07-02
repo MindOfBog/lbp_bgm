@@ -1,6 +1,7 @@
 package bog.lbpas.view3d.renderer.gui.font;
 
 import bog.lbpas.view3d.core.Model;
+import bog.lbpas.view3d.core.Texture;
 
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
@@ -23,7 +24,7 @@ public class FNT {
     public ArrayList<character> characters;
 
     public BufferedImage map;
-    public int textureID;
+    public Texture texture;
     public HashMap<Integer, Model> glyphs;
     public int height = 0;
 

@@ -1,12 +1,10 @@
 package bog.lbpas.view3d.managers;
 
 import bog.lbpas.Main;
+import bog.lbpas.view3d.core.*;
 import bog.lbpas.view3d.mainWindow.screens.Settings;
+import bog.lbpas.view3d.managers.assetLoading.AsyncTextureMan;
 import bog.lbpas.view3d.managers.assetLoading.ObjectLoader;
-import bog.lbpas.view3d.core.DirectionalLight;
-import bog.lbpas.view3d.core.Model;
-import bog.lbpas.view3d.core.PointLight;
-import bog.lbpas.view3d.core.SpotLight;
 import bog.lbpas.view3d.core.types.Entity;
 import bog.lbpas.view3d.mainWindow.View3D;
 import bog.lbpas.view3d.renderer.EntityRenderer;
@@ -267,21 +265,15 @@ public class RenderMan {
         screenBuffer.bind();
         clear();
         entityRenderer.render(mouseInput, mainView);
-        if(!Main.debug || !((Checkbox) ((Settings) mainView.Settings).debug.tabElements.get(4)).isChecked)
+        if(!Config.DISABLE_SSAO)
             doSSAO(mainView);
         doOutlines();
         entityRenderer.renderAfterPP(mainView);
 
-        GL30.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, screenBuffer.buffer);
-        GL30.glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, screenBuffer2.buffer);
-        clear();
-
-        GL30.glBlitFramebuffer(
-                0, 0, window.width, window.height,
-                0, 0, window.width, window.height,
-                GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT,
-                GL11.GL_NEAREST
-        );
+        screenBuffer.blit(screenBuffer2,
+                new int[]{0, 0, window.width, window.height},
+                new int[]{0, 0, window.width, window.height},
+                GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 
         screenBuffer2.bind();
 
@@ -326,16 +318,10 @@ public class RenderMan {
     {
         RenderMan.disableCulling();
 
-        GL30.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, screenBuffer.buffer);
-        GL30.glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, screenBuffer2.buffer);
-        clear();
-
-        GL30.glBlitFramebuffer(
-                0, 0, window.width, window.height,
-                0, 0, window.width, window.height,
-                GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT,
-                GL11.GL_NEAREST
-        );
+        screenBuffer.blit(screenBuffer2,
+                new int[]{0, 0, window.width, window.height},
+                new int[]{0, 0, window.width, window.height},
+                GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 
         shaderSSAO.bind();
         GL11.glEnable(GL11.GL_DEPTH_TEST);
@@ -598,9 +584,49 @@ public class RenderMan {
         this.processGuiElement(new Quad(image, new Vector2f(x, y), new Vector2f(width, height)).staticTexture());
     }
 
+    public void drawImageStatic(Texture image, float x, float y, float width, float height, ObjectLoader loader)
+    {
+        if(image.id == -1)
+        {
+            if(image.image == null)
+                return;
+
+            try {
+                Texture newTex = loader.loadTexture(image.image, GL11.GL_LINEAR_MIPMAP_NEAREST, GL11.GL_LINEAR);
+                image.id = newTex.id;
+                image.loader = loader;
+            }catch (Exception e){print.stackTrace(e);}
+
+            if(image.id == -1)
+                return;
+        }
+
+        this.processGuiElement(new Quad(image.id, new Vector2f(x, y), new Vector2f(width, height)).staticTexture());
+    }
+
     public void drawImageStatic(int image, float x, float y, float width, float height, Color color)
     {
         this.processGuiElement(new Quad(image, new Vector2f(x, y), new Vector2f(width, height), color).staticTexture());
+    }
+
+    public void drawImageStatic(Texture image, float x, float y, float width, float height, Color color, ObjectLoader loader)
+    {
+        if(image.id == -1)
+        {
+            if(image.image == null)
+                return;
+
+            try {
+                Texture newTex = loader.loadTexture(image.image, GL11.GL_LINEAR_MIPMAP_NEAREST, GL11.GL_LINEAR);
+                image.id = newTex.id;
+                image.loader = loader;
+            }catch (Exception e){print.stackTrace(e);}
+
+            if(image.id == -1)
+                return;
+        }
+
+        this.processGuiElement(new Quad(image.id, new Vector2f(x, y), new Vector2f(width, height), color).staticTexture());
     }
 
     public void drawRect(int x, int y, int width, int height, Color color) {

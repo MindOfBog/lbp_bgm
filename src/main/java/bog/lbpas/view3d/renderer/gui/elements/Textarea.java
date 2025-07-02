@@ -270,7 +270,7 @@ public class Textarea extends Element{
                 try
                 {
                     clipboard = (String) Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);
-                }catch (Exception e){e.printStackTrace();}
+                }catch (Exception e){}
 
                 try {
                     if(selectedText[1] != -1 && selectedText[0] != -1 && selectedText[1] != selectedText[0])
@@ -488,7 +488,6 @@ public class Textarea extends Element{
                 if(selectedText[1] != -1 && selectedText[0] != -1 && selectedText[1] != selectedText[0])
                 {
                     try {
-
                         StringSelection selection = new StringSelection(text.substring(selectionStart, selectionEnd));
                         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
                         clipboard.setContents(selection, selection);

@@ -27,6 +27,9 @@ public class ThingSerializer implements JsonSerializer<Thing>, JsonDeserializer<
         Thing thing = new Thing(UID);
         GsonUtils.THINGS.put(UID, thing);
 
+        if (object.has("name"))
+            thing.name = object.get("name").getAsString();
+
         if (object.has("world"))
             thing.world = jdc.deserialize(object.get("world"), Thing.class);
         if (object.has("planGUID"))
@@ -55,6 +58,9 @@ public class ThingSerializer implements JsonSerializer<Thing>, JsonDeserializer<
         int version = GsonUtils.REVISION.getVersion();
 
         object.addProperty("UID", thing.UID);
+
+        if(GsonUtils.REVISION.isToolkit())
+            object.addProperty("name", thing.name);
 
         if (version < 0x1fd)
             object.add("world", jsc.serialize(thing.world));

@@ -24,8 +24,8 @@ import java.awt.datatransfer.StringSelection;
  */
 public class Textbox extends Element{
 
-    private String text = "";
-    int fontSize;
+    public String text = "";
+    public int fontSize;
     boolean numbers = true;
     boolean letters = true;
     boolean others = true;
@@ -82,12 +82,6 @@ public class Textbox extends Element{
     @Override
     public void draw(MouseInput mouseInput, boolean overOther) {
         super.draw(mouseInput, overOther);
-
-        if(prevSize == null || size.x != prevSize.x || size.y != prevSize.y)
-        {
-            refreshOutline();
-            prevSize = size;
-        }
 
         renderer.startScissor((int) Math.round(pos.x), (int) Math.round(pos.y), (int) Math.round(size.x), (int) Math.round(size.y));
         renderer.drawRect((int) Math.round(pos.x), (int) Math.round(pos.y), (int) Math.round(size.x), (int) Math.round(size.y), isMouseOverElement(mouseInput) && !overOther || this.isFocused() ? Config.INTERFACE_SECONDARY_COLOR : Config.INTERFACE_PRIMARY_COLOR);
@@ -175,7 +169,6 @@ public class Textbox extends Element{
 
     @Override
     public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overOther, boolean focusedOther) {
-
         if(isMouseOverElement(pos))
         {
             if(button == GLFW.GLFW_MOUSE_BUTTON_1 && !overOther)
@@ -587,6 +580,7 @@ public class Textbox extends Element{
     @Override
     public void setFocused(boolean focused) {
         super.setFocused(focused);
+
         if(focused)
             Consts.startMillis = System.currentTimeMillis();
     }
@@ -600,6 +594,11 @@ public class Textbox extends Element{
     {
         this.text = text;
         this.currentSelection = text.length();
+    }
+
+    public void setSelection(int selection)
+    {
+        this.currentSelection = selection;
     }
 
     public String getText()
@@ -725,7 +724,7 @@ public class Textbox extends Element{
         return null;
     }
 
-    private int getCursorPos(MouseInput mouseInput)
+    int getCursorPos(MouseInput mouseInput)
     {
         Vector2d pos = mouseInput.currentPos;
         float xScroll = getXScroll(mouseInput);
@@ -753,7 +752,7 @@ public class Textbox extends Element{
         return 0;
     }
 
-    private float getXScroll(MouseInput mouseInput)
+    public float getXScroll(MouseInput mouseInput)
     {
         if(!isFocused())
             return 0;

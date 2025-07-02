@@ -3,10 +3,7 @@ package bog.lbpas.view3d.mainWindow.screens.thingPart.parts;
 import bog.lbpas.view3d.core.types.Thing;
 import bog.lbpas.view3d.mainWindow.View3D;
 import bog.lbpas.view3d.managers.MouseInput;
-import bog.lbpas.view3d.renderer.gui.elements.Checkbox;
-import bog.lbpas.view3d.renderer.gui.elements.DropDownTab;
-import bog.lbpas.view3d.renderer.gui.elements.Panel;
-import bog.lbpas.view3d.renderer.gui.elements.Textbox;
+import bog.lbpas.view3d.renderer.gui.elements.*;
 import cwlib.enums.ResourceType;
 import cwlib.structs.things.parts.PRef;
 import cwlib.structs.things.parts.PTrigger;
@@ -22,7 +19,7 @@ import java.util.ArrayList;
  */
 public abstract class PartRef extends iPart {
 
-    public PartRef(int tabWidth, float comboWidth, float panelHeight, float closeWidth, float finalGap, DropDownTab tab, View3D view) {
+    public PartRef(int tabWidth, float comboWidth, float panelHeight, float closeWidth, float finalGap, Element tab, View3D view) {
         super(cwlib.enums.Part.REF, "PRef", "Ref", tabWidth, comboWidth, panelHeight, closeWidth, finalGap, tab, view);
     }
 

@@ -27,16 +27,17 @@ import org.lwjgl.opengl.GL;
 public class Archive extends GuiScreen {
 
     View3D mainView;
-    DropDownTab mapList;
+    public DropDownTab mapList;
     ButtonList maps;
     Button loadMAP;
-    DropDownTab farcList;
+    public DropDownTab farcList;
     ButtonList farcs;
     Button loadFARC;
-    DropDownTab fartList;
+    public DropDownTab fartList;
     ButtonList farts;
     Button loadFART;
-    DropDownTab translations;
+    public DropDownTab translations;
+    public Textbox searchTransl;
 
     public Archive(View3D mainView)
     {
@@ -198,11 +199,12 @@ public class Archive extends GuiScreen {
                 LoadedData.loadedTranslationTable = null;
                 LoadedData.loadedPatchTranslationTable = null;
                 LoadedData.loadedTranslation = -1;
+                LoadedData.loadedPatchTranslation = -1;
             }
         });
         Panel searchTranslationsPanel = translations.addPanel("Panel");
         searchTranslationsPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("searchTranslStr", "Search:", 10, renderer), 0.225f));
-        Textbox searchTransl = new Textbox("searchTransl", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
+        searchTransl = new Textbox("searchTransl", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
         searchTranslationsPanel.elements.add(new Panel.PanelElement(searchTransl, 0.775f));
         farts = translations.addList("transl", new ButtonList(LoadedData.digestedEntries, 10, renderer, loader, window) {
             @Override
@@ -213,9 +215,12 @@ public class Archive extends GuiScreen {
                     ResourceDescriptor descriptor = LoadedData.digestedEntriesDescriptors.get(LoadedData.digestedEntries.indexOf(entry));
 
                     ResourceDescriptor descriptorPatch = null;
-                    for(FileEntry e : LoadedData.digestedEntries)
-                        if(e.getPath().equalsIgnoreCase("gamedata/languages/patch/" + entry.getName()))
-                            descriptorPatch = LoadedData.digestedEntriesDescriptors.get(LoadedData.digestedEntries.indexOf(e));
+                    try
+                    {
+                        for(FileEntry e : LoadedData.digestedEntries)
+                            if(e.getPath().equalsIgnoreCase("gamedata/languages/patch/" + entry.getName()))
+                                descriptorPatch = LoadedData.digestedEntriesDescriptors.get(LoadedData.digestedEntries.indexOf(e));
+                    }catch (Exception e){print.stackTrace(e);}
 
                     byte[] data = LoadedData.extract(descriptor);
                     if (data == null)
@@ -244,7 +249,10 @@ public class Archive extends GuiScreen {
                         RTranslationTable translationP = new RTranslationTable(dataP);
 
                         if(translationP != null)
+                        {
                             LoadedData.loadedPatchTranslationTable = translationP;
+                            LoadedData.loadedPatchTranslation = descriptor.getGUID().getValue();
+                        }
                     }
                 }
             }

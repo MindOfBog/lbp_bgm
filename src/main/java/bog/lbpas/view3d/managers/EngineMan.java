@@ -38,8 +38,6 @@ public class EngineMan {
 
     public void start(WindowMan window, ILogic viewLogic) throws Exception
     {
-        init(window, viewLogic);
-
         if(isRunning)
             return;
         run();

@@ -23,7 +23,7 @@ import java.util.ArrayList;
  */
 public abstract class PartGroup extends iPart {
 
-    public PartGroup(int tabWidth, float comboWidth, float panelHeight, float closeWidth, float finalGap, DropDownTab tab, View3D view) {
+    public PartGroup(int tabWidth, float comboWidth, float panelHeight, float closeWidth, float finalGap, Element tab, View3D view) {
         super(cwlib.enums.Part.GROUP, "PGroup", "Group", tabWidth, comboWidth, panelHeight, closeWidth, finalGap, tab, view);
     }
 

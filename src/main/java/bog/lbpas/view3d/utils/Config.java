@@ -26,26 +26,29 @@ public class Config {
     public static Vector4f DEFAULT_COLOR = new Vector4f(1f, 1f, 1f, 1f);
     public static Vector3f AMBIENT_LIGHT = new Vector3f(1f, 1f, 1f);
     public static float SPECULAR_POWER = 10f;
-    public static float FRAMERATE = 120;
+    public static float FRAMERATE = 60;
     public static float OUTLINE_DISTANCE = 0.6f;
     public static Color OUTLINE_COLOR = new Color(252, 173, 3);
-    public static Color BORDER_COLOR_1 = new Color(156, 0, 0, 166);
-    public static Color BORDER_COLOR_2 = new Color(230, 0, 0, 166);
-    public static Color BORDER_COLOR_3 = new Color(1, 41, 143, 166);
-    public static Color BORDER_COLOR_4 = new Color(0, 62, 219, 166);
+    public static Color BORDER_COLOR_1 = new Color(163, 98, 98, 179);
+    public static Color BORDER_COLOR_2 = new Color(238, 118, 118, 179);
+    public static Color BORDER_COLOR_3 = new Color(97, 138, 206, 179);
+    public static Color BORDER_COLOR_4 = new Color(121, 172, 255, 179);
     public static Color POD_COLOR = new Color(220, 170, 110, 160);
     public static Color EARTH_COLOR = new Color(50, 200, 150, 150);
-    public static Color FONT_COLOR = new Color(255, 255, 255, 255);
+    public static Color FONT_COLOR = new Color(233, 233, 233, 255);
     public static Color FONT_DISABLED_COLOR = new Color(255, 255, 255, 100);
-    public static Color PRIMARY_COLOR = new Color(0, 0, 0, 127);
-    public static Color SECONDARY_COLOR = new Color(0, 0, 0, 255);
-    public static Color INTERFACE_PRIMARY_COLOR = new Color(0, 0, 0, 157);
-    public static Color INTERFACE_PRIMARY_COLOR2 = new Color(0, 0, 0, 255);
-    public static Color INTERFACE_SECONDARY_COLOR = new Color(50, 50, 50, 200);
-    public static Color INTERFACE_SECONDARY_COLOR2 = new Color(50, 50, 50, 255);
-    public static Color INTERFACE_TERTIARY_COLOR = new Color(100, 100, 100, 210);
-    public static Color INTERFACE_TERTIARY_COLOR2 = new Color(100, 100, 100, 255);
-    public static int VIEWER_SHADING = 0;
+    public static Color PRIMARY_COLOR = new Color(54, 54, 54, 128);
+    public static Color SECONDARY_COLOR = new Color(48, 48, 48, 255);
+
+    public static Color INTERFACE_PRIMARY_COLOR = new Color(136, 136, 136, 191);
+    public static Color INTERFACE_PRIMARY_COLOR2 = new Color(77, 77, 77, 255);
+
+    public static Color INTERFACE_SECONDARY_COLOR = new Color(63, 63, 63, 191);
+    public static Color INTERFACE_SECONDARY_COLOR2 = new Color(48, 48, 48, 255);
+
+    public static Color INTERFACE_TERTIARY_COLOR = new Color(136, 136, 136, 191);
+    public static Color INTERFACE_TERTIARY_COLOR2 = new Color(179, 179, 179, 255);
+    public static int VIEWER_SHADING = 1;
     public static InputMan FORWARD = new InputMan(GLFW.GLFW_KEY_W, false);
     public static InputMan LEFT = new InputMan(GLFW.GLFW_KEY_A, false);
     public static InputMan BACK = new InputMan(GLFW.GLFW_KEY_S, false);
@@ -68,6 +71,12 @@ public class Config {
     public static boolean FRONT_VIEW = false;
     public static boolean SHOW_FPS = false;
     public static int MSAA_SAMPLES = 1;
+    public static boolean DISABLE_BLUR = false;
+
+    public static boolean DISABLE_SSAO = false;
+    public static int SECONDARY_THREAD = 250;
+    public static int LOADER_THREAD = 50;
+    public static int ENTRY_DIGEST_THREAD = 1000;
 
     private static String buildSettings()
     {
@@ -122,6 +131,11 @@ public class Config {
         builtString += "WINDOW_MAXIMIZED:" + WINDOW_MAXIMIZED + ";";
         builtString += "SHOW_FPS:" + SHOW_FPS + ";";
         builtString += "MSAA_SAMPLES:" + MSAA_SAMPLES + ";";
+        builtString += "DISABLE_BLUR:" + DISABLE_BLUR + ";";
+        builtString += "DISABLE_SSAO:" + DISABLE_SSAO + ";";
+        builtString += "SECONDARY_THREAD:" + SECONDARY_THREAD + ";";
+        builtString += "LOADER_THREAD:" + LOADER_THREAD + ";";
+        builtString += "ENTRY_DIGEST_THREAD:" + ENTRY_DIGEST_THREAD + ";";
 
         return builtString;
     }
@@ -218,6 +232,11 @@ public class Config {
                         case "WINDOW_MAXIMIZED" : WINDOW_MAXIMIZED = Boolean.parseBoolean(data); break;
                         case "SHOW_FPS" : SHOW_FPS = Boolean.parseBoolean(data); break;
                         case "MSAA_SAMPLES" : MSAA_SAMPLES = Integer.parseInt(data); break;
+                        case "DISABLE_BLUR" : DISABLE_BLUR = Boolean.parseBoolean(data); break;
+                        case "DISABLE_SSAO" : DISABLE_SSAO = Boolean.parseBoolean(data); break;
+                        case "SECONDARY_THREAD" : SECONDARY_THREAD = Integer.parseInt(data); break;
+                        case "LOADER_THREAD" : LOADER_THREAD = Integer.parseInt(data); break;
+                        case "ENTRY_DIGEST_THREAD" : ENTRY_DIGEST_THREAD = Integer.parseInt(data); break;
                     }
                 }
 
@@ -635,6 +654,46 @@ public class Config {
                         break loop;
                     }
                     break;
+                case 48:
+                    if(!o.equals(DISABLE_BLUR))
+                    {
+                        hasChanged = true;
+                        updateVariables();
+                        break loop;
+                    }
+                    break;
+                case 49:
+                    if(!o.equals(DISABLE_SSAO))
+                    {
+                        hasChanged = true;
+                        updateVariables();
+                        break loop;
+                    }
+                    break;
+                case 50:
+                    if(!o.equals(SECONDARY_THREAD))
+                    {
+                        hasChanged = true;
+                        updateVariables();
+                        break loop;
+                    }
+                    break;
+                case 51:
+                    if(!o.equals(LOADER_THREAD))
+                    {
+                        hasChanged = true;
+                        updateVariables();
+                        break loop;
+                    }
+                    break;
+                case 52:
+                    if(!o.equals(ENTRY_DIGEST_THREAD))
+                    {
+                        hasChanged = true;
+                        updateVariables();
+                        break loop;
+                    }
+                    break;
             }
         }
         if(variables.size() == 0)
@@ -693,5 +752,10 @@ public class Config {
         variables.add(WINDOW_MAXIMIZED);
         variables.add(SHOW_FPS);
         variables.add(MSAA_SAMPLES);
+        variables.add(DISABLE_BLUR);
+        variables.add(DISABLE_SSAO);
+        variables.add(SECONDARY_THREAD);
+        variables.add(LOADER_THREAD);
+        variables.add(ENTRY_DIGEST_THREAD);
     }
 }

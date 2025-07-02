@@ -1,6 +1,6 @@
 package bog.lbpas.view3d.renderer.gui.elements;
 
-import bog.lbpas.Main;
+import bog.lbpas.view3d.core.Texture;
 import bog.lbpas.view3d.managers.assetLoading.ObjectLoader;
 import bog.lbpas.view3d.core.Model;
 import bog.lbpas.view3d.managers.MouseInput;
@@ -10,22 +10,18 @@ import bog.lbpas.view3d.renderer.gui.cursor.ECursor;
 import bog.lbpas.view3d.renderer.gui.ingredients.LineStrip;
 import bog.lbpas.view3d.utils.Config;
 import bog.lbpas.view3d.utils.Cursors;
-import bog.lbpas.view3d.utils.Utils;
+import com.github.weisj.jsvg.nodes.text.Text;
 import org.joml.Vector2d;
 import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
-import org.lwjgl.opengl.GL11;
 
-import javax.imageio.ImageIO;
 import java.awt.*;
-import java.awt.image.BufferedImage;
 
 /**
  * @author Bog
  */
 public abstract class ButtonImage extends Element{
 
-    public int buttonImage = -1;
     public boolean isClicked = false;
 
     Vector2f prevSize;
@@ -38,6 +34,18 @@ public abstract class ButtonImage extends Element{
         this.id = id;
         this.pos = pos;
         this.size = size;
+        this.imageSize = this.size;
+        this.prevSize = size;
+        this.renderer = renderer;
+        this.loader = loader;
+        this.window = window;
+    }
+
+    public ButtonImage(String id, RenderMan renderer, ObjectLoader loader, WindowMan window)
+    {
+        this.id = id;
+        this.pos = new Vector2f();
+        this.size = new Vector2f();
         this.imageSize = this.size;
         this.prevSize = size;
         this.renderer = renderer;
@@ -67,9 +75,6 @@ public abstract class ButtonImage extends Element{
     public void draw(MouseInput mouseInput, boolean overOther) {
         super.draw(mouseInput, overOther);
 
-        if(this.buttonImage == -1)
-            getImage();
-
         if(this.outlineRect == null)
             this.outlineRect = LineStrip.processVerts(LineStrip.getRectangle(size), loader, window);
 
@@ -85,8 +90,9 @@ public abstract class ButtonImage extends Element{
         Color[] colors = getColors(mouseInput, overOther);
 
         renderer.drawRect(Math.round(pos.x), Math.round(pos.y), Math.round(size.x), Math.round(size.y), colors[0]);
-        if(this.buttonImage != -1)
-            renderer.drawImageStatic(buttonImage, Math.round(pos.x + (size.x / 2f) - (this.imageSize.x / 2f)), Math.round(pos.y + (size.y / 2f) - (this.imageSize.y / 2f)), Math.round(this.imageSize.x), Math.round(this.imageSize.y));
+        Texture image = getImage();
+        if(image.id != -1)
+            renderer.drawImageStatic(image, Math.round(pos.x + (size.x / 2f) - (this.imageSize.x / 2f)), Math.round(pos.y + (size.y / 2f) - (this.imageSize.y / 2f)), Math.round(this.imageSize.x), Math.round(this.imageSize.y), loader);
         renderer.drawRectOutline(pos, outlineRect, colors[1], false);
     }
     @Override
@@ -140,10 +146,5 @@ public abstract class ButtonImage extends Element{
             return new Color[]{Config.INTERFACE_PRIMARY_COLOR, Config.INTERFACE_PRIMARY_COLOR2};
     }
 
-    public abstract void getImage();
-
-    public void updateImage()
-    {
-        buttonImage = -1;
-    }
+    public abstract Texture getImage();
 }

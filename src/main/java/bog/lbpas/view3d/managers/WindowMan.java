@@ -484,8 +484,6 @@ public class WindowMan {
 
     public void maximize()
     {
-        Config.WINDOW_WIDTH = width;
-        Config.WINDOW_HEIGHT = height;
         GLFW.glfwMaximizeWindow(this.window);
     }
 
@@ -497,8 +495,6 @@ public class WindowMan {
 
     public void minimize()
     {
-        Config.WINDOW_WIDTH = width;
-        Config.WINDOW_HEIGHT = height;
         GLFW.glfwIconifyWindow(this.window);
     }
 

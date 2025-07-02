@@ -3,6 +3,7 @@ package bog.lbpas.view3d.mainWindow.screens.thingPart.parts;
 import bog.lbpas.view3d.core.types.Thing;
 import bog.lbpas.view3d.mainWindow.View3D;
 import bog.lbpas.view3d.renderer.gui.elements.DropDownTab;
+import bog.lbpas.view3d.renderer.gui.elements.Element;
 
 import java.util.ArrayList;
 
@@ -11,7 +12,7 @@ import java.util.ArrayList;
  */
 public abstract class PartEffector extends iPart {
 
-    public PartEffector(int tabWidth, float comboWidth, float panelHeight, float closeWidth, float finalGap, DropDownTab tab, View3D view) {
+    public PartEffector(int tabWidth, float comboWidth, float panelHeight, float closeWidth, float finalGap, Element tab, View3D view) {
         super(cwlib.enums.Part.EFFECTOR, "PEffector", "Effector", tabWidth, comboWidth, panelHeight, closeWidth, finalGap, tab, view);
     }
 

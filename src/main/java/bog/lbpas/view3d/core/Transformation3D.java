@@ -131,7 +131,11 @@ public class Transformation3D{
         Entity LineZ;
 
         public Tool(ObjectLoader loader) {
+            setupToolModels(loader);
+        }
 
+        private void setupToolModels(ObjectLoader loader)
+        {
             Vector4f red = new Vector4f(1f, 0.196f, 0.196f, 1f);
             Vector4f green = new Vector4f(0.196f, 1f, 0.196f, 1f);
             Vector4f blue = new Vector4f(0.196f, 0.196f, 1f, 1f);
@@ -356,7 +360,7 @@ public class Transformation3D{
                 Vector2i mouse = new Vector2i((int) mouseInput.currentPos.x, (int) mouseInput.currentPos.y);
 
                 renderer.processGuiElement(new Line(mouse, point, Color.black, loader, window, true));
-                renderer.processGuiElement(new Quad(ConstantTextures.getTexture(ConstantTextures.CROSSHAIR, 15, 15, loader), new Vector2f((int)(screenPos.x - 7.5f), (int)(screenPos.y - 7.5f)), new Vector2f(15, 15)).staticTexture());
+                renderer.processGuiElement(new Quad(ConstantTextures.getTexture(ConstantTextures.CROSSHAIR, 15, 15, loader).id, new Vector2f((int)(screenPos.x - 7.5f), (int)(screenPos.y - 7.5f)), new Vector2f(15, 15)).staticTexture());
             }
 
             if(hasSelection)
@@ -401,6 +405,9 @@ public class Transformation3D{
                         renderer.processThroughWallEntity(LineY);
                         break;
                 }
+
+                if(Float.isNaN(tools.get(0).getTransformation().getScale(new Vector3f()).x))
+                    setupToolModels(loader);
             }
         }
 
@@ -465,6 +472,9 @@ public class Transformation3D{
                         renderer.processThroughWallEntity(LineY);
                         break;
                 }
+
+                if(Float.isNaN(tools.get(0).getTransformation().getScale(new Vector3f()).x))
+                    setupToolModels(loader);
             }
         }
 

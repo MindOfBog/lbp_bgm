@@ -38,6 +38,19 @@ public abstract class Button extends Element{
         this.prevSize = new Vector2f();
     }
 
+    public Button(String id, String buttonText, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window)
+    {
+        this.id = id;
+        this.pos = new Vector2f();
+        this.size = new Vector2f();
+        this.prevSize = new Vector2f();
+        this.fontSize = fontSize;
+        this.renderer = renderer;
+        this.loader = loader;
+        this.window = window;
+        this.buttonText = buttonText;
+    }
+
     public Button(String id, String buttonText, Vector2f pos, Vector2f size, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window)
     {
         this.id = id;

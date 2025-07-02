@@ -48,7 +48,7 @@ public class FontRenderer {
 
                         try {
                             font.map = ImageIO.read(Objects.requireNonNull(Thread.currentThread().getContextClassLoader().getResourceAsStream(fontPath + "/" + font.page.file)));
-                            font.textureID = loader.loadTexture(font.map, GL11.GL_NEAREST, GL11.GL_LINEAR);
+                            font.texture = loader.loadTexture(font.map, GL11.GL_NEAREST, GL11.GL_LINEAR);
                         } catch (Exception e) {e.printStackTrace();}
 
                         buildFont(font);
@@ -71,7 +71,7 @@ public class FontRenderer {
 
                                 try {
                                     font.map = ImageIO.read(Objects.requireNonNull(Files.newInputStream(Paths.get(fnt.getParent() + "/" + font.page.file))));
-                                    font.textureID = loader.loadTexture(font.map, GL11.GL_NEAREST, GL11.GL_LINEAR);
+                                    font.texture = loader.loadTexture(font.map, GL11.GL_NEAREST, GL11.GL_LINEAR);
                                 } catch (Exception e) {e.printStackTrace();}
 
                                 buildFont(font);
@@ -107,7 +107,7 @@ public class FontRenderer {
                 {
                     Vector2f pos = new Vector2f(x + xPos + character.xoffset * ((float) size / 50f), y + (character.height) * ((float) size / 50f) + character.yoffset * ((float) size / 50f));
                     Vector2f scale = new Vector2f((float) character.width * ((float) size / 50f), ((float) -character.height) * ((float) size / 50f));
-                    renderer.processGuiElement(new Quad(font.glyphs.get(character.id), font.textureID, pos, scale, color).staticTexture().smoothstep());
+                    renderer.processGuiElement(new Quad(font.glyphs.get(character.id), font.texture.id, pos, scale, color).staticTexture().smoothstep());
                 }
                 xPos += character.xadvance * ((float) size / 50f);
             }

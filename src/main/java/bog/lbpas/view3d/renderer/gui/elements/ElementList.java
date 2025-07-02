@@ -8,6 +8,7 @@ import bog.lbpas.view3d.managers.assetLoading.ObjectLoader;
 import bog.lbpas.view3d.renderer.gui.ingredients.Line;
 import bog.lbpas.view3d.renderer.gui.ingredients.LineStrip;
 import bog.lbpas.view3d.utils.Config;
+import bog.lbpas.view3d.utils.print;
 import org.joml.Vector2d;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
@@ -298,18 +299,6 @@ public class ElementList extends Element{
             elements.add(new DropDownTab.StringElement(id, string, fontSize, renderer));
     }
 
-    public void addRect(String id, float height)
-    {
-        if(!containsElementByID(id))
-            elements.add(new DropDownTab.RectangleElement(id, height, renderer, loader, window));
-    }
-
-    public void addRect(String id, float height, Color color)
-    {
-        if(!containsElementByID(id))
-            elements.add(new DropDownTab.RectangleElement(id, height, color, renderer, loader, window));
-    }
-
     public void addList(String id, ButtonList buttonList, int height)
     {
         if(!containsElementByID(id))
@@ -319,6 +308,17 @@ public class ElementList extends Element{
             buttonList.size = new Vector2f(size.x - 4, height);
             elements.add(buttonList);
         }
+    }
+
+    public FileTree addFileTree(FileTree tree){
+        if(!containsElementByID(tree.id))
+        {
+            elements.add(tree);
+            tree.size = new Vector2f(size.x - 4, 0);
+            return tree;
+        }
+        else
+            return (FileTree) getElementByID(tree.id);
     }
 
     public DropDownTab.SeparatorElement addSeparator(String id)
@@ -414,7 +414,13 @@ public class ElementList extends Element{
 
             if(element.pos.y < this.pos.y + this.size.y &&
                 element.pos.y + element.size.y > this.pos.y)
-                element.draw(((element instanceof ComboBox ? ((ComboBox)element).isMouseOverTab(mouseInput) : element instanceof Panel ? ((Panel)element).isMouseOverPanel(mouseInput) : element.isMouseOverElement(mouseInput)) && (mouseInput.currentPos.y > this.pos.y + this.size.y || mouseInput.currentPos.y < this.pos.y)) ? dummyMI : mouseInput, overOther);
+            {
+                boolean overEl = (element instanceof ComboBox || element instanceof ComboBoxImage ? ((ComboBox)element).isMouseOverTab(mouseInput) : element instanceof Panel ? ((Panel)element).isMouseOverPanel(mouseInput) : element.isMouseOverElement(mouseInput));
+                boolean outsideY = (mouseInput.currentPos.y > this.pos.y + this.size.y || mouseInput.currentPos.y < this.pos.y);
+                boolean insideX = (mouseInput.currentPos.x >= this.pos.x && mouseInput.currentPos.x <= this.pos.x + this.size.x);
+                overOther |= overEl && outsideY && insideX;
+                element.draw(mouseInput, overOther);
+            }
         }
     }
 
@@ -436,7 +442,7 @@ public class ElementList extends Element{
 
             if(!(element.pos.y < this.pos.y + this.size.y &&
                     element.pos.y + element.size.y > this.pos.y))
-                if(element instanceof ComboBox)
+                if(element instanceof ComboBox || element instanceof ComboBoxImage)
                     ((ComboBox)element).collapsed(true);
                 else if(element instanceof Panel)
                     ((Panel)element).collapsed(true);
@@ -492,9 +498,10 @@ public class ElementList extends Element{
         boolean overElement = mousePos.x > pos.x && mousePos.y > pos.y && mousePos.x < pos.x + size.x && mousePos.y < pos.y + size.y;
 
         for(int i = 0; i < elements.size(); i++)
-            if(!((elements.get(i) instanceof ComboBox ? ((ComboBox)elements.get(i)).isMouseOverTab(mousePos) : elements.get(i) instanceof Panel ? ((Panel)elements.get(i)).isMouseOverPanel(mousePos) : elements.get(i).isMouseOverElement(mousePos)) && (mousePos.y > this.pos.y + this.size.y || mousePos.y < this.pos.y)))
-                if(elements.get(i).isMouseOverElement(mousePos))
-                    overElement = true;
+            if(elements.get(i).isMouseOverElement(mousePos) && ((mousePos.y <= this.pos.y + this.size.y && mousePos.y >= this.pos.y) || (mousePos.x < this.pos.x || mousePos.x > this.pos.x + this.size.x)))
+                overElement = true;
+
+//        print.neutral(this.id + ", " + overElement);
 
         return overElement;
     }
@@ -623,9 +630,14 @@ public class ElementList extends Element{
 
         float maxScroll = getFullHeight() + 4;
 
-        for(Element element : elements)
-            if(!((element instanceof ComboBox ? ((ComboBox)element).isMouseOverTab(mouseInput) : element instanceof Panel ? ((Panel)element).isMouseOverPanel(mouseInput) : element.isMouseOverElement(mouseInput)) && (mouseInput.currentPos.y > this.pos.y + this.size.y || mouseInput.currentPos.y < this.pos.y)))
-                element.onClick(mouseInput, pos, button, action, mods, overOther, focusedOther);
+        for(int i = 0; i < elements.size(); i++)//todo
+        {
+            Element element = elements.get(i);
+            boolean overEl = (element instanceof ComboBox || element instanceof ComboBoxImage ? ((ComboBox)element).isMouseOverTab(mouseInput) : element instanceof Panel ? ((Panel)element).isMouseOverPanel(mouseInput) : element.isMouseOverElement(mouseInput));
+            boolean outsideY = (mouseInput.currentPos.y > this.pos.y + this.size.y || mouseInput.currentPos.y < this.pos.y);
+            boolean insideX = (mouseInput.currentPos.x >= this.pos.x && mouseInput.currentPos.x <= this.pos.x + this.size.x);
+            element.onClick(mouseInput, pos, button, action, mods, overOther || (overEl && outsideY && insideX), focusedOther);
+        }
 
         boolean hoveringScroll = pos.x > this.pos.x + size.x - 4f - size.x * 0.05f &&
                 pos.x < this.pos.x + size.x &&

@@ -38,7 +38,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.spec.AlgorithmParameterSpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
-import java.text.DecimalFormat;
 import java.util.List;
 import java.util.*;
 import java.util.jar.JarEntry;
@@ -1070,5 +1069,29 @@ public class Utils {
         System.arraycopy(b, 0, c, aLen, bLen);
 
         return c;
+    }
+
+    public static Color contrastGrayscale(Color color) {
+        float luminance = 0.2126f * (color.getRed() / 255f) + 0.7152f * (color.getGreen() / 255f) + 0.0722f * (color.getBlue() / 255f);
+
+        float invertedLuminance = 1.0f - luminance;
+
+        float highContrastLuminance;
+        if (Math.abs(invertedLuminance - luminance) < 0.5f)
+            highContrastLuminance = invertedLuminance > 0.5f ? 1.0f : 0.0f;
+        else
+            highContrastLuminance = invertedLuminance;
+
+        return new Color(highContrastLuminance, highContrastLuminance, highContrastLuminance);
+    }
+
+    private static int getRatio(int width, int height)
+    {
+        return (height == 0) ? width : getRatio(height, width%height);
+    }
+    public static Vector2i getAspectRatio(int width, int height) {
+        int ratio = getRatio(width, height);
+
+        return new Vector2i(width/ratio, height/ratio);
     }
 }
