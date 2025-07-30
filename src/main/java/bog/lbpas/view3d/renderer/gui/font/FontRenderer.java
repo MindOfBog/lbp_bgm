@@ -109,9 +109,21 @@ public class FontRenderer {
         }
 
         if(!foundHeader)
+        {
             Config.FONT_HEADER = "Comfortaa";
+
+            for(int i = 0; i < Fonts.size(); i++)
+                if(Fonts.get(i).info.face.equalsIgnoreCase(Config.FONT_HEADER))
+                    headerFont = i;
+        }
         if(!foundText)
+        {
             Config.FONT_TEXT = "Comfortaa";
+
+            for(int i = 0; i < Fonts.size(); i++)
+                if(Fonts.get(i).info.face.equalsIgnoreCase(Config.FONT_TEXT))
+                    textFont = i;
+        }
     }
 
     public static void drawString(RenderMan renderer, String string, int x, int y, Color color, int begin, int end, FNT font)
