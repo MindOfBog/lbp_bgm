@@ -518,7 +518,7 @@ public class Transformation3D{
                 initPosXY = mouseInput.mousePicker.getPointOnPlaneZ(currentPosition.z);
                 initPos = new Vector2f((float) mouseInput.currentPos.x, (float) mouseInput.currentPos.y);
 
-                Vector3f screenPos = camera.worldToScreen(tools.get(0).getTransformation().getTranslation(new Vector3f()), window);
+                screenPos = camera.worldToScreen(tools.get(0).getTransformation().getTranslation(new Vector3f()), window);
 
                 double y = mouseInput.currentPos.y - screenPos.y;
                 double x = mouseInput.currentPos.x - screenPos.x;

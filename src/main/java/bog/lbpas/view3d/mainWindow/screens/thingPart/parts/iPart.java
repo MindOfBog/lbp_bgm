@@ -32,7 +32,7 @@ public abstract class iPart {
         this.id = id;
         this.name = name;
 
-        partComboBox = new ComboBox(id, name, null, null, 10, tabWidth, view.renderer, view.loader, view.window, false)
+        partComboBox = new ComboBox(id, name, null, null, tabWidth, view.renderer, view.loader, view.window, false)
         {
             @Override
             public int[] getParentTransform() {

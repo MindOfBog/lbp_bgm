@@ -95,7 +95,7 @@ public abstract class PartLevelSettings extends iPart {
     public void init(View3D view) {
 
         Panel importPanel = partComboBox.addPanel("importPanel");
-        ImportPlanBin = new Button("ImportPlanBin", "Import", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window) {
+        ImportPlanBin = new Button("ImportPlanBin", "Import", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 File file = null;
@@ -161,11 +161,11 @@ public abstract class PartLevelSettings extends iPart {
         importPanel.elements.add(new Panel.PanelElement(ImportPlanBin, 0.4975f));
         importPanel.elements.add(new Panel.PanelElement(null, 0.005f));
 
-        ComboBox importTemplatesCombo = new ComboBox("importTemplatesCombo", "Templates", new Vector2f(), new Vector2f(), 10, 200, view.renderer, view.loader, view.window);
+        ComboBox importTemplatesCombo = new ComboBox("importTemplatesCombo", "Templates", new Vector2f(), new Vector2f(), 200, view.renderer, view.loader, view.window);
 
         ArrayList<String> templateNames = new ArrayList<>();
         templateNames.add("Blank (LBP1)");templateNames.add("Tutorials (LBP1)");templateNames.add("Gardens");templateNames.add("Savannah");templateNames.add("Wedding");templateNames.add("Canyons");templateNames.add("Metropolis");templateNames.add("Islands");templateNames.add("Temples");templateNames.add("Wilderness");templateNames.add("Blank (LBP2)");templateNames.add("Tutorials (LBP2)");templateNames.add("Da Vinci's Hideout");templateNames.add("Victoria's Laboratory");templateNames.add("Factory of a Better Tomorrow");templateNames.add("Avalonia");templateNames.add("Eve's Asylum");templateNames.add("Cosmos");
-        ButtonList templateList = new ButtonList("templateList", templateNames, new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window) {
+        ButtonList templateList = new ButtonList("templateList", templateNames, new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window) {
             @Override
             public void clickedButton(Object object, int index, int button, int action, int mods) {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
@@ -351,7 +351,7 @@ public abstract class PartLevelSettings extends iPart {
 
             @Override
             public int buttonHeight() {
-                return getFontHeight(fontSize) + 4;
+                return getFontHeight() + 4;
             }
         };
         importTemplatesCombo.addList("templateList", templateList, 240);
@@ -360,7 +360,7 @@ public abstract class PartLevelSettings extends iPart {
 
         partComboBox.addString("presetsStr", "Presets:");
 
-        Presets = partComboBox.addList("Presets", new ButtonList(presets, 10, view.renderer, view.loader, view.window) {
+        Presets = partComboBox.addList("Presets", new ButtonList(presets, view.renderer, view.loader, view.window) {
             int hovering = -1;
             @Override
             public void clickedButton(Object object, int index, int button, int action, int mods) {
@@ -473,12 +473,12 @@ public abstract class PartLevelSettings extends iPart {
 
             @Override
             public int buttonHeight() {
-                return getFontHeight(10) + 4;
+                return getFontHeight() + 4;
             }
         }, 150).deletable().draggable();
 
         Panel presetsPanel = partComboBox.addPanel("presetsPanel");
-        presetsPanel.elements.add(new Panel.PanelElement(new Button("add", "Add", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window) {
+        presetsPanel.elements.add(new Panel.PanelElement(new Button("add", "Add", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
@@ -486,34 +486,34 @@ public abstract class PartLevelSettings extends iPart {
             }
         }, 0.4975f));
         presetsPanel.elements.add(new Panel.PanelElement(null, 0.005f));
-        PresetEdit = new ComboBox("PresetEdit", "Edit", new Vector2f(), new Vector2f(), 10, 250, view.renderer, view.loader, view.window);
+        PresetEdit = new ComboBox("PresetEdit", "Edit", new Vector2f(), new Vector2f(), 250, view.renderer, view.loader, view.window);
 
         ElementList presetEditList = PresetEdit.addElementList("presetEditList", 350);
 
         {
             Panel sunScalePanel = presetEditList.addPanel("sunScalePanel");
-            sunScalePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("sunScaleStr", "Sun Pos Scale:", 10, view.renderer), 0.7f));
-            sunScale = new Textbox("sunScale", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+            sunScalePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("sunScaleStr", "Sun Pos Scale:", view.renderer), 0.7f));
+            sunScale = new Textbox("sunScale", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window).noLetters().noOthers();
             sunScalePanel.elements.add(new Panel.PanelElement(sunScale, 0.3f));
 
             Panel sunXPanel = presetEditList.addPanel("sunXPanel");
-            sunXPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("sunXStr", "Sun X:", 10, view.renderer), 0.7f));
-            sunX = new Textbox("sunX", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+            sunXPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("sunXStr", "Sun X:", view.renderer), 0.7f));
+            sunX = new Textbox("sunX", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window).noLetters().noOthers();
             sunXPanel.elements.add(new Panel.PanelElement(sunX, 0.3f));
 
             Panel sunYPanel = presetEditList.addPanel("sunYPanel");
-            sunYPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("sunYStr", "Sun Y:", 10, view.renderer), 0.7f));
-            sunY = new Textbox("sunY", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+            sunYPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("sunYStr", "Sun Y:", view.renderer), 0.7f));
+            sunY = new Textbox("sunY", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window).noLetters().noOthers();
             sunYPanel.elements.add(new Panel.PanelElement(sunY, 0.3f));
 
             Panel sunZPanel = presetEditList.addPanel("sunZPanel");
-            sunZPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("sunZStr", "Sun Z:", 10, view.renderer), 0.7f));
-            sunZ = new Textbox("sunZ", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+            sunZPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("sunZStr", "Sun Z:", view.renderer), 0.7f));
+            sunZ = new Textbox("sunZ", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window).noLetters().noOthers();
             sunZPanel.elements.add(new Panel.PanelElement(sunZ, 0.3f));
 
             Panel suncolor = presetEditList.addPanel("suncolor");
-            suncolor.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("editcolorstr", "Sun Color:", 10, view.renderer), 0.7f));
-            sunColor = new ColorPicker("sunColor", 10, view.renderer, view.loader, view.window) {
+            suncolor.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("editcolorstr", "Sun Color:", view.renderer), 0.7f));
+            sunColor = new ColorPicker("sunColor", view.renderer, view.loader, view.window) {
                 @Override
                 public Color getColor() {
                     if(selectedPreset == null)
@@ -535,14 +535,14 @@ public abstract class PartLevelSettings extends iPart {
             suncolor.elements.add(new Panel.PanelElement(sunColor, 0.3f));
 
             Panel sunMultiplierPanel = presetEditList.addPanel("sunMultiplierPanel");
-            sunMultiplierPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("sunMultiplierStr", "Sun Multiplier:", 10, view.renderer), 0.7f));
-            sunMultiplier = new Textbox("sunMultiplier", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+            sunMultiplierPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("sunMultiplierStr", "Sun Multiplier:", view.renderer), 0.7f));
+            sunMultiplier = new Textbox("sunMultiplier", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window).noLetters().noOthers();
             sunMultiplierPanel.elements.add(new Panel.PanelElement(sunMultiplier, 0.3f));
 
 
             Panel ambcolor = presetEditList.addPanel("ambcolor");
-            ambcolor.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("ambcolorstr", "Ambient Color:", 10, view.renderer), 0.7f));
-            ambientColor = new ColorPicker("ambientColor", 10, view.renderer, view.loader, view.window) {
+            ambcolor.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("ambcolorstr", "Ambient Color:", view.renderer), 0.7f));
+            ambientColor = new ColorPicker("ambientColor", view.renderer, view.loader, view.window) {
                 @Override
                 public Color getColor() {
                     if(selectedPreset == null)
@@ -564,13 +564,13 @@ public abstract class PartLevelSettings extends iPart {
             ambcolor.elements.add(new Panel.PanelElement(ambientColor, 0.3f));
 
             Panel exposurePanel = presetEditList.addPanel("exposurePanel");
-            exposurePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("exposureStr", "Exposure:", 10, view.renderer), 0.7f));
-            exposure = new Textbox("exposure", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+            exposurePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("exposureStr", "Exposure:", view.renderer), 0.7f));
+            exposure = new Textbox("exposure", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window).noLetters().noOthers();
             exposurePanel.elements.add(new Panel.PanelElement(exposure, 0.3f));
 
             Panel fogcolor = presetEditList.addPanel("fogcolor");
-            fogcolor.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("fogcolorstr", "Fog Color:", 10, view.renderer), 0.7f));
-            fogColor = new ColorPicker("fogColor", 10, view.renderer, view.loader, view.window) {
+            fogcolor.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("fogcolorstr", "Fog Color:", view.renderer), 0.7f));
+            fogColor = new ColorPicker("fogColor", view.renderer, view.loader, view.window) {
                 @Override
                 public Color getColor() {
                     if(selectedPreset == null)
@@ -594,18 +594,18 @@ public abstract class PartLevelSettings extends iPart {
             fogcolor.elements.add(new Panel.PanelElement(fogColor, 0.3f));
 
             Panel fogNearPanel = presetEditList.addPanel("fogNearPanel");
-            fogNearPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("fogNearStr", "Fog Near:", 10, view.renderer), 0.7f));
-            fogNear = new Textbox("fogNear", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+            fogNearPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("fogNearStr", "Fog Near:", view.renderer), 0.7f));
+            fogNear = new Textbox("fogNear", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window).noLetters().noOthers();
             fogNearPanel.elements.add(new Panel.PanelElement(fogNear, 0.3f));
 
             Panel fogFarPanel = presetEditList.addPanel("fogFarPanel");
-            fogFarPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("fogFarStr", "Fog Far:", 10, view.renderer), 0.7f));
-            fogFar = new Textbox("fogFar", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+            fogFarPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("fogFarStr", "Fog Far:", view.renderer), 0.7f));
+            fogFar = new Textbox("fogFar", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window).noLetters().noOthers();
             fogFarPanel.elements.add(new Panel.PanelElement(fogFar, 0.3f));
 
             Panel rimcolor = presetEditList.addPanel("rimcolor");
-            rimcolor.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("rimcolorstr", "Rim Color:", 10, view.renderer), 0.7f));
-            rimColor = new ColorPicker("rimColor", 10, view.renderer, view.loader, view.window) {
+            rimcolor.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("rimcolorstr", "Rim Color:", view.renderer), 0.7f));
+            rimColor = new ColorPicker("rimColor", view.renderer, view.loader, view.window) {
                 @Override
                 public Color getColor() {
                     if(selectedPreset == null)
@@ -629,8 +629,8 @@ public abstract class PartLevelSettings extends iPart {
             rimcolor.elements.add(new Panel.PanelElement(rimColor, 0.3f));
 
             Panel rimcolor2 = presetEditList.addPanel("rimcolor2");
-            rimcolor2.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("editcolorstr", "Rim Color 2:", 10, view.renderer), 0.7f));
-            rimColor2 = new ColorPicker("rimColor2", 10, view.renderer, view.loader, view.window) {
+            rimcolor2.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("editcolorstr", "Rim Color 2:", view.renderer), 0.7f));
+            rimColor2 = new ColorPicker("rimColor2", view.renderer, view.loader, view.window) {
                 @Override
                 public Color getColor() {
                     if(selectedPreset == null)
@@ -654,61 +654,61 @@ public abstract class PartLevelSettings extends iPart {
             rimcolor2.elements.add(new Panel.PanelElement(rimColor2, 0.3f));
 
             Panel bakedShadowAmountPanel = presetEditList.addPanel("bakedShadowAmountPanel");
-            bakedShadowAmountPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("bakedShadowAmountStr", "Shadow Amount:", 10, view.renderer), 0.7f));
-            bakedShadowAmount = new Textbox("bakedShadowAmount", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+            bakedShadowAmountPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("bakedShadowAmountStr", "Shadow Amount:", view.renderer), 0.7f));
+            bakedShadowAmount = new Textbox("bakedShadowAmount", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window).noLetters().noOthers();
             bakedShadowAmountPanel.elements.add(new Panel.PanelElement(bakedShadowAmount, 0.3f));
 
             Panel bakedShadowBlurPanel = presetEditList.addPanel("bakedShadowBlurPanel");
-            bakedShadowBlurPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("bakedShadowBlurStr", "Shadow Blur:", 10, view.renderer), 0.7f));
-            bakedShadowBlur = new Textbox("bakedShadowBlur", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+            bakedShadowBlurPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("bakedShadowBlurStr", "Shadow Blur:", view.renderer), 0.7f));
+            bakedShadowBlur = new Textbox("bakedShadowBlur", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window).noLetters().noOthers();
             bakedShadowBlurPanel.elements.add(new Panel.PanelElement(bakedShadowBlur, 0.3f));
 
             Panel bakedAOBiasPanel = presetEditList.addPanel("bakedAOBiasPanel");
-            bakedAOBiasPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("bakedAOBiasStr", "AO Bias:", 10, view.renderer), 0.7f));
-            bakedAOBias = new Textbox("bakedAOBias", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+            bakedAOBiasPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("bakedAOBiasStr", "AO Bias:", view.renderer), 0.7f));
+            bakedAOBias = new Textbox("bakedAOBias", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window).noLetters().noOthers();
             bakedAOBiasPanel.elements.add(new Panel.PanelElement(bakedAOBias, 0.3f));
 
             Panel bakedAOScalePanel = presetEditList.addPanel("bakedAOScalePanel");
-            bakedAOScalePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("bakedAOScaleStr", "AO Scale:", 10, view.renderer), 0.7f));
-            bakedAOScale = new Textbox("bakedAOScale", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+            bakedAOScalePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("bakedAOScaleStr", "AO Scale:", view.renderer), 0.7f));
+            bakedAOScale = new Textbox("bakedAOScale", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window).noLetters().noOthers();
             bakedAOScalePanel.elements.add(new Panel.PanelElement(bakedAOScale, 0.3f));
 
             Panel dynamicAOAmountPanel = presetEditList.addPanel("dynamicAOAmountPanel");
-            dynamicAOAmountPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("dynamicAOAmountStr", "Dynamic AO:", 10, view.renderer), 0.7f));
-            dynamicAOAmount = new Textbox("dynamicAOAmount", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+            dynamicAOAmountPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("dynamicAOAmountStr", "Dynamic AO:", view.renderer), 0.7f));
+            dynamicAOAmount = new Textbox("dynamicAOAmount", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window).noLetters().noOthers();
             dynamicAOAmountPanel.elements.add(new Panel.PanelElement(dynamicAOAmount, 0.3f));
 
             Panel dofNearPanel = presetEditList.addPanel("dofNearPanel");
-            dofNearPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("dofNearStr", "DOF Near:", 10, view.renderer), 0.7f));
-            dofNear = new Textbox("dofNear", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+            dofNearPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("dofNearStr", "DOF Near:", view.renderer), 0.7f));
+            dofNear = new Textbox("dofNear", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window).noLetters().noOthers();
             dofNearPanel.elements.add(new Panel.PanelElement(dofNear, 0.3f));
 
             Panel dofFarPanel = presetEditList.addPanel("dofFarPanel");
-            dofFarPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("dofFarStr", "DOF Far:", 10, view.renderer), 0.7f));
-            dofFar = new Textbox("dofFar", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+            dofFarPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("dofFarStr", "DOF Far:", view.renderer), 0.7f));
+            dofFar = new Textbox("dofFar", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window).noLetters().noOthers();
             dofFarPanel.elements.add(new Panel.PanelElement(dofFar, 0.3f));
 
             Panel zEffectAmountPanel = presetEditList.addPanel("zEffectAmountPanel");
-            zEffectAmountPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("zEffectAmountStr", "Z Effect Amount:", 10, view.renderer), 0.7f));
-            zEffectAmount = new Textbox("zEffectAmount", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+            zEffectAmountPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("zEffectAmountStr", "Z Effect Amount:", view.renderer), 0.7f));
+            zEffectAmount = new Textbox("zEffectAmount", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window).noLetters().noOthers();
             zEffectAmountPanel.elements.add(new Panel.PanelElement(zEffectAmount, 0.3f));
 
             Panel zEffectBrightnessPanel = presetEditList.addPanel("zEffectBrightnessPanel");
-            zEffectBrightnessPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("zEffectBrightnessStr", "Z Effect Brightn.:", 10, view.renderer), 0.7f));
-            zEffectBrightness = new Textbox("zEffectBrightness", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+            zEffectBrightnessPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("zEffectBrightnessStr", "Z Effect Brightn.:", view.renderer), 0.7f));
+            zEffectBrightness = new Textbox("zEffectBrightness", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window).noLetters().noOthers();
             zEffectBrightnessPanel.elements.add(new Panel.PanelElement(zEffectBrightness, 0.3f));
 
             Panel zEffectContrastPanel = presetEditList.addPanel("zEffectContrastPanel");
-            zEffectContrastPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("zEffectContrastStr", "Z Effect Contrast:", 10, view.renderer), 0.7f));
-            zEffectContrast = new Textbox("zEffectContrast", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+            zEffectContrastPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("zEffectContrastStr", "Z Effect Contrast:", view.renderer), 0.7f));
+            zEffectContrast = new Textbox("zEffectContrast", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window).noLetters().noOthers();
             zEffectContrastPanel.elements.add(new Panel.PanelElement(zEffectContrast, 0.3f));
         }
 
         presetsPanel.elements.add(new Panel.PanelElement(PresetEdit, 0.4975f));
 
         Panel ambiancePanel = partComboBox.addPanel("ambiancePanel");
-        ambiancePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("ambstr", "Ambiance:", 10, view.renderer), 0.4f));
-        Ambiance = new Textbox("Ambiance", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
+        ambiancePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("ambstr", "Ambiance:", view.renderer), 0.4f));
+        Ambiance = new Textbox("Ambiance", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window);
         ambiancePanel.elements.add(new Panel.PanelElement(Ambiance, 0.6f));
 
         nonLinearFog = partComboBox.addCheckbox("nonLinearFog", "Non Linear Fog", new Checkbox()
@@ -726,7 +726,7 @@ public abstract class PartLevelSettings extends iPart {
 
 //        ComboBox flags = partComboBox.addComboBox("flags", "BG Repeat Flags", 150);
 //        flags.addList("flagList", , 200);
-        partComboBox.addString(new DropDownTab.StringElement("backgroundRepeatFlags", 10, view.renderer)
+        partComboBox.addString(new DropDownTab.StringElement("backgroundRepeatFlags", view.renderer)
         {
             @Override
             public String stringToDraw() {
@@ -739,13 +739,13 @@ public abstract class PartLevelSettings extends iPart {
         });
 
         Panel backdropMeshPanel = partComboBox.addPanel("backdropMeshPanel");
-        backdropMeshPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("backdropMeshstr", "BG Mesh:", 10, view.renderer), 0.6f));
-        backdropMesh = new Textbox("backdropMesh", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
+        backdropMeshPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("backdropMeshstr", "BG Mesh:", view.renderer), 0.6f));
+        backdropMesh = new Textbox("backdropMesh", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window);
         backdropMeshPanel.elements.add(new Panel.PanelElement(backdropMesh, 0.4f));
 
         Panel backgroundSkyHeightPanel = partComboBox.addPanel("backgroundSkyHeightPanel");
-        backgroundSkyHeightPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("backgroundSkyHeightstr", "BG Sky Height:", 10, view.renderer), 0.6f));
-        backgroundSkyHeight = new Textbox("backgroundSkyHeight", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
+        backgroundSkyHeightPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("backgroundSkyHeightstr", "BG Sky Height:", view.renderer), 0.6f));
+        backgroundSkyHeight = new Textbox("backgroundSkyHeight", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window);
         backgroundSkyHeightPanel.elements.add(new Panel.PanelElement(backgroundSkyHeight, 0.4f));
     }
 

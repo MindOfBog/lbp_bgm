@@ -13,13 +13,16 @@ import bog.lbpas.view3d.managers.RenderMan;
 import bog.lbpas.view3d.managers.WindowMan;
 import bog.lbpas.view3d.renderer.gui.GuiKeybind;
 import bog.lbpas.view3d.renderer.gui.GuiScreen;
+import bog.lbpas.view3d.renderer.gui.cursor.Cursor;
 import bog.lbpas.view3d.renderer.gui.cursor.ECursor;
 import bog.lbpas.view3d.renderer.gui.elements.Button;
 import bog.lbpas.view3d.renderer.gui.elements.Checkbox;
 import bog.lbpas.view3d.renderer.gui.elements.*;
+import bog.lbpas.view3d.renderer.gui.font.FNT;
 import bog.lbpas.view3d.renderer.gui.font.FontRenderer;
 import bog.lbpas.view3d.renderer.gui.ingredients.*;
 import bog.lbpas.view3d.utils.*;
+import common.FileChooser;
 import cwlib.enums.*;
 import cwlib.resources.RMesh;
 import cwlib.structs.mesh.Bone;
@@ -39,10 +42,12 @@ import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
+import java.awt.event.FocusEvent;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.util.List;
 import java.util.*;
+import java.util.Random;
 
 /**
  * @author Bog
@@ -286,6 +291,7 @@ public class View3D implements ILogic {
 
     @Override
     public void update(MouseInput mouseInput) {
+
         ConstantTextures.mainThread();
         loader.primaryThread();
 
@@ -642,10 +648,10 @@ public class View3D implements ILogic {
 
     private void createUI() {
 
-        int xCoord = 300;
+        int xCoord = 325;
         int w = 125;
         int yCoord = 3;
-        Button elementEditing = new Button("elementEditing", "Scene", new Vector2f(xCoord, yCoord), new Vector2f(w, 21), 10, renderer, loader, window) {
+        Button elementEditing = new Button("elementEditing", "Scene", new Vector2f(xCoord, yCoord), new Vector2f(w, 21), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)setCurrentScreen(ElementEditing);
@@ -657,7 +663,7 @@ public class View3D implements ILogic {
             }
         };
         xCoord += w - 1;
-        Button archive = new Button("archive", "Archive", new Vector2f(xCoord, yCoord), new Vector2f(w, 21), 10, renderer, loader, window) {
+        Button archive = new Button("archive", "Archive", new Vector2f(xCoord, yCoord), new Vector2f(w, 21), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)setCurrentScreen(Archive);
@@ -669,7 +675,7 @@ public class View3D implements ILogic {
             }
         };
         xCoord += w - 1;
-        Button project = new Button("project", "Project", new Vector2f(xCoord, yCoord), new Vector2f(w, 21), 10, renderer, loader, window) {
+        Button project = new Button("project", "Project", new Vector2f(xCoord, yCoord), new Vector2f(w, 21), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)setCurrentScreen(ProjectManager);
@@ -681,7 +687,7 @@ public class View3D implements ILogic {
             }
         };
         xCoord += w - 1;
-        Button settingss = new Button("settingss", "Settings", new Vector2f(xCoord, yCoord), new Vector2f(w, 21), 10, renderer, loader, window) {
+        Button settingss = new Button("settingss", "Settings", new Vector2f(xCoord, yCoord), new Vector2f(w, 21), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)setCurrentScreen(Settings);
@@ -1067,7 +1073,13 @@ public class View3D implements ILogic {
         renderer.drawRect(0, window.height - 3, window.width, window.height, Config.PRIMARY_COLOR);
         renderer.drawRect(window.width - 3, 3, window.width, window.height - 6, Config.PRIMARY_COLOR);
 
-        renderer.drawString(Consts.TITLE + (Config.SHOW_FPS ? " | FPS: " + EngineMan.avgFPS : ""), Config.FONT_COLOR, 7 + 3, (int)(11 - (FontRenderer.getFontHeight(10) / 2) + 3), 10);
+        renderer.drawHeader(Consts.FONT_SET_BOLD + Consts.TITLE + " (v" + Consts.VERSION + ")" + (Config.SHOW_FPS ? " | FPS: " + EngineMan.avgFPS : ""), Config.FONT_COLOR, 7 + 3, (int)(11 - (getFontHeightHeader() / 2) + 3));
+
+//        double bounce = (-java.lang.Math.pow(1f- (((float)(System.currentTimeMillis() % 5000))/5000f) *2f,2f)+1f) * 100;
+//
+//        renderer.drawHeader(Consts.FONT_SET_BOLD + "\"',.hijklmnxyz{|}~ ¡¢£¤¥¦§¨©ª«¬\u00AD®¯°±²³", Config.FONT_COLOR, 7 + 3, 30, (int) bounce);
+//        renderer.drawHeader("\"',.hijklmnxyz{|}~ ¡¢£¤¥¦§¨©ª«¬\u00AD®¯°±²³", Config.FONT_COLOR, 7 + 3, 220, (int) bounce);
+
 //        drawString("entRen ent: " + renderer.entityRenderer.entities.size(), Config.FONT_COLOR, 10, 32, 10);
 //        drawString("entRen dir L: " + renderer.entityRenderer.directionalLights.size(), Config.FONT_COLOR, 10, 42, 10);
 //        drawString("entRen poi L: " + renderer.entityRenderer.pointLights.size(), Config.FONT_COLOR, 10, 52, 10);
@@ -1123,20 +1135,20 @@ public class View3D implements ILogic {
 
             if (vao)
             {
-                renderer.drawRect(10 - 3, 20 - 3 + ((getFontHeight(10) + 2) + 3) * l, getStringWidth("VAOs: " + loader.vaos.size(), 10) + 6, (getFontHeight(10) + 2) + 3, new Color(0f, 0f, 0f, 0.5f));
-                renderer.drawString("VAOs: " + loader.vaos.size(), Config.FONT_COLOR, 10, 20 + ((getFontHeight(10) + 2) + 3) * l, 10);
+                renderer.drawRect(10 - 3, 20 - 3 + ((getFontHeight(Config.GUI_SCALE) + 2) + 3) * l, getStringWidth("VAOs: " + loader.vaos.size(), Config.GUI_SCALE) + 6, (getFontHeight(10) + 2) + 3, new Color(0f, 0f, 0f, 0.5f));
+                renderer.drawString("VAOs: " + loader.vaos.size(), Config.FONT_COLOR, 20 + ((getFontHeight(Config.GUI_SCALE) + 2) + 3) * l, Config.GUI_SCALE);
                 l++;
             }
             if (vbo)
             {
-                renderer.drawRect(10 - 3, 20 - 3 + ((getFontHeight(10) + 2) + 3) * l, getStringWidth("VBOs: " + loader.vbos.size(), 10) + 6, (getFontHeight(10) + 2) + 3, new Color(0f, 0f, 0f, 0.5f));
-                renderer.drawString("VBOs: " + loader.vbos.size(), Config.FONT_COLOR, 10, 20 + ((getFontHeight(10) + 2) + 3) * l, 10);
+                renderer.drawRect(10 - 3, 20 - 3 + ((getFontHeight(Config.GUI_SCALE) + 2) + 3) * l, getStringWidth("VBOs: " + loader.vbos.size(), Config.GUI_SCALE) + 6, (getFontHeight(10) + 2) + 3, new Color(0f, 0f, 0f, 0.5f));
+                renderer.drawString("VBOs: " + loader.vbos.size(), Config.FONT_COLOR, 20 + ((getFontHeight(Config.GUI_SCALE) + 2) + 3) * l, Config.GUI_SCALE);
                 l++;
             }
             if (tex)
             {
-                renderer.drawRect(10 - 3, 20 - 3 + ((getFontHeight(10) + 2) + 3) * l, getStringWidth("Textures: " + loader.textures.size(), 10) + 6, (getFontHeight(10) + 2) + 3, new Color(0f, 0f, 0f, 0.5f));
-                renderer.drawString("Textures: " + loader.textures.size(), Config.FONT_COLOR, 10, 20 + ((getFontHeight(10) + 2) + 3) * l, 10);
+                renderer.drawRect(10 - 3, 20 - 3 + ((getFontHeight(Config.GUI_SCALE) + 2) + 3) * l, getStringWidth("Textures: " + loader.textures.size(), Config.GUI_SCALE) + 6, (getFontHeight(10) + 2) + 3, new Color(0f, 0f, 0f, 0.5f));
+                renderer.drawString("Textures: " + loader.textures.size(), Config.FONT_COLOR, 20 + ((getFontHeight(Config.GUI_SCALE) + 2) + 3) * l, Config.GUI_SCALE);
                 l++;
             }
             if(thread)
@@ -1146,8 +1158,8 @@ public class View3D implements ILogic {
                 for (long id : threadIds) {
                     long cpuTime = threadMXBean.getThreadCpuTime(id) / 1000000l;
                     String s = "Thread ID: " + id + " CPU Time: " + cpuTime + " ms";
-                    renderer.drawRect(10 - 3, 20 - 3 + ((getFontHeight(10) + 2) + 3) * l, getStringWidth(s, 10) + 6, (getFontHeight(10) + 2) + 3, new Color(0f, 0f, 0f, 0.5f));
-                    renderer.drawString(s, Config.FONT_COLOR, 10, 20 + ((getFontHeight(10) + 2) + 3) * l, 10);
+                    renderer.drawRect(10 - 3, 20 - 3 + ((getFontHeight(10) + 2) + 3) * l, getStringWidth(s, Config.GUI_SCALE) + 6, (getFontHeight(Config.GUI_SCALE) + 2) + 3, new Color(0f, 0f, 0f, 0.5f));
+                    renderer.drawString(s, Config.FONT_COLOR, 20 + ((getFontHeight(Config.GUI_SCALE) + 2) + 3) * l, Config.GUI_SCALE);
                     l++;
                 }
             }
@@ -1168,16 +1180,59 @@ public class View3D implements ILogic {
 
         if(!introPlayed)
         {
+            long msPassed = System.currentTimeMillis() - initMillis;
+
+            int introDuration = 1300;
+
             Cursors.setCursor(ECursor.left_ptr_watch);
             mouseInput.currentPos = prev;
-            float out = 3f - (System.currentTimeMillis() - initMillis) / 1300f;
+            float out = 3f - msPassed / (float)introDuration;
             float in = Math.clamp(0f, 1f, out - 1.5f);
             out = Math.clamp(0f, 1f, out);
 
             if (out != 0) {
                 renderer.drawRect(0, 0, window.width, window.height, new Color(1f, 1f, 1f, out));
-                renderer.drawImageStatic(ConstantTextures.getTexture(ConstantTextures.ICON, 461, 461, loader), window.width / 2 - 461 / 2, window.height / 2 - 461 / 2, 461, 461, loader);
-                renderer.drawRect(0, 0, window.width, window.height, new Color(1f, 1f, 1f, in));
+                renderer.drawImageStatic(ConstantTextures.getTexture(ConstantTextures.ICON, 461, 461, loader), window.width / 2 - 461 / 2, window.height / 2 - 461 / 2, 461, 461, new Color(1f, 1f, 1f, 1f - in), loader);
+
+                String splashText = "Welcome to LBP Asset Studio v" + Consts.VERSION;
+                StringBuilder target = new StringBuilder();
+
+                String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+                int DURATION = (int) (introDuration * 1.5f);
+                double FRAME_DELAY = EngineMan.ms;
+
+                int frameCount = (int) (DURATION / FRAME_DELAY);
+                int totalFrames = splashText.length() * frameCount;
+
+                Random random = new Random();
+
+                for (int i = 0; i < totalFrames; i++) {
+                    int charIndex = (i / frameCount);
+                    int currentTime = (int) Math.min(msPassed, DURATION);
+                    char randomChar = CHARACTERS.charAt(random.nextInt(CHARACTERS.length()));
+
+                    if (currentTime > (DURATION / splashText.length()) * charIndex) {
+
+                        if(target.length() <= charIndex)
+                            target.append(splashText.charAt(charIndex));
+                        else
+                            target.setCharAt(charIndex, splashText.charAt(charIndex));
+                    }
+                    else if (i % frameCount == 0 && charIndex < splashText.length()) {
+                        target.append(randomChar);
+                        break;
+                    }
+
+                    if (charIndex >= splashText.length()) {
+                        break;
+                    }
+                }
+
+                String finalSplash = Consts.FONT_SET_BOLD + target.toString();
+
+                FontRenderer.drawString(renderer, finalSplash, window.width / 2 - getStringWidthHeader(splashText, 40) / 2, window.height / 2 + 461 / 2 + 10, 40, Config.OUTLINE_COLOR, 0, finalSplash.length(), FontRenderer.Fonts.get(FontRenderer.headerFont));
+
+                renderer.drawRect(0, 0, window.width, window.height, new Color(1f, 0f, 0f, 0f));
             } else introPlayed = true;
         }
     }
@@ -1226,14 +1281,44 @@ public class View3D implements ILogic {
         return null;
     }
 
-    private int getStringWidth(String text, int size)
+    public int getStringWidth(String text)
     {
-        return (int)FontRenderer.getStringWidth(text, size);
+        return (int)FontRenderer.getStringWidth(text, Config.GUI_SCALE, FontRenderer.Fonts.get(FontRenderer.textFont));
     }
 
-    private int getFontHeight(int size)
+    public int getStringWidth(String text, int size)
     {
-        return (int)FontRenderer.getFontHeight(size);
+        return (int)FontRenderer.getStringWidth(text, size, FontRenderer.Fonts.get(FontRenderer.textFont));
+    }
+
+    public int getFontHeight()
+    {
+        return (int)FontRenderer.getFontHeight(Config.GUI_SCALE, FontRenderer.Fonts.get(FontRenderer.textFont));
+    }
+
+    public int getFontHeight(int size)
+    {
+        return (int)FontRenderer.getFontHeight(size, FontRenderer.Fonts.get(FontRenderer.textFont));
+    }
+
+    public int getStringWidthHeader(String text, int size)
+    {
+        return (int)FontRenderer.getStringWidth(text, size, FontRenderer.Fonts.get(FontRenderer.headerFont));
+    }
+
+    public int getStringWidthHeader(String text)
+    {
+        return (int)FontRenderer.getStringWidth(text, Math.round(Config.GUI_SCALE * 1.25f), FontRenderer.Fonts.get(FontRenderer.headerFont));
+    }
+
+    public int getFontHeightHeader()
+    {
+        return (int)FontRenderer.getFontHeight(Math.round(Config.GUI_SCALE * 1.25f), FontRenderer.Fonts.get(FontRenderer.headerFont));
+    }
+
+    public int getFontHeightHeader(int size)
+    {
+        return (int)FontRenderer.getFontHeight(size, FontRenderer.Fonts.get(FontRenderer.headerFont));
     }
 
     public void copySelected()

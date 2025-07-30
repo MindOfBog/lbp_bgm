@@ -47,27 +47,27 @@ public abstract class PartGeneratedMesh extends iPart {
     public void init(View3D view) {
 
         Panel gmatPanel = partComboBox.addPanel("gmatPanel");
-        gmatPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("gmatstr", "Gmat:", 10, view.renderer), 0.55f));
-        Gmat = new Textbox("Gmat", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
+        gmatPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("gmatstr", "Gmat:", view.renderer), 0.55f));
+        Gmat = new Textbox("Gmat", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window);
         gmatPanel.elements.add(new Panel.PanelElement(Gmat, 0.45f));
 
         Panel bevelPanel = partComboBox.addPanel("bevelPanel");
-        bevelPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("bevelstr", "Bevel:", 10, view.renderer), 0.55f));
-        Bevel = new Textbox("Bevel", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
+        bevelPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("bevelstr", "Bevel:", view.renderer), 0.55f));
+        Bevel = new Textbox("Bevel", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window);
         bevelPanel.elements.add(new Panel.PanelElement(Bevel, 0.45f));
 
         Panel uv0Panel = partComboBox.addPanel("uv0Panel");
-        uv0Panel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("uv0str", "UV 0 Offset:", 10, view.renderer), 0.55f));
-        UV0X = new Textbox("UV0X", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
-        UV0Y = new Textbox("UV0Y", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
+        uv0Panel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("uv0str", "UV 0 Offset:", view.renderer), 0.55f));
+        UV0X = new Textbox("UV0X", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window);
+        UV0Y = new Textbox("UV0Y", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window);
         uv0Panel.elements.add(new Panel.PanelElement(UV0X, 0.22f));
         uv0Panel.elements.add(new Panel.PanelElement(null, 0.01f));
         uv0Panel.elements.add(new Panel.PanelElement(UV0Y, 0.22f));
 
         Panel uv1Panel = partComboBox.addPanel("uv1Panel");
-        uv1Panel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("uv1str", "UV 1 Offset:", 10, view.renderer), 0.55f));
-        UV1X = new Textbox("UV1X", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
-        UV1Y = new Textbox("UV1Y", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
+        uv1Panel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("uv1str", "UV 1 Offset:", view.renderer), 0.55f));
+        UV1X = new Textbox("UV1X", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window);
+        UV1Y = new Textbox("UV1Y", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window);
         uv1Panel.elements.add(new Panel.PanelElement(UV1X, 0.22f));
         uv1Panel.elements.add(new Panel.PanelElement(null, 0.01f));
         uv1Panel.elements.add(new Panel.PanelElement(UV1Y, 0.22f));
@@ -105,13 +105,13 @@ public abstract class PartGeneratedMesh extends iPart {
         });
 
         Panel animSpeedPanel = partComboBox.addPanel("animSpeedPanel");
-        animSpeedPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("animspeedstr", "Anim. Speed:", 10, view.renderer), 0.55f));
-        AnimationSpeed = new Textbox("AnimationSpeed", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
+        animSpeedPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("animspeedstr", "Anim. Speed:", view.renderer), 0.55f));
+        AnimationSpeed = new Textbox("AnimationSpeed", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window);
         animSpeedPanel.elements.add(new Panel.PanelElement(AnimationSpeed, 0.45f));
 
         Panel animSpeedOffPanel = partComboBox.addPanel("animSpeedOffPanel");
-        animSpeedOffPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("animspeedoffstr", "A. Speed Off:", 10, view.renderer), 0.55f));
-        AnimationSpeedOff = new Textbox("AnimationSpeedOff", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
+        animSpeedOffPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("animspeedoffstr", "A. Speed Off:", view.renderer), 0.55f));
+        AnimationSpeedOff = new Textbox("AnimationSpeedOff", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window);
         animSpeedOffPanel.elements.add(new Panel.PanelElement(AnimationSpeedOff, 0.45f));
 
         NoBevel = partComboBox.addCheckbox("NoBevel", "No Bevel", new Checkbox()
@@ -163,18 +163,18 @@ public abstract class PartGeneratedMesh extends iPart {
         partComboBox.addString("slidestuff", "Slide Settings:");
 
         Panel slideImpactDampPanel = partComboBox.addPanel("slideImpactDampPanel");
-        slideImpactDampPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("slideimpdampstr", "Impact Damp:", 10, view.renderer), 0.55f));
-        SlideImpactDamping = new Textbox("SlideImpactDamping", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
+        slideImpactDampPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("slideimpdampstr", "Impact Damp:", view.renderer), 0.55f));
+        SlideImpactDamping = new Textbox("SlideImpactDamping", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window);
         slideImpactDampPanel.elements.add(new Panel.PanelElement(SlideImpactDamping, 0.45f));
 
         Panel slideSteerPanel = partComboBox.addPanel("slideSteerPanel");
-        slideSteerPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("slidesteerstr", "Steer:", 10, view.renderer), 0.55f));
-        SlideSteer = new Textbox("SlideSteer", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
+        slideSteerPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("slidesteerstr", "Steer:", view.renderer), 0.55f));
+        SlideSteer = new Textbox("SlideSteer", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window);
         slideSteerPanel.elements.add(new Panel.PanelElement(SlideSteer, 0.45f));
 
         Panel slideSpeedPanel = partComboBox.addPanel("slideSpeedPanel");
-        slideSpeedPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("slidespeedstr", "Speed:", 10, view.renderer), 0.55f));
-        SlideSpeed = new Textbox("SlideSpeed", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
+        slideSpeedPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("slidespeedstr", "Speed:", view.renderer), 0.55f));
+        SlideSpeed = new Textbox("SlideSpeed", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window);
         slideSpeedPanel.elements.add(new Panel.PanelElement(SlideSpeed, 0.45f));
     }
 

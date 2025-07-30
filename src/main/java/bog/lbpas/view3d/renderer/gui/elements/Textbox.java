@@ -25,7 +25,6 @@ import java.awt.datatransfer.StringSelection;
 public class Textbox extends Element{
 
     public String text = "";
-    public int fontSize;
     boolean numbers = true;
     boolean letters = true;
     boolean others = true;
@@ -35,23 +34,21 @@ public class Textbox extends Element{
 
     float[] numberLimits = new float[0];
 
-    public Textbox(String id, Vector2f pos, Vector2f size, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window)
+    public Textbox(String id, Vector2f pos, Vector2f size, RenderMan renderer, ObjectLoader loader, WindowMan window)
     {
         this.id = id;
         this.pos = pos;
         this.size = size;
-        this.fontSize = fontSize;
         this.renderer = renderer;
         this.loader = loader;
         this.window = window;
     }
 
-    public Textbox(String id, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window)
+    public Textbox(String id, RenderMan renderer, ObjectLoader loader, WindowMan window)
     {
         this.id = id;
         this.pos = new Vector2f();
         this.size = new Vector2f();
-        this.fontSize = fontSize;
         this.renderer = renderer;
         this.loader = loader;
         this.window = window;
@@ -102,23 +99,23 @@ public class Textbox extends Element{
         {
             try
             {
-                if((int) Math.round(pos.x + xScroll + this.size.y / 2 - getFontHeight(fontSize) / 2) + getStringWidth(text.substring(0, i), fontSize) < pos.x)
+                if((int) Math.round(pos.x + xScroll + this.size.y / 2 - getFontHeight() / 2) + getStringWidth(text.substring(0, i)) < pos.x)
                     begin = i;
 
-                if((int) Math.round(pos.x + xScroll + this.size.y / 2 - getFontHeight(fontSize) / 2) + getStringWidth(text.substring(0, i + 1), fontSize) < pos.x + size.x)
+                if((int) Math.round(pos.x + xScroll + this.size.y / 2 - getFontHeight() / 2) + getStringWidth(text.substring(0, i + 1)) < pos.x + size.x)
                     end = i + 1;
             }catch (Exception e){}
         }
 
-        renderer.drawString(text, textColor(), (int) Math.round(pos.x + xScroll + this.size.y / 2 - getFontHeight(fontSize) / 2), (int) Math.round(pos.y + this.size.y / 2 - getFontHeight(fontSize) / 2), fontSize, begin, end);
+        renderer.drawString(text, textColor(), (int) Math.round(pos.x + xScroll + this.size.y / 2 - getFontHeight() / 2), (int) Math.round(pos.y + this.size.y / 2 - getFontHeight() / 2), begin, end);
 
         if(!this.disabled)
         {
             if(500 > (System.currentTimeMillis() - Consts.startMillis) % 1000 && isFocused())
                 if(currentSelection == text.length())
-                    renderer.drawString("_", textColor(), (int) Math.round(pos.x + xScroll + getStringWidth(text, fontSize) + 1 + this.size.y/2 - getFontHeight(fontSize)/2), (int) Math.round(pos.y + this.size.y/2 - getFontHeight(fontSize)/2), fontSize);
+                    renderer.drawString("_", textColor(), (int) Math.round(pos.x + xScroll + getStringWidth(text) + 1 + this.size.y/2 - getFontHeight()/2), (int) Math.round(pos.y + this.size.y/2 - getFontHeight()/2));
                 else
-                    renderer.drawRect((int) Math.round(xScroll + pos.x + getStringWidth(text.substring(0, currentSelection), fontSize) + this.size.y/2 - getFontHeight(fontSize)/2 - 1), (int) Math.round(pos.y + this.size.y/2 - getFontHeight(fontSize)/2), 1, (int) Math.round(getFontHeight(fontSize) - 2), textColor());
+                    renderer.drawRect((int) Math.round(xScroll + pos.x + getStringWidth(text.substring(0, currentSelection)) + this.size.y/2 - getFontHeight()/2 - 1), (int) Math.round(pos.y + this.size.y/2 - getFontHeight()/2), 1, (int) Math.round(getFontHeight() - 2), textColor());
 
             if(selectedText[0] >= 0 && selectedText[1] >= 0 && selectedText[0] != selectedText[1])
             {
@@ -132,22 +129,22 @@ public class Textbox extends Element{
                 }
 
                 float[] pos1 = {
-                        pos.x + xScroll + this.size.y / 2 - getFontHeight(fontSize) / 2,
-                        pos.y + this.size.y / 2 - getFontHeight(fontSize) / 2
+                        pos.x + xScroll + this.size.y / 2 - getFontHeight() / 2,
+                        pos.y + this.size.y / 2 - getFontHeight() / 2
                 };
 
-                float x = pos1[0] + getStringWidth(text.substring(0, selectionStart), fontSize);
+                float x = pos1[0] + getStringWidth(text.substring(0, selectionStart));
                 float diff = 0;
                 if (x < pos.x) {
                     diff = x - pos.x;
                     x = pos.x;
                 }
 
-                float width = getStringWidth(text.substring(selectionStart, selectionEnd), fontSize) + 1 + diff;
+                float width = getStringWidth(text.substring(selectionStart, selectionEnd)) + 1 + diff;
                 if (x + width > pos.x + size.x)
                     width = pos.x + size.x - x;
 
-                renderer.drawRectInvert((int) Math.round(x - 1), (int) Math.round(pos1[1] - 1), (int) Math.round(width + 1), getFontHeight(fontSize) + 2);
+                renderer.drawRectInvert((int) Math.round(x - 1), (int) Math.round(pos1[1] - 1), (int) Math.round(width + 1), getFontHeight() + 2);
             }
         }
         renderer.drawRectOutline(new Vector2f((int) Math.round(pos.x), (int) Math.round(pos.y)), outlineRect, isMouseOverElement(mouseInput) && !overOther || this.isFocused() ? Config.INTERFACE_SECONDARY_COLOR2 : Config.INTERFACE_PRIMARY_COLOR2, false);
@@ -731,15 +728,15 @@ public class Textbox extends Element{
 
         for(int i = text.length(); i >= 0; i--)
         {
-            int fontHeight = getFontHeight(fontSize);
+            int fontHeight = getFontHeight();
 
             int cur = i;
             int prev = i - 1 < 0 ? 0 : i - 1;
 
-            int widthPrev = getStringWidth(text.substring(0, prev), fontSize) - 1;
-            int widthNextLetter = cur == text.length() ? 0 : getStringWidth(text.substring(cur, cur + 1), fontSize);
-            int widthCur = cur == text.length() ? getStringWidth(text, fontSize) :
-                    getStringWidth(text.substring(0, cur + 1), fontSize) - widthNextLetter;
+            int widthPrev = getStringWidth(text.substring(0, prev)) - 1;
+            int widthNextLetter = cur == text.length() ? 0 : getStringWidth(text.substring(cur, cur + 1));
+            int widthCur = cur == text.length() ? getStringWidth(text) :
+                    getStringWidth(text.substring(0, cur + 1)) - widthNextLetter;
 
             if(cur == text.length() && pos.x >= this.pos.x + widthCur + xScroll)
                 return text.length();
@@ -761,15 +758,15 @@ public class Textbox extends Element{
 
         float spot = this.size.x * 0.5f;
 
-        int widthToSelection = getStringWidth(text.substring(0, currentSelection), fontSize);
+        int widthToSelection = getStringWidth(text.substring(0, currentSelection));
 
         if(xScroll + widthToSelection < spot)
             xScroll = spot - widthToSelection;
         else if(xScroll + widthToSelection > spot)
             xScroll = spot - widthToSelection;
 
-        if(xScroll < -(getFontHeight(fontSize) + (getStringWidth(text, fontSize) - this.size.x)))
-            xScroll = -(getFontHeight(fontSize) + (getStringWidth(text, fontSize) - this.size.x));
+        if(xScroll < -(getFontHeight() + (getStringWidth(text) - this.size.x)))
+            xScroll = -(getFontHeight() + (getStringWidth(text) - this.size.x));
         if(xScroll > 0)
             xScroll = 0;
 

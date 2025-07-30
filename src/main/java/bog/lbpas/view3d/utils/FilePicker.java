@@ -192,7 +192,7 @@ public class FilePicker {
 
                         panel.elements.add(new Panel.PanelElement(null, gap));
 
-                        ComboBoxImage optionsCombo = new ComboBoxImage("optionsCombo", 10, 200, new Vector2f(23, 23), mainView.renderer, mainView.loader, mainView.window) {
+                        ComboBoxImage optionsCombo = new ComboBoxImage("optionsCombo", 200, new Vector2f(23, 23), mainView.renderer, mainView.loader, mainView.window) {
                             @Override
                             public Texture getImage() {
                                 return ConstantTextures.getTexture(ConstantTextures.OPTIONS, 23, 23, loader);

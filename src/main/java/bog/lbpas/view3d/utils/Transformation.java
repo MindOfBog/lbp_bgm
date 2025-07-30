@@ -12,7 +12,17 @@ public class Transformation {
 
     public static Matrix4f createTransformationMatrix(Vector2f translation, Vector2f scale) {
         Matrix4f matrix = new Matrix4f();
-        matrix.identity().translate(new Vector3f(translation.x, translation.y, 0f))
+        matrix.identity().translate(
+                        new Vector3f(translation.x, translation.y, 0f))
+                .scale(new Vector3f(scale.x, scale.y, 1f));
+        return matrix;
+    }
+
+    public static Matrix4f createTransformationMatrix(Vector2f translation, Vector2f scale, float shear) {
+        Matrix4f matrix = new Matrix4f();
+        matrix.identity()
+                .translate(new Vector3f(translation.x, translation.y, 0f))
+                .m10(shear)
                 .scale(new Vector3f(scale.x, scale.y, 1f));
         return matrix;
     }

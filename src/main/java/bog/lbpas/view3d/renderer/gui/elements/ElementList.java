@@ -23,7 +23,6 @@ import java.util.ArrayList;
 public class ElementList extends Element{
 
     public ArrayList<Element> elements;
-    public int fontSize;
 
     float yScroll = 3;
     boolean scrolling = false;
@@ -34,12 +33,11 @@ public class ElementList extends Element{
     public Model listLine;
     public int lineOffset;
 
-    public ElementList(String id, Vector2f pos, Vector2f size, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window)
+    public ElementList(String id, Vector2f pos, Vector2f size, RenderMan renderer, ObjectLoader loader, WindowMan window)
     {
         this.id = id;
         this.pos = pos;
         this.size = size;
-        this.fontSize = fontSize;
         this.renderer = renderer;
         this.loader = loader;
         this.window = window;
@@ -87,10 +85,9 @@ public class ElementList extends Element{
             button.buttonText = buttonText;
             button.pos = new Vector2f(0, 0);
             if(button.size == null)
-                button.size = new Vector2f(size.x - 4, getFontHeight(fontSize) + 4);
+                button.size = new Vector2f(size.x - 4, getFontHeight() + 4);
             else
                 button.size.x = size.x - 4;
-            button.fontSize = fontSize;
             button.renderer = renderer;
             button.window = window;
             button.loader = loader;
@@ -105,10 +102,9 @@ public class ElementList extends Element{
         {
             elementList.pos = new Vector2f(0, 0);
             if(elementList.size == null)
-                elementList.size = new Vector2f(this.size.x - 4, getFontHeight(fontSize) + 4);
+                elementList.size = new Vector2f(this.size.x - 4, getFontHeight() + 4);
             else
                 elementList.size.x = this.size.x - 4;
-            elementList.fontSize = fontSize;
             elementList.renderer = renderer;
             elementList.window = window;
             elementList.loader = loader;
@@ -124,7 +120,7 @@ public class ElementList extends Element{
         if(!containsElementByID(id))
         {
             ElementList elList = this;
-            ComboBox comboBox = new ComboBox(id, title, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight(fontSize) + 4), fontSize, tabWidth, renderer, loader, window)
+            ComboBox comboBox = new ComboBox(id, title, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight() + 4), tabWidth, renderer, loader, window)
             {
                 @Override
                 public int[] getParentTransform() {
@@ -142,7 +138,7 @@ public class ElementList extends Element{
     {
         if(!containsElementByID(id))
         {
-            Checkbox cb = new Checkbox(id, text, new Vector2f(0, 0), fontSize, renderer, loader, window);
+            Checkbox cb = new Checkbox(id, text, new Vector2f(0, 0), renderer, loader, window);
             elements.add(cb);
             return cb;
         }
@@ -153,7 +149,7 @@ public class ElementList extends Element{
     {
         if(!containsElementByID(id))
         {
-            ElementList elementList = new ElementList(id, new Vector2f(0, 0), new Vector2f(this.size.x - 4, getFontHeight(fontSize) + 4), fontSize, renderer, loader, window);
+            ElementList elementList = new ElementList(id, new Vector2f(0, 0), new Vector2f(this.size.x - 4, getFontHeight() + 4), renderer, loader, window);
             elements.add(elementList);
             return elementList;
         }
@@ -168,7 +164,6 @@ public class ElementList extends Element{
             cb.id = id;
             cb.text = text;
             cb.pos = new Vector2f(0, 0);
-            cb.fontSize = fontSize;
             cb.renderer = renderer;
             cb.loader = loader;
             cb.window = window;
@@ -182,11 +177,10 @@ public class ElementList extends Element{
     {
         if(!containsElementByID(id))
         {
-            cb.fontSize = fontSize;
             cb.renderer = renderer;
             cb.loader = loader;
             cb.window = window;
-            cb.size = new Vector2f(getStringWidth(cb.text, cb.fontSize) + (getFontHeight(cb.fontSize) * 0.85f) * 1.25f, getFontHeight(cb.fontSize));
+            cb.size = new Vector2f(getStringWidth(cb.text) + (getFontHeight() * 0.85f) * 1.25f, getFontHeight());
             cb.prevSize = cb.size;
             cb.outlineRect = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(cb.size.y * 0.85f, cb.size.y * 0.85f)), cb.loader, cb.window);
             elements.add(cb);
@@ -199,7 +193,7 @@ public class ElementList extends Element{
     {
         if(!containsElementByID(id))
         {
-            Checkbox checkbox = new Checkbox(id, text, new Vector2f(0, 0), fontSize, renderer, loader, window);
+            Checkbox checkbox = new Checkbox(id, text, new Vector2f(0, 0), renderer, loader, window);
             checkbox.isChecked = checked;
             elements.add(checkbox);
             return checkbox;
@@ -210,26 +204,26 @@ public class ElementList extends Element{
     public void addSlider(String id)
     {
         if(!containsElementByID(id))
-            elements.add(new Slider(id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight(fontSize) + 4), renderer, loader, window));
+            elements.add(new Slider(id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight() + 4), renderer, loader, window));
     }
 
     public void addSlider(String id, float sliderPosition, float min, float max)
     {
         if(!containsElementByID(id))
-            elements.add(new Slider(id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight(fontSize) + 4), renderer, loader, window, sliderPosition, min, max));
+            elements.add(new Slider(id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight() + 4), renderer, loader, window, sliderPosition, min, max));
     }
 
     public void addTextbox(String id)
     {
         if(!containsElementByID(id))
-            elements.add(new Textbox(id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight(fontSize) + 4), fontSize, renderer, loader, window));
+            elements.add(new Textbox(id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight() + 4), renderer, loader, window));
     }
 
     public void addTextbox(String id, boolean numbers, boolean letters, boolean others)
     {
         if(!containsElementByID(id))
         {
-            Textbox tb = new Textbox(id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight(fontSize) + 4), fontSize, renderer, loader, window);
+            Textbox tb = new Textbox(id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight() + 4), renderer, loader, window);
             tb.numbers = numbers;
             tb.letters = letters;
             tb.others = others;
@@ -241,7 +235,7 @@ public class ElementList extends Element{
     {
         if(!containsElementByID(id))
         {
-            Textbox tb = new Textbox(id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight(fontSize) + 4), fontSize, renderer, loader, window);
+            Textbox tb = new Textbox(id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight() + 4), renderer, loader, window);
             tb.setText(text);
             elements.add(tb);
         }
@@ -251,7 +245,7 @@ public class ElementList extends Element{
     {
         if(!containsElementByID(id))
         {
-            Textbox tb = new Textbox(id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight(fontSize) + 4), fontSize, renderer, loader, window);
+            Textbox tb = new Textbox(id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight() + 4), renderer, loader, window);
             tb.numbers = numbers;
             tb.letters = letters;
             tb.others = others;
@@ -264,7 +258,7 @@ public class ElementList extends Element{
     {
         if(!containsElementByID(id))
         {
-            Panel p = new Panel(new Vector2f(size.x - 4, getFontHeight(fontSize) + 4), renderer);
+            Panel p = new Panel(new Vector2f(size.x - 4, getFontHeight() + 4), renderer);
             p.id = id;
             elements.add(p);
             return p;
@@ -280,10 +274,10 @@ public class ElementList extends Element{
             if(p.pos == null)
                 p.pos = new Vector2f();
             if(p.size == null)
-                p.size = new Vector2f(0, getFontHeight(fontSize) + 4);
+                p.size = new Vector2f(0, getFontHeight() + 4);
             p.size.x = size.x - 4;
             if(p.size.y == 0)
-                p.size.y = getFontHeight(fontSize) + 4;
+                p.size.y = getFontHeight() + 4;
             if(p.id == null)
                 p.id = this.id + "-" + (int)(Math.random() * 1000000);
             elements.add(p);
@@ -296,7 +290,7 @@ public class ElementList extends Element{
     public void addString(String id, String string)
     {
         if(!containsElementByID(id))
-            elements.add(new DropDownTab.StringElement(id, string, fontSize, renderer));
+            elements.add(new DropDownTab.StringElement(id, string, renderer));
     }
 
     public void addList(String id, ButtonList buttonList, int height)
@@ -325,7 +319,7 @@ public class ElementList extends Element{
     {
         if(!containsElementByID(id))
         {
-            DropDownTab.SeparatorElement sep = new DropDownTab.SeparatorElement(id, new Vector2f(0), size.x - 20, 10, renderer, loader, window);
+            DropDownTab.SeparatorElement sep = new DropDownTab.SeparatorElement(id, new Vector2f(0), size.x - 20, renderer, loader, window);
             elements.add(sep);
             return sep;
         }
@@ -434,7 +428,7 @@ public class ElementList extends Element{
             element.pos = new Vector2f(Math.round(pos.x + (element instanceof ButtonList ? 0 : 2) + 2), Math.round(pos.y + 2 + yOffset + yScroll));
 
             if (element.size == null)
-                element.size = new Vector2f(size.x - 2.0f - (element instanceof ButtonList ? 0 : 4) - frac, getFontHeight(fontSize) + 4);
+                element.size = new Vector2f(size.x - 2.0f - (element instanceof ButtonList ? 0 : 4) - frac, getFontHeight() + 4);
             else
                 element.size.x = size.x - 2.0f - (element instanceof ButtonList ? 0 : 4) - frac;
 

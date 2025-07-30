@@ -21,7 +21,6 @@ import java.awt.*;
 public abstract class Button extends Element{
 
     public String buttonText;
-    int fontSize;
     public boolean isClicked = false;
 
     Vector2f prevSize;
@@ -38,41 +37,38 @@ public abstract class Button extends Element{
         this.prevSize = new Vector2f();
     }
 
-    public Button(String id, String buttonText, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window)
+    public Button(String id, String buttonText, RenderMan renderer, ObjectLoader loader, WindowMan window)
     {
         this.id = id;
         this.pos = new Vector2f();
         this.size = new Vector2f();
         this.prevSize = new Vector2f();
-        this.fontSize = fontSize;
         this.renderer = renderer;
         this.loader = loader;
         this.window = window;
         this.buttonText = buttonText;
     }
 
-    public Button(String id, String buttonText, Vector2f pos, Vector2f size, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window)
+    public Button(String id, String buttonText, Vector2f pos, Vector2f size, RenderMan renderer, ObjectLoader loader, WindowMan window)
     {
         this.id = id;
         this.pos = pos;
         this.size = size;
         this.prevSize = size;
         this.outlineRect = LineStrip.processVerts(LineStrip.getRectangle(size), loader, window);
-        this.fontSize = fontSize;
         this.renderer = renderer;
         this.loader = loader;
         this.window = window;
         this.buttonText = buttonText;
     }
 
-    public Button(String id, String buttonText, Vector2f pos, Vector2f size, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window, Color buttonColor, Color buttonColorHighlighted, Color buttonColorClicked)
+    public Button(String id, String buttonText, Vector2f pos, Vector2f size, RenderMan renderer, ObjectLoader loader, WindowMan window, Color buttonColor, Color buttonColorHighlighted, Color buttonColorClicked)
     {
         this.id = id;
         this.pos = pos;
         this.size = size;
         this.prevSize = size;
         this.outlineRect = LineStrip.processVerts(LineStrip.getRectangle(size), loader, window);
-        this.fontSize = fontSize;
         this.renderer = renderer;
         this.loader = loader;
         this.window = window;
@@ -109,7 +105,7 @@ public abstract class Button extends Element{
 
         renderer.startScissor(Math.round(pos.x), Math.round(pos.y), Math.round(size.x), Math.round(size.y));
         renderer.drawRect(Math.round(pos.x), Math.round(pos.y), Math.round(size.x), Math.round(size.y), c);
-        renderer.drawString(buttonText, Config.FONT_COLOR, Math.round(pos.x + size.x / 2 - getStringWidth(buttonText, fontSize) / 2), Math.round(pos.y + size.y / 2 - getFontHeight(fontSize) / 2), fontSize);
+        renderer.drawString(buttonText, Config.FONT_COLOR, Math.round(pos.x + size.x / 2 - getStringWidth(buttonText) / 2), Math.round(pos.y + size.y / 2 - getFontHeight() / 2));
         renderer.endScissor();
         renderer.drawRectOutline(new Vector2f(Math.round(pos.x), Math.round(pos.y)), outlineRect, c2, false);
     }

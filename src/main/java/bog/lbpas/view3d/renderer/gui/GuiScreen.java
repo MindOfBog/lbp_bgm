@@ -7,6 +7,7 @@ import bog.lbpas.view3d.managers.WindowMan;
 import bog.lbpas.view3d.renderer.gui.elements.*;
 import bog.lbpas.view3d.renderer.gui.elements.Panel;
 import bog.lbpas.view3d.renderer.gui.font.FontRenderer;
+import bog.lbpas.view3d.utils.Config;
 import org.joml.Vector2d;
 import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
@@ -296,14 +297,44 @@ public class GuiScreen {
         return overElement;
     }
 
-    public int getStringWidth(String text, int size)
+    public int getStringWidth(String text)
     {
-        return (int)FontRenderer.getStringWidth(text, size);
+        return getStringWidth(text, Config.GUI_SCALE);
     }
 
-    public int getFontHeight(int size)
+    private int getStringWidth(String text, int size)
     {
-        return (int)FontRenderer.getFontHeight(size);
+        return (int)FontRenderer.getStringWidth(text, size, FontRenderer.Fonts.get(FontRenderer.textFont));
+    }
+
+    public int getFontHeight()
+    {
+        return getFontHeight(Config.GUI_SCALE);
+    }
+
+    private int getFontHeight(int size)
+    {
+        return (int)FontRenderer.getFontHeight(size, FontRenderer.Fonts.get(FontRenderer.textFont));
+    }
+
+    public int getStringWidthHeader(String text)
+    {
+        return getStringWidthHeader(text, Math.round(Config.GUI_SCALE * 1.25f));
+    }
+
+    private int getStringWidthHeader(String text, int size)
+    {
+        return (int)FontRenderer.getStringWidth(text, size, FontRenderer.Fonts.get(FontRenderer.headerFont));
+    }
+
+    public int getFontHeightHeader()
+    {
+        return getFontHeightHeader(Math.round(Config.GUI_SCALE * 1.25f));
+    }
+
+    private int getFontHeightHeader(int size)
+    {
+        return (int)FontRenderer.getFontHeight(size, FontRenderer.Fonts.get(FontRenderer.headerFont));
     }
 
     public boolean elementFocused()

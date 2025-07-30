@@ -3,6 +3,7 @@ package bog.lbpas.view3d.utils;
 import bog.lbpas.view3d.managers.WindowMan;
 import bog.lbpas.view3d.renderer.gui.cursor.Cursor;
 import bog.lbpas.view3d.renderer.gui.cursor.ECursor;
+import common.FileChooser;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
@@ -21,7 +22,8 @@ public class Cursors {
 
     public static void setCursor(ECursor cursor)
     {
-        currentCursorType = cursor.id;
+        if(!FileChooser.isLegacyFDopen)
+            currentCursorType = cursor.id;
     }
 
     public static void updateCursor(WindowMan window)

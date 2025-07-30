@@ -33,18 +33,18 @@ public abstract class PartRef extends iPart {
     public void init(View3D view) {
 
         Panel planPanel = partComboBox.addPanel("planPanel");
-        planPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("planStr", "Plan:", 10, view.renderer), 0.5f));
-        plan = new Textbox("plan", 10, view.renderer, view.loader, view.window);
+        planPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("planStr", "Plan:", view.renderer), 0.5f));
+        plan = new Textbox("plan", view.renderer, view.loader, view.window);
         planPanel.elements.add(new Panel.PanelElement(plan, 0.5f));
 
         Panel oldLifetimePanel = partComboBox.addPanel("oldLifetimePanel");
-        oldLifetimePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("oldLifetimeStr", "Lifetime:", 10, view.renderer), 0.7f));
-        oldLifetime = new Textbox("oldLifetime", 10, view.renderer, view.loader, view.window);
+        oldLifetimePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("oldLifetimeStr", "Lifetime:", view.renderer), 0.7f));
+        oldLifetime = new Textbox("oldLifetime", view.renderer, view.loader, view.window);
         oldLifetimePanel.elements.add(new Panel.PanelElement(oldLifetime, 0.3f));
 
         Panel oldAliveFramesPanel = partComboBox.addPanel("oldAliveFramesPanel");
-        oldAliveFramesPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("oldAliveFramesStr", "Alive Frames:", 10, view.renderer), 0.7f));
-        oldAliveFrames = new Textbox("oldAliveFrames", 10, view.renderer, view.loader, view.window);
+        oldAliveFramesPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("oldAliveFramesStr", "Alive Frames:", view.renderer), 0.7f));
+        oldAliveFrames = new Textbox("oldAliveFrames", view.renderer, view.loader, view.window);
         oldAliveFramesPanel.elements.add(new Panel.PanelElement(oldAliveFrames, 0.3f));
 
         childrenSelectable = partComboBox.addCheckbox("childrenSelectable", "Children Selectable", new Checkbox()

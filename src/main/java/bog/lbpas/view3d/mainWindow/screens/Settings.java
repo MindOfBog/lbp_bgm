@@ -17,6 +17,7 @@ import bog.lbpas.view3d.renderer.gui.font.FontRenderer;
 import bog.lbpas.view3d.utils.Config;
 import bog.lbpas.view3d.utils.Cursors;
 import bog.lbpas.view3d.utils.Utils;
+import bog.lbpas.view3d.utils.print;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
 import org.joml.Vector3d;
@@ -72,6 +73,7 @@ public class Settings extends GuiScreen{
     public Slider fov;
     public Checkbox culling;
     public Checkbox showFPS;
+    public Checkbox legacyFD;
     public Slider outlineSize;
 
     public Checkbox debugScissorTest;
@@ -83,39 +85,41 @@ public class Settings extends GuiScreen{
     public Textbox loaderThreadTicks;
     public Textbox entryDigestThreadTicks;
 
+    public Slider guiSizeSlider;
+
     public void init() {
-        rendererSettings = new DropDownTab("rendererSettings", "Renderer Settings", new Vector2f(10, 21 + 10), new Vector2f(200, getFontHeight(10) + 4), 10, renderer, loader, window).closed();
+        rendererSettings = new DropDownTab("rendererSettings", "Renderer Settings", new Vector2f(10, 21 + 10), new Vector2f(200, getFontHeight() + 4), renderer, loader, window).closed();
         culling = rendererSettings.addCheckbox("culling", "No culling", Config.NO_CULLING);
 
         Panel fovPanel = rendererSettings.addPanel("fovPanel");
-        fovPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "FOV:", 10, renderer), 0.525f));
+        fovPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "FOV:", renderer), 0.525f));
         fov = new Slider("", new Vector2f(), new Vector2f(), renderer, loader, window, (float) Math.toDegrees(Config.FOV), 20, 175);
         fovPanel.elements.add(new Panel.PanelElement(fov, 0.475f));
 
         Panel fpsPanel = rendererSettings.addPanel("fpsPanel");
-        fpsPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "FPS:", 10, renderer), 0.525f));
-        fps = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
+        fpsPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "FPS:", renderer), 0.525f));
+        fps = new Textbox("", new Vector2f(), new Vector2f(), renderer, loader, window);
         fps.noLetters().noOthers();
         fps.setText(Float.toString(Config.FRAMERATE));
         fpsPanel.elements.add(new Panel.PanelElement(fps, 0.475f));
 
         Panel zNearPanel = rendererSettings.addPanel("zNearPanel");
-        zNearPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Z Near:", 10, renderer), 0.525f));
-        zNear = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
+        zNearPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Z Near:", renderer), 0.525f));
+        zNear = new Textbox("", new Vector2f(), new Vector2f(), renderer, loader, window);
         zNear.noLetters().noOthers();
         zNear.setText(Float.toString(Config.Z_NEAR));
         zNearPanel.elements.add(new Panel.PanelElement(zNear, 0.475f));
 
         Panel zFarPanel = rendererSettings.addPanel("zFarPanel");
-        zFarPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Z Far:", 10, renderer), 0.525f));
-        zFar = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
+        zFarPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Z Far:", renderer), 0.525f));
+        zFar = new Textbox("", new Vector2f(), new Vector2f(), renderer, loader, window);
         zFar.noLetters().noOthers();
         zFar.setText(Float.toString(Config.Z_FAR));
         zFarPanel.elements.add(new Panel.PanelElement(zFar, 0.475f));
 
         Panel msaaPanel = rendererSettings.addPanel("msaaPanel");
-        msaaPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "AA Samples:", 10, renderer), 0.525f));
-        msaa = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
+        msaaPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "AA Samples:", renderer), 0.525f));
+        msaa = new Textbox("", new Vector2f(), new Vector2f(), renderer, loader, window);
         msaa.noLetters().noOthers();
         msaa.numberLimits(1, 8);
         msaa.setText(Float.toString(Config.Z_FAR));
@@ -125,8 +129,8 @@ public class Settings extends GuiScreen{
         outlineSize = rendererSettings.addSlider("outlineSize", Config.OUTLINE_DISTANCE, 0.525f, 1.1f);
 
         Panel outlineColorPanel = rendererSettings.addPanel("outlineColorPickerPanel");
-        outlineColorPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("outlineColorLabel", "Outline Color:", 10, mainView.renderer), 0.7f));
-        outlineColor = new ColorPicker("outlineColor", 10, mainView.renderer, mainView.loader, mainView.window) {
+        outlineColorPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("outlineColorLabel", "Outline Color:", mainView.renderer), 0.7f));
+        outlineColor = new ColorPicker("outlineColor", mainView.renderer, mainView.loader, mainView.window) {
             @Override
             public Color getColor() {
                 return Config.OUTLINE_COLOR;
@@ -145,8 +149,8 @@ public class Settings extends GuiScreen{
         outlineColorPanel.elements.add(new Panel.PanelElement(outlineColor, 0.3f));
 
         Panel borderColor1Panel = rendererSettings.addPanel("borderColor1PickerPanel");
-        borderColor1Panel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("borderColor1Label", "Border Color 1:", 10, mainView.renderer), 0.7f));
-        borderColor1 = new ColorPicker("borderColor1", 10, mainView.renderer, mainView.loader, mainView.window) {
+        borderColor1Panel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("borderColor1Label", "Border Color 1:", mainView.renderer), 0.7f));
+        borderColor1 = new ColorPicker("borderColor1", mainView.renderer, mainView.loader, mainView.window) {
             @Override
             public Color getColor() {
                 return Config.BORDER_COLOR_1;
@@ -166,8 +170,8 @@ public class Settings extends GuiScreen{
         borderColor1Panel.elements.add(new Panel.PanelElement(borderColor1, 0.3f));
 
         Panel borderColor2Panel = rendererSettings.addPanel("borderColor2PickerPanel");
-        borderColor2Panel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("borderColor2Label", "Border Color 2:", 10, mainView.renderer), 0.7f));
-        borderColor2 = new ColorPicker("borderColor2", 10, mainView.renderer, mainView.loader, mainView.window) {
+        borderColor2Panel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("borderColor2Label", "Border Color 2:", mainView.renderer), 0.7f));
+        borderColor2 = new ColorPicker("borderColor2", mainView.renderer, mainView.loader, mainView.window) {
             @Override
             public Color getColor() {
                 return Config.BORDER_COLOR_2;
@@ -187,8 +191,8 @@ public class Settings extends GuiScreen{
         borderColor2Panel.elements.add(new Panel.PanelElement(borderColor2, 0.3f));
 
         Panel borderColor3Panel = rendererSettings.addPanel("borderColor3PickerPanel");
-        borderColor3Panel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("borderColor3Label", "Border Color 3:", 10, mainView.renderer), 0.7f));
-        borderColor3 = new ColorPicker("borderColor3", 10, mainView.renderer, mainView.loader, mainView.window) {
+        borderColor3Panel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("borderColor3Label", "Border Color 3:", mainView.renderer), 0.7f));
+        borderColor3 = new ColorPicker("borderColor3", mainView.renderer, mainView.loader, mainView.window) {
             @Override
             public Color getColor() {
                 return Config.BORDER_COLOR_3;
@@ -208,8 +212,8 @@ public class Settings extends GuiScreen{
         borderColor3Panel.elements.add(new Panel.PanelElement(borderColor3, 0.3f));
 
         Panel borderColor4Panel = rendererSettings.addPanel("borderColor4PickerPanel");
-        borderColor4Panel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("borderColor4Label", "Border Color 4:", 10, mainView.renderer), 0.7f));
-        borderColor4 = new ColorPicker("borderColor4", 10, mainView.renderer, mainView.loader, mainView.window) {
+        borderColor4Panel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("borderColor4Label", "Border Color 4:", mainView.renderer), 0.7f));
+        borderColor4 = new ColorPicker("borderColor4", mainView.renderer, mainView.loader, mainView.window) {
             @Override
             public Color getColor() {
                 return Config.BORDER_COLOR_4;
@@ -229,8 +233,8 @@ public class Settings extends GuiScreen{
         borderColor4Panel.elements.add(new Panel.PanelElement(borderColor4, 0.3f));
 
         Panel earthColorPanel = rendererSettings.addPanel("earthColorPickerPanel");
-        earthColorPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("earthColorLabel", "Earth Color:", 10, mainView.renderer), 0.7f));
-        earthColor = new ColorPicker("earthColor", 10, mainView.renderer, mainView.loader, mainView.window) {
+        earthColorPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("earthColorLabel", "Earth Color:", mainView.renderer), 0.7f));
+        earthColor = new ColorPicker("earthColor", mainView.renderer, mainView.loader, mainView.window) {
             @Override
             public Color getColor() {
                 return Config.EARTH_COLOR;
@@ -250,8 +254,8 @@ public class Settings extends GuiScreen{
         earthColorPanel.elements.add(new Panel.PanelElement(earthColor, 0.3f));
 
         Panel podColorPanel = rendererSettings.addPanel("podColorPickerPanel");
-        podColorPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("podColorLabel", "Pod Color:", 10, mainView.renderer), 0.7f));
-        podColor = new ColorPicker("podColor", 10, mainView.renderer, mainView.loader, mainView.window) {
+        podColorPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("podColorLabel", "Pod Color:", mainView.renderer), 0.7f));
+        podColor = new ColorPicker("podColor", mainView.renderer, mainView.loader, mainView.window) {
             @Override
             public Color getColor() {
                 return Config.POD_COLOR;
@@ -272,35 +276,22 @@ public class Settings extends GuiScreen{
 
         //------------------------------------
 
-        guiSettings = new DropDownTab("guiSettings", "GUI Settings", new Vector2f(10, 21 + 10 + 7 + rendererSettings.getFullHeight()), new Vector2f(200, getFontHeight(10) + 4), 10, renderer, loader, window).closed();
-
-        Panel fontColorPanel = guiSettings.addPanel("fontColorPickerPanel");
-        fontColorPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("fontColorLabel", "Font Color:", 10, mainView.renderer), 0.7f));
-        fontColor = new ColorPicker("fontColor", 10, mainView.renderer, mainView.loader, mainView.window) {
-            @Override
-            public Color getColor() {
-                return Config.FONT_COLOR;
-            }
-
-            @Override
-            public void setColor(Color color) {
-                Config.FONT_COLOR = color;
-            }
-
-            @Override
-            public int[] getParentTransform() {
-                return new int[]{(int) Math.round(guiSettings.pos.x), (int) Math.round(guiSettings.pos.y), (int) Math.round(guiSettings.size.x)};
-            }
-        };
-        fontColorPanel.elements.add(new Panel.PanelElement(fontColor, 0.3f));
+        guiSettings = new DropDownTab("guiSettings", "GUI Settings", new Vector2f(10, 21 + 10 + 7 + rendererSettings.getFullHeight()), new Vector2f(200, getFontHeight() + 4), renderer, loader, window).closed();
 
         float gap = 1f / (guiSettings.size.x - 5f);
         float element = 0.5f - (gap / 2);
 
+//        Panel guiSizePanel = guiSettings.addPanel("guiSizePanel");TODO
+//        guiSizePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("guiSizeStr", "Gui Size:", renderer), 0.4f));
+//        guiSizeSlider = new Slider("guiSizeSlider", new Vector2f(), new Vector2f(), renderer, loader, window, 16, 12, 32);
+//        guiSizePanel.elements.add(new Panel.PanelElement(guiSizeSlider, 0.6f));
+//
+//        guiSettings.addSeparator("backdropSep");
+
         guiSettings.addString("primarySecondaryColorLabel", "Backdrop Color:");
 
         Panel primaryColorPanel = guiSettings.addPanel("primaryColorPickerPanel");
-        primaryColor = new ColorPicker("primaryColor", 10, mainView.renderer, mainView.loader, mainView.window) {
+        primaryColor = new ColorPicker("primaryColor", mainView.renderer, mainView.loader, mainView.window) {
             @Override
             public Color getColor() {
                 return Config.PRIMARY_COLOR;
@@ -318,7 +309,7 @@ public class Settings extends GuiScreen{
         };
         primaryColorPanel.elements.add(new Panel.PanelElement(primaryColor, element));
         primaryColorPanel.elements.add(new Panel.PanelElement(null, gap));
-        secondaryColor = new ColorPicker("secondaryColor", 10, mainView.renderer, mainView.loader, mainView.window) {
+        secondaryColor = new ColorPicker("secondaryColor", mainView.renderer, mainView.loader, mainView.window) {
             @Override
             public Color getColor() {
                 return Config.SECONDARY_COLOR;
@@ -339,7 +330,7 @@ public class Settings extends GuiScreen{
         guiSettings.addString("interfacePrimaryColorLabel", "Primary Color:");
 
         Panel interfacePrimaryColorPanel = guiSettings.addPanel("interfacePrimaryColorPickerPanel");
-        interfacePrimaryColor = new ColorPicker("interfacePrimaryColor", 10, mainView.renderer, mainView.loader, mainView.window) {
+        interfacePrimaryColor = new ColorPicker("interfacePrimaryColor", mainView.renderer, mainView.loader, mainView.window) {
             @Override
             public Color getColor() {
                 return Config.INTERFACE_PRIMARY_COLOR;
@@ -357,7 +348,7 @@ public class Settings extends GuiScreen{
         };
         interfacePrimaryColorPanel.elements.add(new Panel.PanelElement(interfacePrimaryColor, element));
         interfacePrimaryColorPanel.elements.add(new Panel.PanelElement(null, gap));
-        interfacePrimaryColor2 = new ColorPicker("interfacePrimaryColor2", 10, mainView.renderer, mainView.loader, mainView.window) {
+        interfacePrimaryColor2 = new ColorPicker("interfacePrimaryColor2", mainView.renderer, mainView.loader, mainView.window) {
             @Override
             public Color getColor() {
                 return Config.INTERFACE_PRIMARY_COLOR2;
@@ -378,7 +369,7 @@ public class Settings extends GuiScreen{
         guiSettings.addString("interfaceSecondaryColorLabel", "Secondary Color:");
 
         Panel interfaceSecondaryColorPanel = guiSettings.addPanel("interfaceSecondaryColorPanel");
-        interfaceSecondaryColor = new ColorPicker("interfaceSecondaryColor", 10, mainView.renderer, mainView.loader, mainView.window) {
+        interfaceSecondaryColor = new ColorPicker("interfaceSecondaryColor", mainView.renderer, mainView.loader, mainView.window) {
             @Override
             public Color getColor() {
                 return Config.INTERFACE_SECONDARY_COLOR;
@@ -396,7 +387,7 @@ public class Settings extends GuiScreen{
         };
         interfaceSecondaryColorPanel.elements.add(new Panel.PanelElement(interfaceSecondaryColor, element));
         interfaceSecondaryColorPanel.elements.add(new Panel.PanelElement(null, gap));
-        interfaceSecondaryColor2 = new ColorPicker("interfaceSecondaryColor2", 10, mainView.renderer, mainView.loader, mainView.window) {
+        interfaceSecondaryColor2 = new ColorPicker("interfaceSecondaryColor2", mainView.renderer, mainView.loader, mainView.window) {
             @Override
             public Color getColor() {
                 return Config.INTERFACE_SECONDARY_COLOR2;
@@ -417,7 +408,7 @@ public class Settings extends GuiScreen{
         guiSettings.addString("interfaceTertiaryColorLabel", "Tertiary Color:");
 
         Panel interfaceTertiaryColorPanel = guiSettings.addPanel("interfaceTertiaryColorPanel");
-        interfaceTertiaryColor = new ColorPicker("interfaceTertiaryColor", 10, mainView.renderer, mainView.loader, mainView.window) {
+        interfaceTertiaryColor = new ColorPicker("interfaceTertiaryColor", mainView.renderer, mainView.loader, mainView.window) {
             @Override
             public Color getColor() {
                 return Config.INTERFACE_TERTIARY_COLOR;
@@ -435,7 +426,7 @@ public class Settings extends GuiScreen{
         };
         interfaceTertiaryColorPanel.elements.add(new Panel.PanelElement(interfaceTertiaryColor, element));
         interfaceTertiaryColorPanel.elements.add(new Panel.PanelElement(null, gap));
-        interfaceTertiaryColor2 = new ColorPicker("interfaceTertiaryColor2", 10, mainView.renderer, mainView.loader, mainView.window) {
+        interfaceTertiaryColor2 = new ColorPicker("interfaceTertiaryColor2", mainView.renderer, mainView.loader, mainView.window) {
             @Override
             public Color getColor() {
                 return Config.INTERFACE_TERTIARY_COLOR2;
@@ -453,11 +444,37 @@ public class Settings extends GuiScreen{
         };
         interfaceTertiaryColorPanel.elements.add(new Panel.PanelElement(interfaceTertiaryColor2, element));
 
-        Panel headerPanel = guiSettings.addPanel("headerPanel");
-        headerPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Header:", 10, renderer), 0.35f));
+        DropDownTab.SeparatorElement fontSep = guiSettings.addSeparator("fontSep");
+        fontSep.size.y = 5;
 
-        ComboBox headerCombo = new ComboBox("", Config.FONT_HEADER, new Vector2f(), new Vector2f(), 10, 200, renderer, loader, window);
-        ButtonList headerList = new ButtonList("", FontRenderer.Fonts, new Vector2f(), new Vector2f(), 10, renderer, loader, window) {
+        guiSettings.addString("fontSeg", "Font:");
+
+        Panel fontColorPanel = guiSettings.addPanel("fontColorPickerPanel");
+        fontColorPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("fontColorLabel", "Color:", mainView.renderer), 0.7f));
+        fontColor = new ColorPicker("fontColor", mainView.renderer, mainView.loader, mainView.window) {
+            @Override
+            public Color getColor() {
+                return Config.FONT_COLOR;
+            }
+
+            @Override
+            public void setColor(Color color) {
+                Config.FONT_COLOR = color;
+            }
+
+            @Override
+            public int[] getParentTransform() {
+                return new int[]{(int) Math.round(guiSettings.pos.x), (int) Math.round(guiSettings.pos.y), (int) Math.round(guiSettings.size.x)};
+            }
+        };
+        fontColorPanel.elements.add(new Panel.PanelElement(fontColor, 0.3f));
+
+        Panel headerPanel = guiSettings.addPanel("headerPanel");
+        headerPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Header:", renderer), 0.35f));
+
+        ComboBox headerCombo = new ComboBox("", Config.FONT_HEADER, new Vector2f(), new Vector2f(), 200, renderer, loader, window);
+
+        ButtonList headerList = new ButtonList("", FontRenderer.Fonts, new Vector2f(), new Vector2f(), renderer, loader, window) {
             @Override
             public void clickedButton(Object object, int index, int button, int action, int mods) {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
@@ -499,16 +516,22 @@ public class Settings extends GuiScreen{
             public boolean searchFilter(Object object, int index) {
                 return true;
             }
+
+            @Override
+            public int buttonHeight() {
+                return super.buttonHeight() * 2;
+            }
         };
         headerCombo.addList("headerList", headerList, 80);
 
         headerPanel.elements.add(new Panel.PanelElement(headerCombo, 0.65f));
 
         Panel textPanel = guiSettings.addPanel("textPanel");
-        textPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Text:", 10, renderer), 0.35f));
+        textPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Text:", renderer), 0.35f));
 
-        ComboBox textCombo = new ComboBox("", Config.FONT_TEXT, new Vector2f(), new Vector2f(), 10, 200, renderer, loader, window);
-        ButtonList textList = new ButtonList("", FontRenderer.Fonts, new Vector2f(), new Vector2f(), 10, renderer, loader, window) {
+        ComboBox textCombo = new ComboBox("", Config.FONT_TEXT, new Vector2f(), new Vector2f(), 200, renderer, loader, window);
+
+        ButtonList textList = new ButtonList("", FontRenderer.Fonts, new Vector2f(), new Vector2f(), renderer, loader, window) {
             @Override
             public void clickedButton(Object object, int index, int button, int action, int mods) {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
@@ -550,16 +573,24 @@ public class Settings extends GuiScreen{
             public boolean searchFilter(Object object, int index) {
                 return true;
             }
+
+            @Override
+            public int buttonHeight() {
+                return super.buttonHeight() * 2;
+            }
         };
         textCombo.addList("textList", textList, 80);
 
         textPanel.elements.add(new Panel.PanelElement(textCombo, 0.65f));
 
-        Panel cursorPanel = guiSettings.addPanel("cursorPanel");
-        cursorPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Cursor:", 10, renderer), 0.35f));
+        DropDownTab.SeparatorElement cursorSep = guiSettings.addSeparator("cursorSep");
+        cursorSep.size.y = 5;
 
-        ComboBox cursorCombo = new ComboBox("", Config.CURSOR, new Vector2f(), new Vector2f(), 10, 200, renderer, loader, window);
-        ButtonList cursorList = new ButtonList("", Cursors.loadedCursors, new Vector2f(), new Vector2f(), 10, renderer, loader, window) {
+        Panel cursorPanel = guiSettings.addPanel("cursorPanel");
+        cursorPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Cursor:", renderer), 0.35f));
+
+        ComboBox cursorCombo = new ComboBox("", Config.CURSOR, new Vector2f(), new Vector2f(), 200, renderer, loader, window);
+        ButtonList cursorList = new ButtonList("", Cursors.loadedCursors, new Vector2f(), new Vector2f(), renderer, loader, window) {
             @Override
             public void clickedButton(Object object, int index, int button, int action, int mods) {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
@@ -601,26 +632,35 @@ public class Settings extends GuiScreen{
             public boolean searchFilter(Object object, int index) {
                 return true;
             }
+
+            @Override
+            public int buttonHeight() {
+                return super.buttonHeight() * 2;
+            }
         };
         cursorCombo.addList("cursorList", cursorList, 80);
 
         cursorPanel.elements.add(new Panel.PanelElement(cursorCombo, 0.65f));
 
         Panel cursorSizePanel = guiSettings.addPanel("cursorSizePanel");
-        cursorSizePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Size:", 10, renderer), 0.35f));
-        cursorSize = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
+        cursorSizePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Size:", renderer), 0.35f));
+        cursorSize = new Textbox("", new Vector2f(), new Vector2f(), renderer, loader, window);
         cursorSize.setText("" + Config.CURSOR_SCALE);
         cursorSizePanel.elements.add(new Panel.PanelElement(cursorSize, 0.65f));
 
-        showFPS = guiSettings.addCheckbox("showFPS", "Show FPS", Config.SHOW_FPS);
+        DropDownTab.SeparatorElement otherSep = guiSettings.addSeparator("otherSep");
+        otherSep.size.y = 5;
 
-        controls = new DropDownTab("controls", "Controls", new Vector2f(10, 21 + 10 + 14 + rendererSettings.getFullHeight() + guiSettings.getFullHeight()), new Vector2f(200, getFontHeight(10) + 4), 10, renderer, loader, window).closed();
+        showFPS = guiSettings.addCheckbox("showFPS", "Show FPS", Config.SHOW_FPS);
+        legacyFD = guiSettings.addCheckbox("legacyFD", "Native File Dialogue", Config.LEGACY_FD);
+
+        controls = new DropDownTab("controls", "Controls", new Vector2f(10, 21 + 10 + 14 + rendererSettings.getFullHeight() + guiSettings.getFullHeight()), new Vector2f(200, getFontHeight() + 4), renderer, loader, window).closed();
 
         float buttonWidth = 0.62f;
 
         Panel forwardPanel = controls.addPanel("forwardPanel");
-        forwardPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Forward:", 10, renderer), 1f - buttonWidth));
-        Button forward = new Button("", Config.FORWARD.inputName(), new Vector2f(), new Vector2f(), 10, renderer, loader, window)
+        forwardPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Forward:", renderer), 1f - buttonWidth));
+        Button forward = new Button("", Config.FORWARD.inputName(), new Vector2f(), new Vector2f(), renderer, loader, window)
         {
             @Override
             public void clickedButton(int button, int action, int mods) {
@@ -629,7 +669,7 @@ public class Settings extends GuiScreen{
                     return;
 
                 Button btn = this;
-                mainView.setCurrentScreen(new GuiKeybind(Config.FORWARD, 10, renderer, loader, window) {
+                mainView.setCurrentScreen(new GuiKeybind(Config.FORWARD, renderer, loader, window) {
                     @Override
                     public void keybind(InputMan currentKey) {
                         Config.FORWARD.key = currentKey.key;
@@ -650,15 +690,15 @@ public class Settings extends GuiScreen{
         forwardPanel.elements.add(new Panel.PanelElement(forward, buttonWidth));
 
         Panel backPanel = controls.addPanel("backPanel");
-        backPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Back:", 10, renderer), 1f - buttonWidth));
-        Button back = new Button("", Config.BACK.inputName(), new Vector2f(), new Vector2f(), 10, renderer, loader, window)
+        backPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Back:", renderer), 1f - buttonWidth));
+        Button back = new Button("", Config.BACK.inputName(), new Vector2f(), new Vector2f(), renderer, loader, window)
         {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if(!isClicked)
                     return;
                 Button btn = this;
-                mainView.setCurrentScreen(new GuiKeybind(Config.BACK, 10, renderer, loader, window) {
+                mainView.setCurrentScreen(new GuiKeybind(Config.BACK, renderer, loader, window) {
                     @Override
                     public void keybind(InputMan currentKey) {
                         Config.BACK.key = currentKey.key;
@@ -679,15 +719,15 @@ public class Settings extends GuiScreen{
         backPanel.elements.add(new Panel.PanelElement(back, buttonWidth));
 
         Panel leftPanel = controls.addPanel("leftPanel");
-        leftPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Left:", 10, renderer), 1f - buttonWidth));
-        Button left = new Button("", Config.LEFT.inputName(), new Vector2f(), new Vector2f(), 10, renderer, loader, window)
+        leftPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Left:", renderer), 1f - buttonWidth));
+        Button left = new Button("", Config.LEFT.inputName(), new Vector2f(), new Vector2f(), renderer, loader, window)
         {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if(!isClicked)
                     return;
                 Button btn = this;
-                mainView.setCurrentScreen(new GuiKeybind(Config.LEFT, 10, renderer, loader, window) {
+                mainView.setCurrentScreen(new GuiKeybind(Config.LEFT, renderer, loader, window) {
                     @Override
                     public void keybind(InputMan currentKey) {
                         Config.LEFT.key = currentKey.key;
@@ -708,15 +748,15 @@ public class Settings extends GuiScreen{
         leftPanel.elements.add(new Panel.PanelElement(left, buttonWidth));
 
         Panel rightPanel = controls.addPanel("rightPanel");
-        rightPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Right:", 10, renderer), 1f - buttonWidth));
-        Button right = new Button("", Config.RIGHT.inputName(), new Vector2f(), new Vector2f(), 10, renderer, loader, window)
+        rightPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Right:", renderer), 1f - buttonWidth));
+        Button right = new Button("", Config.RIGHT.inputName(), new Vector2f(), new Vector2f(), renderer, loader, window)
         {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if(!isClicked)
                     return;
                 Button btn = this;
-                mainView.setCurrentScreen(new GuiKeybind(Config.RIGHT, 10, renderer, loader, window) {
+                mainView.setCurrentScreen(new GuiKeybind(Config.RIGHT, renderer, loader, window) {
                     @Override
                     public void keybind(InputMan currentKey) {
                         Config.RIGHT.key = currentKey.key;
@@ -737,15 +777,15 @@ public class Settings extends GuiScreen{
         rightPanel.elements.add(new Panel.PanelElement(right, buttonWidth));
 
         Panel upPanel = controls.addPanel("upPanel");
-        upPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Up:", 10, renderer), 1f - buttonWidth));
-        Button up = new Button("", Config.UP.inputName(), new Vector2f(), new Vector2f(), 10, renderer, loader, window)
+        upPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Up:", renderer), 1f - buttonWidth));
+        Button up = new Button("", Config.UP.inputName(), new Vector2f(), new Vector2f(), renderer, loader, window)
         {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if(!isClicked)
                     return;
                 Button btn = this;
-                mainView.setCurrentScreen(new GuiKeybind(Config.UP, 10, renderer, loader, window) {
+                mainView.setCurrentScreen(new GuiKeybind(Config.UP, renderer, loader, window) {
                     @Override
                     public void keybind(InputMan currentKey) {
                         Config.UP.key = currentKey.key;
@@ -766,15 +806,15 @@ public class Settings extends GuiScreen{
         upPanel.elements.add(new Panel.PanelElement(up, buttonWidth));
 
         Panel downPanel = controls.addPanel("downPanel");
-        downPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Down:", 10, renderer), 1f - buttonWidth));
-        Button down = new Button("", Config.DOWN.inputName(), new Vector2f(), new Vector2f(), 10, renderer, loader, window)
+        downPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Down:", renderer), 1f - buttonWidth));
+        Button down = new Button("", Config.DOWN.inputName(), new Vector2f(), new Vector2f(), renderer, loader, window)
         {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if(!isClicked)
                     return;
                 Button btn = this;
-                mainView.setCurrentScreen(new GuiKeybind(Config.DOWN, 10, renderer, loader, window) {
+                mainView.setCurrentScreen(new GuiKeybind(Config.DOWN, renderer, loader, window) {
                     @Override
                     public void keybind(InputMan currentKey) {
                         Config.DOWN.key = currentKey.key;
@@ -795,15 +835,15 @@ public class Settings extends GuiScreen{
         downPanel.elements.add(new Panel.PanelElement(down, buttonWidth));
 
         Panel shadingPanel = controls.addPanel("shadingPanel");
-        shadingPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Shading:", 10, renderer), 1f - buttonWidth));
-        Button shading = new Button("", Config.SHADING.inputName(), new Vector2f(), new Vector2f(), 10, renderer, loader, window)
+        shadingPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Shading:", renderer), 1f - buttonWidth));
+        Button shading = new Button("", Config.SHADING.inputName(), new Vector2f(), new Vector2f(), renderer, loader, window)
         {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if(!isClicked)
                     return;
                 Button btn = this;
-                mainView.setCurrentScreen(new GuiKeybind(Config.SHADING, 10, renderer, loader, window) {
+                mainView.setCurrentScreen(new GuiKeybind(Config.SHADING, renderer, loader, window) {
                     @Override
                     public void keybind(InputMan currentKey) {
                         Config.SHADING.key = currentKey.key;
@@ -824,15 +864,15 @@ public class Settings extends GuiScreen{
         shadingPanel.elements.add(new Panel.PanelElement(shading, buttonWidth));
 
         Panel cameraPanel = controls.addPanel("cameraPanel");
-        cameraPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Camera:", 10, renderer), 1f - buttonWidth));
-        Button camera = new Button("", Config.CAMERA.inputName(), new Vector2f(), new Vector2f(), 10, renderer, loader, window)
+        cameraPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Camera:", renderer), 1f - buttonWidth));
+        Button camera = new Button("", Config.CAMERA.inputName(), new Vector2f(), new Vector2f(), renderer, loader, window)
         {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if(!isClicked)
                     return;
                 Button btn = this;
-                mainView.setCurrentScreen(new GuiKeybind(Config.CAMERA, 10, renderer, loader, window) {
+                mainView.setCurrentScreen(new GuiKeybind(Config.CAMERA, renderer, loader, window) {
                     @Override
                     public void keybind(InputMan currentKey) {
                         Config.CAMERA.key = currentKey.key;
@@ -853,42 +893,42 @@ public class Settings extends GuiScreen{
         cameraPanel.elements.add(new Panel.PanelElement(camera, buttonWidth));
 
         Panel moveSpeedPanel = controls.addPanel("moveSpeedPanel");
-        moveSpeedPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Move speed:", 10, renderer), 0.525f));
-        moveSpeed = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
+        moveSpeedPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Move speed:", renderer), 0.525f));
+        moveSpeed = new Textbox("", new Vector2f(), new Vector2f(), renderer, loader, window);
         moveSpeed.noLetters().noOthers();
         moveSpeed.setText(Float.toString(Config.CAMERA_MOVE_SPEED));
         moveSpeedPanel.elements.add(new Panel.PanelElement(moveSpeed, 0.475f));
 
         Panel sensitivityPanel = controls.addPanel("sensitivityPanel");
-        sensitivityPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Sensitivity:", 10, renderer), 0.525f));
-        sensitivity = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
+        sensitivityPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Sensitivity:", renderer), 0.525f));
+        sensitivity = new Textbox("", new Vector2f(), new Vector2f(), renderer, loader, window);
         sensitivity.noLetters().noOthers();
         sensitivity.setText(Float.toString(Config.MOUSE_SENS));
         sensitivityPanel.elements.add(new Panel.PanelElement(sensitivity, 0.475f));
 
-        performance = new DropDownTab("performance", "Performance", new Vector2f(10, 21 + 10 + 21 + rendererSettings.getFullHeight() + guiSettings.getFullHeight() + controls.getFullHeight()), new Vector2f(200, getFontHeight(10) + 4), 10, renderer, loader, window).closed();
+        performance = new DropDownTab("performance", "Performance", new Vector2f(10, 21 + 10 + 21 + rendererSettings.getFullHeight() + guiSettings.getFullHeight() + controls.getFullHeight()), new Vector2f(200, getFontHeight() + 4), renderer, loader, window).closed();
         disableBlur = performance.addCheckbox("disableBlur", "Disable blur", Config.DISABLE_BLUR);
         disableSSAO = performance.addCheckbox("disableSSAO", "Disable SSAO", Config.DISABLE_SSAO);
 
         performance.addString("tickRate", "Thread sleep time:(ms)");
 
         Panel secondaryThreadTicksPanel = performance.addPanel("secondaryThreadTicksPanel");
-        secondaryThreadTicksPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Secondary:", 10, renderer), 0.7f));
-        secondaryThreadTicks = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
+        secondaryThreadTicksPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Secondary:", renderer), 0.7f));
+        secondaryThreadTicks = new Textbox("", new Vector2f(), new Vector2f(), renderer, loader, window);
         secondaryThreadTicks.noLetters().noOthers().numberLimits(0, 5000);
         secondaryThreadTicks.setText(Integer.toString(Config.SECONDARY_THREAD));
         secondaryThreadTicksPanel.elements.add(new Panel.PanelElement(secondaryThreadTicks, 0.3f));
 
         Panel loaderThreadTicksPanel = performance.addPanel("loaderThreadTicksPanel");
-        loaderThreadTicksPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Loader:", 10, renderer), 0.7f));
-        loaderThreadTicks = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
+        loaderThreadTicksPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Loader:", renderer), 0.7f));
+        loaderThreadTicks = new Textbox("", new Vector2f(), new Vector2f(), renderer, loader, window);
         loaderThreadTicks.noLetters().noOthers().numberLimits(0, 5000);
         loaderThreadTicks.setText(Integer.toString(Config.LOADER_THREAD));
         loaderThreadTicksPanel.elements.add(new Panel.PanelElement(loaderThreadTicks, 0.3f));
 
         Panel entryDigestThreadTicksPanel = performance.addPanel("entryDigestThreadTicksPanel");
-        entryDigestThreadTicksPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Entry digest:", 10, renderer), 0.7f));
-        entryDigestThreadTicks = new Textbox("", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
+        entryDigestThreadTicksPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Entry digest:", renderer), 0.7f));
+        entryDigestThreadTicks = new Textbox("", new Vector2f(), new Vector2f(), renderer, loader, window);
         entryDigestThreadTicks.noLetters().noOthers().numberLimits(0, 5000);
         entryDigestThreadTicks.setText(Integer.toString(Config.ENTRY_DIGEST_THREAD));
         entryDigestThreadTicksPanel.elements.add(new Panel.PanelElement(entryDigestThreadTicks, 0.3f));
@@ -901,7 +941,7 @@ public class Settings extends GuiScreen{
 
     public void initDebug()
     {
-        debug = new DropDownTab("debug", "Debug", new Vector2f(217, 21 + 10), new Vector2f(200, getFontHeight(10) + 4), 10, renderer, loader, window).closed();
+        debug = new DropDownTab("debug", "Debug", new Vector2f(217, 21 + 10), new Vector2f(200, getFontHeight() + 4), renderer, loader, window).closed();
         debug.addCheckbox("vaoCount", "VAO Count");
         debug.addCheckbox("vboCount", "VBO Count");
         debug.addCheckbox("textureCount", "Texture Count");
@@ -938,6 +978,7 @@ public class Settings extends GuiScreen{
 
         Config.NO_CULLING = culling.isChecked;
         Config.SHOW_FPS = showFPS.isChecked;
+        Config.LEGACY_FD = legacyFD.isChecked;
         Config.DISABLE_BLUR = disableBlur.isChecked;
         Config.DISABLE_SSAO = disableSSAO.isChecked;
 
@@ -974,6 +1015,13 @@ public class Settings extends GuiScreen{
         Vector2f outlineDistSlider = outlineSize.setSliderValue(Config.OUTLINE_DISTANCE);
         if(outlineDistSlider.y == 1)
             Config.OUTLINE_DISTANCE = outlineDistSlider.x;
+
+//        Vector2f guiSize = guiSizeSlider.setSliderValue(Config.GUI_SCALE);TODO
+//        if(guiSize.y == 1)
+//        {
+//            Config.GUI_SCALE = Math.round(guiSize.x);
+//            window.resize = true;
+//        }
 
         float cursorSize = Utils.parseFloat(this.cursorSize.getText());
         if(cursorSize == 0)

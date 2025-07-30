@@ -107,7 +107,7 @@ public class ElementEditing extends GuiScreen {
     public void init() {
         elementTool = new Transformation3D.Tool(loader);
 
-        camPos = new DropDownTab("camPosition", "Camera position", new Vector2f(10, 21 + 10), new Vector2f(200, getFontHeight(10) + 4), 10, renderer, loader, window) {
+        camPos = new DropDownTab("camPosition", "Camera position", new Vector2f(10, 21 + 10), new Vector2f(200, getFontHeight() + 4), renderer, loader, window) {
             @Override
             public void secondThread() {
                 super.secondThread();
@@ -124,21 +124,21 @@ public class ElementEditing extends GuiScreen {
             }
         };
         Panel xPos = camPos.addPanel("x");
-        xPos.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("xstr", "X:", 10, renderer), 0.1f));
-        positionX = new Textbox("xtex", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
+        xPos.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("xstr", "X:", renderer), 0.1f));
+        positionX = new Textbox("xtex", new Vector2f(), new Vector2f(), renderer, loader, window);
         positionX.noLetters().noOthers();
         xPos.elements.add(new Panel.PanelElement(positionX, 0.9f));
         Panel yPos = camPos.addPanel("y");
-        yPos.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("ystr", "Y:", 10, renderer), 0.1f));
-        positionY = new Textbox("ytex", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
+        yPos.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("ystr", "Y:", renderer), 0.1f));
+        positionY = new Textbox("ytex", new Vector2f(), new Vector2f(), renderer, loader, window);
         positionY.noLetters().noOthers();
         yPos.elements.add(new Panel.PanelElement(positionY, 0.9f));
         Panel zPos = camPos.addPanel("z");
-        zPos.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("zstr", "Z:", 10, renderer), 0.1f));
-        positionZ = new Textbox("ztex", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
+        zPos.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("zstr", "Z:", renderer), 0.1f));
+        positionZ = new Textbox("ztex", new Vector2f(), new Vector2f(), renderer, loader, window);
         positionZ.noLetters().noOthers();
         zPos.elements.add(new Panel.PanelElement(positionZ, 0.9f));
-        currentSelection = new DropDownTab("currentSelection", "Current Selection", new Vector2f(524, 21 + 10), new Vector2f(200, getFontHeight(10) + 4), 10, renderer, loader, window) {
+        currentSelection = new DropDownTab("currentSelection", "Current Selection", new Vector2f(524, 21 + 10), new Vector2f(200, getFontHeight() + 4), renderer, loader, window) {
 
             @Override
             public void draw(MouseInput mouseInput, boolean overOther) {
@@ -189,8 +189,8 @@ public class ElementEditing extends GuiScreen {
         selectionName = currentSelection.addTextbox("name");
 
         Panel parentPanel = currentSelection.addPanel("parentPanel");
-        parentPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("parentstr", "Parent:", 10, mainView.renderer), 0.35f));
-        addParentCombo = new ComboBox("addParentCombo", "None", new Vector2f(), new Vector2f(), 10, 215, mainView.renderer, mainView.loader, mainView.window)
+        parentPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("parentstr", "Parent:", mainView.renderer), 0.35f));
+        addParentCombo = new ComboBox("addParentCombo", "None", new Vector2f(), new Vector2f(), 215, mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public int[] getParentTransform() {
@@ -208,12 +208,12 @@ public class ElementEditing extends GuiScreen {
             }
         });
 
-        Textbox searchParents = new Textbox("searchParents", new Vector2f(), new Vector2f(), 10, mainView.renderer, mainView.loader, mainView.window);
+        Textbox searchParents = new Textbox("searchParents", new Vector2f(), new Vector2f(), mainView.renderer, mainView.loader, mainView.window);
         Panel searchParentsPanel = addParentCombo.addPanel("searchParentsPanel");
-        searchParentsPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("srchPrnt", "Search:", 10, mainView.renderer), 0.4f));
+        searchParentsPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("srchPrnt", "Search:", mainView.renderer), 0.4f));
         searchParentsPanel.elements.add(new Panel.PanelElement(searchParents, 0.6f));
 
-        addParentCombo.addList("parentList", new ButtonList(mainView.things, 10, mainView.renderer, mainView.loader, mainView.window) {
+        addParentCombo.addList("parentList", new ButtonList(mainView.things, mainView.renderer, mainView.loader, mainView.window) {
 
             int hovering = -1;
 
@@ -269,8 +269,8 @@ public class ElementEditing extends GuiScreen {
         parentPanel.elements.add(new Panel.PanelElement(addParentCombo, 0.65f));
 
         Panel groupPanel = currentSelection.addPanel("groupPanel");
-        groupPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("groupstr", "Group:", 10, mainView.renderer), 0.35f));
-        addGroupCombo = new ComboBox("addGroupCombo", "None", new Vector2f(), new Vector2f(), 10, 215, mainView.renderer, mainView.loader, mainView.window)
+        groupPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("groupstr", "Group:", mainView.renderer), 0.35f));
+        addGroupCombo = new ComboBox("addGroupCombo", "None", new Vector2f(), new Vector2f(), 215, mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public int[] getParentTransform() {
@@ -288,12 +288,12 @@ public class ElementEditing extends GuiScreen {
             }
         });
 
-        Textbox searchGroup = new Textbox("searchGroup", new Vector2f(), new Vector2f(), 10, mainView.renderer, mainView.loader, mainView.window);
+        Textbox searchGroup = new Textbox("searchGroup", new Vector2f(), new Vector2f(), mainView.renderer, mainView.loader, mainView.window);
         Panel searchGroupPanel = addGroupCombo.addPanel("searchGroupPanel");
-        searchGroupPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("srchGrp", "Search:", 10, mainView.renderer), 0.4f));
+        searchGroupPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("srchGrp", "Search:", mainView.renderer), 0.4f));
         searchGroupPanel.elements.add(new Panel.PanelElement(searchGroup, 0.6f));
 
-        addGroupCombo.addList("addGroupCombo", new ButtonList(mainView.things, 10, mainView.renderer, mainView.loader, mainView.window) {
+        addGroupCombo.addList("addGroupCombo", new ButtonList(mainView.things, mainView.renderer, mainView.loader, mainView.window) {
 
             int hovering = -1;
 
@@ -350,8 +350,8 @@ public class ElementEditing extends GuiScreen {
         groupPanel.elements.add(new Panel.PanelElement(addGroupCombo, 0.65f));
 
         Panel partsLabelAdd = currentSelection.addPanel("partsLabelAdd");
-        partsLabelAdd.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("partsstr", "Parts:", 10, mainView.renderer), 0.6f));
-        ComboBox addPartCombo = new ComboBox("addPartCombo", "Add", new Vector2f(), new Vector2f(), 10, 215, mainView.renderer, mainView.loader, mainView.window)
+        partsLabelAdd.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("partsstr", "Parts:", mainView.renderer), 0.6f));
+        ComboBox addPartCombo = new ComboBox("addPartCombo", "Add", new Vector2f(), new Vector2f(), 215, mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public int[] getParentTransform() {
@@ -371,12 +371,12 @@ public class ElementEditing extends GuiScreen {
             }
         });
 
-        Textbox searchParts = new Textbox("searchParts", new Vector2f(), new Vector2f(), 10, mainView.renderer, mainView.loader, mainView.window);
+        Textbox searchParts = new Textbox("searchParts", new Vector2f(), new Vector2f(), mainView.renderer, mainView.loader, mainView.window);
         Panel searchPartsPanel = addPartCombo.addPanel("searchPartsPanel");
-        searchPartsPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("srchPrt", "Search:", 10, mainView.renderer), 0.4f));
+        searchPartsPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("srchPrt", "Search:", mainView.renderer), 0.4f));
         searchPartsPanel.elements.add(new Panel.PanelElement(searchParts, 0.6f));
 
-        addPartCombo.addList("addpPartList", new ButtonList(pList, 10, mainView.renderer, mainView.loader, mainView.window) {
+        addPartCombo.addList("addpPartList", new ButtonList(pList, mainView.renderer, mainView.loader, mainView.window) {
 
             int hovering = -1;
             int clicked = -1;
@@ -450,7 +450,7 @@ public class ElementEditing extends GuiScreen {
         }, 295);
         partsLabelAdd.elements.add(new Panel.PanelElement(addPartCombo, 0.4f));
 
-        partsList = new ElementList("partsList", new Vector2f(), new Vector2f(150), 10, renderer, loader, window)
+        partsList = new ElementList("partsList", new Vector2f(), new Vector2f(150), renderer, loader, window)
         {
             @Override
             public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overOther, boolean focusedOther) {
@@ -476,11 +476,11 @@ public class ElementEditing extends GuiScreen {
 
         currentSelectionParts = new ThingPart(mainView, partsList, currentSelection, mainView.things);
 
-        helpers = new DropDownTab("helpers", "Helpers", new Vector2f(10, 21 + 10 + camPos.getFullHeight() + 3), new Vector2f(200, getFontHeight(10) + 4), 10, renderer, loader, window).closed();
+        helpers = new DropDownTab("helpers", "Helpers", new Vector2f(10, 21 + 10 + camPos.getFullHeight() + 3), new Vector2f(200, getFontHeight() + 4), renderer, loader, window).closed();
         levelBorders = helpers.addCheckbox("levelBorders", "Level borders", Config.LEVEL_BORDERS);
         ComboBox podHelpers = helpers.addComboBox("podHelpers", "Pod helpers", 200);
 
-        podHelperLBP1 = (Radiobutton) podHelpers.addCheckbox(new Radiobutton("podHelperLBP1", "LBP1", 10, renderer, loader, window)
+        podHelperLBP1 = (Radiobutton) podHelpers.addCheckbox(new Radiobutton("podHelperLBP1", "LBP1", renderer, loader, window)
         {
             @Override
             public void check() {
@@ -507,7 +507,7 @@ public class ElementEditing extends GuiScreen {
                 }
             }
         }.checked(Config.POD_HELPER == 1));
-        podHelperLBP2 = (Radiobutton) podHelpers.addCheckbox(new Radiobutton("podHelperLBP2", "LBP2", 10, renderer, loader, window)
+        podHelperLBP2 = (Radiobutton) podHelpers.addCheckbox(new Radiobutton("podHelperLBP2", "LBP2", renderer, loader, window)
         {
             @Override
             public void check() {
@@ -542,7 +542,7 @@ public class ElementEditing extends GuiScreen {
                 }
             }
         }.checked(Config.POD_HELPER == 2));
-        podHelperLBP3 = (Radiobutton) podHelpers.addCheckbox(new Radiobutton("podHelperLBP3", "LBP3", 10, renderer, loader, window)
+        podHelperLBP3 = (Radiobutton) podHelpers.addCheckbox(new Radiobutton("podHelperLBP3", "LBP3", renderer, loader, window)
         {
             @Override
             public void check() {
@@ -633,13 +633,13 @@ public class ElementEditing extends GuiScreen {
             }
         });
 
-        availableAssets = new DropDownTab("availableModels", "Available assets", new Vector2f(217, 21 + 10), new Vector2f(300, getFontHeight(10) + 4), 10, renderer, loader, window);
+        availableAssets = new DropDownTab("availableModels", "Available assets", new Vector2f(217, 21 + 10), new Vector2f(300, getFontHeight() + 4), renderer, loader, window);
         Panel assetsPanel = availableAssets.addPanel("assetsPanel");
-        assetsPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Search:", 10, renderer), 0.25f));
-        availableAssetsSearch = new Textbox("availableAssetsSearch", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
+        assetsPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Search:", renderer), 0.25f));
+        availableAssetsSearch = new Textbox("availableAssetsSearch", new Vector2f(), new Vector2f(), renderer, loader, window);
         assetsPanel.elements.add(new Panel.PanelElement(availableAssetsSearch, 0.6425f));
         assetsPanel.elements.add(new Panel.PanelElement(null, 0.0075f));
-        ComboBoxImage filters = new ComboBoxImage("filters", new Vector2f(), new Vector2f(), 10, 150, renderer, loader, window)
+        ComboBoxImage filters = new ComboBoxImage("filters", new Vector2f(), new Vector2f(), 150, renderer, loader, window)
         {
             @Override
             public Texture getImage() {
@@ -664,7 +664,7 @@ public class ElementEditing extends GuiScreen {
 
         assetsPanel.elements.add(new Panel.PanelElement(filters, 0.1f));
 
-        assetList = new ButtonList("assetList", LoadedData.digestedEntries, new Vector2f(), new Vector2f(), 10, renderer, loader, window) {
+        assetList = new ButtonList("assetList", LoadedData.digestedEntries, new Vector2f(), new Vector2f(), renderer, loader, window) {
 
             @Override
             public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement, boolean focusedOther) {
@@ -895,7 +895,24 @@ public class ElementEditing extends GuiScreen {
                 boolean nameIsHash = name.substring(0, extInd != -1 ? extInd : name.length()).equalsIgnoreCase(entry.getSHA1().toString());
 
                 if(!(entry instanceof FileDBRow) && nameIsHash)
-                    return LoadedData.digestedEntriesDescriptors.get(index).getType().getHeader().toLowerCase() + "_" + name.substring(0, 6) + ext;
+                {
+                    ResourceDescriptor d = LoadedData.digestedEntriesDescriptors.get(index);
+
+                    if(d == null)
+                        return name.substring(0, 6) + ext;
+
+                    ResourceType t = d.getType();
+
+                    if(t == null)
+                        return name.substring(0, 6) + ext;
+
+                    String h = t.getHeader();
+
+                    if(h == null)
+                        return name.substring(0, 6) + ext;
+
+                    return h.toLowerCase() + "_" + name.substring(0, 6) + ext;
+                }
 
                 return entry.getName();
             }
@@ -958,7 +975,7 @@ public class ElementEditing extends GuiScreen {
 
             @Override
             public int buttonHeight() {
-                return getFontHeight(fontSize) + 8;
+                return getFontHeight() + 8;
             }
         };
 
@@ -985,7 +1002,7 @@ public class ElementEditing extends GuiScreen {
         loadedEntitiesHitbox.size = new Vector2f(305, window.height - 27);
         loadedEntitiesHitbox.id = "loadedEntitiesHitbox";
         loadedEntitiesHitbox.window = window;
-        loadedEntities = new ButtonList("loadedEntities", mainView.things, new Vector2f(0, 5 + Math.floor(getFontHeight(10) * 2f + 2) * 2 + 22), new Vector2f(302 - getFontHeight(10) - 8, 0), 10, renderer, loader, window) {
+        loadedEntities = new ButtonList("loadedEntities", mainView.things, new Vector2f(0, 5 + Math.floor(getFontHeight() * 2f + 2) * 2 + 22), new Vector2f(302 - getFontHeight() - 8, 0), renderer, loader, window) {
             int lastSelected = 0;
             @Override
             public void clickedButton(Object object, int index, int button, int action, int mods) {
@@ -1080,7 +1097,7 @@ public class ElementEditing extends GuiScreen {
 
             @Override
             public String buttonText(Object object, int index) {
-                return ((bog.lbpas.view3d.core.types.Thing) object).thing == null ? "null" : ((bog.lbpas.view3d.core.types.Thing) object).thing.name == null ? "null" : ((bog.lbpas.view3d.core.types.Thing) object).thing.UID + ((bog.lbpas.view3d.core.types.Thing) object).thing.name;
+                return ((bog.lbpas.view3d.core.types.Thing) object).thing == null ? "null" : ((bog.lbpas.view3d.core.types.Thing) object).thing.name == null ? "null" : ((bog.lbpas.view3d.core.types.Thing) object).thing.name;
             }
 
             public void refreshOutline(int height)
@@ -1124,14 +1141,14 @@ public class ElementEditing extends GuiScreen {
             public void secondThread() {
                 super.secondThread();
 
-                this.pos.x = window.width - (305 - getFontHeight(10) - 8);
-                this.size.y = window.height - (2 + Math.floor(getFontHeight(10) * 2f + 2) * 2 + (Math.floor(getFontHeight(10) * 2f) + 4)) - 28;
+                this.pos.x = window.width - (305 - getFontHeight() - 8);
+                this.size.y = window.height - (2 + Math.floor(getFontHeight() * 2f + 2) * 2 + (Math.floor(getFontHeight() * 2f) + 4)) - 28;
             }
 
             @Override
             public void resize() {
-                this.pos.x = window.width - (305 - getFontHeight(10) - 8);
-                this.size.y = window.height - (2 + Math.floor(getFontHeight(10) * 2f + 2) * 2 + (Math.floor(getFontHeight(10) * 2f) + 4)) - 28;
+                this.pos.x = window.width - (305 - getFontHeight() - 8);
+                this.size.y = window.height - (2 + Math.floor(getFontHeight() * 2f + 2) * 2 + (Math.floor(getFontHeight() * 2f) + 4)) - 28;
                 super.resize();
             }
 
@@ -1166,7 +1183,7 @@ public class ElementEditing extends GuiScreen {
 
             @Override
             public int buttonHeight() {
-                return getFontHeight(fontSize) + 8;
+                return getFontHeight() + 8;
             }
 
             @Override
@@ -1174,7 +1191,7 @@ public class ElementEditing extends GuiScreen {
                 mainView.deleteEntity(index);
             }
         }.deletable().draggable();
-        loadPlanElements = new Button("loadPlanElements", "Load elements from PLAN/LEVEL", new Vector2f(window.width - 305, 26), new Vector2f(299, getFontHeight(10) * 2f), 10, renderer, loader, window) {
+        loadPlanElements = new Button("loadPlanElements", "Load elements from PLAN/LEVEL", new Vector2f(window.width - 305, 26), new Vector2f(299, getFontHeight() * 2f), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if (button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS) {
@@ -1241,8 +1258,8 @@ public class ElementEditing extends GuiScreen {
             }
         };
         Panel loadedSearchPanel = new Panel(
-                new Vector2f(window.width - 306, (getFontHeight(10) * 1.25f + getFontHeight(10) * 2) + 9),
-                new Vector2f(300, getFontHeight(10) * 2f),
+                new Vector2f(window.width - 306, (getFontHeight() * 1.25f + getFontHeight() * 2) + 9),
+                new Vector2f(300, getFontHeight() * 2f),
                 renderer)
         {
             @Override
@@ -1260,11 +1277,11 @@ public class ElementEditing extends GuiScreen {
             }
         };
         loadedSearchPanel.window = window;
-        loadedSearchPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Search:", 10, renderer), 0.25f));
-        loadedEntitiesSearch = new Textbox("loadedEntitiesSearch", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
+        loadedSearchPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Search:", renderer), 0.25f));
+        loadedEntitiesSearch = new Textbox("loadedEntitiesSearch", new Vector2f(), new Vector2f(), renderer, loader, window);
         loadedSearchPanel.elements.add(new Panel.PanelElement(loadedEntitiesSearch, 0.75f));
 
-        clearAllEntites = new Button("clearAllEntities", "Clear", new Vector2f(), new Vector2f(97f, getFontHeight(10) * 2f), 10, renderer, loader, window) {
+        clearAllEntites = new Button("clearAllEntities", "Clear", new Vector2f(), new Vector2f(97f, getFontHeight() * 2f), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if (button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
@@ -1276,7 +1293,7 @@ public class ElementEditing extends GuiScreen {
                 super.secondThread();
 
                 this.pos.x = window.width - 304;
-                this.pos.y = Math.ceil(window.height - getFontHeight(10) * 2f) - 6;
+                this.pos.y = Math.ceil(window.height - getFontHeight() * 2f) - 6;
             }
 
             @Override
@@ -1284,10 +1301,10 @@ public class ElementEditing extends GuiScreen {
                 super.resize();
 
                 this.pos.x = window.width - 304;
-                this.pos.y = Math.ceil(window.height - getFontHeight(10) * 2f) - 6;
+                this.pos.y = Math.ceil(window.height - getFontHeight() * 2f) - 6;
             }
         };
-        newThing = new Button("newThing", "New", new Vector2f(), new Vector2f(97f, getFontHeight(10) * 2f), 10, renderer, loader, window) {
+        newThing = new Button("newThing", "New", new Vector2f(), new Vector2f(97f, getFontHeight() * 2f), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if (button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
@@ -1306,7 +1323,7 @@ public class ElementEditing extends GuiScreen {
                 super.secondThread();
 
                 this.pos.x = window.width - 304 + 97f + 3;
-                this.pos.y = Math.ceil(window.height - getFontHeight(10) * 2f) - 6;
+                this.pos.y = Math.ceil(window.height - getFontHeight() * 2f) - 6;
             }
 
             @Override
@@ -1314,10 +1331,10 @@ public class ElementEditing extends GuiScreen {
                 super.resize();
 
                 this.pos.x = window.width - 304 + 97f + 3;
-                this.pos.y = Math.ceil(window.height - getFontHeight(10) * 2f) - 6;
+                this.pos.y = Math.ceil(window.height - getFontHeight() * 2f) - 6;
             }
         };
-        sortEntityList = new Button("sortEntityList", "Sort", new Vector2f(), new Vector2f(97f, getFontHeight(10) * 2f), 10, renderer, loader, window) {
+        sortEntityList = new Button("sortEntityList", "Sort", new Vector2f(), new Vector2f(97f, getFontHeight() * 2f), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if (button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS) {
@@ -1344,7 +1361,7 @@ public class ElementEditing extends GuiScreen {
                 super.secondThread();
 
                 this.pos.x = window.width - 304 + (97f + 3) * 2;
-                this.pos.y = Math.ceil(window.height - getFontHeight(10) * 2f) - 6;
+                this.pos.y = Math.ceil(window.height - getFontHeight() * 2f) - 6;
             }
 
             @Override
@@ -1352,7 +1369,7 @@ public class ElementEditing extends GuiScreen {
                 super.resize();
 
                 this.pos.x = window.width - 304 + (97f + 3) * 2;
-                this.pos.y = Math.ceil(window.height - getFontHeight(10) * 2f) - 6;
+                this.pos.y = Math.ceil(window.height - getFontHeight() * 2f) - 6;
             }
         };
         move = (new ButtonImage("move", new Vector2f(window.width - 345, 21 + 10), new Vector2f(30, 30), renderer, loader, window) {
@@ -1967,11 +1984,6 @@ public class ElementEditing extends GuiScreen {
                 currentSelectionParts.selectionChange();
             }
         }
-
-        if(key == GLFW.GLFW_KEY_O && action == GLFW.GLFW_PRESS)//todo
-            for(Entity e : mainView.things)
-                if(e.selected)
-                    ((bog.lbpas.view3d.core.types.Thing) e).exportModelOBJ();
 
         return elementFocused;
     }

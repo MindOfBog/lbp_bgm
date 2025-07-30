@@ -13,23 +13,23 @@ public abstract class ComboBoxImage extends ComboBox{
     public ComboBoxImage() {
     }
 
-    public ComboBoxImage(String id, Vector2f pos, Vector2f size, int fontSize, int tabWidth, RenderMan renderer, ObjectLoader loader, WindowMan window) {
-        super(id, "", pos, size, fontSize, tabWidth, renderer, loader, window);
+    public ComboBoxImage(String id, Vector2f pos, Vector2f size, int tabWidth, RenderMan renderer, ObjectLoader loader, WindowMan window) {
+        super(id, "", pos, size, tabWidth, renderer, loader, window);
         imageSize = size;
     }
 
-    public ComboBoxImage(String id, int fontSize, int tabWidth, RenderMan renderer, ObjectLoader loader, WindowMan window) {
-        super(id, "", fontSize, tabWidth, renderer, loader, window);
+    public ComboBoxImage(String id, int tabWidth, RenderMan renderer, ObjectLoader loader, WindowMan window) {
+        super(id, "", tabWidth, renderer, loader, window);
         imageSize = size;
     }
 
-    public ComboBoxImage(String id, Vector2f pos, Vector2f size, int fontSize, int tabWidth, RenderMan renderer, ObjectLoader loader, WindowMan window, boolean autoCollapse) {
-        super(id, "", pos, size, fontSize, tabWidth, renderer, loader, window, autoCollapse);
+    public ComboBoxImage(String id, Vector2f pos, Vector2f size, int tabWidth, RenderMan renderer, ObjectLoader loader, WindowMan window, boolean autoCollapse) {
+        super(id, "", pos, size, tabWidth, renderer, loader, window, autoCollapse);
         imageSize = size;
     }
 
-    public ComboBoxImage(String id, int fontSize, int tabWidth, Vector2f imageSize, RenderMan renderer, ObjectLoader loader, WindowMan window) {
-        super(id, "", fontSize, tabWidth, renderer, loader, window);
+    public ComboBoxImage(String id, int tabWidth, Vector2f imageSize, RenderMan renderer, ObjectLoader loader, WindowMan window) {
+        super(id, "", tabWidth, renderer, loader, window);
         this.imageSize = imageSize;
     }
 

@@ -657,19 +657,19 @@ public class RenderMan {
         this.processGuiElement(Circle.get(loader, window, color, center, radius, true));
     }
 
-    public void drawString(String text, Color color, int x, int y, int size)
+    public void drawString(String text, Color color, int x, int y)
     {
-        FontRenderer.drawString(this, text, x, y, size, color, 0, text.length(), FontRenderer.Fonts.get(FontRenderer.textFont));
+        FontRenderer.drawString(this, text, x, y, color, 0, text.length(), FontRenderer.Fonts.get(FontRenderer.textFont));
     }
 
-    public void drawString(String text, Color color, int x, int y, int size, int begin, int end)
+    public void drawString(String text, Color color, int x, int y, int begin, int end)
     {
-        FontRenderer.drawString(this, text, x, y, size, color, begin, end, FontRenderer.Fonts.get(FontRenderer.textFont));
+        FontRenderer.drawString(this, text, x, y, color, begin, end, FontRenderer.Fonts.get(FontRenderer.textFont));
     }
 
-    public void drawHeader(String text, Color color, int x, int y, int size)
+    public void drawHeader(String text, Color color, int x, int y)
     {
-        FontRenderer.drawString(this, text, x, y, size, color, 0, text.length(), FontRenderer.Fonts.get(FontRenderer.headerFont));
+        FontRenderer.drawHeader(this, text, x, y, color, 0, text.length(), FontRenderer.Fonts.get(FontRenderer.headerFont));
     }
 
     public void startScissor(Vector2i pos, Vector2i size)

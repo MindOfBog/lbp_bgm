@@ -23,15 +23,13 @@ import java.util.ArrayList;
 public abstract class FileTree extends Element{
 
     public TreeFolder root;
-    public int fontSize;
     public float itemHeight;
 
-    public FileTree(String id, String rootName, float itemHeight, Vector2f pos, Vector2f size, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window) {
+    public FileTree(String id, String rootName, float itemHeight, Vector2f pos, Vector2f size, RenderMan renderer, ObjectLoader loader, WindowMan window) {
         super();
         this.id = id;
         this.pos = pos;
         this.size = size;
-        this.fontSize = fontSize;
         this.renderer = renderer;
         this.loader = loader;
         this.window = window;
@@ -40,12 +38,11 @@ public abstract class FileTree extends Element{
         init(rootName);
     }
 
-    public FileTree(String id, String rootName, float itemHeight, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window) {
+    public FileTree(String id, String rootName, float itemHeight, RenderMan renderer, ObjectLoader loader, WindowMan window) {
         super();
         this.id = id;
         this.pos = new Vector2f();
         this.size = new Vector2f();
-        this.fontSize = fontSize;
         this.renderer = renderer;
         this.loader = loader;
         this.window = window;
@@ -56,7 +53,7 @@ public abstract class FileTree extends Element{
 
     private void init(String rootName)
     {
-        root = new TreeFolder("root", null, rootName, true, false, new Vector2f(), new Vector2f(this.size.x, itemHeight), fontSize, renderer, loader, window) {
+        root = new TreeFolder("root", null, rootName, true, false, new Vector2f(), new Vector2f(this.size.x, itemHeight), renderer, loader, window) {
 
             @Override
             public Texture getIcon() {
@@ -255,25 +252,25 @@ public abstract class FileTree extends Element{
         private boolean hasRename = true;
         private boolean hasDelete = true;
 
-        public TreeItem(String id, Object item, String name, Vector2f pos, Vector2f size, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window) {
+        public TreeItem(String id, Object item, String name, Vector2f pos, Vector2f size, RenderMan renderer, ObjectLoader loader, WindowMan window) {
             super(pos, size, renderer);
             this.renderer = renderer;
             this.loader = loader;
             this.window = window;
             this.item = item;
-            setupElements(name, fontSize);
+            setupElements(name);
         }
 
-        public TreeItem(String id, Object item, String name, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window) {
+        public TreeItem(String id, Object item, String name, RenderMan renderer, ObjectLoader loader, WindowMan window) {
             super(new Vector2f(), new Vector2f(), renderer);
             this.renderer = renderer;
             this.loader = loader;
             this.window = window;
             this.item = item;
-            setupElements(name, fontSize);
+            setupElements(name);
         }
 
-        public TreeItem(String id, Object item, String name, boolean hasRename, boolean hasDelete, Vector2f pos, Vector2f size, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window) {
+        public TreeItem(String id, Object item, String name, boolean hasRename, boolean hasDelete, Vector2f pos, Vector2f size, RenderMan renderer, ObjectLoader loader, WindowMan window) {
             super(pos, size, renderer);
             this.renderer = renderer;
             this.loader = loader;
@@ -281,10 +278,10 @@ public abstract class FileTree extends Element{
             this.item = item;
             this.hasRename = hasRename;
             this.hasDelete = hasDelete;
-            setupElements(name, fontSize);
+            setupElements(name);
         }
 
-        public TreeItem(String id, Object item, String name, boolean hasRename, boolean hasDelete, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window) {
+        public TreeItem(String id, Object item, String name, boolean hasRename, boolean hasDelete, RenderMan renderer, ObjectLoader loader, WindowMan window) {
             super(new Vector2f(), new Vector2f(), renderer);
             this.renderer = renderer;
             this.loader = loader;
@@ -292,10 +289,10 @@ public abstract class FileTree extends Element{
             this.item = item;
             this.hasRename = hasRename;
             this.hasDelete = hasDelete;
-            setupElements(name, fontSize);
+            setupElements(name);
         }
 
-        private void setupElements(String name, int fontSize)
+        private void setupElements(String name)
         {
             iconButton = getIconButton();
             if(hasRename)
@@ -312,7 +309,7 @@ public abstract class FileTree extends Element{
                         return ConstantTextures.getTexture(ConstantTextures.RENAME, s, s, loader);
                     }
                 };
-            optionsCombo = new ComboBoxImage("optionsCombo", fontSize, 200, renderer, loader, window) {
+            optionsCombo = new ComboBoxImage("optionsCombo", 200, renderer, loader, window) {
                 @Override
                 public Texture getImage() {
                     int size = Math.round(this.size.y);
@@ -343,7 +340,7 @@ public abstract class FileTree extends Element{
                     }
                 };
             }
-            itemName = new Textbox("itemName", fontSize, renderer, loader, window)
+            itemName = new Textbox("itemName", renderer, loader, window)
             {
                 @Override
                 public void draw(MouseInput mouseInput, boolean overOther) {
@@ -378,23 +375,23 @@ public abstract class FileTree extends Element{
                     {
                         try
                         {
-                            if((int) Math.round(pos.x + xScroll + this.size.y / 2 - getFontHeight(fontSize) / 2) + getStringWidth(text.substring(0, i), fontSize) < pos.x)
+                            if((int) Math.round(pos.x + xScroll + this.size.y / 2 - getFontHeight() / 2) + getStringWidth(text.substring(0, i)) < pos.x)
                                 begin = i;
 
-                            if((int) Math.round(pos.x + xScroll + this.size.y / 2 - getFontHeight(fontSize) / 2) + getStringWidth(text.substring(0, i + 1), fontSize) < pos.x + size.x)
+                            if((int) Math.round(pos.x + xScroll + this.size.y / 2 - getFontHeight() / 2) + getStringWidth(text.substring(0, i + 1)) < pos.x + size.x)
                                 end = i + 1;
                         }catch (Exception e){}
                     }
 
-                    renderer.drawString(text, textColor(), (int) Math.round(pos.x + xScroll + this.size.y / 2 - getFontHeight(fontSize) / 2), (int) Math.round(pos.y + this.size.y / 2 - getFontHeight(fontSize) / 2), fontSize, begin, end);
+                    renderer.drawString(text, textColor(), (int) Math.round(pos.x + xScroll + this.size.y / 2 - getFontHeight() / 2), (int) Math.round(pos.y + this.size.y / 2 - getFontHeight() / 2), begin, end);
 
                     if(!this.disabled)
                     {
                         if(500 > (System.currentTimeMillis() - Consts.startMillis) % 1000 && isFocused())
                             if(currentSelection == text.length())
-                                renderer.drawString("_", textColor(), (int) Math.round(pos.x + xScroll + getStringWidth(text, fontSize) + 1 + this.size.y/2 - getFontHeight(fontSize)/2), (int) Math.round(pos.y + this.size.y/2 - getFontHeight(fontSize)/2), fontSize);
+                                renderer.drawString("_", textColor(), (int) Math.round(pos.x + xScroll + getStringWidth(text) + 1 + this.size.y/2 - getFontHeight()/2), (int) Math.round(pos.y + this.size.y/2 - getFontHeight()/2));
                             else
-                                renderer.drawRect((int) Math.round(xScroll + pos.x + getStringWidth(text.substring(0, currentSelection), fontSize) + this.size.y/2 - getFontHeight(fontSize)/2 - 1), (int) Math.round(pos.y + this.size.y/2 - getFontHeight(fontSize)/2), 1, (int) Math.round(getFontHeight(fontSize) - 2), textColor());
+                                renderer.drawRect((int) Math.round(xScroll + pos.x + getStringWidth(text.substring(0, currentSelection)) + this.size.y/2 - getFontHeight()/2 - 1), (int) Math.round(pos.y + this.size.y/2 - getFontHeight()/2), 1, (int) Math.round(getFontHeight() - 2), textColor());
 
                         if(selectedText[0] >= 0 && selectedText[1] >= 0 && selectedText[0] != selectedText[1])
                         {
@@ -408,22 +405,22 @@ public abstract class FileTree extends Element{
                             }
 
                             float[] pos1 = {
-                                    pos.x + xScroll + this.size.y / 2 - getFontHeight(fontSize) / 2,
-                                    pos.y + this.size.y / 2 - getFontHeight(fontSize) / 2
+                                    pos.x + xScroll + this.size.y / 2 - getFontHeight() / 2,
+                                    pos.y + this.size.y / 2 - getFontHeight() / 2
                             };
 
-                            float x = pos1[0] + getStringWidth(text.substring(0, selectionStart), fontSize);
+                            float x = pos1[0] + getStringWidth(text.substring(0, selectionStart));
                             float diff = 0;
                             if (x < pos.x) {
                                 diff = x - pos.x;
                                 x = pos.x;
                             }
 
-                            float width = getStringWidth(text.substring(selectionStart, selectionEnd), fontSize) + 1 + diff;
+                            float width = getStringWidth(text.substring(selectionStart, selectionEnd)) + 1 + diff;
                             if (x + width > pos.x + size.x)
                                 width = pos.x + size.x - x;
 
-                            renderer.drawRectInvert((int) Math.round(x - 1), (int) Math.round(pos1[1] - 1), (int) Math.round(width + 1), getFontHeight(fontSize) + 2);
+                            renderer.drawRectInvert((int) Math.round(x - 1), (int) Math.round(pos1[1] - 1), (int) Math.round(width + 1), getFontHeight() + 2);
                         }
                     }
                     renderer.drawRectOutline(new Vector2f((int) Math.round(pos.x), (int) Math.round(pos.y)), outlineRect, isMouseOverElement(mouseInput) && !overOther || this.isFocused() ? Config.INTERFACE_SECONDARY_COLOR2 : Config.INTERFACE_PRIMARY_COLOR2, false);
@@ -638,23 +635,23 @@ public abstract class FileTree extends Element{
 
         private Model treeLines;
 
-        public TreeFolder(String id, Object item, String name, Vector2f pos, Vector2f size, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window) {
-            super(id, item, name, pos, size, fontSize, renderer, loader, window);
+        public TreeFolder(String id, Object item, String name, Vector2f pos, Vector2f size, RenderMan renderer, ObjectLoader loader, WindowMan window) {
+            super(id, item, name, pos, size, renderer, loader, window);
             this.children = new ArrayList<>();
         }
 
-        public TreeFolder(String id, Object item, String name, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window) {
-            super(id, item, name, fontSize, renderer, loader, window);
+        public TreeFolder(String id, Object item, String name, RenderMan renderer, ObjectLoader loader, WindowMan window) {
+            super(id, item, name, renderer, loader, window);
             this.children = new ArrayList<>();
         }
 
-        public TreeFolder(String id, Object item, String name, boolean hasRename, boolean hasDelete, Vector2f pos, Vector2f size, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window) {
-            super(id, item, name, hasRename, hasDelete, pos, size, fontSize, renderer, loader, window);
+        public TreeFolder(String id, Object item, String name, boolean hasRename, boolean hasDelete, Vector2f pos, Vector2f size, RenderMan renderer, ObjectLoader loader, WindowMan window) {
+            super(id, item, name, hasRename, hasDelete, pos, size, renderer, loader, window);
             this.children = new ArrayList<>();
         }
 
-        public TreeFolder(String id, Object item, String name, boolean hasRename, boolean hasDelete, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window) {
-            super(id, item, name, hasRename, hasDelete, fontSize, renderer, loader, window);
+        public TreeFolder(String id, Object item, String name, boolean hasRename, boolean hasDelete, RenderMan renderer, ObjectLoader loader, WindowMan window) {
+            super(id, item, name, hasRename, hasDelete, renderer, loader, window);
             this.children = new ArrayList<>();
         }
 
@@ -821,7 +818,7 @@ public abstract class FileTree extends Element{
 
         public TreeItem addItem(String id, Object item, String name, float height)
         {
-            TreeItem entry = new TreeItem(id, item, name, new Vector2f(), new Vector2f(0, height), fontSize, renderer, loader, window);
+            TreeItem entry = new TreeItem(id, item, name, new Vector2f(), new Vector2f(0, height), renderer, loader, window);
             entry.parent = this;
             this.children.add(entry);
             return entry;
@@ -829,7 +826,7 @@ public abstract class FileTree extends Element{
 
         public TreeFolder addFolder(String id, Object item, String name, float height)
         {
-            TreeFolder folder = new TreeFolder(id, item, name, new Vector2f(), new Vector2f(0, height), fontSize, renderer, loader, window);
+            TreeFolder folder = new TreeFolder(id, item, name, new Vector2f(), new Vector2f(0, height), renderer, loader, window);
             folder.parent = this;
             this.children.add(folder);
             return folder;

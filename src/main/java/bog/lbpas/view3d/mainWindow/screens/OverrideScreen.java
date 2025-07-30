@@ -31,7 +31,7 @@ public class OverrideScreen extends GuiScreen {
 
     public void init()
     {
-        solidShading = new Button("solidShading", "Solid", new Vector2f(-1000, 50), new Vector2f(200, 30), 10, renderer, loader, window) {
+        solidShading = new Button("solidShading", "Solid", new Vector2f(-1000, 50), new Vector2f(200, 30), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 Config.VIEWER_SHADING = 1;
@@ -46,7 +46,7 @@ public class OverrideScreen extends GuiScreen {
 
             }
         };
-        materialShading = new Button("materialShading", "Material Preview", new Vector2f(-1000, 50), new Vector2f(200, 30), 10, renderer, loader, window) {
+        materialShading = new Button("materialShading", "Material Preview", new Vector2f(-1000, 50), new Vector2f(200, 30), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 Config.VIEWER_SHADING = 0;
@@ -61,7 +61,7 @@ public class OverrideScreen extends GuiScreen {
 
             }
         };
-        normalShading = new Button("normalShading", "Normals", new Vector2f(-1000, 50), new Vector2f(200, 30), 10, renderer, loader, window) {
+        normalShading = new Button("normalShading", "Normals", new Vector2f(-1000, 50), new Vector2f(200, 30), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 Config.VIEWER_SHADING = 2;
@@ -120,9 +120,9 @@ public class OverrideScreen extends GuiScreen {
 
         if(shadingMenu)
         {
-            renderer.drawCircle(loader, shadingPos, (getStringWidth("Shading", 10) / 2) * 1.35f, Config.INTERFACE_PRIMARY_COLOR);
-            renderer.drawCircleOutline(loader, shadingPos, (getStringWidth("Shading", 10) / 2) * 1.35f, Config.INTERFACE_PRIMARY_COLOR2);
-            renderer.drawString("Shading", Config.FONT_COLOR, (int) (shadingPos.x - getStringWidth("Shading", 10) / 2), (int) (shadingPos.y - getFontHeight(10) / 2), 10);
+            renderer.drawCircle(loader, shadingPos, (getStringWidth("Shading") / 2) * 1.35f, Config.INTERFACE_PRIMARY_COLOR);
+            renderer.drawCircleOutline(loader, shadingPos, (getStringWidth("Shading") / 2) * 1.35f, Config.INTERFACE_PRIMARY_COLOR2);
+            renderer.drawString("Shading", Config.FONT_COLOR, (int) (shadingPos.x - getStringWidth("Shading") / 2), (int) (shadingPos.y - getFontHeight() / 2));
 
             solidShading.pos.x = shadingPos.x + 50;
             solidShading.pos.y = shadingPos.y - solidShading.size.y / 2;

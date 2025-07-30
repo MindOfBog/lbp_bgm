@@ -55,12 +55,14 @@ public class GuiRenderer {
         guiShader.createUniform("circle");
         guiShader.createUniform("hasColor");
         guiShader.createUniform("color");
-        guiShader.createUniform("smoothst");
         guiShader.createUniform("alpha");
         guiShader.createUniform("type");
         guiShader.createUniform("abstractInt");
         guiShader.createBlurUniform("blur");
         guiShader.createDimensionUniform("dimensions");
+        guiShader.createUniform("smoothst");
+        guiShader.createUniform("smoothstWidth");
+        guiShader.createUniform("smoothstEdge");
 
         line = loader.loadModel(new float[]{0f, 0f, 100f, 100f});
         defaultQuad = defaultQuad(loader);
@@ -68,9 +70,12 @@ public class GuiRenderer {
 
     public ArrayList<Drawable> elements = new ArrayList<>();
 
+    private int lastTexture = -1;
+
     public void render(FBO screenBuffer, FBO blurBuffer)
     {
         guiShader.bind();
+        lastTexture = -1;
 
         GL11.glEnable(GL11.GL_BLEND);
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
@@ -90,16 +95,11 @@ public class GuiRenderer {
                 case TRI_STRIP:
                 {
                     TriStrip element = (TriStrip) drawable;
-                    GL30.glBindVertexArray(element.model.vao);
-                    GL20.glEnableVertexAttribArray(0);
 
-                    if (element.hasTexCoords)
-                        GL20.glEnableVertexAttribArray(1);
+                    bindVAO(element.model);
 
-                    if (element.texture != -1) {
-                        GL13.glActiveTexture(GL13.GL_TEXTURE0);
-                        GL11.glBindTexture(GL11.GL_TEXTURE_2D, element.texture == -69 ? screenBuffer.colorTexture : element.texture);
-                    }
+                    if (element.texture != -1)
+                        bindTexture(element.texture == -69 ? screenBuffer.colorTexture : element.texture, 0);
 
                     guiShader.setUniform("hasCoords", element.hasTexCoords);
                     guiShader.setUniform("guiTexture", 0);
@@ -116,6 +116,8 @@ public class GuiRenderer {
 
                     guiShader.setUniform("hasColor", element.color == null ? 0 : element.texture != -1 ? 1 : 2);
                     guiShader.setUniform("smoothst", element.smoothstep);
+                    guiShader.setUniform("smoothstWidth", element.smoothstepWidth);
+                    guiShader.setUniform("smoothstEdge", element.smoothstepEdge);
 
                     if (element.invert) {
                         GL11.glBlendFunc(GL11.GL_SRC_COLOR, GL11.GL_ONE);
@@ -141,14 +143,13 @@ public class GuiRenderer {
                 case TRI_FAN:
                 {
                     TriFan element = (TriFan) drawable;
-                    GL30.glBindVertexArray(element.model.vao);
-                    GL20.glEnableVertexAttribArray(0);
 
-                    if (element.hasTexCoords)
-                        GL20.glEnableVertexAttribArray(1);
+                    bindVAO(element.model);
 
                     GL13.glActiveTexture(GL13.GL_TEXTURE0);
-                    GL11.glBindTexture(GL11.GL_TEXTURE_2D, element.texture == -69 ? screenBuffer.colorTexture : element.texture);
+
+                    if(element.texture != -1)
+                        bindTexture(element.texture == -69 ? screenBuffer.colorTexture : element.texture, 0);
 
                     guiShader.setUniform("hasCoords", element.hasTexCoords);
                     guiShader.setUniform("guiTexture", 0);
@@ -165,6 +166,8 @@ public class GuiRenderer {
 
                     guiShader.setUniform("hasColor", element.color == null ? 0 : element.texture != -1 ? 1 : 2);
                     guiShader.setUniform("smoothst", element.smoothstep);
+                    guiShader.setUniform("smoothstWidth", element.smoothstepWidth);
+                    guiShader.setUniform("smoothstEdge", element.smoothstepEdge);
 
                     if (element.invert)
                         GL11.glBlendFunc(GL11.GL_DST_COLOR, GL11.GL_ONE_MINUS_DST_COLOR);
@@ -198,8 +201,8 @@ public class GuiRenderer {
                     Line element = (Line) drawable;
                     if (element.model == null || window.isMinimized)
                         continue;
-                    GL30.glBindVertexArray(element.model.vao);
-                    GL20.glEnableVertexAttribArray(0);
+
+                    bindVAO(element.model);
 
                     guiShader.setUniform("color", element.invert ? new Vector4f(1f) : element.color);
                     guiShader.setUniform("hasCoords", false);
@@ -239,8 +242,8 @@ public class GuiRenderer {
                     LineStrip element = (LineStrip) drawable;
                     if (element.model == null)
                         continue;
-                    GL30.glBindVertexArray(element.model.vao);
-                    GL20.glEnableVertexAttribArray(0);
+
+                    bindVAO(element.model);
 
                     guiShader.setUniform("color", element.invert ? new Vector4f(1f) : element.color);
                     guiShader.setUniform("hasCoords", false);
@@ -377,16 +380,11 @@ public class GuiRenderer {
                 case CIRCLE:
                 {
                     TriStrip element = (TriStrip) drawable;
-                    GL30.glBindVertexArray(element.model.vao);
-                    GL20.glEnableVertexAttribArray(0);
 
-                    if (element.hasTexCoords)
-                        GL20.glEnableVertexAttribArray(1);
+                    bindVAO(element.model);
 
-                    if (element.texture != -1) {
-                        GL13.glActiveTexture(GL13.GL_TEXTURE0);
-                        GL11.glBindTexture(GL11.GL_TEXTURE_2D, element.texture == -69 ? screenBuffer.colorTexture : element.texture);
-                    }
+                    if (element.texture != -1)
+                        bindTexture(element.texture == -69 ? screenBuffer.colorTexture : element.texture, 0);
 
                     guiShader.setUniform("hasCoords", element.hasTexCoords);
                     guiShader.setUniform("circle", ((Circle) drawable).circle);
@@ -404,6 +402,8 @@ public class GuiRenderer {
 
                     guiShader.setUniform("hasColor", element.color == null ? 0 : element.texture != -1 ? 1 : 2);
                     guiShader.setUniform("smoothst", element.smoothstep);
+                    guiShader.setUniform("smoothstWidth", element.smoothstepWidth);
+                    guiShader.setUniform("smoothstEdge", element.smoothstepEdge);
 
                     if (element.invert)
                         GL11.glBlendFunc(GL11.GL_DST_COLOR, GL11.GL_ONE_MINUS_DST_COLOR);
@@ -444,6 +444,8 @@ public class GuiRenderer {
                             startBlur(screenBuffer.colorTexture, blurBuffer.buffer, blurBuffer.colorTexture, blurBuffer.depthTexture, blur);
                         else
                             endBlur(blurBuffer.colorTexture);
+
+                        lastTexture = -1;
                     }
                 }
                 break;
@@ -451,8 +453,7 @@ public class GuiRenderer {
                 {
                     ColorPickerPart element = (ColorPickerPart) drawable;
 
-                    GL30.glBindVertexArray(GuiRenderer.defaultQuad.vao);
-                    GL20.glEnableVertexAttribArray(0);
+                    bindVAO(defaultQuad);
 
                     guiShader.setUniform("hasCoords", false);
                     guiShader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(new Vector2f(), new Vector2f(1)));
@@ -465,7 +466,66 @@ public class GuiRenderer {
 
                     GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, GuiRenderer.defaultQuad.vertexCount);
 
-                    GL20.glDisableVertexAttribArray(0);
+                }
+                break;
+                case GLYPH:
+                {
+                    Glyph element = (Glyph) drawable;
+
+                    if(element.model == null)
+                        continue;
+
+                    bindVAO(element.model);
+
+                    if (element.texture != -1)
+                        bindTexture(element.texture == -69 ? screenBuffer.colorTexture : element.texture, 0);
+
+                    guiShader.setUniform("hasCoords", element.hasTexCoords);
+                    guiShader.setUniform("guiTexture", 0);
+
+                    if(element.italics)
+                        guiShader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(
+                                new Vector2f(element.pos.x / (window.width / 2f) - 1 + element.scale.x / window.width, (-element.pos.y) / (window.height / 2f) + 1 - element.scale.y / window.height),
+                                new Vector2f(element.scale.x / window.width, element.scale.y / window.height), 0.15f));
+                    else
+                        guiShader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(
+                                new Vector2f(element.pos.x / (window.width / 2f) - 1 + element.scale.x / window.width, (-element.pos.y) / (window.height / 2f) + 1 - element.scale.y / window.height),
+                                new Vector2f(element.scale.x / window.width, element.scale.y / window.height)));
+
+                    if (element.color != null)
+                        guiShader.setUniform("color", new Vector4f(
+                                element.invert ? 1f : element.color.getRed() / 255f,
+                                element.invert ? 1f : element.color.getGreen() / 255f,
+                                element.invert ? 1f : element.color.getBlue() / 255f,
+                                element.invert ? 1f : element.color.getAlpha() / 255f));
+
+                    guiShader.setUniform("hasColor", element.color == null ? 0 : element.texture != -1 ? 1 : 2);
+                    guiShader.setUniform("smoothst", element.smoothstep);
+                    guiShader.setUniform("smoothstWidth", element.smoothstepWidth);
+                    guiShader.setUniform("smoothstEdge", element.smoothstepEdge);
+                    guiShader.setUniform("abstractInt", element.character.chnl);
+
+                    if (element.invert) {
+                        GL11.glBlendFunc(GL11.GL_SRC_COLOR, GL11.GL_ONE);
+                        GL14.glBlendEquation(GL14.GL_FUNC_SUBTRACT);
+                    }
+
+                    GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, element.model.vertexCount);
+
+                    guiShader.setUniform("abstractInt", -1);
+
+                    if (element.invert) {
+                        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+                        GL14.glBlendEquation(GL14.GL_FUNC_ADD);
+                    }
+
+                    if (!element.staticTexture) {
+                        if (loader.textures.contains(element.texture))
+                            loader.textures.remove((Object) element.texture);
+                        GL11.glDeleteTextures(element.texture);
+                    }
+
+                    clearElement(element);
                 }
                 break;
             }
@@ -473,8 +533,10 @@ public class GuiRenderer {
 
         GL11.glEnable(GL11.GL_DEPTH_TEST);
         GL11.glDisable(GL11.GL_BLEND);
-        GL20.glDisableVertexAttribArray(0);
-        GL20.glDisableVertexAttribArray(1);
+
+        for(int attrib = 0; attrib < 8; attrib++)
+            GL20.glDisableVertexAttribArray(attrib);
+
         GL30.glBindVertexArray(0);
 
         guiShader.unbind();
@@ -510,11 +572,9 @@ public class GuiRenderer {
         RenderMan.bindDepthTex(blurDepth);
         RenderMan.clear();
 
-        GL30.glBindVertexArray(GuiRenderer.defaultQuad.vao);
-        GL20.glEnableVertexAttribArray(0);
+        bindVAO(defaultQuad);
 
-        GL13.glActiveTexture(GL13.GL_TEXTURE0);
-        GL11.glBindTexture(GL11.GL_TEXTURE_2D, screenTexture);
+        bindTexture(screenTexture, 0);
 
         guiShader.setUniform("hasCoords", false);
         guiShader.setUniform("guiTexture", 0);
@@ -524,19 +584,14 @@ public class GuiRenderer {
 
         GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, GuiRenderer.defaultQuad.vertexCount);
 
-        GL20.glDisableVertexAttribArray(0);
-        GL30.glBindVertexArray(0);
-
         unbindFrameBuffer();
     }
 
     public void endBlur(int blurTexture)
     {
-        GL30.glBindVertexArray(GuiRenderer.defaultQuad.vao);
-        GL20.glEnableVertexAttribArray(0);
+        bindVAO(defaultQuad);
 
-        GL13.glActiveTexture(GL13.GL_TEXTURE0);
-        GL11.glBindTexture(GL11.GL_TEXTURE_2D, blurTexture);
+        bindTexture(blurTexture, 0);
 
         guiShader.setUniform("hasCoords", false);
         guiShader.setUniform("guiTexture", 0);
@@ -545,9 +600,26 @@ public class GuiRenderer {
         guiShader.setUniform("blur", 1.0f/window.width, false);
 
         GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, GuiRenderer.defaultQuad.vertexCount);
+    }
 
-        GL20.glDisableVertexAttribArray(0);
-        GL30.glBindVertexArray(0);
+    private void bindVAO(Model model)
+    {
+        GL30.glBindVertexArray(model.vao);
+        GL20.glEnableVertexAttribArray(0);
+        for(int attrib : model.attribs)
+            if(attrib > 0)
+                GL20.glEnableVertexAttribArray(attrib);
+    }
+
+    private void bindTexture(int textureID, int slot)
+    {
+        GL13.glActiveTexture(GL13.GL_TEXTURE0 + slot);
+
+        if(lastTexture != textureID)
+        {
+            GL11.glBindTexture(GL11.GL_TEXTURE_2D, textureID);
+            lastTexture = textureID;
+        }
     }
 
     public void unbindFrameBuffer()

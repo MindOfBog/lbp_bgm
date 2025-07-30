@@ -30,7 +30,8 @@ public abstract class Drawable {
         SCISSOR(4),
         CIRCLE(5),
         BLUR(6),
-        COLOR_PICKER(7);
+        COLOR_PICKER(7),
+        GLYPH(8);
 
         public final int value;
 

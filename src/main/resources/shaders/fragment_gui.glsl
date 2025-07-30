@@ -28,7 +28,6 @@ uniform int abstractInt;
 uniform sampler2D guiTexture;
 uniform int hasColor;
 uniform vec4 color;
-uniform bool smoothst;
 uniform bool alpha;
 
 uniform vec4 circle;
@@ -36,8 +35,9 @@ uniform vec4 circle;
 uniform Blur blur;
 uniform Dimensions dimensions;
 
-const float width = 0.41;
-const float edge = 0.25;
+uniform bool smoothst;
+uniform float smoothstWidth;
+uniform float smoothstEdge;
 
 vec3 rgb2hsv(vec3 c)
 {
@@ -118,6 +118,19 @@ void main(void){
 			}
 		}
 		break;
+		case GLYPH:
+		{
+			float glyphAlpha = texture(guiTexture, textureCoords1)[abstractInt];
+
+			if (smoothst)
+			{
+				float dist = 1.0 - glyphAlpha;
+				glyphAlpha = 1.0 - smoothstep(smoothstWidth, smoothstEdge, dist);
+			}
+
+			out_Color = vec4(color.r, color.g, color.b, glyphAlpha);
+		}
+		break;
 		default:
 		{
 			if (hasColor < 2)
@@ -132,7 +145,7 @@ void main(void){
 			if (smoothst)
 			{
 				float dist = 1.0 - out_Color.a;
-				float alpha = 1.0 - smoothstep(width, width + edge, dist);
+				float alpha = 1.0 - smoothstep(smoothstWidth, smoothstEdge, dist);
 				out_Color.a = alpha;
 			}
 

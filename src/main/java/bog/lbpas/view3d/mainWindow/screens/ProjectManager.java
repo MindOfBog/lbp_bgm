@@ -11,10 +11,7 @@ import bog.lbpas.view3d.renderer.gui.elements.Button;
 import bog.lbpas.view3d.renderer.gui.elements.*;
 import bog.lbpas.view3d.renderer.gui.elements.Checkbox;
 import bog.lbpas.view3d.renderer.gui.elements.Panel;
-import bog.lbpas.view3d.utils.Consts;
-import bog.lbpas.view3d.utils.FilePicker;
-import bog.lbpas.view3d.utils.Utils;
-import bog.lbpas.view3d.utils.print;
+import bog.lbpas.view3d.utils.*;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -190,13 +187,13 @@ public class ProjectManager extends GuiScreen {
         typePlan = new ArrayList<>();
         creatorHistoryListPlan = new ArrayList<>();
 
-        project = new DropDownTab("project", "Project", new Vector2f(10, 21 + 10), new Vector2f(400, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window);
+        project = new DropDownTab("project", "Project", new Vector2f(10, 21 + 10), new Vector2f(400, getFontHeight() + 4), mainView.renderer, mainView.loader, mainView.window);
 
         ElementList projectFileTree = project.addElementList("projectFileTree", 300);
 
-        buildScene = new ComboBox("buildScene", "Build Scene", new Vector2f(), null, 10, 100, renderer, loader, window);
+        buildScene = new ComboBox("buildScene", "Build Scene", new Vector2f(), null, 100, renderer, loader, window);
 
-        ComboBox importTextures = new ComboBox("texture", "Texture(s)", new Vector2f(), null, 10, 250, renderer, loader, window);
+        ComboBox importTextures = new ComboBox("texture", "Texture(s)", new Vector2f(), null, 250, renderer, loader, window);
 
         importTextures.addButton("open", "Open", new Button() {
             @Override
@@ -210,8 +207,8 @@ public class ProjectManager extends GuiScreen {
         listTexImport = new ArrayList<>();
 
         Panel formatPanel = importTextures.addPanel("formatPanel");
-        formatPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("formatStr", "Format:", 10, renderer), 0.4f));
-        ComboBox imgFormat = new ComboBox("formatCombo", "DXT5", 10, 100, renderer, loader, window);
+        formatPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("formatStr", "Format:", renderer), 0.4f));
+        ComboBox imgFormat = new ComboBox("formatCombo", "DXT5", 100, renderer, loader, window);
         formatPanel.elements.add(new Panel.PanelElement(imgFormat, 0.6f));
         imgFormat.addButton("DXT1", new Button() {
             @Override
@@ -301,7 +298,7 @@ public class ProjectManager extends GuiScreen {
             }
         });
 
-        modFileTree = projectFileTree.addFileTree(new FileTree("modFileTree", "Some kind of mod", getFontHeight(10) * 1.25f + 2, new Vector2f(), new Vector2f(), 10, renderer, loader, window) {
+        modFileTree = projectFileTree.addFileTree(new FileTree("modFileTree", "Some kind of mod", getFontHeight() * 1.25f + 2, new Vector2f(), new Vector2f(), renderer, loader, window) {
             @Override
             public int[] getParentTransform() {
                 return new int[]{(int) Math.round(project.pos.x), (int) Math.round(project.pos.y), (int) Math.round(project.size.x)};
@@ -505,14 +502,14 @@ public class ProjectManager extends GuiScreen {
                 FilePicker.saveMod();
             }
         });
-        exportMod.size.y = getFontHeight(10) * 2f;
+        exportMod.size.y = getFontHeight() * 2f;
 
         project.addSeparator("sep");
         Panel projectSavePathPanel = project.addPanel("projectSavePathPanel");
         projectSavePathPanel.elements.add(new Panel.PanelElement(
-                new DropDownTab.StringElement("projectSavePathStr", "Project Path:", 10, mainView.renderer),
+                new DropDownTab.StringElement("projectSavePathStr", "Project Path:", mainView.renderer),
                 0.3f));
-        projectSavePath = new Textbox("projectSavePath", new Vector2f(), new Vector2f(getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window);
+        projectSavePath = new Textbox("projectSavePath", new Vector2f(), new Vector2f(getFontHeight()), mainView.renderer, mainView.loader, mainView.window);
 
         try {
             projectSavePath.setText(Paths.get(this.getClass().getProtectionDomain().getCodeSource().getLocation().toURI()).getParent().toString() + File.separator + "Some kind of project.jar");
@@ -796,47 +793,47 @@ public class ProjectManager extends GuiScreen {
                 }
             }
         });
-        saveProject.size.y = getFontHeight(10) * 2f;
+        saveProject.size.y = getFontHeight() * 2f;
         planExport = buildScene.addComboBox("planExport", "Plan", 450);
 
         Panel userCreatedNamePlanPanel = planExport.addPanel("userCreatedNamePlanPanel");
         userCreatedNamePlanPanel.elements.add(new Panel.PanelElement(
-                new DropDownTab.StringElement("userCreatedNamePlanStr", "User Created Name:", 10, mainView.renderer),
+                new DropDownTab.StringElement("userCreatedNamePlanStr", "User Created Name:", mainView.renderer),
                 0.4f));
-        userCreatedNamePlan = new Textbox("userCreatedNamePlan", new Vector2f(), new Vector2f(getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window);
+        userCreatedNamePlan = new Textbox("userCreatedNamePlan", new Vector2f(), new Vector2f(getFontHeight()), mainView.renderer, mainView.loader, mainView.window);
         userCreatedNamePlan.setText("Some kind of object");
         userCreatedNamePlanPanel.elements.add(new Panel.PanelElement(userCreatedNamePlan, 0.6f));
 
         Panel userCreatedDescriptionPlanPanel = planExport.addPanel("userCreatedDescriptionPlanPanel");
         userCreatedDescriptionPlanPanel.size.y = 100;
         userCreatedDescriptionPlanPanel.elements.add(new Panel.PanelElement(
-                new DropDownTab.StringElement("userCreatedDescriptionPlanStr", "User Created Desc.:", 10, mainView.renderer),
+                new DropDownTab.StringElement("userCreatedDescriptionPlanStr", "User Created Desc.:", mainView.renderer),
                 0.4f));
-        userCreatedDescriptionPlan = new Textarea("userCreatedDescriptionPlan", new Vector2f(), new Vector2f(getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window);
+        userCreatedDescriptionPlan = new Textarea("userCreatedDescriptionPlan", new Vector2f(), new Vector2f(getFontHeight()), mainView.renderer, mainView.loader, mainView.window);
         userCreatedDescriptionPlanPanel.elements.add(new Panel.PanelElement(userCreatedDescriptionPlan, 0.6f));
 
         Panel titleKeyPlanPanel = planExport.addPanel("titleKeyPlanPanel");
         titleKeyPlanPanel.elements.add(new Panel.PanelElement(
-                new DropDownTab.StringElement("titleKeyPlanStr", "Title Key:", 10, mainView.renderer),
+                new DropDownTab.StringElement("titleKeyPlanStr", "Title Key:", mainView.renderer),
                 0.4f));
-        titleKeyPlan = new Textbox("titleKeyPlan", new Vector2f(), new Vector2f(getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window).noLetters().noOthers();
+        titleKeyPlan = new Textbox("titleKeyPlan", new Vector2f(), new Vector2f(getFontHeight()), mainView.renderer, mainView.loader, mainView.window).noLetters().noOthers();
         titleKeyPlanPanel.elements.add(new Panel.PanelElement(titleKeyPlan, 0.6f));
 
         Panel descriptionKeyPlanPanel = planExport.addPanel("descriptionKeyPlanPanel");
         descriptionKeyPlanPanel.elements.add(new Panel.PanelElement(
-                new DropDownTab.StringElement("descriptionKeyPlanStr", "Description Key:", 10, mainView.renderer),
+                new DropDownTab.StringElement("descriptionKeyPlanStr", "Description Key:", mainView.renderer),
                 0.4f));
-        descriptionKeyPlan = new Textbox("descriptionKeyPlan", new Vector2f(), new Vector2f(getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window).noLetters().noOthers();
+        descriptionKeyPlan = new Textbox("descriptionKeyPlan", new Vector2f(), new Vector2f(getFontHeight()), mainView.renderer, mainView.loader, mainView.window).noLetters().noOthers();
         descriptionKeyPlanPanel.elements.add(new Panel.PanelElement(descriptionKeyPlan, 0.6f));
 
         Panel creatorPlanPanel = planExport.addPanel("creatorPlanPanel");
         creatorPlanPanel.elements.add(new Panel.PanelElement(
-                new DropDownTab.StringElement("creatorPlanStr", "Creator:", 10, mainView.renderer),
+                new DropDownTab.StringElement("creatorPlanStr", "Creator:", mainView.renderer),
                 0.4f));
-        creatorPlan = new Textbox("creatorPlan", new Vector2f(), new Vector2f(getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window);
+        creatorPlan = new Textbox("creatorPlan", new Vector2f(), new Vector2f(getFontHeight()), mainView.renderer, mainView.loader, mainView.window);
         creatorPlan.setText("MM_Studio");
         creatorPlanPanel.elements.add(new Panel.PanelElement(creatorPlan, 0.4f));
-        creatorHistoryPlan = new ComboBox("creatorHistoryPlan", "History", new Vector2f(), new Vector2f(), 10, 250, mainView.renderer, mainView.loader, mainView.window)
+        creatorHistoryPlan = new ComboBox("creatorHistoryPlan", "History", new Vector2f(), new Vector2f(), 250, mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public int[] getParentTransform() {
@@ -847,10 +844,10 @@ public class ProjectManager extends GuiScreen {
         creatorPlanPanel.elements.add(new Panel.PanelElement(creatorHistoryPlan, 0.198f));
 
         Panel addCreatorPanel = creatorHistoryPlan.addPanel("addCreatorPanel");
-        creatorHistoryAddPlan = new Textbox("creatorHistoryAddPlan", new Vector2f(), new Vector2f(getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window);
+        creatorHistoryAddPlan = new Textbox("creatorHistoryAddPlan", new Vector2f(), new Vector2f(getFontHeight()), mainView.renderer, mainView.loader, mainView.window);
         addCreatorPanel.elements.add(new Panel.PanelElement(creatorHistoryAddPlan, 0.8f));
         addCreatorPanel.elements.add(new Panel.PanelElement(null, 0.01f));
-        addCreatorPanel.elements.add(new Panel.PanelElement(new Button("creatorHistoryAddButtonPlan", "Add", new Vector2f(), new Vector2f(getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window) {
+        addCreatorPanel.elements.add(new Panel.PanelElement(new Button("creatorHistoryAddButtonPlan", "Add", new Vector2f(), new Vector2f(getFontHeight()), mainView.renderer, mainView.loader, mainView.window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && creatorHistoryAddPlan.getText() != null)
@@ -859,7 +856,7 @@ public class ProjectManager extends GuiScreen {
             }
         }, 0.19f));
 
-        creatorHistoryPlan.addList("creatorHistoryList", new ButtonList("creatorHistoryList", creatorHistoryListPlan, new Vector2f(), new Vector2f(), 10, mainView.renderer, mainView.loader, mainView.window) {
+        creatorHistoryPlan.addList("creatorHistoryList", new ButtonList("creatorHistoryList", creatorHistoryListPlan, new Vector2f(), new Vector2f(), mainView.renderer, mainView.loader, mainView.window) {
             @Override
             public void clickedButton(Object object, int index, int button, int action, int mods) {
             }
@@ -892,39 +889,39 @@ public class ProjectManager extends GuiScreen {
 
         Panel iconPlanPanel = planExport.addPanel("iconPlanPanel");
         iconPlanPanel.elements.add(new Panel.PanelElement(
-                new DropDownTab.StringElement("iconPlanStr", "Icon:", 10, mainView.renderer),
+                new DropDownTab.StringElement("iconPlanStr", "Icon:", mainView.renderer),
                 0.4f));
-        iconPlan = new Textbox("iconPlan", new Vector2f(), new Vector2f(getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window);
+        iconPlan = new Textbox("iconPlan", new Vector2f(), new Vector2f(getFontHeight()), mainView.renderer, mainView.loader, mainView.window);
         iconPlan.setText("2551");
         iconPlanPanel.elements.add(new Panel.PanelElement(iconPlan, 0.6f));
 
         Panel shareablePlanPanel = planExport.addPanel("shareablePlanPanel");
-        allowEmitPlan = new Checkbox("allowEmitPlan", "Allow Emit", new Vector2f(), 10, mainView.renderer, mainView.loader, mainView.window);
+        allowEmitPlan = new Checkbox("allowEmitPlan", "Allow Emit", new Vector2f(), mainView.renderer, mainView.loader, mainView.window);
         allowEmitPlan.isChecked = true;
-        shareablePlan = new Checkbox("shareablePlan", "Shareable", new Vector2f(), 10, mainView.renderer, mainView.loader, mainView.window);
+        shareablePlan = new Checkbox("shareablePlan", "Shareable", new Vector2f(), mainView.renderer, mainView.loader, mainView.window);
         shareablePlan.isChecked = true;
-        copyrightPlan = new Checkbox("copyrightPlan", "Copyright", new Vector2f(), 10, mainView.renderer, mainView.loader, mainView.window);
+        copyrightPlan = new Checkbox("copyrightPlan", "Copyright", new Vector2f(), mainView.renderer, mainView.loader, mainView.window);
         shareablePlanPanel.elements.add(new Panel.PanelElement(allowEmitPlan, 1f/3f));
         shareablePlanPanel.elements.add(new Panel.PanelElement(shareablePlan, 1f/3f));
         shareablePlanPanel.elements.add(new Panel.PanelElement(copyrightPlan, 1f/3f));
 
         Panel categoryPanel = planExport.addPanel("categoryPanel");
         categoryPanel.elements.add(new Panel.PanelElement(
-                new DropDownTab.StringElement("categoryStr", "Category:", 10, mainView.renderer),
+                new DropDownTab.StringElement("categoryStr", "Category:", mainView.renderer),
                 0.4f));
-        categoryPlan = new Textbox("category", new Vector2f(), new Vector2f(getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window).noLetters().noOthers();
+        categoryPlan = new Textbox("category", new Vector2f(), new Vector2f(getFontHeight()), mainView.renderer, mainView.loader, mainView.window).noLetters().noOthers();
         categoryPanel.elements.add(new Panel.PanelElement(categoryPlan, 0.123f));
         categoryPanel.elements.add(new Panel.PanelElement(null, 0.002f));
         categoryPanel.elements.add(new Panel.PanelElement(
-                new DropDownTab.StringElement("categoryTagStr", "Tag:", 10, mainView.renderer),
+                new DropDownTab.StringElement("categoryTagStr", "Tag:", mainView.renderer),
                 0.098f));
-        categoryTagPlan = new Textbox("categoryTag", new Vector2f(), new Vector2f(getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window);
+        categoryTagPlan = new Textbox("categoryTag", new Vector2f(), new Vector2f(getFontHeight()), mainView.renderer, mainView.loader, mainView.window);
         categoryPanel.elements.add(new Panel.PanelElement(categoryTagPlan, 0.123f));
         categoryPanel.elements.add(new Panel.PanelElement(null, 0.002f));
         categoryPanel.elements.add(new Panel.PanelElement(
-                new DropDownTab.StringElement("categoryIndexStr", "Index:", 10, mainView.renderer),
+                new DropDownTab.StringElement("categoryIndexStr", "Index:", mainView.renderer),
                 0.128f));
-        categoryIndexPlan = new Textbox("categoryIndex", new Vector2f(), new Vector2f(getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
+        categoryIndexPlan = new Textbox("categoryIndex", new Vector2f(), new Vector2f(getFontHeight()), mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public void setFocused(boolean focused) {
@@ -951,21 +948,21 @@ public class ProjectManager extends GuiScreen {
 
         Panel locationPanel = planExport.addPanel("locationPanel");
         locationPanel.elements.add(new Panel.PanelElement(
-                new DropDownTab.StringElement("locationStr", "Location:", 10, mainView.renderer),
+                new DropDownTab.StringElement("locationStr", "Location:", mainView.renderer),
                 0.4f));
-        locationPlan = new Textbox("location", new Vector2f(), new Vector2f(getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window).noLetters().noOthers();
+        locationPlan = new Textbox("location", new Vector2f(), new Vector2f(getFontHeight()), mainView.renderer, mainView.loader, mainView.window).noLetters().noOthers();
         locationPanel.elements.add(new Panel.PanelElement(locationPlan, 0.123f));
         locationPanel.elements.add(new Panel.PanelElement(null, 0.002f));
         locationPanel.elements.add(new Panel.PanelElement(
-                new DropDownTab.StringElement("locationTagStr", "Tag:", 10, mainView.renderer),
+                new DropDownTab.StringElement("locationTagStr", "Tag:", mainView.renderer),
                 0.098f));
-        locationTagPlan = new Textbox("locationTag", new Vector2f(), new Vector2f(getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window);
+        locationTagPlan = new Textbox("locationTag", new Vector2f(), new Vector2f(getFontHeight()), mainView.renderer, mainView.loader, mainView.window);
         locationPanel.elements.add(new Panel.PanelElement(locationTagPlan, 0.123f));
         locationPanel.elements.add(new Panel.PanelElement(null, 0.002f));
         locationPanel.elements.add(new Panel.PanelElement(
-                new DropDownTab.StringElement("locationIndexStr", "Index:", 10, mainView.renderer),
+                new DropDownTab.StringElement("locationIndexStr", "Index:", mainView.renderer),
                 0.128f));
-        locationIndexPlan = new Textbox("locationIndex", new Vector2f(), new Vector2f(getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
+        locationIndexPlan = new Textbox("locationIndex", new Vector2f(), new Vector2f(getFontHeight()), mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public void setFocused(boolean focused) {
@@ -991,7 +988,7 @@ public class ProjectManager extends GuiScreen {
         locationPanel.elements.add(new Panel.PanelElement(locationIndexPlan, 0.123f));
 
         Panel typePlanPanel = planExport.addPanel("typePlanPanel");
-        ComboBox planType = new ComboBox("planType", "Type", new Vector2f(), new Vector2f(), 10, 250, mainView.renderer, mainView.loader, mainView.window)
+        ComboBox planType = new ComboBox("planType", "Type", new Vector2f(), new Vector2f(), 250, mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public int[] getParentTransform() {
@@ -1033,7 +1030,7 @@ public class ProjectManager extends GuiScreen {
 
         typePlanPanel.elements.add(new Panel.PanelElement(planType, 0.695f));
         typePlanPanel.elements.add(new Panel.PanelElement(null, 0.005f));
-        ComboBox planSubType = new ComboBox("planSubType", "Sub Type", new Vector2f(), new Vector2f(), 10, 250, mainView.renderer, mainView.loader, mainView.window)
+        ComboBox planSubType = new ComboBox("planSubType", "Sub Type", new Vector2f(), new Vector2f(), 250, mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public int[] getParentTransform() {
@@ -1197,16 +1194,16 @@ public class ProjectManager extends GuiScreen {
 
         Panel toolTypePlanPanel = extrasPlan.addPanel("toolTypePlanPanel");
         toolTypePlanPanel.elements.add(new Panel.PanelElement(
-                new DropDownTab.StringElement("toolTypePlanStr", "Tool Type:", 10, mainView.renderer),
+                new DropDownTab.StringElement("toolTypePlanStr", "Tool Type:", mainView.renderer),
                 firstSegWidth));
-        toolTypePlan = new ComboBox("toolTypePlan", "None", new Vector2f(), new Vector2f(), 10, 250, mainView.renderer, mainView.loader, mainView.window)
+        toolTypePlan = new ComboBox("toolTypePlan", "None", new Vector2f(), new Vector2f(), 250, mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public int[] getParentTransform() {
                 return extrasPlan.getTabPosWidth();
             }
         };
-        toolTypePlan.addList("toolTypeList", new ButtonList(Arrays.asList(ToolType.values()), 10, mainView.renderer, mainView.loader, mainView.window) {
+        toolTypePlan.addList("toolTypeList", new ButtonList(Arrays.asList(ToolType.values()), mainView.renderer, mainView.loader, mainView.window) {
             @Override
             public void clickedButton(Object object, int index, int button, int action, int mods) {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
@@ -1259,25 +1256,25 @@ public class ProjectManager extends GuiScreen {
         toolTypePlanPanel.elements.add(new Panel.PanelElement(toolTypePlan, secondSegWidth));
 
         Panel uses = extrasPlan.addPanel("usesPlanPanel");
-        uses.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("title", "Uses:", 10, renderer), firstSegWidth));
-        numUsesPlan = new Textbox("numUsesPlan", new Vector2f(), new Vector2f(getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window).noLetters().noOthers();
+        uses.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("title", "Uses:", renderer), firstSegWidth));
+        numUsesPlan = new Textbox("numUsesPlan", new Vector2f(), new Vector2f(getFontHeight()), mainView.renderer, mainView.loader, mainView.window).noLetters().noOthers();
         uses.elements.add(new Panel.PanelElement(numUsesPlan, secondSegWidth));
 
         Panel lastUsed = extrasPlan.addPanel("lastUsedPlanPanel");
-        lastUsed.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("title", "Last Used:", 10, renderer), firstSegWidth));
-        lastUsedPlan = new Textbox("lastUsedPlan", new Vector2f(), new Vector2f(getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window).noLetters().noOthers();
+        lastUsed.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("title", "Last Used:", renderer), firstSegWidth));
+        lastUsedPlan = new Textbox("lastUsedPlan", new Vector2f(), new Vector2f(getFontHeight()), mainView.renderer, mainView.loader, mainView.window).noLetters().noOthers();
         lastUsed.elements.add(new Panel.PanelElement(lastUsedPlan, secondSegWidth));
 
         Panel fluffCost = extrasPlan.addPanel("fluffCostPlanPanel");
-        fluffCost.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("title", "Fluff Cost:", 10, renderer), firstSegWidth));
-        fluffCostPlan = new Textbox("fluffCostPlan", new Vector2f(), new Vector2f(getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window).noLetters().noOthers();
+        fluffCost.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("title", "Fluff Cost:", renderer), firstSegWidth));
+        fluffCostPlan = new Textbox("fluffCostPlan", new Vector2f(), new Vector2f(getFontHeight()), mainView.renderer, mainView.loader, mainView.window).noLetters().noOthers();
         fluffCost.elements.add(new Panel.PanelElement(fluffCostPlan, secondSegWidth));
 
         makeSizeProportionalPlan = extrasPlan.addCheckbox("makeSizeProportional", "Make Size Proportional");
 
         Panel primaryIndex = extrasPlan.addPanel("primaryIndex");
-        primaryIndex.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("title", "Prim. Index:", 10, renderer), firstSegWidth));
-        primaryIndexPlan = new Textbox("primaryIndexPlan", new Vector2f(), new Vector2f(getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
+        primaryIndex.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("title", "Prim. Index:", renderer), firstSegWidth));
+        primaryIndexPlan = new Textbox("primaryIndexPlan", new Vector2f(), new Vector2f(getFontHeight()), mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public void setFocused(boolean focused) {
@@ -1302,8 +1299,8 @@ public class ProjectManager extends GuiScreen {
         primaryIndex.elements.add(new Panel.PanelElement(primaryIndexPlan, secondSegWidth));
 
         Panel translationTag = extrasPlan.addPanel("translationTag");
-        translationTag.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("title", "Transl. Tag:", 10, renderer), firstSegWidth));
-        translationTagPlan = new Textbox("translationTagPlan", new Vector2f(), new Vector2f(getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window);
+        translationTag.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("title", "Transl. Tag:", renderer), firstSegWidth));
+        translationTagPlan = new Textbox("translationTagPlan", new Vector2f(), new Vector2f(getFontHeight()), mainView.renderer, mainView.loader, mainView.window);
         translationTag.elements.add(new Panel.PanelElement(translationTagPlan, secondSegWidth));
 
         extrasPlan.addString("colorPlanStr", "Color:");
@@ -1312,7 +1309,7 @@ public class ProjectManager extends GuiScreen {
         float gap = 0.02f;
         float boxes = 1f - gap;
 
-        rColorPlan = new Textbox("rColorPlan", new Vector2f(), new Vector2f(getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
+        rColorPlan = new Textbox("rColorPlan", new Vector2f(), new Vector2f(getFontHeight()), mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public void setFocused(boolean focused) {
@@ -1336,7 +1333,7 @@ public class ProjectManager extends GuiScreen {
         }.noLetters().noOthers();
         colorPlanPanel.elements.add(new Panel.PanelElement(rColorPlan, boxes/4f));
         colorPlanPanel.elements.add(new Panel.PanelElement(null, gap/3f));
-        gColorPlan = new Textbox("gColorPlan", new Vector2f(), new Vector2f(getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
+        gColorPlan = new Textbox("gColorPlan", new Vector2f(), new Vector2f(getFontHeight()), mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public void setFocused(boolean focused) {
@@ -1360,7 +1357,7 @@ public class ProjectManager extends GuiScreen {
         }.noLetters().noOthers();
         colorPlanPanel.elements.add(new Panel.PanelElement(gColorPlan, boxes/4f));
         colorPlanPanel.elements.add(new Panel.PanelElement(null, gap/3f));
-        bColorPlan = new Textbox("bColorPlan", new Vector2f(), new Vector2f(getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
+        bColorPlan = new Textbox("bColorPlan", new Vector2f(), new Vector2f(getFontHeight()), mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public void setFocused(boolean focused) {
@@ -1384,7 +1381,7 @@ public class ProjectManager extends GuiScreen {
         }.noLetters().noOthers();
         colorPlanPanel.elements.add(new Panel.PanelElement(bColorPlan, boxes/4f));
         colorPlanPanel.elements.add(new Panel.PanelElement(null, gap/3f));
-        aColorPlan = new Textbox("aColorPlan", new Vector2f(), new Vector2f(getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
+        aColorPlan = new Textbox("aColorPlan", new Vector2f(), new Vector2f(getFontHeight()), mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public void setFocused(boolean focused) {
@@ -1409,8 +1406,8 @@ public class ProjectManager extends GuiScreen {
         colorPlanPanel.elements.add(new Panel.PanelElement(aColorPlan, boxes/4f));
 
         Panel highlightSound = extrasPlan.addPanel("highlightSound");
-        highlightSound.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("title", "Highl. Sound (GUID):", 10, renderer), 0.575f));
-        highlightSoundPlan = new Textbox("highlightSoundPlan", new Vector2f(), new Vector2f(getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window).noLetters().noOthers();
+        highlightSound.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("title", "Highl. Sound (GUID):", renderer), 0.575f));
+        highlightSoundPlan = new Textbox("highlightSoundPlan", new Vector2f(), new Vector2f(getFontHeight()), mainView.renderer, mainView.loader, mainView.window).noLetters().noOthers();
         highlightSound.elements.add(new Panel.PanelElement(highlightSoundPlan, 0.425f));
 
         extrasPlan.addString("dateAddedPlanStr", "Date Added:");
@@ -1419,8 +1416,8 @@ public class ProjectManager extends GuiScreen {
         gap = 0.6f;
         boxes = 1f - gap;
 
-        dateAddedPlanPanel1.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("day", "Day:", 10, renderer), 0.16f));
-        dateAddedDayPlan = new Textbox("dateAddedDayPlan", new Vector2f(), new Vector2f(getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
+        dateAddedPlanPanel1.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("day", "Day:", renderer), 0.16f));
+        dateAddedDayPlan = new Textbox("dateAddedDayPlan", new Vector2f(), new Vector2f(getFontHeight()), mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public void setFocused(boolean focused) {
@@ -1443,8 +1440,8 @@ public class ProjectManager extends GuiScreen {
             }
         }.noLetters().noOthers();
         dateAddedPlanPanel1.elements.add(new Panel.PanelElement(dateAddedDayPlan, (boxes + 0.02f)/3f));
-        dateAddedPlanPanel1.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("month", "Month:", 10, renderer), gap/3f));
-        dateAddedMonthPlan = new Textbox("dateAddedMonthPlan", new Vector2f(), new Vector2f(getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
+        dateAddedPlanPanel1.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("month", "Month:", renderer), gap/3f));
+        dateAddedMonthPlan = new Textbox("dateAddedMonthPlan", new Vector2f(), new Vector2f(getFontHeight()), mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public void setFocused(boolean focused) {
@@ -1467,8 +1464,8 @@ public class ProjectManager extends GuiScreen {
             }
         }.noLetters().noOthers();
         dateAddedPlanPanel1.elements.add(new Panel.PanelElement(dateAddedMonthPlan, (boxes + 0.02f)/3f));
-        dateAddedPlanPanel1.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("year", "Year:", 10, renderer), gap/3f + 0.02f));
-        dateAddedYearPlan = new Textbox("dateAddedYearPlan", new Vector2f(), new Vector2f(getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
+        dateAddedPlanPanel1.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("year", "Year:", renderer), gap/3f + 0.02f));
+        dateAddedYearPlan = new Textbox("dateAddedYearPlan", new Vector2f(), new Vector2f(getFontHeight()), mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public void setFocused(boolean focused) {
@@ -1492,8 +1489,8 @@ public class ProjectManager extends GuiScreen {
 
         Panel dateAddedPlanPanel2 = extrasPlan.addPanel("dateAddedPlanPanel2");
 
-        dateAddedPlanPanel2.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("hour", "Hour:", 10, renderer), 0.16f));
-        dateAddedHourPlan = new Textbox("dateAddedHourPlan", new Vector2f(), new Vector2f(getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
+        dateAddedPlanPanel2.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("hour", "Hour:", renderer), 0.16f));
+        dateAddedHourPlan = new Textbox("dateAddedHourPlan", new Vector2f(), new Vector2f(getFontHeight()), mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public void setFocused(boolean focused) {
@@ -1516,8 +1513,8 @@ public class ProjectManager extends GuiScreen {
             }
         }.noLetters().noOthers();
         dateAddedPlanPanel2.elements.add(new Panel.PanelElement(dateAddedHourPlan, (boxes + 0.02f)/3f));
-        dateAddedPlanPanel2.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("minute", "Minute:", 10, renderer), gap/3f));
-        dateAddedMinutePlan = new Textbox("dateAddedMinutePlan", new Vector2f(), new Vector2f(getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
+        dateAddedPlanPanel2.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("minute", "Minute:", renderer), gap/3f));
+        dateAddedMinutePlan = new Textbox("dateAddedMinutePlan", new Vector2f(), new Vector2f(getFontHeight()), mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public void setFocused(boolean focused) {
@@ -1540,8 +1537,8 @@ public class ProjectManager extends GuiScreen {
             }
         }.noLetters().noOthers();
         dateAddedPlanPanel2.elements.add(new Panel.PanelElement(dateAddedMinutePlan, (boxes + 0.02f)/3f));
-        dateAddedPlanPanel2.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("second", "Second:", 10, renderer), gap/3f + 0.02f));
-        dateAddedSecondPlan = new Textbox("dateAddedSecondPlan", new Vector2f(), new Vector2f(getFontHeight(10)), 10, mainView.renderer, mainView.loader, mainView.window)
+        dateAddedPlanPanel2.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("second", "Second:", renderer), gap/3f + 0.02f));
+        dateAddedSecondPlan = new Textbox("dateAddedSecondPlan", new Vector2f(), new Vector2f(getFontHeight()), mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public void setFocused(boolean focused) {
@@ -1572,17 +1569,17 @@ public class ProjectManager extends GuiScreen {
         planExport.addString("compressionFlagsStr", "Compression Flags:");
         Panel compressionFlagsPanel = planExport.addPanel("compressionFlagsPanel");
 
-        compressionFlagsIntPlan = new Checkbox("compressionFlagsIntPlan", "Integers", 10, renderer, loader, window).checked();
+        compressionFlagsIntPlan = new Checkbox("compressionFlagsIntPlan", "Integers", renderer, loader, window).checked();
         compressionFlagsPanel.elements.add(new Panel.PanelElement(compressionFlagsIntPlan, 1f/3f));
-        compressionFlagsVecPlan = new Checkbox("compressionFlagsVecPlan", "Vectors", 10, renderer, loader, window).checked();
+        compressionFlagsVecPlan = new Checkbox("compressionFlagsVecPlan", "Vectors", renderer, loader, window).checked();
         compressionFlagsPanel.elements.add(new Panel.PanelElement(compressionFlagsVecPlan, 1f/3f));
-        compressionFlagsMatPlan = new Checkbox("compressionFlagsMatPlan", "Matrices", 10, renderer, loader, window).checked();
+        compressionFlagsMatPlan = new Checkbox("compressionFlagsMatPlan", "Matrices", renderer, loader, window).checked();
         compressionFlagsPanel.elements.add(new Panel.PanelElement(compressionFlagsMatPlan, 1f/3f));
 
         Panel metadataPanel = planExport.addPanel("metadataPanel");
         metadataPanel.size.y = 35;
 
-        Button importMetadata = new Button("importMetadataPlan", "Import Metadata", new Vector2f(), new Vector2f(), 10, renderer, loader, window) {
+        Button importMetadata = new Button("importMetadataPlan", "Import Metadata", new Vector2f(), new Vector2f(), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
@@ -1590,7 +1587,7 @@ public class ProjectManager extends GuiScreen {
             }
         };
 
-        ComboBox templateMetadata = new ComboBox("templateMetadata", "Templates", new Vector2f(), new Vector2f(), 10, 200, mainView.renderer, mainView.loader, mainView.window)
+        ComboBox templateMetadata = new ComboBox("templateMetadata", "Templates", new Vector2f(), new Vector2f(), 200, mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public int[] getParentTransform() {
@@ -1759,18 +1756,18 @@ public class ProjectManager extends GuiScreen {
         exportCombo.addString("customRevStr", "Custom Revision:");
 
         Panel customRevPanelHead = exportCombo.addPanel("customRevPanel");
-        customRevPanelHead.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("head", "Head:", 10, renderer), 0.5f));
-        customRevisionPlanHead = new Textbox("customRevisionPlanHead", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
+        customRevPanelHead.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("head", "Head:", renderer), 0.5f));
+        customRevisionPlanHead = new Textbox("customRevisionPlanHead", new Vector2f(), new Vector2f(), renderer, loader, window);
         customRevPanelHead.elements.add(new Panel.PanelElement(customRevisionPlanHead, 0.5f));
 
         Panel customRevPanelID = exportCombo.addPanel("customRevPanelID");
-        customRevPanelID.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("id", "ID:", 10, renderer), 0.5f));
-        customRevisionPlanID = new Textbox("customRevisionPlanID", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
+        customRevPanelID.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("id", "ID:", renderer), 0.5f));
+        customRevisionPlanID = new Textbox("customRevisionPlanID", new Vector2f(), new Vector2f(), renderer, loader, window);
         customRevPanelID.elements.add(new Panel.PanelElement(customRevisionPlanID, 0.5f));
 
         Panel customRevPanelRev = exportCombo.addPanel("customRevPanelRev");
-        customRevPanelRev.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("rev", "Revision:", 10, renderer), 0.5f));
-        customRevisionPlanRev = new Textbox("customRevisionPlanRev", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
+        customRevPanelRev.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("rev", "Revision:", renderer), 0.5f));
+        customRevisionPlanRev = new Textbox("customRevisionPlanRev", new Vector2f(), new Vector2f(), renderer, loader, window);
         customRevPanelRev.elements.add(new Panel.PanelElement(customRevisionPlanRev, 0.5f));
 
         customRevisionPlanExport = exportCombo.addButton("customRevisionPlanExport", "Build", new Button() {
@@ -1817,9 +1814,9 @@ public class ProjectManager extends GuiScreen {
         binExport = buildScene.addComboBox("binExport", "Bin", 450);// = new DropDownTab("binExport", "Export Bin", new Vector2f(7 * 2 + 3 + 450, 21 + 10), new Vector2f(450, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window);
 
         Panel addPartsPanel = binExport.addPanel("addPartsPanel");
-        addPartsPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("addpartsstr", "Parts:", 10, mainView.renderer), 0.5f));
+        addPartsPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("addpartsstr", "Parts:", mainView.renderer), 0.5f));
 
-        ComboBox addPartCombo = new ComboBox("addPartCombo", "Add", new Vector2f(), new Vector2f(), 10, 215, mainView.renderer, mainView.loader, mainView.window)
+        ComboBox addPartCombo = new ComboBox("addPartCombo", "Add", new Vector2f(), new Vector2f(), 215, mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public int[] getParentTransform() {
@@ -1839,12 +1836,12 @@ public class ProjectManager extends GuiScreen {
             }
         });
 
-        Textbox searchParts = new Textbox("searchParts", new Vector2f(), new Vector2f(), 10, mainView.renderer, mainView.loader, mainView.window);
+        Textbox searchParts = new Textbox("searchParts", new Vector2f(), new Vector2f(), mainView.renderer, mainView.loader, mainView.window);
         Panel searchPartsPanel = addPartCombo.addPanel("searchPartsPanel");
-        searchPartsPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("srchPrt", "Search:", 10, mainView.renderer), 0.4f));
+        searchPartsPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("srchPrt", "Search:", mainView.renderer), 0.4f));
         searchPartsPanel.elements.add(new Panel.PanelElement(searchParts, 0.6f));
 
-        addPartCombo.addList("addpPartList", new ButtonList(pList, 10, mainView.renderer, mainView.loader, mainView.window) {
+        addPartCombo.addList("addpPartList", new ButtonList(pList, mainView.renderer, mainView.loader, mainView.window) {
 
             int hovering = -1;
             int clicked = -1;
@@ -1919,7 +1916,7 @@ public class ProjectManager extends GuiScreen {
 
         addPartsPanel.elements.add(new Panel.PanelElement(addPartCombo, 0.5f));
 
-        ElementList binParts = binExport.addElementList(new ElementList("binParts", new Vector2f(), new Vector2f(150), 10, renderer, loader, window)
+        ElementList binParts = binExport.addElementList(new ElementList("binParts", new Vector2f(), new Vector2f(150), renderer, loader, window)
         {
             @Override
             public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overOther, boolean focusedOther) {
@@ -1951,17 +1948,17 @@ public class ProjectManager extends GuiScreen {
         binExport.addString("compressionFlagsStr", "Compression Flags:");
         Panel compressionFlagsBinPanel = binExport.addPanel("compressionFlagsBinPanel");
 
-        compressionFlagsIntBin = new Checkbox("compressionFlagsIntBin", "Integers", 10, renderer, loader, window).checked();
+        compressionFlagsIntBin = new Checkbox("compressionFlagsIntBin", "Integers", renderer, loader, window).checked();
         compressionFlagsBinPanel.elements.add(new Panel.PanelElement(compressionFlagsIntBin, 1f/3f));
-        compressionFlagsVecBin = new Checkbox("compressionFlagsVecBin", "Vectors", 10, renderer, loader, window).checked();
+        compressionFlagsVecBin = new Checkbox("compressionFlagsVecBin", "Vectors", renderer, loader, window).checked();
         compressionFlagsBinPanel.elements.add(new Panel.PanelElement(compressionFlagsVecBin, 1f/3f));
-        compressionFlagsMatBin = new Checkbox("compressionFlagsMatBin", "Matrices", 10, renderer, loader, window).checked();
+        compressionFlagsMatBin = new Checkbox("compressionFlagsMatBin", "Matrices", renderer, loader, window).checked();
         compressionFlagsBinPanel.elements.add(new Panel.PanelElement(compressionFlagsMatBin, 1f/3f));
 
         Panel metadataPanelBin = binExport.addPanel("metadataPanelBin");
         metadataPanelBin.size.y = 35;
 
-        Button importMetadataBin = new Button("importMetadataBin", "Import Metadata", new Vector2f(), new Vector2f(), 10, renderer, loader, window) {
+        Button importMetadataBin = new Button("importMetadataBin", "Import Metadata", new Vector2f(), new Vector2f(), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
@@ -1969,7 +1966,7 @@ public class ProjectManager extends GuiScreen {
             }
         };
 
-        ComboBox templateMetadataBin = new ComboBox("templateMetadataBin", "Templates", new Vector2f(), new Vector2f(), 10, 200, mainView.renderer, mainView.loader, mainView.window)
+        ComboBox templateMetadataBin = new ComboBox("templateMetadataBin", "Templates", new Vector2f(), new Vector2f(), 200, mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public int[] getParentTransform() {
@@ -2113,18 +2110,18 @@ public class ProjectManager extends GuiScreen {
         exportComboBin.addString("customRevStr", "Custom Revision:");
 
         Panel customRevPanelHeadBin = exportComboBin.addPanel("customRevPanelHeadBin");
-        customRevPanelHeadBin.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("head", "Head:", 10, renderer), 0.5f));
-        customRevisionBinHead = new Textbox("customRevisionBinHead", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
+        customRevPanelHeadBin.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("head", "Head:", renderer), 0.5f));
+        customRevisionBinHead = new Textbox("customRevisionBinHead", new Vector2f(), new Vector2f(), renderer, loader, window);
         customRevPanelHeadBin.elements.add(new Panel.PanelElement(customRevisionBinHead, 0.5f));
 
         Panel customRevPanelIDBin = exportComboBin.addPanel("customRevPanelIDBin");
-        customRevPanelIDBin.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("id", "ID:", 10, renderer), 0.5f));
-        customRevisionBinID = new Textbox("customRevisionBinID", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
+        customRevPanelIDBin.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("id", "ID:", renderer), 0.5f));
+        customRevisionBinID = new Textbox("customRevisionBinID", new Vector2f(), new Vector2f(), renderer, loader, window);
         customRevPanelIDBin.elements.add(new Panel.PanelElement(customRevisionBinID, 0.5f));
 
         Panel customRevPanelRevBin = exportComboBin.addPanel("customRevPanelRevBin");
-        customRevPanelRevBin.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("rev", "Revision:", 10, renderer), 0.5f));
-        customRevisionBinRev = new Textbox("customRevisionBinRev", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
+        customRevPanelRevBin.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("rev", "Revision:", renderer), 0.5f));
+        customRevisionBinRev = new Textbox("customRevisionBinRev", new Vector2f(), new Vector2f(), renderer, loader, window);
         customRevPanelRevBin.elements.add(new Panel.PanelElement(customRevisionBinRev, 0.5f));
 
         customRevisionBinExport = exportComboBin.addButton("customRevisionBinExport", "Build", new Button() {
@@ -2284,15 +2281,29 @@ public class ProjectManager extends GuiScreen {
     {
         RLevel level = new RLevel();
 
+        ArrayList<Thing> things = includeThings ? mainView.buildThingArrayList(selectionOnlyExportBin.isChecked) : new ArrayList<>();
+
         level.world = this.worldThing;
+
+        boolean hasWorldThing = false;
+        for(int i = 0; i < things.size(); i++)
+            if(things.get(i).hasPart(Part.WORLD))
+            {
+                if(hasWorldThing)
+                    things.remove(i);
+
+                level.world = things.get(i);
+                hasWorldThing = true;
+            }
 
         if(!level.world.hasPart(Part.WORLD))
             level.world.setPart(Part.WORLD, new PWorld());
 
         PWorld world = ((PWorld)level.world.getPart(Part.WORLD));
 
-        world.things = includeThings ? mainView.buildThingArrayList(selectionOnlyExportBin.isChecked) : new ArrayList<>();
-        world.things.add(0, worldThing);
+        world.things = things;
+        if(!hasWorldThing)
+            world.things.add(0, worldThing);
         world.thingUIDCounter = world.things.get(world.things.size() - 1).UID;
 
         byte compressionFlags = CompressionFlags.USE_NO_COMPRESSION;

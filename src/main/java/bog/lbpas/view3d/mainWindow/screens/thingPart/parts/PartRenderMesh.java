@@ -62,12 +62,12 @@ public abstract class PartRenderMesh extends iPart {
         bones = new ArrayList<>();
 
         Panel meshPanel = partComboBox.addPanel("meshPanel");
-        meshPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("meshstr", "Mesh:", 10, view.renderer), 0.55f));
-        Mesh = new Textbox("RMeshMesh", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
+        meshPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("meshstr", "Mesh:", view.renderer), 0.55f));
+        Mesh = new Textbox("RMeshMesh", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window);
         meshPanel.elements.add(new Panel.PanelElement(Mesh, 0.45f));
 
         ComboBox boneThings = partComboBox.addComboBox("boneThingsPanel", "Bone Things", 200);
-        boneThings.addList("bones", new ButtonList(bones, 10, view.renderer, view.loader, view.window) {
+        boneThings.addList("bones", new ButtonList(bones, view.renderer, view.loader, view.window) {
             int hovering = -1;
 
             @Override
@@ -113,8 +113,8 @@ public abstract class PartRenderMesh extends iPart {
         }, 250);
 
         Panel setBoneThingPanel = boneThings.addPanel("setBoneThingPanel");
-        setBoneThingPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("setBoneThingstr", "Thing:", 10, view.renderer), 0.275f));
-        setThingCombo = new ComboBox("setThingCombo", "None", 10, 200, view.renderer, view.loader, view.window)
+        setBoneThingPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("setBoneThingstr", "Thing:", view.renderer), 0.275f));
+        setThingCombo = new ComboBox("setThingCombo", "None", 200, view.renderer, view.loader, view.window)
         {
             @Override
             public int[] getParentTransform() {
@@ -139,12 +139,12 @@ public abstract class PartRenderMesh extends iPart {
             }
         });
 
-        Textbox searchBoneThings = new Textbox("searchBoneThings", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
+        Textbox searchBoneThings = new Textbox("searchBoneThings", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window);
         Panel searchBoneThingsPanel = setThingCombo.addPanel("searchBoneThingsPanel");
-        searchBoneThingsPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("srchPrnt", "Search:", 10, view.renderer), 0.4f));
+        searchBoneThingsPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("srchPrnt", "Search:", view.renderer), 0.4f));
         searchBoneThingsPanel.elements.add(new Panel.PanelElement(searchBoneThings, 0.6f));
 
-        setThingCombo.addList("boneThingList", new ButtonList(view.things, 10, view.renderer, view.loader, view.window) {
+        setThingCombo.addList("boneThingList", new ButtonList(view.things, view.renderer, view.loader, view.window) {
 
             int hovering = -1;
 
@@ -207,31 +207,31 @@ public abstract class PartRenderMesh extends iPart {
         setBoneThingPanel.elements.add(new Panel.PanelElement(setThingCombo, 0.725f));
 
         Panel animPanel = partComboBox.addPanel("animPanel");
-        animPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("animstr", "Animation:", 10, view.renderer), 0.55f));
-        Anim = new Textbox("RMeshAnim", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
+        animPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("animstr", "Animation:", view.renderer), 0.55f));
+        Anim = new Textbox("RMeshAnim", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window);
         animPanel.elements.add(new Panel.PanelElement(Anim, 0.45f));
 
         Panel animPosPanel = partComboBox.addPanel("animPosPanel");
-        animPosPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("animposstr", "Anim. Pos.:", 10, view.renderer), 0.55f));
-        AnimPos = new Textbox("RMeshAnimPos", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
+        animPosPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("animposstr", "Anim. Pos.:", view.renderer), 0.55f));
+        AnimPos = new Textbox("RMeshAnimPos", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window);
         AnimPos.noLetters().noOthers();
         animPosPanel.elements.add(new Panel.PanelElement(AnimPos, 0.45f));
 
         Panel animSpeedPanel = partComboBox.addPanel("animSpeedPanel");
-        animSpeedPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("animspeedstr", "Anim. Speed:", 10, view.renderer), 0.55f));
-        AnimSpeed = new Textbox("RMeshAnimSpeed", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
+        animSpeedPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("animspeedstr", "Anim. Speed:", view.renderer), 0.55f));
+        AnimSpeed = new Textbox("RMeshAnimSpeed", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window);
         AnimSpeed.noLetters().noOthers();
         animSpeedPanel.elements.add(new Panel.PanelElement(AnimSpeed, 0.45f));
 
         Panel animStartPanel = partComboBox.addPanel("animStartPanel");
-        animStartPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("animstartstr", "Anim. Start:", 10, view.renderer), 0.55f));
-        AnimStart = new Textbox("RMeshAnimStart", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
+        animStartPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("animstartstr", "Anim. Start:", view.renderer), 0.55f));
+        AnimStart = new Textbox("RMeshAnimStart", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window);
         AnimStart.noLetters().noOthers();
         animStartPanel.elements.add(new Panel.PanelElement(AnimStart, 0.45f));
 
         Panel animEndPanel = partComboBox.addPanel("animEndPanel");
-        animEndPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("animendstr", "Anim. End:", 10, view.renderer), 0.55f));
-        AnimEnd = new Textbox("RMeshAnimEnd", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
+        animEndPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("animendstr", "Anim. End:", view.renderer), 0.55f));
+        AnimEnd = new Textbox("RMeshAnimEnd", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window);
         AnimEnd.noLetters().noOthers();
         animEndPanel.elements.add(new Panel.PanelElement(AnimEnd, 0.45f));
 
@@ -249,8 +249,8 @@ public abstract class PartRenderMesh extends iPart {
         });
 
         Panel editcolor = partComboBox.addPanel("editcolor");
-        editcolor.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("editcolorstr", "Editor Color:", 10, view.renderer), 0.55f));
-        EditorColor = new ColorPicker("EditorColor", 10, view.renderer, view.loader, view.window) {
+        editcolor.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("editcolorstr", "Editor Color:", view.renderer), 0.55f));
+        EditorColor = new ColorPicker("EditorColor", view.renderer, view.loader, view.window) {
             @Override
             public Color getColor() {
                 if(edColor == null)
@@ -287,11 +287,11 @@ public abstract class PartRenderMesh extends iPart {
         });
 
         Panel shadowCastPanel = partComboBox.addPanel("shadowCastPanel");
-        shadowCastPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("shadowstr", "Cast Shadows:", 10, view.renderer), 0.55f));
-        CastShadows = new ComboBox("RMeshCastShadows", "Always", new Vector2f(), new Vector2f(), 10, 160,view.renderer, view.loader, view.window);
+        shadowCastPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("shadowstr", "Cast Shadows:", view.renderer), 0.55f));
+        CastShadows = new ComboBox("RMeshCastShadows", "Always", new Vector2f(), new Vector2f(), 160,view.renderer, view.loader, view.window);
         shadowCastPanel.elements.add(new Panel.PanelElement(CastShadows, 0.45f));
 
-        CastShadows.addList("shadowTypes", new ButtonList("shadowTypes", new ArrayList<>(Arrays.asList(ShadowType.values())), new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window) {
+        CastShadows.addList("shadowTypes", new ButtonList("shadowTypes", new ArrayList<>(Arrays.asList(ShadowType.values())), new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window) {
             @Override
             public void clickedButton(Object object, int index, int button, int action, int mods) {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
@@ -384,20 +384,20 @@ public abstract class PartRenderMesh extends iPart {
         });
 
         Panel renderScalePanel = partComboBox.addPanel("renderScalePanel");
-        renderScalePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("renderscalestr", "Render Scale:", 10, view.renderer), 0.55f));
-        RenderScale = new Textbox("RMeshRenderScale", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
+        renderScalePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("renderscalestr", "Render Scale:", view.renderer), 0.55f));
+        RenderScale = new Textbox("RMeshRenderScale", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window);
         RenderScale.noLetters().noOthers();
         renderScalePanel.elements.add(new Panel.PanelElement(RenderScale, 0.45f));
 
         Panel distFrontPanel = partComboBox.addPanel("distFrontPanel");
-        distFrontPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("distfrontstr", "Dist. Front:", 10, view.renderer), 0.55f));
-        DistanceFront = new Textbox("RMeshDistanceFront", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
+        distFrontPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("distfrontstr", "Dist. Front:", view.renderer), 0.55f));
+        DistanceFront = new Textbox("RMeshDistanceFront", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window);
         DistanceFront.noLetters().noOthers();
         distFrontPanel.elements.add(new Panel.PanelElement(DistanceFront, 0.45f));
 
         Panel distSidePanel = partComboBox.addPanel("distSidePanel");
-        distSidePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("distsidestr", "Dist. Side:", 10, view.renderer), 0.55f));
-        DistanceSide = new Textbox("RMeshDistanceSide", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
+        distSidePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("distsidestr", "Dist. Side:", view.renderer), 0.55f));
+        DistanceSide = new Textbox("RMeshDistanceSide", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window);
         DistanceSide.noLetters().noOthers();
         distSidePanel.elements.add(new Panel.PanelElement(DistanceSide, 0.45f));
     }

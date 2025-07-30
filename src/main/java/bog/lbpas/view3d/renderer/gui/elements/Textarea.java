@@ -26,17 +26,15 @@ import java.awt.datatransfer.StringSelection;
 public class Textarea extends Element{
 
     private String text = "";
-    int fontSize;
     Vector2f prevSize;
     Model outlineRect;
-    public Textarea(String id, Vector2f pos, Vector2f size, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window)
+    public Textarea(String id, Vector2f pos, Vector2f size, RenderMan renderer, ObjectLoader loader, WindowMan window)
     {
         this.id = id;
         this.pos = pos;
         this.size = size;
         this.prevSize = size;
         this.outlineRect = LineStrip.processVerts(LineStrip.getRectangle(size), loader, window);
-        this.fontSize = fontSize;
         this.renderer = renderer;
         this.loader = loader;
         this.window = window;
@@ -93,15 +91,15 @@ public class Textarea extends Element{
 
             for(int i = 0; i <= line.length(); i++)
             {
-                if((int)(pos.x + xScroll + getFontHeight(fontSize) / 2) + getStringWidth(line.substring(0, i), fontSize) < pos.x)
+                if((int)(pos.x + xScroll + getFontHeight() / 2) + getStringWidth(line.substring(0, i)) < pos.x)
                     begin = i;
-                if((int)(pos.x + xScroll + getFontHeight(fontSize) / 2) + getStringWidth(line.substring(0, i), fontSize) < pos.x + size.x)
+                if((int)(pos.x + xScroll + getFontHeight() / 2) + getStringWidth(line.substring(0, i)) < pos.x + size.x)
                     end = i;
             }
 
-            if((int)(pos.y + getFontHeight(fontSize) / 2 + (getFontHeight(fontSize) + 2) * o - yScroll) > pos.y - getFontHeight(fontSize) &&
-                    (int)(pos.y + getFontHeight(fontSize) / 2 + (getFontHeight(fontSize) + 2) * o - yScroll) + getFontHeight(fontSize) < pos.y + size.y + getFontHeight(fontSize))
-                renderer.drawString(line, Config.FONT_COLOR, (int)(pos.x + xScroll + getFontHeight(fontSize) / 2), (int)(pos.y + getFontHeight(fontSize) / 2 + (getFontHeight(fontSize) + 2) * o - yScroll), fontSize, begin, end);
+            if((int)(pos.y + getFontHeight() / 2 + (getFontHeight() + 2) * o - yScroll) > pos.y - getFontHeight() &&
+                    (int)(pos.y + getFontHeight() / 2 + (getFontHeight() + 2) * o - yScroll) + getFontHeight() < pos.y + size.y + getFontHeight())
+                renderer.drawString(line, Config.FONT_COLOR, (int)(pos.x + xScroll + getFontHeight() / 2), (int)(pos.y + getFontHeight() / 2 + (getFontHeight() + 2) * o - yScroll), begin, end);
 
             int curSel = currentSelection - currentLength;
             if(curSel < 0)
@@ -109,7 +107,7 @@ public class Textarea extends Element{
             if(curSel > line.length())
                 curSel = line.length();
 
-            float[] pos1 = {pos.x + xScroll + getFontHeight(fontSize)/2, pos.y + getFontHeight(fontSize)/2 - yScroll};
+            float[] pos1 = {pos.x + xScroll + getFontHeight()/2, pos.y + getFontHeight()/2 - yScroll};
 
             boolean hasSelected = true;
             int selText0 = selectionStart - currentLength;
@@ -130,7 +128,7 @@ public class Textarea extends Element{
             if(selText1 > line.length())
                 selText1 = line.length();
 
-            float x = pos1[0] + getStringWidth(line.substring(0, selText0), fontSize);
+            float x = pos1[0] + getStringWidth(line.substring(0, selText0));
             float diff = 0;
             if(x < pos.x)
             {
@@ -138,20 +136,20 @@ public class Textarea extends Element{
                 x = pos.x;
             }
 
-            float width = getStringWidth(line.substring(selText0, selText1), fontSize) + 1 + diff;
+            float width = getStringWidth(line.substring(selText0, selText1)) + 1 + diff;
             if(x + width > pos.x + size.x)
                 width = pos.x + size.x - x;
 
             if(500 > (System.currentTimeMillis() - Consts.startMillis) % 1000 && isFocused())
                 if (currentSelection - currentLength == line.length())
-                    renderer.drawString("_", Config.FONT_COLOR, (int) Math.round(pos.x + xScroll + getStringWidth(line, fontSize) + 1 + getFontHeight(fontSize) / 2), (int) Math.round(pos.y + getFontHeight(fontSize) / 2 + (getFontHeight(fontSize) + 2) * o - yScroll), fontSize);
+                    renderer.drawString("_", Config.FONT_COLOR, (int) Math.round(pos.x + xScroll + getStringWidth(line) + 1 + getFontHeight() / 2), (int) Math.round(pos.y + getFontHeight() / 2 + (getFontHeight() + 2) * o - yScroll));
                 else if (currentSelection - currentLength >= 0 && currentSelection - currentLength <= line.length())
-                    renderer.drawRect((int) Math.round(xScroll + pos.x + getStringWidth(line.substring(0, curSel), fontSize) + getFontHeight(fontSize) / 2 - 1), (int) Math.round(pos.y + getFontHeight(fontSize) / 2 + (getFontHeight(fontSize) + 2) * o - yScroll), 1, (int) Math.round(getFontHeight(fontSize) - 2), Config.FONT_COLOR);
+                    renderer.drawRect((int) Math.round(xScroll + pos.x + getStringWidth(line.substring(0, curSel)) + getFontHeight() / 2 - 1), (int) Math.round(pos.y + getFontHeight() / 2 + (getFontHeight() + 2) * o - yScroll), 1, (int) Math.round(getFontHeight() - 2), Config.FONT_COLOR);
 
             if(hasSelected && width >= 0 && selectedText[0] >= 0 && selectedText[1] >= 0 && selectedText[0] != selectedText[1])
-                if((int)(pos.y + getFontHeight(fontSize) / 2 + (getFontHeight(fontSize) + 2) * o - yScroll) > pos.y - getFontHeight(fontSize) &&
-                        (int)(pos.y + getFontHeight(fontSize) / 2 + (getFontHeight(fontSize) + 2) * o - yScroll) + getFontHeight(fontSize) < pos.y + size.y + getFontHeight(fontSize))
-                    renderer.drawRectInvert(Math.round(x - 1), Math.round(pos1[1] - 1 + (getFontHeight(fontSize) + 2) * o), Math.round(width + 1), getFontHeight(fontSize) + 2);
+                if((int)(pos.y + getFontHeight() / 2 + (getFontHeight() + 2) * o - yScroll) > pos.y - getFontHeight() &&
+                        (int)(pos.y + getFontHeight() / 2 + (getFontHeight() + 2) * o - yScroll) + getFontHeight() < pos.y + size.y + getFontHeight())
+                    renderer.drawRectInvert(Math.round(x - 1), Math.round(pos1[1] - 1 + (getFontHeight() + 2) * o), Math.round(width + 1), getFontHeight() + 2);
 
             currentLength += line.length() + 1;
         }
@@ -567,14 +565,14 @@ public class Textarea extends Element{
                                 break;
                             }
 
-                            int width = getStringWidth(line.substring(0, i), fontSize);
+                            int width = getStringWidth(line.substring(0, i));
 
                             int prevDist = Integer.MAX_VALUE;
                             int prevInd = -1;
 
                             for(int j = 0; j <= lines[o - 1].length(); j++)
                             {
-                                int widthPrev = getStringWidth(lines[o - 1].substring(0, j), fontSize);
+                                int widthPrev = getStringWidth(lines[o - 1].substring(0, j));
 
                                 int dist = Math.abs(widthPrev - width);
 
@@ -679,14 +677,14 @@ public class Textarea extends Element{
                                 break;
                             }
 
-                            int width = getStringWidth(line.substring(0, i), fontSize);
+                            int width = getStringWidth(line.substring(0, i));
 
                             int prevDist = Integer.MAX_VALUE;
                             int prevInd = -1;
 
                             for(int j = 0; j <= lines[o + 1].length(); j++)
                             {
-                                int widthNext = getStringWidth(lines[o + 1].substring(0, j), fontSize);
+                                int widthNext = getStringWidth(lines[o + 1].substring(0, j));
 
                                 int dist = Math.abs(widthNext - width);
 
@@ -830,7 +828,7 @@ public class Textarea extends Element{
     {
         String[] lines = (text).split(String.valueOf((char)10), -1);
 
-        int fontHeight = getFontHeight(fontSize);
+        int fontHeight = getFontHeight();
         float topMargin = this.pos.y + fontHeight / 2f;
 
         int currentLength = 0;
@@ -848,7 +846,7 @@ public class Textarea extends Element{
                     int cur = i;
                     int prev = i - 1 < 0 ? 0 : i - 1;
 
-                    int widthCur = cur >= line.length() ? 0 : getStringWidth(line.substring(0, cur + 1), fontSize);
+                    int widthCur = cur >= line.length() ? 0 : getStringWidth(line.substring(0, cur + 1));
 
                     if((mouseInput.currentPos.x >= this.pos.x + widthPrev + xScroll - 1 || cur <= 0) &&
                             (mouseInput.currentPos.x <= this.pos.x + widthCur + xScroll + 1 || cur >= line.length()))

@@ -19,7 +19,6 @@ import org.lwjgl.glfw.GLFW;
 public class Checkbox extends Element{
 
     String text;
-    int fontSize;
 
     public boolean isChecked = false;
 
@@ -28,29 +27,27 @@ public class Checkbox extends Element{
 
     public Checkbox(){}
 
-    public Checkbox(String id, String text, Vector2f pos, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window)
+    public Checkbox(String id, String text, Vector2f pos, RenderMan renderer, ObjectLoader loader, WindowMan window)
     {
         this.id = id;
         this.pos = pos;
-        this.fontSize = fontSize;
         this.renderer = renderer;
         this.loader = loader;
         this.window = window;
         this.text = text;
-        this.size = new Vector2f(getStringWidth(text, fontSize) + (getFontHeight(fontSize) * 0.85f) * 1.25f, getFontHeight(fontSize));
+        this.size = new Vector2f(getStringWidth(text) + (getFontHeight() * 0.85f) * 1.25f, getFontHeight());
         this.prevSize = size;
         this.outlineRect = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(size.y * 0.85f, size.y * 0.85f)), loader, window);
     }
 
-    public Checkbox(String id, String text, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window)
+    public Checkbox(String id, String text, RenderMan renderer, ObjectLoader loader, WindowMan window)
     {
         this.id = id;
-        this.fontSize = fontSize;
         this.renderer = renderer;
         this.loader = loader;
         this.window = window;
         this.text = text;
-        this.size = new Vector2f(getStringWidth(text, fontSize) + (getFontHeight(fontSize) * 0.85f) * 1.25f, getFontHeight(fontSize));
+        this.size = new Vector2f(getStringWidth(text) + (getFontHeight() * 0.85f) * 1.25f, getFontHeight());
         this.prevSize = size;
         this.outlineRect = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(size.y * 0.85f, size.y * 0.85f)), loader, window);
     }
@@ -73,7 +70,7 @@ public class Checkbox extends Element{
 
         if(size == null || prevSize == null)
         {
-            this.size = new Vector2f(getStringWidth(text, fontSize) + (getFontHeight(fontSize) * 0.85f) * 1.25f, getFontHeight(fontSize));
+            this.size = new Vector2f(getStringWidth(text) + (getFontHeight() * 0.85f) * 1.25f, getFontHeight());
             this.prevSize = size;
         }
 
@@ -98,7 +95,7 @@ public class Checkbox extends Element{
             renderer.drawRect(Math.round(posX + (radius/2f - checkSize / 2f)), Math.round(posY + (radius/2f - checkSize / 2f)), Math.round(checkSize), Math.round(checkSize), Config.FONT_COLOR);
         }
 
-        renderer.drawString(text, Config.FONT_COLOR, Math.round(pos.x + size.y * 1.25f), Math.round(pos.y + size.y / 2 - getFontHeight(fontSize) / 2), fontSize);
+        renderer.drawString(text, Config.FONT_COLOR, Math.round(pos.x + size.y * 1.25f), Math.round(pos.y + size.y / 2 - getFontHeight() / 2));
     }
     @Override
     public void resize() {

@@ -37,10 +37,10 @@ public abstract class PartTrigger extends iPart {
     @Override
     public void init(View3D view) {
         Panel triggerTypePanel = this.partComboBox.addPanel("triggerTypePanel");
-        triggerTypePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("triggerTypeStr", "Trigger Type:", 10, view.renderer), 0.525f));
-        triggerTypeCombo = new ComboBox("triggerTypeCombo", "Radius", new Vector2f(), new Vector2f(), 10, 150, view.renderer, view.loader, view.window);
+        triggerTypePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("triggerTypeStr", "Trigger Type:", view.renderer), 0.525f));
+        triggerTypeCombo = new ComboBox("triggerTypeCombo", "Radius", new Vector2f(), new Vector2f(), 150, view.renderer, view.loader, view.window);
 
-        ButtonList triggerTypeList = triggerTypeCombo.addList("triggerTypeList", new ButtonList(Arrays.asList(TriggerType.values()), 10, view.renderer, view.loader, view.window) {
+        ButtonList triggerTypeList = triggerTypeCombo.addList("triggerTypeList", new ButtonList(Arrays.asList(TriggerType.values()), view.renderer, view.loader, view.window) {
             @Override
             public void clickedButton(Object object, int index, int button, int action, int mods) {
                 String name = ((TriggerType)object).name();
@@ -92,7 +92,7 @@ public abstract class PartTrigger extends iPart {
 
             @Override
             public int buttonHeight() {
-                return getFontHeight(this.fontSize) + 4;
+                return getFontHeight() + 4;
             }
 
             @Override
@@ -105,16 +105,16 @@ public abstract class PartTrigger extends iPart {
         triggerTypePanel.elements.add(new Panel.PanelElement(triggerTypeCombo, 0.475f));
 
         Panel radiusMultiplierPanel = this.partComboBox.addPanel("radiusMultiplierPanel");
-        radiusMultiplierPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("radiusMultiplierStr", "Radius Mul.:", 10, view.renderer), 0.7f));
+        radiusMultiplierPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("radiusMultiplierStr", "Radius Mul.:", view.renderer), 0.7f));
 
-        radiusMultiplier = new Textbox("radiusMultiplier", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+        radiusMultiplier = new Textbox("radiusMultiplier", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window).noLetters().noOthers();
 
         radiusMultiplierPanel.elements.add(new Panel.PanelElement(radiusMultiplier, 0.3f));
 
         Panel zRangeHundredsPanel = this.partComboBox.addPanel("zRangeHundredsPanel");
-        zRangeHundredsPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("zRangeHundredsStr", "Layer Range:", 10, view.renderer), 0.7f));
+        zRangeHundredsPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("zRangeHundredsStr", "Layer Range:", view.renderer), 0.7f));
 
-        zRangeHundreds = new Textbox("zRangeHundreds", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+        zRangeHundreds = new Textbox("zRangeHundreds", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window).noLetters().noOthers();
 
         zRangeHundredsPanel.elements.add(new Panel.PanelElement(zRangeHundreds, 0.3f));
 
@@ -132,9 +132,9 @@ public abstract class PartTrigger extends iPart {
         });
 
         Panel hysteresisMultiplierPanel = this.partComboBox.addPanel("hysteresisMultiplierPanel");
-        hysteresisMultiplierPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("hysteresisMultiplierStr", "Hysteresis Mul.:", 10, view.renderer), 0.7f));
+        hysteresisMultiplierPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("hysteresisMultiplierStr", "Hysteresis Mul.:", view.renderer), 0.7f));
 
-        hysteresisMultiplier = new Textbox("hysteresisMultiplier", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+        hysteresisMultiplier = new Textbox("hysteresisMultiplier", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window).noLetters().noOthers();
 
         hysteresisMultiplierPanel.elements.add(new Panel.PanelElement(hysteresisMultiplier, 0.3f));
 
@@ -152,16 +152,16 @@ public abstract class PartTrigger extends iPart {
         });
 
         Panel zOffsetPanel = this.partComboBox.addPanel("zOffsetPanel");
-        zOffsetPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("zOffsetStr", "Z Offset:", 10, view.renderer), 0.7f));
+        zOffsetPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("zOffsetStr", "Z Offset:", view.renderer), 0.7f));
 
-        zOffset = new Textbox("zOffset", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+        zOffset = new Textbox("zOffset", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window).noLetters().noOthers();
 
         zOffsetPanel.elements.add(new Panel.PanelElement(zOffset, 0.3f));
 
         Panel scoreValuePanel = this.partComboBox.addPanel("scoreValuePanel");
-        scoreValuePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("scoreValueStr", "Score Value:", 10, view.renderer), 0.7f));
+        scoreValuePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("scoreValueStr", "Score Value:", view.renderer), 0.7f));
 
-        scoreValue = new Textbox("scoreValue", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+        scoreValue = new Textbox("scoreValue", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window).noLetters().noOthers();
 
         scoreValuePanel.elements.add(new Panel.PanelElement(scoreValue, 0.3f));
     }

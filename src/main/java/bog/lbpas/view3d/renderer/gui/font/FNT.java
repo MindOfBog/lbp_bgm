@@ -17,32 +17,29 @@ import java.util.stream.Collectors;
  */
 public class FNT {
 
+    public static final String BASE_CHARSET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890 \"!`?'.,;:()[]{}<>|/@\\^$-%+=#_&~*";
+
     public info info;
     public common common;
+    public smoothstep smoothstep;
     public page page;
     public chars chars;
-    public ArrayList<character> characters;
+    public HashMap<Integer, character> characters;
 
     public BufferedImage map;
     public Texture texture;
-    public HashMap<Integer, Model> glyphs;
-    public int height = 0;
 
-    public FNT(FNT.info info, FNT.common common, FNT.page page, FNT.chars chars, ArrayList<character> characters) {
+    public FNT(FNT.info info, FNT.common common, FNT.smoothstep smoothstep, FNT.page page, FNT.chars chars, HashMap<Integer, character> characters) {
         this.info = info;
         this.common = common;
+        this.smoothstep = smoothstep;
         this.page = page;
         this.chars = chars;
         this.characters = characters;
     }
     public character getChar(int c)
     {
-        for(character character : characters)
-        {
-            if(character.id == c)
-                return character;
-        }
-        return null;
+        return characters.get(c);
     }
     public static FNT readFNT(InputStream stream)
     {
@@ -51,9 +48,10 @@ public class FNT {
 
         info info = new info();
         common common = new common();
+        smoothstep smoothstep = new smoothstep();
         page page = new page();
         chars chars = new chars();
-        ArrayList<character> characters = new ArrayList<>();
+        HashMap<Integer, character> characters = new HashMap<>();
 
         for(String line : lines)
         {
@@ -133,6 +131,18 @@ public class FNT {
                         common.packed = var[1].equalsIgnoreCase("1");
                 }
             }
+            else if(part[0].equalsIgnoreCase("smoothstep"))
+            {
+                for (int i = 1; i < part.length; i++)
+                {
+                    String[] var = part[i].split("=");
+
+                    if (var[0].equalsIgnoreCase("minWidth"))
+                        smoothstep.minWidth = Float.parseFloat(var[1]);
+                    else if (var[0].equalsIgnoreCase("maxWidth"))
+                        smoothstep.maxWidth = Float.parseFloat(var[1]);
+                }
+            }
             else if(part[0].equalsIgnoreCase("page"))
             {
                 for (int i = 1; i < part.length; i++)
@@ -166,33 +176,46 @@ public class FNT {
                 {
                     String[] var = part[i].split("=");
 
-                    if (var[0].equalsIgnoreCase("id"))
-                        character.id = Integer.parseInt(var[1]);
-                    else if (var[0].equalsIgnoreCase("x"))
-                        character.x = Integer.parseInt(var[1]);
-                    else if (var[0].equalsIgnoreCase("y"))
-                        character.y = Integer.parseInt(var[1]);
-                    else if (var[0].equalsIgnoreCase("width"))
-                        character.width = Integer.parseInt(var[1]);
-                    else if (var[0].equalsIgnoreCase("height"))
-                        character.height = Integer.parseInt(var[1]);
-                    else if (var[0].equalsIgnoreCase("xoffset"))
-                        character.xoffset = Integer.parseInt(var[1]);
-                    else if (var[0].equalsIgnoreCase("yoffset"))
-                        character.yoffset = Integer.parseInt(var[1]);
-                    else if (var[0].equalsIgnoreCase("xadvance"))
-                        character.xadvance = Integer.parseInt(var[1]);
-                    else if (var[0].equalsIgnoreCase("page"))
-                        character.page = Integer.parseInt(var[1]);
-                    else if (var[0].equalsIgnoreCase("chnl"))
-                        character.chnl = Integer.parseInt(var[1]);
+                    switch(var[0].toLowerCase())
+                    {
+                        case "id":
+                            character.id = Integer.parseInt(var[1]);
+                            break;
+                        case "x":
+                            character.x = Integer.parseInt(var[1]);
+                            break;
+                        case "y":
+                            character.y = Integer.parseInt(var[1]);
+                            break;
+                        case "width":
+                            character.width = Integer.parseInt(var[1]);
+                            break;
+                        case "height":
+                            character.height = Integer.parseInt(var[1]);
+                            break;
+                        case "xoffset":
+                            character.xoffset = Integer.parseInt(var[1]);
+                            break;
+                        case "yoffset":
+                            character.yoffset = Integer.parseInt(var[1]);
+                            break;
+                        case "xadvance":
+                            character.xadvance = Integer.parseInt(var[1]);
+                            break;
+                        case "page":
+                            character.page = Integer.parseInt(var[1]);
+                            break;
+                        case "chnl":
+                            character.chnl = Integer.parseInt(var[1]);
+                            break;
+                    }
                 }
 
-                characters.add(character);
+                characters.put(character.id, character);
             }
         }
 
-        return new FNT(info, common, page, chars, characters);
+        return new FNT(info, common, smoothstep, page, chars, characters);
     }
     public static class info
     {
@@ -243,6 +266,17 @@ public class FNT {
             this.packed = packed;
         }
     }
+    public static class smoothstep
+    {
+        public float minWidth;
+        public float maxWidth;
+
+        public smoothstep(){}
+        public smoothstep(float minWidth, float maxWidth) {
+            this.minWidth = minWidth;
+            this.maxWidth = maxWidth;
+        }
+    }
     public static class page
     {
         public int id;
@@ -275,6 +309,8 @@ public class FNT {
         public int xadvance;
         public int page;
         public int chnl;
+
+        public Model glyph;
 
         public character(){}
         public character(int id, int x, int y, int width, int height, int xoffset, int yoffset, int xadvance, int page, int chnl) {

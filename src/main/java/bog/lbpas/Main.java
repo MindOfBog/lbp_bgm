@@ -27,6 +27,8 @@ import cwlib.types.save.BigSave;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.*;
 
+import javax.swing.*;
+import java.awt.*;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -50,6 +52,8 @@ public class Main {
     public static Thread entryDigesionThread;
 
     public static void main(String args[]){
+
+        try { UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName()); } catch (Exception e) {}
 
         Config.init();
         window = new WindowMan(Consts.TITLE, Config.WINDOW_WIDTH, Config.WINDOW_HEIGHT, 1050,650);

@@ -108,33 +108,33 @@ public abstract class PartShape extends iPart {
         partComboBox.addButton("editPolygon", "Edit Polygon", EditPolygon);
 
         Panel materialPanel = partComboBox.addPanel("materialPanel");
-        materialPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("matstr", "Material:", 10, view.renderer), 0.55f));
-        Material = new Textbox("ShapeMaterial", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
+        materialPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("matstr", "Material:", view.renderer), 0.55f));
+        Material = new Textbox("ShapeMaterial", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window);
         materialPanel.elements.add(new Panel.PanelElement(Material, 0.45f));
 
         Panel oldMaterialPanel = partComboBox.addPanel("oldMaterialPanel");
-        oldMaterialPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("oldmatstr", "Old Material:", 10, view.renderer), 0.55f));
-        OldMaterial = new Textbox("OldShapeMaterial", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
+        oldMaterialPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("oldmatstr", "Old Material:", view.renderer), 0.55f));
+        OldMaterial = new Textbox("OldShapeMaterial", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window);
         oldMaterialPanel.elements.add(new Panel.PanelElement(OldMaterial, 0.45f));
 
         Panel thicknessPanel = partComboBox.addPanel("thicknessPanel");
-        thicknessPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("thicknstr", "Thickness:", 10, view.renderer), 0.55f));
-        Thickness = new Textbox("ShapeThickness", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+        thicknessPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("thicknstr", "Thickness:", view.renderer), 0.55f));
+        Thickness = new Textbox("ShapeThickness", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window).noLetters().noOthers();
         thicknessPanel.elements.add(new Panel.PanelElement(Thickness, 0.45f));
 
         Panel bevelSizePanel = partComboBox.addPanel("bevelSizePanel");
-        bevelSizePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("bevelaizestr", "Bevel Size:", 10, view.renderer), 0.55f));
-        BevelSize = new Textbox("ShapeBevelSize", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+        bevelSizePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("bevelaizestr", "Bevel Size:", view.renderer), 0.55f));
+        BevelSize = new Textbox("ShapeBevelSize", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window).noLetters().noOthers();
         bevelSizePanel.elements.add(new Panel.PanelElement(BevelSize, 0.45f));
 
         Panel shapeColorShininessPanel = partComboBox.addPanel("shapeColorShininessPanel");
-        shapeColorShininessPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("shapecolshininess", "Color Shine:", 10, view.renderer), 0.55f));
-        ColorShininess = new Textbox("ShapeColorShininess", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+        shapeColorShininessPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("shapecolshininess", "Color Shine:", view.renderer), 0.55f));
+        ColorShininess = new Textbox("ShapeColorShininess", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window).noLetters().noOthers();
         shapeColorShininessPanel.elements.add(new Panel.PanelElement(ColorShininess, 0.45f));
 
         Panel shapecolor = partComboBox.addPanel("shapecolor");
-        shapecolor.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("shapecolorstr", "Color:", 10, view.renderer), 0.55f));
-        Color = new ColorPicker("Color", 10, view.renderer, view.loader, view.window) {
+        shapecolor.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("shapecolorstr", "Color:", view.renderer), 0.55f));
+        Color = new ColorPicker("Color", view.renderer, view.loader, view.window) {
             @Override
             public java.awt.Color getColor() {
                 if(scolor == null)
@@ -156,18 +156,18 @@ public abstract class PartShape extends iPart {
         shapecolor.elements.add(new Panel.PanelElement(Color, 0.45f));
 
         Panel shapebrightnessPanel = partComboBox.addPanel("shapebrightnessPanel");
-        shapebrightnessPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("brightnessstr", "Brightness:", 10, view.renderer), 0.55f));
+        shapebrightnessPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("brightnessstr", "Brightness:", view.renderer), 0.55f));
         Brightness = new Slider("ShapeBrightness", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window, 1, 0, 1);
         shapebrightnessPanel.elements.add(new Panel.PanelElement(Brightness, 0.44f));
 
         Panel shapeopacityPanel = partComboBox.addPanel("shapeopacityPanel");
-        shapeopacityPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("shapeopacitystr", "Opacity:", 10, view.renderer), 0.55f));
+        shapeopacityPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("shapeopacitystr", "Opacity:", view.renderer), 0.55f));
         Opacity = new Slider("ShapeOpacity", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window, 1, 0, 1);
         shapeopacityPanel.elements.add(new Panel.PanelElement(Opacity, 0.44f));
 
         Panel shapecoloroff = partComboBox.addPanel("shapecoloroff");
-        shapecoloroff.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("shapecoloroffstr", "Color Off:", 10, view.renderer), 0.55f));
-        ColorOff = new ColorPicker("ColorOff", 10, view.renderer, view.loader, view.window) {
+        shapecoloroff.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("shapecoloroffstr", "Color Off:", view.renderer), 0.55f));
+        ColorOff = new ColorPicker("ColorOff", view.renderer, view.loader, view.window) {
             @Override
             public java.awt.Color getColor() {
                 if(scolorOff == null)
@@ -189,21 +189,21 @@ public abstract class PartShape extends iPart {
         shapecoloroff.elements.add(new Panel.PanelElement(ColorOff, 0.45f));
 
         Panel shapeoffbrightnessPanel = partComboBox.addPanel("shapeoffbrightnessPanel");
-        shapeoffbrightnessPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("shapeoffbrightnessstr", "Brightn. Off:", 10, view.renderer), 0.55f));
+        shapeoffbrightnessPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("shapeoffbrightnessstr", "Brightn. Off:", view.renderer), 0.55f));
         BrightnessOff = new Slider("ShapeBrightnessOff", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window, 1, 0, 1);
         shapeoffbrightnessPanel.elements.add(new Panel.PanelElement(BrightnessOff, 0.44f));
 
         Panel shapeoffopacityPanel = partComboBox.addPanel("shapeoffopacityPanel");
-        shapeoffopacityPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("shapeoffopacitystr", "Opacity Off:", 10, view.renderer), 0.55f));
+        shapeoffopacityPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("shapeoffopacitystr", "Opacity Off:", view.renderer), 0.55f));
         OpacityOff = new Slider("ShapeOpacityOff", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window, 1, 0, 1);
         shapeoffopacityPanel.elements.add(new Panel.PanelElement(OpacityOff, 0.44f));
 
         Panel lethalPanel = partComboBox.addPanel("lethalPanel");
-        lethalPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("lethalstr", "Lethal Type:", 10, view.renderer), 0.55f));
-        LethalType = new ComboBox("ShapeLethalType", "Not", new Vector2f(), new Vector2f(), 10, 160,view.renderer, view.loader, view.window);
+        lethalPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("lethalstr", "Lethal Type:", view.renderer), 0.55f));
+        LethalType = new ComboBox("ShapeLethalType", "Not", new Vector2f(), new Vector2f(), 160,view.renderer, view.loader, view.window);
         lethalPanel.elements.add(new Panel.PanelElement(LethalType, 0.45f));
 
-        LethalType.addList("lethalTypes", new ButtonList("lethalTypes", new ArrayList<>(Arrays.asList(cwlib.enums.LethalType.values())), new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window) {
+        LethalType.addList("lethalTypes", new ButtonList("lethalTypes", new ArrayList<>(Arrays.asList(cwlib.enums.LethalType.values())), new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window) {
             @Override
             public void clickedButton(Object object, int index, int button, int action, int mods) {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
@@ -261,14 +261,19 @@ public abstract class PartShape extends iPart {
             public boolean searchFilter(Object object, int index) {
                 return true;
             }
+
+            @Override
+            public int buttonHeight() {
+                return super.buttonHeight() * 2;
+            }
         }, 175);
 
         Panel shapeoverridepanel = partComboBox.addPanel("shapeoverridepanel");
-        shapeoverridepanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("soundoverridestr", "Sound Overr.:", 10, view.renderer), 0.55f));
-        SoundOverride = new ComboBox("ShapeSoundOverride", "None", new Vector2f(), new Vector2f(), 10, 160, view.renderer, view.loader, view.window);
+        shapeoverridepanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("soundoverridestr", "Sound Overr.:", view.renderer), 0.55f));
+        SoundOverride = new ComboBox("ShapeSoundOverride", "None", new Vector2f(), new Vector2f(), 160, view.renderer, view.loader, view.window);
         shapeoverridepanel.elements.add(new Panel.PanelElement(SoundOverride, 0.45f));
 
-        SoundOverride.addList("lethalTypes", new ButtonList("lethalTypes", new ArrayList<>(Arrays.asList(AudioMaterial.values())), new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window) {
+        SoundOverride.addList("lethalTypes", new ButtonList("lethalTypes", new ArrayList<>(Arrays.asList(AudioMaterial.values())), new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window) {
             @Override
             public void clickedButton(Object object, int index, int button, int action, int mods) {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
@@ -325,6 +330,11 @@ public abstract class PartShape extends iPart {
             @Override
             public boolean searchFilter(Object object, int index) {
                 return true;
+            }
+
+            @Override
+            public int buttonHeight() {
+                return super.buttonHeight() * 2;
             }
         }, 175);
 
@@ -425,61 +435,61 @@ public abstract class PartShape extends iPart {
         });
 
         Panel shapeZBiasPanel = partComboBox.addPanel("shapeZBiasPanel");
-        shapeZBiasPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("shapezbiasstr", "Z Bias:", 10, view.renderer), 0.55f));
-        ZBias = new Textbox("ShapeZBias", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
+        shapeZBiasPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("shapezbiasstr", "Z Bias:", view.renderer), 0.55f));
+        ZBias = new Textbox("ShapeZBias", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window);
         ZBias.noLetters().noOthers().numberLimits(-128, 127);
         shapeZBiasPanel.elements.add(new Panel.PanelElement(ZBias, 0.45f));
 
         Extras = partComboBox.addComboBox("ShapeExtras", "Extras", 220);
 
         Panel shapeZBiasVitaPanel = Extras.addPanel("shapeZBiasVitaPanel");
-        shapeZBiasVitaPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("shapezbiasvstr", "Z Bias (Vita):", 10, view.renderer), 0.55f));
-        ZBiasVita = new Textbox("ShapeZBiasVita", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
+        shapeZBiasVitaPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("shapezbiasvstr", "Z Bias (Vita):", view.renderer), 0.55f));
+        ZBiasVita = new Textbox("ShapeZBiasVita", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window);
         shapeZBiasVitaPanel.elements.add(new Panel.PanelElement(ZBiasVita, 0.45f));
 
         Panel shapeMassDepthPanel = Extras.addPanel("shapeMassDepthPanel");
-        shapeMassDepthPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("shapemassdepthstr", "Mass Depth:", 10, view.renderer), 0.55f));
-        MassDepth = new Textbox("ShapeMassDepth", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
+        shapeMassDepthPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("shapemassdepthstr", "Mass Depth:", view.renderer), 0.55f));
+        MassDepth = new Textbox("ShapeMassDepth", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window);
         shapeMassDepthPanel.elements.add(new Panel.PanelElement(MassDepth, 0.45f));
 
         Panel shapeBehaviorPanel = Extras.addPanel("shapeBehaviorPanel");
-        shapeBehaviorPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("shapebehaviorstr", "Behavior:", 10, view.renderer), 0.55f));
-        Behavior = new Textbox("ShapeBehavior", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
+        shapeBehaviorPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("shapebehaviorstr", "Behavior:", view.renderer), 0.55f));
+        Behavior = new Textbox("ShapeBehavior", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window);
         shapeBehaviorPanel.elements.add(new Panel.PanelElement(Behavior, 0.45f));
 
         Panel shapePlayerNumberColorPanel = Extras.addPanel("shapePlayerNumberColorPanel");
-        shapePlayerNumberColorPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("shapeplayernumbercolorstr", "Player # Col.:", 10, view.renderer), 0.55f));
-        PlayerNumberColor = new Textbox("ShapePlayerNumberColor", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
+        shapePlayerNumberColorPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("shapeplayernumbercolorstr", "Player # Col.:", view.renderer), 0.55f));
+        PlayerNumberColor = new Textbox("ShapePlayerNumberColor", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window);
         PlayerNumberColor.noLetters().noOthers().numberLimits(-128, 127);
         shapePlayerNumberColorPanel.elements.add(new Panel.PanelElement(PlayerNumberColor, 0.45f));
 
         Panel shapeStickinessPanel = Extras.addPanel("shapeStickinessPanel");
-        shapeStickinessPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("shapestickinessstr", "Stickiness:", 10, view.renderer), 0.55f));
-        Stickiness = new Textbox("ShapeStickiness", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
+        shapeStickinessPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("shapestickinessstr", "Stickiness:", view.renderer), 0.55f));
+        Stickiness = new Textbox("ShapeStickiness", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window);
         Stickiness.noLetters().noOthers().numberLimits(-128, 127);
         shapeStickinessPanel.elements.add(new Panel.PanelElement(Stickiness, 0.45f));
 
         Panel shapeGrabbabilityPanel = Extras.addPanel("shapeGrabbabilityPanel");
-        shapeGrabbabilityPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("shapegrabbabilitystr", "Grabbability:", 10, view.renderer), 0.55f));
-        Grabbability = new Textbox("ShapeGrabbability", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
+        shapeGrabbabilityPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("shapegrabbabilitystr", "Grabbability:", view.renderer), 0.55f));
+        Grabbability = new Textbox("ShapeGrabbability", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window);
         Grabbability.noLetters().noOthers().numberLimits(-128, 127);
         shapeGrabbabilityPanel.elements.add(new Panel.PanelElement(Grabbability, 0.45f));
 
         Panel shapeGrabFilterPanel = Extras.addPanel("shapeGrabFilterPanel");
-        shapeGrabFilterPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("shapegrabfilterstr", "Grab Filter:", 10, view.renderer), 0.55f));
-        GrabFilter = new Textbox("ShapeGrabFilter", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
+        shapeGrabFilterPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("shapegrabfilterstr", "Grab Filter:", view.renderer), 0.55f));
+        GrabFilter = new Textbox("ShapeGrabFilter", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window);
         GrabFilter.noLetters().noOthers().numberLimits(-128, 127);
         shapeGrabFilterPanel.elements.add(new Panel.PanelElement(GrabFilter, 0.45f));
 
         Panel shapeFireDensityPanel = Extras.addPanel("shapeFireDensityPanel");
-        shapeFireDensityPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("shapefiredensitystr", "Fire Density:", 10, view.renderer), 0.55f));
-        FireDensity = new Textbox("ShapeFireDensity", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
+        shapeFireDensityPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("shapefiredensitystr", "Fire Density:", view.renderer), 0.55f));
+        FireDensity = new Textbox("ShapeFireDensity", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window);
         FireDensity.noLetters().noOthers().numberLimits(-128, 127);
         shapeFireDensityPanel.elements.add(new Panel.PanelElement(FireDensity, 0.45f));
 
         Panel shapeFireLifetimePanel = Extras.addPanel("shapeFireLifetimePanel");
-        shapeFireLifetimePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("shapefirelifetimestr", "Fire Lifetime:", 10, view.renderer), 0.55f));
-        FireLifetime = new Textbox("ShapeFireLifetime", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
+        shapeFireLifetimePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("shapefirelifetimestr", "Fire Lifetime:", view.renderer), 0.55f));
+        FireLifetime = new Textbox("ShapeFireLifetime", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window);
         FireLifetime.noLetters().noOthers().numberLimits(-128, 127);
         shapeFireLifetimePanel.elements.add(new Panel.PanelElement(FireLifetime, 0.45f));
 

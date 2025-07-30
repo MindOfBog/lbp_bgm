@@ -48,7 +48,7 @@ public class Archive extends GuiScreen {
 
     public void init()
     {
-        mapList = new DropDownTab("mapList", "MAPs", new Vector2f(10, 21 + 10), new Vector2f(200, getFontHeight(10) + 4), 10, renderer, loader, window)
+        mapList = new DropDownTab("mapList", "MAPs", new Vector2f(10, 21 + 10), new Vector2f(200, getFontHeight() + 4), renderer, loader, window)
         {
 
         };
@@ -59,7 +59,7 @@ public class Archive extends GuiScreen {
                     FilePicker.loadMap();
             }
         });
-        maps = mapList.addList("maps", new ButtonList(LoadedData.MAPs, 10, renderer, loader, window) {
+        maps = mapList.addList("maps", new ButtonList(LoadedData.MAPs, renderer, loader, window) {
             @Override
             public void clickedButton(Object object, int index, int button, int action, int mods) {
 
@@ -92,11 +92,11 @@ public class Archive extends GuiScreen {
 
             @Override
             public int buttonHeight() {
-                return getFontHeight(10) + 4;
+                return getFontHeight() + 4;
             }
         }.deletable().draggable(), 150);
 
-        farcList = new DropDownTab("farcList", "FARCs", new Vector2f(7 * 2 + 3 + 200, 21 + 10), new Vector2f(200, getFontHeight(10) + 4), 10, renderer, loader, window)
+        farcList = new DropDownTab("farcList", "FARCs", new Vector2f(7 * 2 + 3 + 200, 21 + 10), new Vector2f(200, getFontHeight() + 4), renderer, loader, window)
         {
 
         };
@@ -107,7 +107,7 @@ public class Archive extends GuiScreen {
                     FilePicker.loadFarc();
             }
         });
-        farcs = farcList.addList("farcs", new ButtonList(LoadedData.FARCs, 10, renderer, loader, window) {
+        farcs = farcList.addList("farcs", new ButtonList(LoadedData.FARCs, renderer, loader, window) {
             @Override
             public void clickedButton(Object object, int index, int button, int action, int mods) {
 
@@ -140,11 +140,11 @@ public class Archive extends GuiScreen {
 
             @Override
             public int buttonHeight() {
-                return getFontHeight(10) + 4;
+                return getFontHeight() + 4;
             }
         }.deletable().draggable(), 150);
 
-        fartList = new DropDownTab("fartList", "BIG Profiles", new Vector2f(7 * 3 + 3 + 400, 21 + 10), new Vector2f(200, getFontHeight(10) + 4), 10, renderer, loader, window)
+        fartList = new DropDownTab("fartList", "BIG Profiles", new Vector2f(7 * 3 + 3 + 400, 21 + 10), new Vector2f(200, getFontHeight() + 4), renderer, loader, window)
         {
 
         };
@@ -155,7 +155,7 @@ public class Archive extends GuiScreen {
                     FilePicker.loadFart();
             }
         });
-        farts = fartList.addList("farts", new ButtonList(LoadedData.BIGFARTs, 10, renderer, loader, window) {
+        farts = fartList.addList("farts", new ButtonList(LoadedData.BIGFARTs, renderer, loader, window) {
             @Override
             public void clickedButton(Object object, int index, int button, int action, int mods) {
 
@@ -188,11 +188,11 @@ public class Archive extends GuiScreen {
 
             @Override
             public int buttonHeight() {
-                return getFontHeight(10) + 4;
+                return getFontHeight() + 4;
             }
         }.deletable().draggable(), 150);
 
-        translations = new DropDownTab("translations", "Translations", new Vector2f(10, 21 + 10 + mapList.getFullHeight() + 7), new Vector2f(325, getFontHeight(10) + 4), 10, renderer, loader, window);
+        translations = new DropDownTab("translations", "Translations", new Vector2f(10, 21 + 10 + mapList.getFullHeight() + 7), new Vector2f(325, getFontHeight() + 4), renderer, loader, window);
         translations.addButton("None", new Button() {
             @Override
             public void clickedButton(int button, int action, int mods) {
@@ -203,10 +203,10 @@ public class Archive extends GuiScreen {
             }
         });
         Panel searchTranslationsPanel = translations.addPanel("Panel");
-        searchTranslationsPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("searchTranslStr", "Search:", 10, renderer), 0.225f));
-        searchTransl = new Textbox("searchTransl", new Vector2f(), new Vector2f(), 10, renderer, loader, window);
+        searchTranslationsPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("searchTranslStr", "Search:", renderer), 0.225f));
+        searchTransl = new Textbox("searchTransl", new Vector2f(), new Vector2f(), renderer, loader, window);
         searchTranslationsPanel.elements.add(new Panel.PanelElement(searchTransl, 0.775f));
-        farts = translations.addList("transl", new ButtonList(LoadedData.digestedEntries, 10, renderer, loader, window) {
+        farts = translations.addList("transl", new ButtonList(LoadedData.digestedEntries, renderer, loader, window) {
             @Override
             public void clickedButton(Object object, int index, int button, int action, int mods) {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
@@ -220,7 +220,11 @@ public class Archive extends GuiScreen {
                         for(FileEntry e : LoadedData.digestedEntries)
                             if(e.getPath().equalsIgnoreCase("gamedata/languages/patch/" + entry.getName()))
                                 descriptorPatch = LoadedData.digestedEntriesDescriptors.get(LoadedData.digestedEntries.indexOf(e));
-                    }catch (Exception e){print.stackTrace(e);}
+                    }catch (Exception e)
+                    {
+                        mainView.pushWarning("Translation Selection", "File entries are still being set up, please wait until they are all loaded.");
+                        print.stackTrace(e);
+                    }
 
                     byte[] data = LoadedData.extract(descriptor);
                     if (data == null)
@@ -300,7 +304,7 @@ public class Archive extends GuiScreen {
 
             @Override
             public int buttonHeight() {
-                return getFontHeight(10) + 4;
+                return getFontHeight() + 4;
             }
 
             @Override

@@ -20,6 +20,9 @@ public class TriFan extends Drawable{
     public Color color = null;
     public boolean smoothstep = false;
 
+    public float smoothstepWidth;
+    public float smoothstepEdge;
+
     @Override
     public Type getType() {
         return Type.TRI_FAN;

@@ -1,12 +1,18 @@
 package common;
 
+import bog.lbpas.view3d.renderer.gui.cursor.ECursor;
 import bog.lbpas.view3d.utils.Config;
+import bog.lbpas.view3d.utils.Cursors;
+import bog.lbpas.view3d.utils.Utils;
+import bog.lbpas.view3d.utils.print;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.FileSystemException;
 import java.nio.file.Paths;
 
@@ -14,7 +20,8 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.util.tinyfd.TinyFileDialogs.*;
 
 public class FileChooser {
-    public static final JFileChooser chooser = new JFileChooser();
+    public static JFileChooser chooser = null;
+    public static JFrame chooserParent;
 
     public static String getHomePath(String name) {
         return Paths.get(System.getProperty("user.home"), "Documents", name.replaceAll("[\\\\/:*?\"\'<>|]", "")).toAbsolutePath().toString();
@@ -34,18 +41,48 @@ public class FileChooser {
         return openFile(null, ext, false, true);
     }
 
+    public static boolean isLegacyFDopen = false;
+
     public static File[] openFileLegacy(String name, String[] extensions, boolean saveFile, boolean multiple) {
+
+        if(chooser == null)
+        {
+            chooser = new JFileChooser();
+            chooserParent = new JFrame();
+            chooserParent.setType(JFrame.Type.UTILITY);
+            chooserParent.setAlwaysOnTop(true);
+
+            try {
+                BufferedImage iconBuffer = Utils.loadAndRenderSVG(Thread.currentThread().getContextClassLoader().getResourceAsStream("textures/icon_tree_only.svg"), 16, 16, true);
+                chooserParent.setIconImage(iconBuffer);
+            } catch (IOException e) {
+                print.stackTrace(e);
+            }
+
+        }
+
         int returnValue = JFileChooser.CANCEL_OPTION;
         setupFilter(name, extensions, multiple, false);
 
+        Cursors.setCursor(ECursor.crossed_circle);
+        isLegacyFDopen = true;
+
         if (!saveFile)
-            returnValue = chooser.showOpenDialog(null);
+            returnValue = chooser.showOpenDialog(chooserParent);
         else
-            returnValue = chooser.showSaveDialog(null);
+            returnValue = chooser.showSaveDialog(chooserParent);
+
+        isLegacyFDopen = false;
 
         if (returnValue == JFileChooser.APPROVE_OPTION) {
-            if (multiple) return chooser.getSelectedFiles();
-            else return new File[] { chooser.getSelectedFile() };
+            if (multiple)
+            {
+                return chooser.getSelectedFiles();
+            }
+            else
+            {
+                return new File[] { chooser.getSelectedFile() };
+            }
         }
         else
             System.out.println("File operation was cancelled by user.");
@@ -74,7 +111,6 @@ public class FileChooser {
                     patterns.put(stack.UTF8("*." + extension));
                 patterns.flip();
             }
-
             String[] paths;
             if (saveFile) {
                 String path = tinyfd_saveFileDialog("Save", pth, patterns, "");

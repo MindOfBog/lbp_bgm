@@ -37,8 +37,8 @@ public abstract class PartPos extends iPart {
     @Override
     public void init(View3D view) {
         Panel positionPanel = partComboBox.addPanel("positionPanel");
-        positionPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Position:", 10, view.renderer), 0.525f));
-        positionPanel.elements.add(new Panel.PanelElement(new Button("goto", "Go To", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window) {
+        positionPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Position:", view.renderer), 0.525f));
+        positionPanel.elements.add(new Panel.PanelElement(new Button("goto", "Go To", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if (button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS) {
@@ -50,18 +50,18 @@ public abstract class PartPos extends iPart {
         }, 0.475f));
 
         Panel xPosSel = partComboBox.addPanel("xpos");
-        xPosSel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("xposstr", "X:", 10, view.renderer), 0.1f));
-        PositionX = new Textbox("xpostex", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
+        xPosSel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("xposstr", "X:", view.renderer), 0.1f));
+        PositionX = new Textbox("xpostex", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window);
         PositionX.noLetters().noOthers();
         xPosSel.elements.add(new Panel.PanelElement(PositionX, 0.9f));
         Panel yPosSel = partComboBox.addPanel("ypos");
-        yPosSel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("yposstr", "Y:", 10, view.renderer), 0.1f));
-        PositionY = new Textbox("ypostex", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
+        yPosSel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("yposstr", "Y:", view.renderer), 0.1f));
+        PositionY = new Textbox("ypostex", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window);
         PositionY.noLetters().noOthers();
         yPosSel.elements.add(new Panel.PanelElement(PositionY, 0.9f));
         Panel zPosSel = partComboBox.addPanel("zpos");
-        zPosSel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("zposstr", "Z:", 10, view.renderer), 0.1f));
-        PositionZ = new Textbox("zpostex", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
+        zPosSel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("zposstr", "Z:", view.renderer), 0.1f));
+        PositionZ = new Textbox("zpostex", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window);
         PositionZ.noLetters().noOthers();
         zPosSel.elements.add(new Panel.PanelElement(PositionZ, 0.9f));
 
@@ -106,36 +106,36 @@ public abstract class PartPos extends iPart {
         partComboBox.addString("rotstr", "Rotation:");
 
         Panel xRotSel = partComboBox.addPanel("xrot");
-        xRotSel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("xrotstr", "X:", 10, view.renderer), 0.1f));
-        RotationX = new Textbox("xrottex", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
+        xRotSel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("xrotstr", "X:", view.renderer), 0.1f));
+        RotationX = new Textbox("xrottex", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window);
         RotationX.noLetters().noOthers();
         xRotSel.elements.add(new Panel.PanelElement(RotationX, 0.9f));
         Panel yRotSel = partComboBox.addPanel("yrot");
-        yRotSel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("yrotstr", "Y:", 10, view.renderer), 0.1f));
-        RotationY = new Textbox("yrottex", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
+        yRotSel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("yrotstr", "Y:", view.renderer), 0.1f));
+        RotationY = new Textbox("yrottex", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window);
         RotationY.noLetters().noOthers();
         yRotSel.elements.add(new Panel.PanelElement(RotationY, 0.9f));
         Panel zRotSel = partComboBox.addPanel("zrot");
-        zRotSel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("zrotstr", "Z:", 10, view.renderer), 0.1f));
-        RotationZ = new Textbox("zrottex", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
+        zRotSel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("zrotstr", "Z:", view.renderer), 0.1f));
+        RotationZ = new Textbox("zrottex", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window);
         RotationZ.noLetters().noOthers();
         zRotSel.elements.add(new Panel.PanelElement(RotationZ, 0.9f));
 
         partComboBox.addString("scastr", "Scale:");
 
         Panel xScaSel = partComboBox.addPanel("xsca");
-        xScaSel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("xscastr", "X:", 10, view.renderer), 0.1f));
-        ScaleX = new Textbox("xscatex", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
+        xScaSel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("xscastr", "X:", view.renderer), 0.1f));
+        ScaleX = new Textbox("xscatex", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window);
         ScaleX.noLetters().noOthers();
         xScaSel.elements.add(new Panel.PanelElement(ScaleX, 0.9f));
         Panel yScaSel = partComboBox.addPanel("ysca");
-        yScaSel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("yscastr", "Y:", 10, view.renderer), 0.1f));
-        ScaleY = new Textbox("yscatex", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
+        yScaSel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("yscastr", "Y:", view.renderer), 0.1f));
+        ScaleY = new Textbox("yscatex", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window);
         ScaleY.noLetters().noOthers();
         yScaSel.elements.add(new Panel.PanelElement(ScaleY, 0.9f));
         Panel zScaSel = partComboBox.addPanel("zsca");
-        zScaSel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("zscastr", "Z:", 10, view.renderer), 0.1f));
-        ScaleZ = new Textbox("zscatex", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
+        zScaSel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("zscastr", "Z:", view.renderer), 0.1f));
+        ScaleZ = new Textbox("zscatex", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window);
         ScaleZ.noLetters().noOthers();
         zScaSel.elements.add(new Panel.PanelElement(ScaleZ, 0.9f));
     }

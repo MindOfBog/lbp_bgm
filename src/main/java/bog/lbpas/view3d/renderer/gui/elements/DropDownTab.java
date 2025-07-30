@@ -27,7 +27,6 @@ public class DropDownTab extends Element{
 
     String tabTitle = "";
     public ArrayList<Element> tabElements;
-    public int fontSize;
     public boolean extended = true;
 
     public boolean resizeX = false;
@@ -37,13 +36,12 @@ public class DropDownTab extends Element{
     Model outlineSelection;
     Model outlineElement;
 
-    public DropDownTab(String id, String tabTitle, Vector2f pos, Vector2f size, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window)
+    public DropDownTab(String id, String tabTitle, Vector2f pos, Vector2f size, RenderMan renderer, ObjectLoader loader, WindowMan window)
     {
         this.id = id;
         this.tabTitle = tabTitle;
         this.pos = pos;
         this.size = size;
-        this.fontSize = fontSize;
         this.renderer = renderer;
         this.loader = loader;
         this.window = window;
@@ -75,7 +73,7 @@ public class DropDownTab extends Element{
             float fullSize = size.y;
 
             for(Element e : tabElements)
-                fullSize += e.size == null ? e instanceof DropDownTab.StringElement ? getFontHeight(((StringElement)e).fontSize) : 0 : e.size.y + 3;
+                fullSize += e.size == null ? e instanceof DropDownTab.StringElement ? getFontHeight() : 0 : e.size.y + 3;
 
             return fullSize;
         }
@@ -113,10 +111,9 @@ public class DropDownTab extends Element{
             button.buttonText = buttonText;
             button.pos = new Vector2f(0, 0);
             if(button.size == null)
-                button.size = new Vector2f(size.x - 4, getFontHeight(fontSize) + 4);
+                button.size = new Vector2f(size.x - 4, getFontHeight() + 4);
             else
                 button.size.x = size.x - 4;
-            button.fontSize = fontSize;
             button.renderer = renderer;
             button.window = window;
             button.loader = loader;
@@ -133,10 +130,9 @@ public class DropDownTab extends Element{
         {
             elementList.pos = new Vector2f(0, 0);
             if(elementList.size == null)
-                elementList.size = new Vector2f(size.x - 4, getFontHeight(fontSize) + 4);
+                elementList.size = new Vector2f(size.x - 4, getFontHeight() + 4);
             else
                 elementList.size.x = size.x - 4;
-            elementList.fontSize = fontSize;
             elementList.renderer = renderer;
             elementList.window = window;
             elementList.loader = loader;
@@ -151,7 +147,7 @@ public class DropDownTab extends Element{
     {
         if(!containsElementByID(id))
         {
-            ComboBox comboBox = new ComboBox(id, title, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight(fontSize) + 4), fontSize, tabWidth, renderer, loader, window)
+            ComboBox comboBox = new ComboBox(id, title, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight() + 4), tabWidth, renderer, loader, window)
             {
                 @Override
                 public int[] getParentTransform() {
@@ -170,7 +166,7 @@ public class DropDownTab extends Element{
         if(!containsElementByID(id))
         {
             DropDownTab parent = this;
-            ElementList elementList = new ElementList(id, new Vector2f(0, 0), new Vector2f(size.x - 4, height), fontSize, renderer, loader, window)
+            ElementList elementList = new ElementList(id, new Vector2f(0, 0), new Vector2f(size.x - 4, height), renderer, loader, window)
             {
                 @Override
                 public int[] getParentTransform() {
@@ -188,7 +184,7 @@ public class DropDownTab extends Element{
     {
         if(!containsElementByID(id))
         {
-            Checkbox cb = new Checkbox(id, text, new Vector2f(0, 0), fontSize, renderer, loader, window);
+            Checkbox cb = new Checkbox(id, text, new Vector2f(0, 0), renderer, loader, window);
             tabElements.add(cb);
             return cb;
         }
@@ -200,7 +196,7 @@ public class DropDownTab extends Element{
     {
         if(!containsElementByID(id))
         {
-            Checkbox checkbox = new Checkbox(id, text, new Vector2f(0, 0), fontSize, renderer, loader, window);
+            Checkbox checkbox = new Checkbox(id, text, new Vector2f(0, 0), renderer, loader, window);
             checkbox.isChecked = checked;
             tabElements.add(checkbox);
             return checkbox;
@@ -213,7 +209,7 @@ public class DropDownTab extends Element{
     {
         if(!containsElementByID(id))
         {
-            Slider sl = new Slider(id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight(fontSize) + 4), renderer, loader, window);
+            Slider sl = new Slider(id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight() + 4), renderer, loader, window);
             tabElements.add(sl);
             return sl;
         }
@@ -225,7 +221,7 @@ public class DropDownTab extends Element{
     {
         if(!containsElementByID(id))
         {
-            Slider sl = new Slider(id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight(fontSize) + 4), renderer, loader, window, sliderPosition, min, max);
+            Slider sl = new Slider(id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight() + 4), renderer, loader, window, sliderPosition, min, max);
             tabElements.add(sl);
             return sl;
         }
@@ -237,7 +233,7 @@ public class DropDownTab extends Element{
     {
         if(!containsElementByID(id))
         {
-            Textbox tb = new Textbox(id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight(fontSize) + 4), fontSize, renderer, loader, window);
+            Textbox tb = new Textbox(id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight() + 4), renderer, loader, window);
             tabElements.add(tb);
             return  tb;
         }
@@ -249,7 +245,7 @@ public class DropDownTab extends Element{
     {
         if(!containsElementByID(id))
         {
-            Textbox tb = new Textbox(id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight(fontSize) + 4), fontSize, renderer, loader, window);
+            Textbox tb = new Textbox(id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight() + 4), renderer, loader, window);
             tb.numbers = numbers;
             tb.letters = letters;
             tb.others = others;
@@ -264,7 +260,7 @@ public class DropDownTab extends Element{
     {
         if(!containsElementByID(id))
         {
-            Textbox tb = new Textbox(id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight(fontSize) + 4), fontSize, renderer, loader, window);
+            Textbox tb = new Textbox(id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight() + 4), renderer, loader, window);
             tb.setText(text);
             tabElements.add(tb);
             return tb;
@@ -277,7 +273,7 @@ public class DropDownTab extends Element{
     {
         if(!containsElementByID(id))
         {
-            Textbox tb = new Textbox(id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight(fontSize) + 4), fontSize, renderer, loader, window);
+            Textbox tb = new Textbox(id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight() + 4), renderer, loader, window);
             tb.numbers = numbers;
             tb.letters = letters;
             tb.others = others;
@@ -293,7 +289,7 @@ public class DropDownTab extends Element{
     {
         if(!containsElementByID(id))
         {
-            Panel p = new Panel(new Vector2f(size.x - 4, getFontHeight(fontSize) + 4), renderer);
+            Panel p = new Panel(new Vector2f(size.x - 4, getFontHeight() + 4), renderer);
             p.id = id;
             tabElements.add(p);
             return p;
@@ -309,10 +305,10 @@ public class DropDownTab extends Element{
             if(p.pos == null)
                 p.pos = new Vector2f();
             if(p.size == null)
-                p.size = new Vector2f(0, getFontHeight(fontSize) + 4);
+                p.size = new Vector2f(0, getFontHeight() + 4);
             p.size.x = size.x - 4;
             if(p.size.y == 0)
-                p.size.y = getFontHeight(fontSize) + 4;
+                p.size.y = getFontHeight() + 4;
             if(p.id == null)
                 p.id = "";
             tabElements.add(p);
@@ -326,7 +322,7 @@ public class DropDownTab extends Element{
     {
         if(!containsElementByID(id))
         {
-            StringElement s = new StringElement(id, string, fontSize, renderer);
+            StringElement s = new StringElement(id, string, renderer);
             tabElements.add(s);
             return s;
         }
@@ -369,7 +365,7 @@ public class DropDownTab extends Element{
     {
         if(!containsElementByID(id))
         {
-            SeparatorElement sep = new SeparatorElement(id, new Vector2f(0), size.x - 4, 10, renderer, loader, window);
+            SeparatorElement sep = new SeparatorElement(id, new Vector2f(0), size.x - 4, renderer, loader, window);
             tabElements.add(sep);
             return sep;
         }
@@ -384,7 +380,7 @@ public class DropDownTab extends Element{
     public void draw(MouseInput mouseInput, boolean overOther) {
 
         float yOffset = 0;
-        float fontHeight = getFontHeight(fontSize);
+        float fontHeight = getFontHeightHeader();
 
         if (dragging) {
             this.pos.x = ((float) mouseInput.currentPos.x) - dragOffset.x;
@@ -434,7 +430,7 @@ public class DropDownTab extends Element{
         }
 
         renderer.startScissor(Math.round(pos.x), Math.round(pos.y), Math.round(size.x - size.y), Math.round(size.y));
-        renderer.drawHeader(tabTitle, Config.FONT_COLOR, Math.round(pos.x + (size.y + fontHeight) / 8f), Math.round(pos.y + size.y / 2f - fontHeight / 2f), fontSize);
+        renderer.drawHeader(Consts.FONT_SET_BOLD + tabTitle, Config.FONT_COLOR, Math.round(pos.x + (size.y + fontHeight) / 8f), Math.round(pos.y + size.y / 2f - fontHeight / 2f));
         renderer.endScissor();
 
         float triangleSize = fontHeight * 0.6f;
@@ -539,7 +535,7 @@ public class DropDownTab extends Element{
             element.pos = new Vector2f(pos.x + (element instanceof ButtonList ? 0 : 2), pos.y + size.y + 2 + yOffset);
 
             if (element.size == null)
-                element.size = new Vector2f(size.x - (element instanceof ButtonList ? 0 : 4), getFontHeight(fontSize) + 4);
+                element.size = new Vector2f(size.x - (element instanceof ButtonList ? 0 : 4), getFontHeight() + 4);
             else
                 element.size = new Vector2f(size.x - (element instanceof ButtonList ? 0 : 4), element.size.y);
 
@@ -801,21 +797,18 @@ public class DropDownTab extends Element{
     public static class StringElement extends  Element
     {
         public String string = "";
-        int fontSize;
 
-        public StringElement(String id, String string, int fontSize, RenderMan renderer)
+        public StringElement(String id, String string, RenderMan renderer)
         {
             this.string = string;
             this.id = id;
-            this.fontSize = fontSize;
             this.renderer = renderer;
         }
 
-        public StringElement(String id, int fontSize, RenderMan renderer)
+        public StringElement(String id, RenderMan renderer)
         {
             this.string = "";
             this.id = id;
-            this.fontSize = fontSize;
             this.renderer = renderer;
         }
 
@@ -823,7 +816,7 @@ public class DropDownTab extends Element{
         public void draw(MouseInput mouseInput, boolean overElement) {
             super.draw(mouseInput, overElement);
 
-            try{renderer.drawString(stringToDraw(), Config.FONT_COLOR, (int) Math.round(pos.x + getFontHeight(fontSize) / 4), (int) Math.round(pos.y + size.y / 2 - getFontHeight(fontSize) / 2), fontSize);}catch (Exception e){}
+            try{renderer.drawString(stringToDraw(), Config.FONT_COLOR, (int) Math.round(pos.x + getFontHeight() / 4), (int) Math.round(pos.y + size.y / 2 - getFontHeight() / 2));}catch (Exception e){}
         }
 
         public String stringToDraw()
@@ -836,7 +829,7 @@ public class DropDownTab extends Element{
     {
         Model line;
 
-        public SeparatorElement(String id, Vector2f pos, float width, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window) {
+        public SeparatorElement(String id, Vector2f pos, float width, RenderMan renderer, ObjectLoader loader, WindowMan window) {
             this.id = id;
             this.pos = pos;
             this.size = new Vector2f(width, 1);

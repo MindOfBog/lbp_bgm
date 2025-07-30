@@ -26,7 +26,6 @@ import java.util.List;
 public abstract class ButtonList<T> extends Element{
 
     public List<T> list;
-    public int fontSize;
     float yScroll = 0;
     boolean scrolling = false;
 
@@ -41,27 +40,25 @@ public abstract class ButtonList<T> extends Element{
     public boolean deletable;
     public boolean draggable;
 
-    public ButtonList(String id, List list, Vector2f pos, Vector2f size, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window)
+    public ButtonList(String id, List list, Vector2f pos, Vector2f size, RenderMan renderer, ObjectLoader loader, WindowMan window)
     {
         this.id = id;
         this.list = list;
         this.renderer = renderer;
         this.loader = loader;
         this.window = window;
-        this.fontSize = fontSize;
         this.pos = pos;
         this.size = size;
         this.prevSize = size;
     }
 
-    public ButtonList(List list, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window)
+    public ButtonList(List list, RenderMan renderer, ObjectLoader loader, WindowMan window)
     {
         this.id = id;
         this.list = list;
         this.renderer = renderer;
         this.loader = loader;
         this.window = window;
-        this.fontSize = fontSize;
         this.pos = new Vector2f();
         this.size = new Vector2f();
         this.prevSize = size;
@@ -285,7 +282,7 @@ public abstract class ButtonList<T> extends Element{
         int newHeight = height;
         renderer.startScissor(Math.round(pos.x + 4), Math.round(posY), newWidth, newHeight);
         renderer.drawRect(Math.round(pos.x + 4), Math.round(posY), newWidth, newHeight, !(isHighlighted(object, i) || isSelected(object, i)) ? buttonColor(object, i) : (isSelected(object, i) ? buttonColorSelected(object, i) : buttonColorHighlighted(object, i)));
-        renderer.drawString(buttonText(object, i), textColor(object, i), Math.round(pos.x + 6f + ((newWidthF / 2f) - (getStringWidth(buttonText(object, i), fontSize) / 2f))), Math.round(posY + height / 2 - getFontHeight(fontSize) / 2), fontSize);
+        renderer.drawString(buttonText(object, i), textColor(object, i), Math.round(pos.x + 6f + ((newWidthF / 2f) - (getStringWidth(buttonText(object, i)) / 2f))), Math.round(posY + height / 2 - getFontHeight() / 2));
         renderer.drawRectOutline(new Vector2f(Math.round(pos.x + 4), Math.round(posY)), outlineButton, !(isHighlighted(object, i) || isSelected(object, i)) ? buttonColor2(object, i) : (isSelected(object, i) ? buttonColorSelected2(object, i) : buttonColorHighlighted2(object, i)), false);
         renderer.endScissor();
 
@@ -335,7 +332,7 @@ public abstract class ButtonList<T> extends Element{
     }
     public int buttonHeight()
     {
-        return getFontHeight(fontSize);
+        return getFontHeight();
     }
     public Model getOutlineButton(int height)
     {

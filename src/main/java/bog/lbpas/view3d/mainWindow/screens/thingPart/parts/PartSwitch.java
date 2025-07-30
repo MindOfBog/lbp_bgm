@@ -152,8 +152,8 @@ public abstract class PartSwitch extends iPart {
     public void init(View3D view) {
 
         Panel namePanel = partComboBox.addPanel("namePanel");
-        namePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("nameStr", "Name:", 10, view.renderer), 0.4f));
-        name = new Textbox("name", 10, view.renderer, view.loader, view.window);
+        namePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("nameStr", "Name:", view.renderer), 0.4f));
+        name = new Textbox("name", view.renderer, view.loader, view.window);
         namePanel.elements.add(new Panel.PanelElement(name, 0.6f));
 
         inverted = partComboBox.addCheckbox("inverted", "Inverted", new Checkbox()
@@ -242,35 +242,35 @@ public abstract class PartSwitch extends iPart {
         });
 
         Panel radiusPanel = partComboBox.addPanel("radiusPanel");
-        radiusPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("radiusStr", "Radius:", 10, view.renderer), 0.6f));
-        radius = new Textbox("radius", 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+        radiusPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("radiusStr", "Radius:", view.renderer), 0.6f));
+        radius = new Textbox("radius", view.renderer, view.loader, view.window).noLetters().noOthers();
         radiusPanel.elements.add(new Panel.PanelElement(radius, 0.4f));
 
         Panel minRadiusPanel = partComboBox.addPanel("minRadiusPanel");
-        minRadiusPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("minRadiusStr", "Min Radius:", 10, view.renderer), 0.6f));
-        minRadius = new Textbox("minRadius", 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+        minRadiusPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("minRadiusStr", "Min Radius:", view.renderer), 0.6f));
+        minRadius = new Textbox("minRadius", view.renderer, view.loader, view.window).noLetters().noOthers();
         minRadiusPanel.elements.add(new Panel.PanelElement(minRadius, 0.4f));
 
         Panel layerRangePanel = partComboBox.addPanel("layerRangePanel");
-        layerRangePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("layerRangeStr", "Layer Range:", 10, view.renderer), 0.6f));
-        layerRange = new Textbox("layerRange", 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+        layerRangePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("layerRangeStr", "Layer Range:", view.renderer), 0.6f));
+        layerRange = new Textbox("layerRange", view.renderer, view.loader, view.window).noLetters().noOthers();
         layerRangePanel.elements.add(new Panel.PanelElement(layerRange, 0.4f));
 
         Panel angleRangePanel = partComboBox.addPanel("angleRangePanel");
-        angleRangePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("angleRangeStr", "Angle Range:", 10, view.renderer), 0.6f));
-        angleRange = new Textbox("angleRange", 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+        angleRangePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("angleRangeStr", "Angle Range:", view.renderer), 0.6f));
+        angleRange = new Textbox("angleRange", view.renderer, view.loader, view.window).noLetters().noOthers();
         angleRangePanel.elements.add(new Panel.PanelElement(angleRange, 0.4f));
 
         ComboBox switchCombo = partComboBox.addComboBox("switchCombo", "Switch", 200);
 
         Panel typePanel = switchCombo.addPanel("typePanel");
-        typePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("typeStr", "Type:", 10, view.renderer), 0.5f));
-        typeCombo = new ComboBox("typeCombo", "Invalid", 10, 200, view.renderer, view.loader, view.window);
+        typePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("typeStr", "Type:", view.renderer), 0.5f));
+        typeCombo = new ComboBox("typeCombo", "Invalid", 200, view.renderer, view.loader, view.window);
         Panel searchTypePanel = typeCombo.addPanel("searchTypePanel");
-        searchTypePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("searchTypeStr", "Search:", 10, view.renderer), 0.4f));
-        Textbox searchType = new Textbox("searchType", 10, view.renderer, view.loader, view.window);
+        searchTypePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("searchTypeStr", "Search:", view.renderer), 0.4f));
+        Textbox searchType = new Textbox("searchType", view.renderer, view.loader, view.window);
         searchTypePanel.elements.add(new Panel.PanelElement(searchType, 0.6f));
-        ButtonList typeList = new ButtonList(List.of(SwitchType.values()), 10, view.renderer, view.loader, view.window) {
+        ButtonList typeList = new ButtonList(List.of(SwitchType.values()), view.renderer, view.loader, view.window) {
             @Override
             public void clickedButton(Object object, int index, int button, int action, int mods) {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
@@ -330,9 +330,9 @@ public abstract class PartSwitch extends iPart {
         typePanel.elements.add(new Panel.PanelElement(typeCombo, 0.5f));
 
         Panel logicTypePanel = switchCombo.addPanel("logicTypePanel");
-        logicTypePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("logicTypeStr", "Logic Type:", 10, view.renderer), 0.5f));
-        logicTypeCombo = new ComboBox("logicTypeCombo", "And", 10, 200, view.renderer, view.loader, view.window);
-        ButtonList logicTypeList = new ButtonList(List.of(SwitchLogicType.values()), 10, view.renderer, view.loader, view.window) {
+        logicTypePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("logicTypeStr", "Logic Type:", view.renderer), 0.5f));
+        logicTypeCombo = new ComboBox("logicTypeCombo", "And", 200, view.renderer, view.loader, view.window);
+        ButtonList logicTypeList = new ButtonList(List.of(SwitchLogicType.values()), view.renderer, view.loader, view.window) {
             @Override
             public void clickedButton(Object object, int index, int button, int action, int mods) {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
@@ -392,9 +392,9 @@ public abstract class PartSwitch extends iPart {
         logicTypePanel.elements.add(new Panel.PanelElement(logicTypeCombo, 0.5f));
 
         Panel switchBehaviorPanel = switchCombo.addPanel("switchBehaviorPanel");
-        switchBehaviorPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("switchBehaviorStr", "Behavior:", 10, view.renderer), 0.5f));
-        switchBehaviorCombo = new ComboBox("switchBehaviorCombo", "Off on", 10, 200, view.renderer, view.loader, view.window);
-        ButtonList switchBehaviorList = new ButtonList(List.of(SwitchBehavior.values()), 10, view.renderer, view.loader, view.window) {
+        switchBehaviorPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("switchBehaviorStr", "Behavior:", view.renderer), 0.5f));
+        switchBehaviorCombo = new ComboBox("switchBehaviorCombo", "Off on", 200, view.renderer, view.loader, view.window);
+        ButtonList switchBehaviorList = new ButtonList(List.of(SwitchBehavior.values()), view.renderer, view.loader, view.window) {
             @Override
             public void clickedButton(Object object, int index, int button, int action, int mods) {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
@@ -480,18 +480,18 @@ public abstract class PartSwitch extends iPart {
         });
 
         Panel teamFilterPanel = playerSensorCombo.addPanel("teamFilterPanel");
-        teamFilterPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("teamFilterStr", "Team Filter:", 10, view.renderer), 0.6f));
-        teamFilter = new Textbox("teamFilter", 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+        teamFilterPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("teamFilterStr", "Team Filter:", view.renderer), 0.6f));
+        teamFilter = new Textbox("teamFilter", view.renderer, view.loader, view.window).noLetters().noOthers();
         teamFilterPanel.elements.add(new Panel.PanelElement(teamFilter, 0.4f));
 
         ComboBox stickerSensorCombo = partComboBox.addComboBox("stickerSensorCombo", "Sticker Sensor", 200);
 
         Panel stickerPlanPanel = stickerSensorCombo.addPanel("stickerPlanPanel");
-        stickerPlanPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("stickerPlanStr", "Sticker Plan:", 10, view.renderer), 0.6f));
-        stickerPlan = new Textbox("stickerPlan", 10, view.renderer, view.loader, view.window);
+        stickerPlanPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("stickerPlanStr", "Sticker Plan:", view.renderer), 0.6f));
+        stickerPlan = new Textbox("stickerPlan", view.renderer, view.loader, view.window);
         stickerPlanPanel.elements.add(new Panel.PanelElement(stickerPlan, 0.4f));
 
-//      todo  stickerSensorCombo.addString(new DropDownTab.StringElement("stickerSwitchMode", 10, view.renderer)
+//      todo  stickerSensorCombo.addString(new DropDownTab.StringElement("stickerSwitchMode", view.renderer)
 //        {
 //            @Override
 //            public String stringToDraw() {
@@ -506,11 +506,11 @@ public abstract class PartSwitch extends iPart {
         ComboBox tagSensorCombo = partComboBox.addComboBox("tagSensorCombo", "Tag Sensor", 200);
 
         Panel tagColorPanel = tagSensorCombo.addPanel("tagColorPanel");
-        tagColorPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("tagColorStr", "Tag Color:", 10, view.renderer), 0.5f));
+        tagColorPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("tagColorStr", "Tag Color:", view.renderer), 0.5f));
 
-        tagColorCombo = new ComboBox("tagColorCombo", "Blue", 10, 200, view.renderer, view.loader, view.window);
+        tagColorCombo = new ComboBox("tagColorCombo", "Blue", 200, view.renderer, view.loader, view.window);
         tagColorsList = new ArrayList<>(Arrays.asList("Blue", "Purple", "Pink", "Red", "Yellow", "Light Green", "Green", "Cyan"));
-        tagColorCombo.addList("tagColorList", new ButtonList(tagColorsList, 10, view.renderer, view.loader, view.window) {
+        tagColorCombo.addList("tagColorList", new ButtonList(tagColorsList, view.renderer, view.loader, view.window) {
             @Override
             public void clickedButton(Object object, int index, int button, int action, int mods) {
                 for(Thing thing : view.things)
@@ -569,11 +569,11 @@ public abstract class PartSwitch extends iPart {
         tagColorPanel.elements.add(new Panel.PanelElement(tagColorCombo, 0.5f));
 
         Panel tagModePanel = tagSensorCombo.addPanel("tagModePanel");
-        tagModePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("tagModeStr", "Output:", 10, view.renderer), 0.5f));
+        tagModePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("tagModeStr", "Output:", view.renderer), 0.5f));
 
-        tagModeCombo = new ComboBox("tagModeCombo", "Closeness", 10, 200, view.renderer, view.loader, view.window);
+        tagModeCombo = new ComboBox("tagModeCombo", "Closeness", 200, view.renderer, view.loader, view.window);
         tagModesList = new ArrayList<>(Arrays.asList("Closeness", "Strength", "Count (LBP3)"));
-        tagModeCombo.addList("tagModeList", new ButtonList(tagModesList, 10, view.renderer, view.loader, view.window) {
+        tagModeCombo.addList("tagModeList", new ButtonList(tagModesList, view.renderer, view.loader, view.window) {
             @Override
             public void clickedButton(Object object, int index, int button, int action, int mods) {
                 for(Thing thing : view.things)
@@ -634,37 +634,37 @@ public abstract class PartSwitch extends iPart {
         ComboBox tagLabelCombo = tagSensorCombo.addComboBox("tagLabelCombo", "Tag Label", 200);
 
         Panel tagLabelNamePanel = tagLabelCombo.addPanel("tagLabelNamePanel");
-        tagLabelNamePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("tagLabelNameStr", "Name:", 10, view.renderer), 0.4f));
-        labelName = new Textbox("labelName", 10, view.renderer, view.loader, view.window);
+        tagLabelNamePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("tagLabelNameStr", "Name:", view.renderer), 0.4f));
+        labelName = new Textbox("labelName", view.renderer, view.loader, view.window);
         tagLabelNamePanel.elements.add(new Panel.PanelElement(labelName, 0.6f));
 
         Panel tagLabelIndexPanel = tagLabelCombo.addPanel("tagLabelIndexPanel");
-        tagLabelIndexPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("tagLabelIndexStr", "Index:", 10, view.renderer), 0.4f));
-        labelIndex = new Textbox("labelIndex", 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+        tagLabelIndexPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("tagLabelIndexStr", "Index:", view.renderer), 0.4f));
+        labelIndex = new Textbox("labelIndex", view.renderer, view.loader, view.window).noLetters().noOthers();
         tagLabelIndexPanel.elements.add(new Panel.PanelElement(labelIndex, 0.6f));
 
         Panel tagLabelCreatorPanel = tagLabelCombo.addPanel("tagLabelCreatorPanel");
-        tagLabelCreatorPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("tagLabelCreatorStr", "Creator:", 10, view.renderer), 0.4f));
-        labelCreator = new Textbox("labelCreator", 10, view.renderer, view.loader, view.window);
+        tagLabelCreatorPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("tagLabelCreatorStr", "Creator:", view.renderer), 0.4f));
+        labelCreator = new Textbox("labelCreator", view.renderer, view.loader, view.window);
         tagLabelCreatorPanel.elements.add(new Panel.PanelElement(labelCreator, 0.6f));
 
         ComboBox paintSensorCombo = partComboBox.addComboBox("paintSensorCombo", "Paint/Projectile Sensor", 200);
 
         Panel bulletsRequiredPanel = paintSensorCombo.addPanel("bulletsRequiredPanel");
-        bulletsRequiredPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("bulletsRequiredStr", "Required count:", 10, view.renderer), 0.7f));
-        bulletsRequired = new Textbox("bulletsRequired", 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+        bulletsRequiredPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("bulletsRequiredStr", "Required count:", view.renderer), 0.7f));
+        bulletsRequired = new Textbox("bulletsRequired", view.renderer, view.loader, view.window).noLetters().noOthers();
         bulletsRequiredPanel.elements.add(new Panel.PanelElement(bulletsRequired, 0.3f));
 
         Panel bulletsDetectedPanel = paintSensorCombo.addPanel("bulletsDetectedPanel");
-        bulletsDetectedPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("bulletsDetectedStr", "Current count:", 10, view.renderer), 0.7f));
-        bulletsDetected = new Textbox("bulletsDetected", 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+        bulletsDetectedPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("bulletsDetectedStr", "Current count:", view.renderer), 0.7f));
+        bulletsDetected = new Textbox("bulletsDetected", view.renderer, view.loader, view.window).noLetters().noOthers();
         bulletsDetectedPanel.elements.add(new Panel.PanelElement(bulletsDetected, 0.3f));
 
         Panel bulletTypePanel = paintSensorCombo.addPanel("bulletTypePanel");
-        bulletTypePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("bulletTypeStr", "Proj. Type:", 10, view.renderer), 0.5f));
-        bulletType = new ComboBox("bulletType", "All", 10, 200, view.renderer, view.loader, view.window);
+        bulletTypePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("bulletTypeStr", "Proj. Type:", view.renderer), 0.5f));
+        bulletType = new ComboBox("bulletType", "All", 200, view.renderer, view.loader, view.window);
         bulletTypeList = new ArrayList<>(Arrays.asList("All", "Fire", "Electricity", "Plasma", "Water"));
-        bulletType.addList("bulletType", new ButtonList(bulletTypeList, 10, view.renderer, view.loader, view.window) {
+        bulletType.addList("bulletType", new ButtonList(bulletTypeList, view.renderer, view.loader, view.window) {
             @Override
             public void clickedButton(Object object, int index, int button, int action, int mods) {
                 for(Thing thing : view.things)
@@ -736,13 +736,13 @@ public abstract class PartSwitch extends iPart {
         });
 
         Panel bulletRefreshTimePanel = paintSensorCombo.addPanel("bulletRefreshTimePanel");
-        bulletRefreshTimePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("bulletRefreshTimeStr", "Refresh Time:", 10, view.renderer), 0.7f));
-        bulletRefreshTime = new Textbox("bulletRefreshTime", 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+        bulletRefreshTimePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("bulletRefreshTimeStr", "Refresh Time:", view.renderer), 0.7f));
+        bulletRefreshTime = new Textbox("bulletRefreshTime", view.renderer, view.loader, view.window).noLetters().noOthers();
         bulletRefreshTimePanel.elements.add(new Panel.PanelElement(bulletRefreshTime, 0.3f));
 
         Panel bulletPlayerNumberPanel = paintSensorCombo.addPanel("bulletPlayerNumberPanel");
-        bulletPlayerNumberPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("bulletPlayerNumberStr", "Shooting Player:", 10, view.renderer), 0.7f));
-        bulletPlayerNumber = new Textbox("bulletPlayerNumber", 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+        bulletPlayerNumberPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("bulletPlayerNumberStr", "Shooting Player:", view.renderer), 0.7f));
+        bulletPlayerNumber = new Textbox("bulletPlayerNumber", view.renderer, view.loader, view.window).noLetters().noOthers();
         bulletPlayerNumberPanel.elements.add(new Panel.PanelElement(bulletPlayerNumber, 0.3f));
 
         ComboBox impactSensorCombo = partComboBox.addComboBox("impactSensorCombo", "Impact Sensor", 200);
@@ -763,24 +763,24 @@ public abstract class PartSwitch extends iPart {
         ComboBox timerCombo = partComboBox.addComboBox("timerCombo", "Timer", 250);
 
         Panel activationHoldTimePanel = timerCombo.addPanel("activationHoldTimePanel");
-        activationHoldTimePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("activationHoldTimeStr", "Time:", 10, view.renderer), 0.2f));
-        activationHoldTime = new Textbox("activationHoldTime", 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+        activationHoldTimePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("activationHoldTimeStr", "Time:", view.renderer), 0.2f));
+        activationHoldTime = new Textbox("activationHoldTime", view.renderer, view.loader, view.window).noLetters().noOthers();
         activationHoldTimePanel.elements.add(new Panel.PanelElement(activationHoldTime, 0.25f));
-        activationHoldTimePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("activationHoldTimeFrameStr", "Frames:", 10, view.renderer), 0.3f));
-        activationHoldTimeFrames = new Textbox("activationHoldTimeFrames", 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+        activationHoldTimePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("activationHoldTimeFrameStr", "Frames:", view.renderer), 0.3f));
+        activationHoldTimeFrames = new Textbox("activationHoldTimeFrames", view.renderer, view.loader, view.window).noLetters().noOthers();
         activationHoldTimePanel.elements.add(new Panel.PanelElement(activationHoldTimeFrames, 0.25f));
 
         Panel timerCountPanel = timerCombo.addPanel("timerCountPanel");
-        timerCountPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("timerCountStr", "Time:", 10, view.renderer), 0.2f));
-        timerCount = new Textbox("timerCount", 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+        timerCountPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("timerCountStr", "Time:", view.renderer), 0.2f));
+        timerCount = new Textbox("timerCount", view.renderer, view.loader, view.window).noLetters().noOthers();
         timerCountPanel.elements.add(new Panel.PanelElement(timerCount, 0.25f));
-        timerCountPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("timerCountFrameStr", "Frames:", 10, view.renderer), 0.3f));
-        timerCountFrames = new Textbox("timerCountFrames", 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+        timerCountPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("timerCountFrameStr", "Frames:", view.renderer), 0.3f));
+        timerCountFrames = new Textbox("timerCountFrames", view.renderer, view.loader, view.window).noLetters().noOthers();
         timerCountPanel.elements.add(new Panel.PanelElement(timerCountFrames, 0.25f));
 
 //    todo    Panel timerAutoCountPanel = timerCombo.addPanel("timerAutoCountPanel");
-//        timerAutoCountPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("timerAutoCountStr", "Timer Auto Count?", 10, view.renderer), 0.4f));
-//        timerAutoCount = new Textbox("timerAutoCount", 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+//        timerAutoCountPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("timerAutoCountStr", "Timer Auto Count?", view.renderer), 0.4f));
+//        timerAutoCount = new Textbox("timerAutoCount", view.renderer, view.loader, view.window).noLetters().noOthers();
 //        timerAutoCountPanel.elements.add(new Panel.PanelElement(timerAutoCount, 0.6f));
 
         ComboBox counterCombo = partComboBox.addComboBox("counterCombo", "Counter", 200);
@@ -790,7 +790,7 @@ public abstract class PartSwitch extends iPart {
 
         ComboBox randomizerCombo = partComboBox.addComboBox("randomizerCombo", "Randomizer", 250);
 
-//      todo  randomizerCombo.addString(new DropDownTab.StringElement("randomPhaseOn", 10, view.renderer)
+//      todo  randomizerCombo.addString(new DropDownTab.StringElement("randomPhaseOn", view.renderer)
 //        {
 //            @Override
 //            public String stringToDraw() {
@@ -801,7 +801,7 @@ public abstract class PartSwitch extends iPart {
 //                return "randomPhaseOn " + mode;
 //            }
 //        });
-//        randomizerCombo.addString(new DropDownTab.StringElement("randomPhaseTime", 10, view.renderer)
+//        randomizerCombo.addString(new DropDownTab.StringElement("randomPhaseTime", view.renderer)
 //        {
 //            @Override
 //            public String stringToDraw() {
@@ -814,10 +814,10 @@ public abstract class PartSwitch extends iPart {
 //        });
 
         Panel randomPatternPanel = randomizerCombo.addPanel("randomPatternPanel");
-        randomPatternPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("randomPatternStr", "Pattern:", 10, view.renderer), 0.5f));
-        randomPattern = new ComboBox("randomPattern", "One At a Time", 10, 250, view.renderer, view.loader, view.window);
+        randomPatternPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("randomPatternStr", "Pattern:", view.renderer), 0.5f));
+        randomPattern = new ComboBox("randomPattern", "One At a Time", 250, view.renderer, view.loader, view.window);
         randomPatternList = new ArrayList<>(Arrays.asList("One At a Time", "Add", "Add and Reset When Full", "Toggle"));
-        randomPattern.addList("randomPatternList", new ButtonList(randomPatternList, 10, view.renderer, view.loader, view.window) {
+        randomPattern.addList("randomPatternList", new ButtonList(randomPatternList, view.renderer, view.loader, view.window) {
             @Override
             public void clickedButton(Object object, int index, int button, int action, int mods) {
                 for(Thing thing : view.things)
@@ -876,10 +876,10 @@ public abstract class PartSwitch extends iPart {
         randomPatternPanel.elements.add(new Panel.PanelElement(randomPattern, 0.5f));
 
         Panel randomBehaviorPanel = randomizerCombo.addPanel("randomBehaviorPanel");
-        randomBehaviorPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("randomBehaviorStr", "Action:", 10, view.renderer), 0.5f));
-        randomBehaviorCombo = new ComboBox("randomBehaviorCombo", "One At a Time", 10, 200, view.renderer, view.loader, view.window);
+        randomBehaviorPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("randomBehaviorStr", "Action:", view.renderer), 0.5f));
+        randomBehaviorCombo = new ComboBox("randomBehaviorCombo", "One At a Time", 200, view.renderer, view.loader, view.window);
         randomBehaviorList = new ArrayList<>(Arrays.asList("On/Off", "Override Pattern"));
-        randomBehaviorCombo.addList("randomBehaviorList", new ButtonList(randomBehaviorList, 10, view.renderer, view.loader, view.window) {
+        randomBehaviorCombo.addList("randomBehaviorList", new ButtonList(randomBehaviorList, view.renderer, view.loader, view.window) {
             @Override
             public void clickedButton(Object object, int index, int button, int action, int mods) {
                 for(Thing thing : view.things)
@@ -940,37 +940,37 @@ public abstract class PartSwitch extends iPart {
         randomizerCombo.addString("onTime", "On Time:");
 
         Panel onMinPanel = randomizerCombo.addPanel("onMinPanel");
-        onMinPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("onMinStr", "Min:", 10, view.renderer), 0.2f));
-        randomOnTimeMin = new Textbox("randomOnTimeMin", 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+        onMinPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("onMinStr", "Min:", view.renderer), 0.2f));
+        randomOnTimeMin = new Textbox("randomOnTimeMin", view.renderer, view.loader, view.window).noLetters().noOthers();
         onMinPanel.elements.add(new Panel.PanelElement(randomOnTimeMin, 0.25f));
-        onMinPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("onMinFrameStr", "Frames:", 10, view.renderer), 0.3f));
-        randomOnTimeMinFrames = new Textbox("randomOnTimeMinFrames", 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+        onMinPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("onMinFrameStr", "Frames:", view.renderer), 0.3f));
+        randomOnTimeMinFrames = new Textbox("randomOnTimeMinFrames", view.renderer, view.loader, view.window).noLetters().noOthers();
         onMinPanel.elements.add(new Panel.PanelElement(randomOnTimeMinFrames, 0.25f));
 
         Panel onMaxPanel = randomizerCombo.addPanel("onMaxPanel");
-        onMaxPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("onMaxStr", "Max:", 10, view.renderer), 0.2f));
-        randomOnTimeMax = new Textbox("randomOnTimeMax", 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+        onMaxPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("onMaxStr", "Max:", view.renderer), 0.2f));
+        randomOnTimeMax = new Textbox("randomOnTimeMax", view.renderer, view.loader, view.window).noLetters().noOthers();
         onMaxPanel.elements.add(new Panel.PanelElement(randomOnTimeMax, 0.25f));
-        onMaxPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("onMaxFrameStr", "Frames:", 10, view.renderer), 0.3f));
-        randomOnTimeMaxFrames = new Textbox("randomOnTimeMaxFrames", 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+        onMaxPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("onMaxFrameStr", "Frames:", view.renderer), 0.3f));
+        randomOnTimeMaxFrames = new Textbox("randomOnTimeMaxFrames", view.renderer, view.loader, view.window).noLetters().noOthers();
         onMaxPanel.elements.add(new Panel.PanelElement(randomOnTimeMaxFrames, 0.25f));
 
         randomizerCombo.addString("offTime", "Off Time:");
 
         Panel offMinPanel = randomizerCombo.addPanel("offMinPanel");
-        offMinPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("offMinStr", "Min:", 10, view.renderer), 0.2f));
-        randomOffTimeMin = new Textbox("randomOffTimeMin", 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+        offMinPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("offMinStr", "Min:", view.renderer), 0.2f));
+        randomOffTimeMin = new Textbox("randomOffTimeMin", view.renderer, view.loader, view.window).noLetters().noOthers();
         offMinPanel.elements.add(new Panel.PanelElement(randomOffTimeMin, 0.25f));
-        offMinPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("offMinFrameStr", "Frames:", 10, view.renderer), 0.3f));
-        randomOffTimeMinFrames = new Textbox("randomOffTimeMinFrames", 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+        offMinPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("offMinFrameStr", "Frames:", view.renderer), 0.3f));
+        randomOffTimeMinFrames = new Textbox("randomOffTimeMinFrames", view.renderer, view.loader, view.window).noLetters().noOthers();
         offMinPanel.elements.add(new Panel.PanelElement(randomOffTimeMinFrames, 0.25f));
 
         Panel offMaxPanel = randomizerCombo.addPanel("offMaxPanel");
-        offMaxPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("offMaxStr", "Max:", 10, view.renderer), 0.2f));
-        randomOffTimeMax = new Textbox("randomOffTimeMax", 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+        offMaxPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("offMaxStr", "Max:", view.renderer), 0.2f));
+        randomOffTimeMax = new Textbox("randomOffTimeMax", view.renderer, view.loader, view.window).noLetters().noOthers();
         offMaxPanel.elements.add(new Panel.PanelElement(randomOffTimeMax, 0.25f));
-        offMaxPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("offMaxFrameStr", "Frames:", 10, view.renderer), 0.3f));
-        randomOffTimeMaxFrames = new Textbox("randomOffTimeMaxFrames", 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+        offMaxPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("offMaxFrameStr", "Frames:", view.renderer), 0.3f));
+        randomOffTimeMaxFrames = new Textbox("randomOffTimeMaxFrames", view.renderer, view.loader, view.window).noLetters().noOthers();
         offMaxPanel.elements.add(new Panel.PanelElement(randomOffTimeMaxFrames, 0.25f));
 
 //       todo ComboBox connectorCombo = partComboBox.addComboBox("connectorCombo", "Connector", 200);

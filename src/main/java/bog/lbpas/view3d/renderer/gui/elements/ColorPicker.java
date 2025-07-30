@@ -25,12 +25,11 @@ import java.awt.*;
 public abstract class ColorPicker extends ComboBox{
 
 
-    public ColorPicker(String id, Vector2f pos, Vector2f size, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window) {
+    public ColorPicker(String id, Vector2f pos, Vector2f size, RenderMan renderer, ObjectLoader loader, WindowMan window) {
         super();
         this.id = id;
         this.pos = pos;
         this.size = size;
-        this.fontSize = fontSize;
         this.tabWidth = 250;
         this.renderer = renderer;
         this.loader = loader;
@@ -39,12 +38,11 @@ public abstract class ColorPicker extends ComboBox{
         init();
     }
 
-    public ColorPicker(String id, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window) {
+    public ColorPicker(String id, RenderMan renderer, ObjectLoader loader, WindowMan window) {
         super();
         this.id = id;
         this.pos = new Vector2f();
         this.size = new Vector2f();
-        this.fontSize = fontSize;
         this.tabWidth = 250;
         this.renderer = renderer;
         this.loader = loader;
@@ -53,12 +51,11 @@ public abstract class ColorPicker extends ComboBox{
         init();
     }
 
-    public ColorPicker(String id, Vector4f color, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window) {
+    public ColorPicker(String id, Vector4f color, RenderMan renderer, ObjectLoader loader, WindowMan window) {
         super();
         this.id = id;
         this.pos = new Vector2f();
         this.size = new Vector2f();
-        this.fontSize = fontSize;
         this.tabWidth = 250;
         this.renderer = renderer;
         this.loader = loader;
@@ -78,20 +75,20 @@ public abstract class ColorPicker extends ComboBox{
     SaturationLuminancePicker saturationLuminancePicker;
     private void init()
     {
-        saturationLuminancePicker = new SaturationLuminancePicker("saturationLuminancePicker", new Vector2f(), new Vector2f(10, 150), this.renderer, this.loader, this.window);
+        saturationLuminancePicker = new SaturationLuminancePicker("saturationLuminancePicker", new Vector2f(), new Vector2f(150), this.renderer, this.loader, this.window);
         this.comboElements.add(saturationLuminancePicker);
 
-        hueRamp = new HUERamp("hueRamp", new Vector2f(0, 0), new Vector2f(tabWidth - 4, getFontHeight(fontSize) + 4), renderer, loader, window, 0.5f, 0f, 1f);
+        hueRamp = new HUERamp("hueRamp", new Vector2f(0, 0), new Vector2f(tabWidth - 4, getFontHeight() + 4), renderer, loader, window, 0.5f, 0f, 1f);
         this.comboElements.add(hueRamp);
 
         updateColorValues();
 
-        red = new Textbox("red", 10, renderer, loader, window).noLetters().noOthers().numberLimits(0, 255);
-        green = new Textbox("green", 10, renderer, loader, window).noLetters().noOthers().numberLimits(0, 255);
-        blue = new Textbox("blue", 10, renderer, loader, window).noLetters().noOthers().numberLimits(0, 255);
-        alpha = new Textbox("alpha", 10, renderer, loader, window).noLetters().noOthers().numberLimits(0, 255);
-        alphaPerc = new Textbox("alphaPerc", 10, renderer, loader, window).noLetters().noOthers().numberLimits(0, 100);
-        hex = new Textbox("hex", 10, renderer, loader, window).noOthers();
+        red = new Textbox("red", renderer, loader, window).noLetters().noOthers().numberLimits(0, 255);
+        green = new Textbox("green", renderer, loader, window).noLetters().noOthers().numberLimits(0, 255);
+        blue = new Textbox("blue", renderer, loader, window).noLetters().noOthers().numberLimits(0, 255);
+        alpha = new Textbox("alpha", renderer, loader, window).noLetters().noOthers().numberLimits(0, 255);
+        alphaPerc = new Textbox("alphaPerc", renderer, loader, window).noLetters().noOthers().numberLimits(0, 100);
+        hex = new Textbox("hex", renderer, loader, window).noOthers();
 
         Panel rgbPanel = addPanel("rgbPanel");
 
@@ -99,28 +96,28 @@ public abstract class ColorPicker extends ComboBox{
         float string = 20f / panelWidth;
         float element = ((panelWidth / 4f) / panelWidth) - string;
 
-        rgbPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("redStr", "R:", 10, renderer), string));
+        rgbPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("redStr", "R:", renderer), string));
         rgbPanel.elements.add(new Panel.PanelElement(red, element));
-        rgbPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("greenStr", "G:", 10, renderer), string));
+        rgbPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("greenStr", "G:", renderer), string));
         rgbPanel.elements.add(new Panel.PanelElement(green, element));
-        rgbPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("blueStr", "B:", 10, renderer), string));
+        rgbPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("blueStr", "B:", renderer), string));
         rgbPanel.elements.add(new Panel.PanelElement(blue, element));
-        rgbPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("alphaStr", "A:", 10, renderer), string));
+        rgbPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("alphaStr", "A:", renderer), string));
         rgbPanel.elements.add(new Panel.PanelElement(alpha, element));
 
         Panel hexPanel = addPanel("hexPanel");
 
         float string1 = 62f / panelWidth;
-        float string2 = (getStringWidth("A:", 10) + 2f) / panelWidth;
-        float string3 = (getStringWidth("%", 10) + 2) / panelWidth;
+        float string2 = (getStringWidth("A:") + 2f) / panelWidth;
+        float string3 = (getStringWidth("%") + 2) / panelWidth;
 
         float element1 = 61f / panelWidth;
 
-        hexPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("hexStr", "HEX: #", 10, renderer), string1));
+        hexPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("hexStr", "HEX: #", renderer), string1));
         hexPanel.elements.add(new Panel.PanelElement(hex, element1));
-        hexPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("alphaStr", "A:", 10, renderer), string2));
+        hexPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("alphaStr", "A:", renderer), string2));
         hexPanel.elements.add(new Panel.PanelElement(alphaPerc, element));
-        hexPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("percStr", "%", 10, renderer), string3));
+        hexPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("percStr", "%", renderer), string3));
     }
 
     Model outlineColor;
@@ -130,7 +127,7 @@ public abstract class ColorPicker extends ComboBox{
     {
         Color color = getColor();
         color = color == null ? new Color(0f, 0f, 0f, 1f) : color;
-        float fontHeight = getFontHeight(fontSize);
+        float fontHeight = getFontHeight();
 
         hovering = isMouseOverTab(mouseInput) && !overOther;
 
@@ -158,7 +155,7 @@ public abstract class ColorPicker extends ComboBox{
         renderer.drawRectOutline(new Vector2f(pos.x + 3, pos.y + 3), outlineColor, extended ? Config.FONT_COLOR : Config.INTERFACE_PRIMARY_COLOR2, false);
 
         renderer.startScissor(Math.round(pos.x), Math.round(pos.y), Math.round(size.x - size.y), Math.round(size.y));
-        renderer.drawString(tabTitle == null ? "" : tabTitle, Config.FONT_COLOR, Math.round(pos.x + (size.y + fontHeight) / 8f), Math.round(pos.y + size.y / 2f - fontHeight / 2f), fontSize);
+        renderer.drawString(tabTitle == null ? "" : tabTitle, Config.FONT_COLOR, Math.round(pos.x + (size.y + fontHeight) / 8f), Math.round(pos.y + size.y / 2f - fontHeight / 2f));
         renderer.endScissor();
 
         if(extended)

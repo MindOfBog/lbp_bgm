@@ -20,7 +20,6 @@ import java.awt.datatransfer.StringSelection;
 
 public abstract class Notification extends Element{
 
-    private int fontSize;
     private Model outlineRect;
     private float prevHeight = 0;
     private ButtonImage closeButton;
@@ -65,7 +64,6 @@ public abstract class Notification extends Element{
         this.id = id;
         this.pos = pos;
         this.size = new Vector2f(width, 0);
-        this.fontSize = fontSize;
         this.renderer = renderer;
         this.loader = loader;
         this.window = window;
@@ -160,14 +158,12 @@ public abstract class Notification extends Element{
             return;
         }
 
-        int titleFontSize = (int) (fontSize * 1.3f);
-
         renderer.doBlur(Consts.GAUSSIAN_RADIUS, Consts.GAUSSIAN_KERNEL, (int) pos.x, (int) pos.y, (int) size.x, (int) size.y);
 
         renderer.startScissor((int) pos.x, (int) pos.y, (int) size.x, (int) size.y);
 
         renderer.drawRect((int) pos.x, (int) pos.y, (int) size.x, (int) size.y, backgroundColor());
-        renderer.drawString(getTitle(), Config.FONT_COLOR, (int) (pos.x + getFontHeight(fontSize) / 2), (int) (pos.y + getFontHeight(fontSize) / 2), titleFontSize);
+        renderer.drawHeader(Consts.FONT_SET_BOLD + getTitle(), Config.FONT_COLOR, (int) (pos.x + getFontHeight() / 2), (int) (pos.y + getFontHeightHeader() / 2));
 
         String content = getContent();
         if(content != null && !content.isEmpty() && !content.equalsIgnoreCase("") && !content.equalsIgnoreCase(" "))
@@ -184,15 +180,15 @@ public abstract class Notification extends Element{
                 lines = newlines;
             }
 
-            size.y = getFontHeight(fontSize) / 2 + (getFontHeight(fontSize) + 2) * lines.length + (getFontHeight(titleFontSize) + 2);
+            size.y = getFontHeight() / 2 + (getFontHeight() + 2) * lines.length + (getFontHeightHeader() + 2);
 
             for (int o = 0; o < lines.length; o++) {
                 String line = lines[o];
-                renderer.drawString(line, Config.FONT_COLOR, (int) (pos.x + getFontHeight(fontSize) / 2), (int) (pos.y + getFontHeight(fontSize) / 2 + (getFontHeight(fontSize) + 2) * o + (getFontHeight(titleFontSize) + 2)), fontSize);
+                renderer.drawString(line, Config.FONT_COLOR, (int) (pos.x + getFontHeight() / 2), (int) (pos.y + getFontHeight() / 2 + (getFontHeight() + 2) * o + (getFontHeightHeader() + 2)));
             }
         }
         else
-            size.y = getFontHeight(fontSize) + getFontHeight(titleFontSize);
+            size.y = getFontHeight() + getFontHeightHeader();
 
         if (prevHeight != size.y) {
             refreshOutline();

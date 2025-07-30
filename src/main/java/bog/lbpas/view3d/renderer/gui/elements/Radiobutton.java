@@ -16,14 +16,14 @@ import org.lwjgl.glfw.GLFW;
  */
 public class Radiobutton extends Checkbox{
 
-    public Radiobutton(String id, String text, Vector2f pos, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window)
+    public Radiobutton(String id, String text, Vector2f pos, RenderMan renderer, ObjectLoader loader, WindowMan window)
     {
-        super(id, text, pos, fontSize, renderer, loader, window);
+        super(id, text, pos, renderer, loader, window);
     }
 
-    public Radiobutton(String id, String text, int fontSize, RenderMan renderer, ObjectLoader loader, WindowMan window)
+    public Radiobutton(String id, String text, RenderMan renderer, ObjectLoader loader, WindowMan window)
     {
-        super(id, text, new Vector2f(), fontSize, renderer, loader, window);
+        super(id, text, new Vector2f(), renderer, loader, window);
     }
 
     public Radiobutton()
@@ -44,7 +44,7 @@ public class Radiobutton extends Checkbox{
         if(isChecked)
             renderer.drawCircle(loader, new Vector2f((pos.x + radius * 1.25f), (pos.y + size.y/2f)), (size.y * 0.90f) / 7f, Config.FONT_COLOR);
 
-        renderer.drawString(text, Config.FONT_COLOR, (int) (pos.x + radius * 3f), (int) (pos.y + size.y * 0.5335 - getFontHeight(fontSize) / 2), fontSize);
+        renderer.drawString(text, Config.FONT_COLOR, (int) (pos.x + radius * 3f), (int) (pos.y + size.y * 0.5335 - getFontHeight() / 2));
     }
 
     public Radiobutton checked()

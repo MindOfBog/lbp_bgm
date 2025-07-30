@@ -74,9 +74,12 @@ public class Quad extends TriStrip {
         return this;
     }
 
-    public Quad smoothstep()
+    public Quad smoothstep(float width, float edge)
     {
         this.smoothstep = true;
+        this.smoothstepWidth = width;
+        this.smoothstepEdge = edge;
+
         return this;
     }
 }

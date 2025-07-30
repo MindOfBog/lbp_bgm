@@ -59,8 +59,8 @@ public class Config {
     public static InputMan CAMERA = new InputMan(GLFW.GLFW_MOUSE_BUTTON_MIDDLE, true);
     public static boolean LEVEL_BORDERS = true;
     public static int POD_HELPER = 0;
-    public static String FONT_HEADER = "Arial";
-    public static String FONT_TEXT = "Arial";
+    public static String FONT_HEADER = "Comfortaa";
+    public static String FONT_TEXT = "Comfortaa";
     public static String CURSOR = "Adwaita";
     public static float CURSOR_SCALE = 1f;
     public static boolean PREVIEW_MODE = false;
@@ -77,6 +77,7 @@ public class Config {
     public static int SECONDARY_THREAD = 250;
     public static int LOADER_THREAD = 50;
     public static int ENTRY_DIGEST_THREAD = 1000;
+    public static int GUI_SCALE = 10;
 
     private static String buildSettings()
     {
@@ -136,6 +137,7 @@ public class Config {
         builtString += "SECONDARY_THREAD:" + SECONDARY_THREAD + ";";
         builtString += "LOADER_THREAD:" + LOADER_THREAD + ";";
         builtString += "ENTRY_DIGEST_THREAD:" + ENTRY_DIGEST_THREAD + ";";
+        builtString += "GUI_SCALE:" + GUI_SCALE + ";";
 
         return builtString;
     }
@@ -237,6 +239,7 @@ public class Config {
                         case "SECONDARY_THREAD" : SECONDARY_THREAD = Integer.parseInt(data); break;
                         case "LOADER_THREAD" : LOADER_THREAD = Integer.parseInt(data); break;
                         case "ENTRY_DIGEST_THREAD" : ENTRY_DIGEST_THREAD = Integer.parseInt(data); break;
+                        case "GUI_SCALE" : GUI_SCALE = Integer.parseInt(data); break;
                     }
                 }
 
@@ -694,6 +697,14 @@ public class Config {
                         break loop;
                     }
                     break;
+                case 53:
+                    if(!o.equals(GUI_SCALE))
+                    {
+                        hasChanged = true;
+                        updateVariables();
+                        break loop;
+                    }
+                    break;
             }
         }
         if(variables.size() == 0)
@@ -757,5 +768,6 @@ public class Config {
         variables.add(SECONDARY_THREAD);
         variables.add(LOADER_THREAD);
         variables.add(ENTRY_DIGEST_THREAD);
+        variables.add(GUI_SCALE);
     }
 }

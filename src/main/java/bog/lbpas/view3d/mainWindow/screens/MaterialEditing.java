@@ -56,7 +56,7 @@ public class MaterialEditing extends GuiScreen {
         selectedVertices = new ArrayList<>();
         vertexTool = new Transformation3D.Tool(loader);
 
-        this.guiElements.add(new Button("backButton", "Back", new Vector2f(window.width - 110, window.height - 35), new Vector2f(100, 25), 10, renderer, loader, window) {
+        this.guiElements.add(new Button("backButton", "Back", new Vector2f(window.width - 110, window.height - 35), new Vector2f(100, 25), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 mainView.setCurrentScreen(previousScreen);
@@ -69,78 +69,78 @@ public class MaterialEditing extends GuiScreen {
             }
         });
 
-        DropDownTab bevelDataTab = new DropDownTab("bevelDataTab", "Bevel Data" , new Vector2f(7, 21 + 7), new Vector2f(350, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window);
-        bevelDataTab.addString(new DropDownTab.StringElement("bev", 10, mainView.renderer)
+        DropDownTab bevelDataTab = new DropDownTab("bevelDataTab", "Bevel Data" , new Vector2f(7, 21 + 7), new Vector2f(350, getFontHeight() + 4), mainView.renderer, mainView.loader, mainView.window);
+        bevelDataTab.addString(new DropDownTab.StringElement("bev", mainView.renderer)
         {
             @Override
             public String stringToDraw() {
                 return "Bevel: " + (generatedMesh == null || generatedMesh.bevel == null ? "None" : generatedMesh.bevel.toString());
             }
         });
-        bevelDataTab.addString(new DropDownTab.StringElement("uvScales", 10, mainView.renderer)
+        bevelDataTab.addString(new DropDownTab.StringElement("uvScales", mainView.renderer)
         {
             @Override
             public String stringToDraw() {
                 return "UV Scales: [" + bev.getMaterialUVScale(0) + ", " + bev.getMaterialUVScale(1) + ", " + bev.getMaterialUVScale(2) + ", " + bev.getMaterialUVScale(3) + "]";
             }
         });
-        bevelDataTab.addString(new DropDownTab.StringElement("autoSmoothCutoffAngle", 10, mainView.renderer)
+        bevelDataTab.addString(new DropDownTab.StringElement("autoSmoothCutoffAngle", mainView.renderer)
         {
             @Override
             public String stringToDraw() {
                 return "Auto Smooth Cutoff Angle: " + bev.autoSmoothCutoffAngle;
             }
         });
-        bevelDataTab.addString(new DropDownTab.StringElement("vertices", 10, mainView.renderer)
+        bevelDataTab.addString(new DropDownTab.StringElement("vertices", mainView.renderer)
         {
             @Override
             public String stringToDraw() {
                 return "Vertices: " + bev.vertices.size();
             }
         });
-        bevelDataTab.addString(new DropDownTab.StringElement("includeBackface", 10, mainView.renderer)
+        bevelDataTab.addString(new DropDownTab.StringElement("includeBackface", mainView.renderer)
         {
             @Override
             public String stringToDraw() {
                 return "Include Backface: " + bev.includeBackface;
             }
         });
-        bevelDataTab.addString(new DropDownTab.StringElement("smoothWithFront", 10, mainView.renderer)
+        bevelDataTab.addString(new DropDownTab.StringElement("smoothWithFront", mainView.renderer)
         {
             @Override
             public String stringToDraw() {
                 return "Smooth With Front: " + bev.smoothWithFront;
             }
         });
-        bevelDataTab.addString(new DropDownTab.StringElement("relaxStrength", 10, mainView.renderer)
+        bevelDataTab.addString(new DropDownTab.StringElement("relaxStrength", mainView.renderer)
         {
             @Override
             public String stringToDraw() {
                 return "Relax Strength: " + bev.relaxStrength;
             }
         });
-        bevelDataTab.addString(new DropDownTab.StringElement("subDivRadius", 10, mainView.renderer)
+        bevelDataTab.addString(new DropDownTab.StringElement("subDivRadius", mainView.renderer)
         {
             @Override
             public String stringToDraw() {
                 return "Sub Division Radius: " + bev.subDivRadius;
             }
         });
-        bevelDataTab.addString(new DropDownTab.StringElement("fixedBevelSize", 10, mainView.renderer)
+        bevelDataTab.addString(new DropDownTab.StringElement("fixedBevelSize", mainView.renderer)
         {
             @Override
             public String stringToDraw() {
                 return "Fixed Bevel Size: " + bev.fixedBevelSize;
             }
         });
-        bevelDataTab.addString(new DropDownTab.StringElement("spongy", 10, mainView.renderer)
+        bevelDataTab.addString(new DropDownTab.StringElement("spongy", mainView.renderer)
         {
             @Override
             public String stringToDraw() {
                 return "Spongy: " + bev.spongy;
             }
         });
-        bevelDataTab.addString(new DropDownTab.StringElement("textureRepeats", 10, mainView.renderer)
+        bevelDataTab.addString(new DropDownTab.StringElement("textureRepeats", mainView.renderer)
         {
             @Override
             public String stringToDraw() {
@@ -149,11 +149,11 @@ public class MaterialEditing extends GuiScreen {
         });
         this.guiElements.add(bevelDataTab);
 
-        DropDownTab shapeDataTab = new DropDownTab("shapeDataTab", "Current Selection" , new Vector2f(7 * 2 + 350, 21 + 7), new Vector2f(200, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window);
+        DropDownTab shapeDataTab = new DropDownTab("shapeDataTab", "Current Selection" , new Vector2f(7 * 2 + 350, 21 + 7), new Vector2f(200, getFontHeight() + 4), mainView.renderer, mainView.loader, mainView.window);
 
         Panel xPosPanel = shapeDataTab.addPanel("xPosPanel");
-        xPosPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("xPosStr", "X:", 10, mainView.renderer), 0.1f));
-        xPos = new Textbox("xPos", new Vector2f(), new Vector2f(), 10, mainView.renderer, mainView.loader, mainView.window)
+        xPosPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("xPosStr", "X:", mainView.renderer), 0.1f));
+        xPos = new Textbox("xPos", new Vector2f(), new Vector2f(), mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public void onChar(int codePoint, int modifiers) {
@@ -176,8 +176,8 @@ public class MaterialEditing extends GuiScreen {
         xPosPanel.elements.add(new Panel.PanelElement(xPos, 0.9f));
 
         Panel yPosPanel = shapeDataTab.addPanel("yPosPanel");
-        yPosPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("yPosStr", "Y:", 10, mainView.renderer), 0.1f));
-        yPos = new Textbox("yPos", new Vector2f(), new Vector2f(), 10, mainView.renderer, mainView.loader, mainView.window)
+        yPosPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("yPosStr", "Y:", mainView.renderer), 0.1f));
+        yPos = new Textbox("yPos", new Vector2f(), new Vector2f(), mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public void onChar(int codePoint, int modifiers) {
@@ -259,7 +259,7 @@ public class MaterialEditing extends GuiScreen {
                 {
                     BevelVertex v = bev.vertices.get(i);
 
-                    renderer.drawString(v.mappingMode.name(), Color.white, 10, 30 + (3 + getFontHeight(10))*i, 10);
+                    renderer.drawString(v.mappingMode.name(), Color.white, 10, 30 + (3 + getFontHeight())*i);
                 }
 
                 if(this.selectedVertices.size() > 0)
@@ -381,8 +381,8 @@ public class MaterialEditing extends GuiScreen {
 
                         if(screenPosition.z == 0)
                         {
-                            renderer.drawRect((int) screenPosition.x + 10, (int) screenPosition.y + 10, getStringWidth("" + (lo + i), 10) + 2, getFontHeight(10) + 2, new Color(0f, 0f, 0f, 0.5f));
-                            renderer.drawString("" + (lo + i), Color.white, (int) screenPosition.x + 12, (int) screenPosition.y + 12, 10);
+                            renderer.drawRect((int) screenPosition.x + 10, (int) screenPosition.y + 10, getStringWidth("" + (lo + i)) + 2, getFontHeight() + 2, new Color(0f, 0f, 0f, 0.5f));
+                            renderer.drawString("" + (lo + i), Color.white, (int) screenPosition.x + 12, (int) screenPosition.y + 12);
                         }
                     }
 

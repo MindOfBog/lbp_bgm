@@ -116,7 +116,8 @@ public final class ResourceDescriptor {
         Object key = entry.getKey();
         this.guid = key != null && key instanceof GUID ? (GUID) key : null;
         this.sha1 = entry.getSHA1();
-        this.type = ResourceType.fromMagic(new String(archive.archive.extract(entry.getSHA1(), 3), StandardCharsets.UTF_8));
+        byte[] data = archive.archive.extract(entry.getSHA1(), 3);
+            this.type = data != null ? ResourceType.fromMagic(new String(data, StandardCharsets.UTF_8)) : ResourceType.PLAN;
         this.flags = ResourceFlags.NONE;
 
         if(entry.getInfo() == null)

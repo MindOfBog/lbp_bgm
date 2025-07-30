@@ -42,13 +42,13 @@ public abstract class PartGroup extends iPart {
     public void init(View3D view) {
 
         Panel planPanel = partComboBox.addPanel("planPanel");
-        planPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("planStr", "Plan:", 10, view.renderer), 0.4f));
-        plan = new Textbox("plan", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
+        planPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("planStr", "Plan:", view.renderer), 0.4f));
+        plan = new Textbox("plan", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window);
         planPanel.elements.add(new Panel.PanelElement(plan, 0.6f));
 
         Panel creatorPanel = partComboBox.addPanel("creatorPanel");
-        creatorPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("creatorStr", "Creator:", 10, view.renderer), 0.4f));
-        creator = new Textbox("creator", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
+        creatorPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("creatorStr", "Creator:", view.renderer), 0.4f));
+        creator = new Textbox("creator", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window);
         creatorPanel.elements.add(new Panel.PanelElement(creator, 0.6f));
 
         copyright = partComboBox.addCheckbox("copyright", "Copyright", new Checkbox()
@@ -104,8 +104,8 @@ public abstract class PartGroup extends iPart {
         });
 
         Panel emitterPanel = partComboBox.addPanel("emitterPanel");
-        emitterPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("emitterStr", "Emitter:", 10, view.renderer), 0.55f));
-        emitter = new ComboBox("emitter", "None", new Vector2f(), new Vector2f(), 10, 250, view.renderer, view.loader, view.window);
+        emitterPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("emitterStr", "Emitter:", view.renderer), 0.55f));
+        emitter = new ComboBox("emitter", "None", new Vector2f(), new Vector2f(), 250, view.renderer, view.loader, view.window);
 
         emitter.addButton("nullEmitter", "None", new Button() {
             @Override
@@ -124,11 +124,11 @@ public abstract class PartGroup extends iPart {
         });
 
         Panel searchPanel = emitter.addPanel("thingsPanel");
-        searchPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("searchStr", "Search:", 10, view.renderer), 0.3f));
-        Textbox searchAllThings = new Textbox("searchAllThings", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window);
+        searchPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("searchStr", "Search:", view.renderer), 0.3f));
+        Textbox searchAllThings = new Textbox("searchAllThings", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window);
         searchPanel.elements.add(new Panel.PanelElement(searchAllThings, 0.7f));
 
-        emitter.addList("thingsList", new ButtonList(view.things, 10, view.renderer, view.loader, view.window) {
+        emitter.addList("thingsList", new ButtonList(view.things, view.renderer, view.loader, view.window) {
             @Override
             public void clickedButton(Object object, int index, int button, int action, int mods) {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
@@ -200,13 +200,13 @@ public abstract class PartGroup extends iPart {
         emitterPanel.elements.add(new Panel.PanelElement(emitter, 0.45f));
 
         Panel lifetimePanel = partComboBox.addPanel("lifetimePanel");
-        lifetimePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("lifetimeStr", "Lifetime:", 10, view.renderer), 0.55f));
-        lifetime = new Textbox("lifetime", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+        lifetimePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("lifetimeStr", "Lifetime:", view.renderer), 0.55f));
+        lifetime = new Textbox("lifetime", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window).noLetters().noOthers();
         lifetimePanel.elements.add(new Panel.PanelElement(lifetime, 0.45f));
 
         Panel aliveFramesPanel = partComboBox.addPanel("aliveFramesPanel");
-        aliveFramesPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("aliveFramesStr", "Frames Alive:", 10, view.renderer), 0.55f));
-        aliveFrames = new Textbox("aliveFrames", new Vector2f(), new Vector2f(), 10, view.renderer, view.loader, view.window).noLetters().noOthers();
+        aliveFramesPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("aliveFramesStr", "Frames Alive:", view.renderer), 0.55f));
+        aliveFrames = new Textbox("aliveFrames", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window).noLetters().noOthers();
         aliveFramesPanel.elements.add(new Panel.PanelElement(aliveFrames, 0.45f));
     }
 

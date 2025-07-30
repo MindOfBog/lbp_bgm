@@ -50,11 +50,11 @@ public class Line extends Drawable{
     public static Model getLine(WindowMan window, ObjectLoader loader, Vector2i pos1, Vector2i pos2)
     {
         if(window != null && !window.isMinimized) {
-            float x1 = pos1.x / (window.width / 2f) - 1 + 1 / window.width;
-            float y1 = -pos1.y / (window.height / 2f) + 1 - 1 / window.height;
+            float x1 = (((float)pos1.x) / (((float)window.width) / 2f)) - 1f;
+            float y1 = 1f - (((float)pos1.y) / (((float)window.height) / 2f));
 
-            float x2 = pos2.x / (window.width / 2f) - 1 + 1 / window.width;
-            float y2 = -pos2.y / (window.height / 2f) + 1 - 1 / window.height;
+            float x2 = (((float)pos2.x) / (((float)window.width) / 2f)) - 1f;
+            float y2 = 1f - (((float)pos2.y) / (((float)window.height) / 2f));
 
             return loader.loadModel(new float[]{x1, y1, x2, y2});
         }
