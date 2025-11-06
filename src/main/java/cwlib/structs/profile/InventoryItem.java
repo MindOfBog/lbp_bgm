@@ -63,7 +63,8 @@ public class InventoryItem implements Serializable {
     public int userCategoryIndex;
 
 
-    public InventoryItem() {};
+    public InventoryItem() {}
+
     public InventoryItem(int UID, ResourceDescriptor descriptor, InventoryItemDetails details) {
         if (details == null) 
             details = new InventoryItemDetails();

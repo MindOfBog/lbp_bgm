@@ -27,7 +27,7 @@ public class MaterialBox implements Serializable {
     /**
      * Creates an output node
      */
-    public MaterialBox() {};
+    public MaterialBox() {}
 
     /**
      * Creates a texture sample node

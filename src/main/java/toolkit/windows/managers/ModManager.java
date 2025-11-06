@@ -14,7 +14,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 
 public class ModManager extends javax.swing.JDialog {
-    private Mod mod;
+    private final Mod mod;
     
     public ModManager(Mod mod, boolean modal) {
         super(Toolkit.INSTANCE, modal);

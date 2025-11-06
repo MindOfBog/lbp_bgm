@@ -28,9 +28,7 @@ public class Psyncer {
             return;
         }
 
-        boolean extractJSON = false;
-        if (args.length == 3 && args[2].toUpperCase().equals("-X"))
-            extractJSON = true;
+        boolean extractJSON = args.length == 3 && args[2].equalsIgnoreCase("-X");
 
         if (!new File(args[0]).exists()) {
             System.err.println("Littlefart file doesn't exist!");

@@ -26,7 +26,8 @@ public class PRef implements Serializable {
     @GsonRevision(min=0x13d)
     public boolean stripChildren;
 
-    public PRef() {};
+    public PRef() {}
+
     public PRef(ResourceDescriptor descriptor) {
         this.plan = descriptor;
     }

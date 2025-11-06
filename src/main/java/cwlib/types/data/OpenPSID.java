@@ -8,7 +8,8 @@ public class OpenPSID implements Serializable {
 
     private long high, low;
 
-    public OpenPSID() {};
+    public OpenPSID() {}
+
     public OpenPSID(long high, long low) {
         this.high = high;
         this.low = low;

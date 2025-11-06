@@ -18,7 +18,7 @@ public interface Serializable {
      * @param clazz Class of type of structure to (de)serialize
      * @return Instance of structure that was (de)serialized
      */
-    public static <T extends Serializable> T serialize(Serializer serializer, T structure, Class<T> clazz) {
+    static <T extends Serializable> T serialize(Serializer serializer, T structure, Class<T> clazz) {
         if (structure == null)
             try {
                 structure = clazz.getDeclaredConstructor().newInstance();

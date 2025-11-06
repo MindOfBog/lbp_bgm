@@ -84,7 +84,7 @@ public abstract class GuiKeybind extends GuiScreen{
     public void draw(MouseInput mouseInput) {
         this.previousScreen.draw(new MouseInput(null));
 
-        renderer.doBlur(Consts.GAUSSIAN_RADIUS, Consts.GAUSSIAN_KERNEL);
+        renderer.doBlur(Consts.GAUSSIAN_RADIUS, Consts.GAUSSIAN_KERNEL, 3 , getFontHeightHeader() + 7, window.width - 6, window.height - getFontHeightHeader() - 10);
 
         renderer.drawRect(window.width/2 - 100, window.height/2 + (getFontHeight() / 2 - 10 - 45), 200, (getFontHeight() / 2 + 33) * 2, Config.PRIMARY_COLOR);
         renderer.drawRect(window.width / 2 - 95, window.height / 2 - getFontHeight() / 2 - 10, 190, 20, Config.INTERFACE_PRIMARY_COLOR);
@@ -131,6 +131,7 @@ public abstract class GuiKeybind extends GuiScreen{
         return super.onClick(mouseInput, button, action, mods);
     }
 
+    @Override
     public void resize()
     {
         if(outlineRect != null)

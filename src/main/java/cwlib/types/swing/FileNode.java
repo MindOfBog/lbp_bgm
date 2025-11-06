@@ -22,7 +22,7 @@ public class FileNode extends DefaultMutableTreeNode {
     /**
      * Path of node in tree.
      */
-    private String path;
+    private final String path;
 
     /**
      * Whether or not the node is currently visible in the tree.

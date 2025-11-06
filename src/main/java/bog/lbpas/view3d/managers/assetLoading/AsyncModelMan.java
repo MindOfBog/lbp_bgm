@@ -36,12 +36,12 @@ import java.util.List;
 
 public class AsyncModelMan {
 
-    private ArrayList<Model> toLoad;
-    private ArrayList<ModelDataOBJ> toDigestOBJ;
-    private ArrayList<ModelDataRMesh> toDigestRMesh;
-    private ArrayList<ModelDataStaticMesh> toDigestStaticMesh;
-    private ArrayList<ModelDataShape> toDigestShape;
-    private ObjectLoader loader;
+    private final ArrayList<Model> toLoad;
+    private final ArrayList<ModelDataOBJ> toDigestOBJ;
+    private final ArrayList<ModelDataRMesh> toDigestRMesh;
+    private final ArrayList<ModelDataStaticMesh> toDigestStaticMesh;
+    private final ArrayList<ModelDataShape> toDigestShape;
+    private final ObjectLoader loader;
 
     public int totalDigestionCount = 0;
 
@@ -202,9 +202,9 @@ public class AsyncModelMan {
 
                 for(String[] tokens : f)
                 {
-                    Vector3i face1 = loader.processFace(tokens[1], faces);
-                    Vector3i face2 = loader.processFace(tokens[2], faces);
-                    Vector3i face3 = loader.processFace(tokens[3], faces);
+                    Vector3i face1 = ObjectLoader.processFace(tokens[1], faces);
+                    Vector3i face2 = ObjectLoader.processFace(tokens[2], faces);
+                    Vector3i face3 = ObjectLoader.processFace(tokens[3], faces);
 
                     Vector3f deltaPos1 = new Vector3f(vertices.get(face2.x)).sub(vertices.get(face1.x), new Vector3f());
                     Vector3f deltaPos2 = new Vector3f(vertices.get(face3.x)).sub(vertices.get(face1.x), new Vector3f());
@@ -241,7 +241,7 @@ public class AsyncModelMan {
                 float[] tangentsArr = new float[vertices.size() * 3];
 
                 for(Vector3i face : faces)
-                    loader.processVertex(face.x, face.y, face.z, textures, normals, indices, tangents, texCoordArr, normalsArr, tangentsArr);
+                    ObjectLoader.processVertex(face.x, face.y, face.z, textures, normals, indices, tangents, texCoordArr, normalsArr, tangentsArr);
 
                 int[] indicesArr = indices.stream().mapToInt((Integer v) -> v).toArray();
 
@@ -630,8 +630,6 @@ public class AsyncModelMan {
 
     public static void extrudeShape(Model model, PGeneratedMesh generatedMesh, PShape shape, RBevel bevel, Matrix4f transformation, ObjectLoader loader, View3D view) {
 
-        ResourceDescriptor parentGmat = generatedMesh == null ? null : generatedMesh.gfxMaterial;
-
         Polygon polygon = shape.polygon;
         float thickness = shape.thickness;
         int[] loops = polygon.loops;
@@ -661,12 +659,12 @@ public class AsyncModelMan {
 
         try
         {
-            if(parentGmat == null)
+            if(generatedMesh == null)
             {
                 ResourceDescriptor gmat = bevel.getMaterial(bevel.vertices.get(0).gmatSlot);
                 material =  LoadedData.getMaterial(gmat, loader, textures, gmatMAP);
             }
-            else material = LoadedData.getMaterial(parentGmat, loader, textures, gmatMAP);
+            else material = LoadedData.getMaterial(generatedMesh.gfxMaterial, loader, textures, gmatMAP);
         }catch (Exception e){print.stackTrace(e);}
 
         int count = polygonVertices.length + (polygonVertices.length * (bevel.vertices.size() - 1) * 4);
@@ -952,8 +950,8 @@ public class AsyncModelMan {
                     Vector4f uv0 = new Vector4f(textureCoords[indices[l * 6] * 2], textureCoords[indices[l * 6] * 2 + 1], textureCoords[indices[l * 6] * 2], textureCoords[indices[l * 6] * 2 + 1]);
                     Vector4f uv1 = new Vector4f(textureCoords[indices[l * 6 + 1] * 2], textureCoords[indices[l * 6 + 1] * 2 + 1], textureCoords[indices[l * 6 + 1] * 2], textureCoords[indices[l * 6 + 1] * 2 + 1]);
                     Vector4f uv2 = new Vector4f(textureCoords[indices[l * 6 + 2] * 2], textureCoords[indices[l * 6 + 2] * 2 + 1], textureCoords[indices[l * 6 + 2] * 2], textureCoords[indices[l * 6 + 2] * 2 + 1]);
-                    Vector4f deltaUv1 = (new Vector4f((Vector4fc)uv1)).sub((Vector4fc)uv0, new Vector4f());
-                    Vector4f deltaUv2 = (new Vector4f((Vector4fc)uv2)).sub((Vector4fc)uv0, new Vector4f());
+                    Vector4f deltaUv1 = (new Vector4f(uv1)).sub(uv0, new Vector4f());
+                    Vector4f deltaUv2 = (new Vector4f(uv2)).sub(uv0, new Vector4f());
                     float r = 1.0F / (deltaUv1.x * deltaUv2.y - deltaUv1.y * deltaUv2.x);
                     deltaPos1.mul(deltaUv2.y);
                     deltaPos2.mul(deltaUv1.y);

@@ -42,7 +42,7 @@ public enum FlipType implements ValueEnum<Byte> {
     COPY(6);
 
     private final byte value;
-    private FlipType(int value) {
+    FlipType(int value) {
         this.value = (byte) (value & 0xFF);
     }
 

@@ -60,9 +60,10 @@ public class RShaderCache implements Serializable, Compressable {
     private boolean orbis;
     
     private ArrayList<CachedShader> shaders = new ArrayList<>();
-    private HashMap<Integer, CachedShader> lookup = new HashMap<>();
+    private final HashMap<Integer, CachedShader> lookup = new HashMap<>();
 
-    public RShaderCache() { this.orbis = false; };
+    public RShaderCache() { this.orbis = false; }
+
     public RShaderCache(boolean orbis) { this.orbis = orbis; }
 
     @SuppressWarnings("unchecked")

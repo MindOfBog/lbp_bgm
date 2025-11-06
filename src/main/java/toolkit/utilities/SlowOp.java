@@ -7,5 +7,5 @@ public interface SlowOp {
      * Task to run in another thread.
      * @return Error/Success code
      */
-    public abstract int run(SlowOpGUI state);
+    int run(SlowOpGUI state);
 }

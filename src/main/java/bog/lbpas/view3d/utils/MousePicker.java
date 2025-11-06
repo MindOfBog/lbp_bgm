@@ -15,8 +15,8 @@ public class MousePicker {
 
     public Vector3f currentRay;
     public Matrix4f viewMatrix;
-    private MouseInput mouse;
-    private WindowMan window;
+    private final MouseInput mouse;
+    private final WindowMan window;
     private Camera camera;
 
     public MousePicker(MouseInput mouseInput, WindowMan window) {

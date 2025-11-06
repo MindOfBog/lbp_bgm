@@ -10,7 +10,7 @@ public enum SwitchLogicType implements ValueEnum<Integer> {
     NOP(4);
     
     private final int value;
-    private SwitchLogicType(int value) {
+    SwitchLogicType(int value) {
         this.value = value;
     }
 

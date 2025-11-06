@@ -13,7 +13,7 @@ import java.awt.EventQueue;
 import java.util.Arrays;
 
 public class Launcher {
-    public static void main(String args[]) {
+    public static void main(String[] args) {
         Config.initialize();
         
         // Executable switcher

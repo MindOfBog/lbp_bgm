@@ -9,7 +9,8 @@ public class SoftbodySpring implements Serializable {
     public short A, B;
     public float restLengthSq;
 
-    public SoftbodySpring() {};
+    public SoftbodySpring() {}
+
     public SoftbodySpring(int a, int b, float restLengthSq) {
         this.A = (short) a;
         this.B = (short) b;

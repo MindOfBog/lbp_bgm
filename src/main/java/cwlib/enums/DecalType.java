@@ -11,7 +11,7 @@ public enum DecalType implements ValueEnum<Byte> {
     EYETOY(2);
 
     private final byte value;
-    private DecalType(int value) {
+    DecalType(int value) {
         this.value = (byte) (value & 0xFF);
     }
 

@@ -13,11 +13,11 @@ import java.util.ArrayList;
 
 public class AsyncTextureMan {
 
-    private  ArrayList<DigestedImageData> toLoad;
-    private ArrayList<BufferedImageData> toDigestBI;
-    private ArrayList<BufferedImageData2> toDigestBI2;
-    private ArrayList<FilepathImageData> toDigestFPI;
-    private ObjectLoader loader;
+    private final ArrayList<DigestedImageData> toLoad;
+    private final ArrayList<BufferedImageData> toDigestBI;
+    private final ArrayList<BufferedImageData2> toDigestBI2;
+    private final ArrayList<FilepathImageData> toDigestFPI;
+    private final ObjectLoader loader;
 
     public int totalDigestionCount = 0;
 

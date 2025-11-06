@@ -15,21 +15,21 @@ import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 public class RStaticMesh {
-    private int numVerts;
-    private int numIndices;
+    private final int numVerts;
+    private final int numIndices;
     
-    private StaticMeshInfo info;
+    private final StaticMeshInfo info;
     
-    private Vector3f[] vertices;
+    private final Vector3f[] vertices;
 
-    private Vector3f[] normals;
-    private Vector4f[] tangents;
-    private Vector3f[] smoothNormals;
+    private final Vector3f[] normals;
+    private final Vector4f[] tangents;
+    private final Vector3f[] smoothNormals;
 
-    private Vector2f[] uv0;
-    private Vector2f[] uv1;
+    private final Vector2f[] uv0;
+    private final Vector2f[] uv1;
 
-    private int[] indices;
+    private final int[] indices;
     
     public RStaticMesh(Resource resource) {
         this.info = resource.getMeshInfo();

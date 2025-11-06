@@ -47,7 +47,7 @@ public class RSceneGraph implements Serializable, Compressable {
     private ResourceDescriptor background;
     private HashMap<ResourceDescriptor, byte[]> packedData = new HashMap<>();
 
-    private transient List<Thing> queue = Collections.synchronizedList(new ArrayList<>());
+    private final transient List<Thing> queue = Collections.synchronizedList(new ArrayList<>());
 
     public RSceneGraph() {}
     public RSceneGraph(RLevel level) {

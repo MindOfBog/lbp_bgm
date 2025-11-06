@@ -20,7 +20,7 @@ public class SlotID implements Serializable {
     /**
      * Constructs an empty Slot ID.
      */
-    public SlotID(){};
+    public SlotID(){}
 
     /**
      * Constructs a slot reference from a type and ID.

@@ -230,7 +230,7 @@ public class Utils {
 
     public static double round(double value, int decimals)
     {
-        return (double) (Math.round(value * java.lang.Math.pow(10, decimals)) / java.lang.Math.pow(10, decimals));
+        return Math.round(value * java.lang.Math.pow(10, decimals)) / java.lang.Math.pow(10, decimals);
     }
 
     public static BufferedImage drawStringLegacy(String text, Color color, int size) {
@@ -363,7 +363,7 @@ public class Utils {
         }
     }
 
-    public static List<String> getFilesInJar(String directoryName) throws URISyntaxException, UnsupportedEncodingException, IOException {
+    public static List<String> getFilesInJar(String directoryName) throws URISyntaxException, IOException {
         List<String> filenames = new ArrayList<>();
 
         URL url = Thread.currentThread().getContextClassLoader().getResource(directoryName);
@@ -611,6 +611,9 @@ public class Utils {
 
     public static int parseInt(String i)
     {
+        if(i.isEmpty() || i.isBlank())
+            return 0;
+
         try
         {
             return Math.round(parseFloat(i));
@@ -623,6 +626,9 @@ public class Utils {
 
     public static int parseIntA(String i)
     {
+        if(i.isEmpty() || i.isBlank())
+            return 0;
+
         try
         {
             return Integer.parseInt(i);
@@ -633,11 +639,14 @@ public class Utils {
         }
     }
 
-    public static long parseLong(String i)
+    public static long parseLong(String l)
     {
+        if(l.isEmpty() || l.isBlank())
+            return 0;
+
         try
         {
-            return Long.parseLong(i);
+            return Long.parseLong(l);
         }catch (Exception e)
         {
             e.printStackTrace();
@@ -645,11 +654,14 @@ public class Utils {
         }
     }
 
-    public static short parseShort(String i)
+    public static short parseShort(String s)
     {
+        if(s.isEmpty() || s.isBlank())
+            return 0;
+
         try
         {
-            return Short.parseShort(i);
+            return Short.parseShort(s);
         }catch (Exception e)
         {
             e.printStackTrace();
@@ -659,6 +671,9 @@ public class Utils {
 
     public static float parseFloat(String f)
     {
+        if(f.isEmpty() || f.isBlank())
+            return 0;
+
         try
         {
             return Float.parseFloat(f);
@@ -837,7 +852,7 @@ public class Utils {
 
     public static boolean isBitwiseBool(int flags, int flag)
     {
-        return (flags & flag) != 0;
+        return (flags & flag) == flag;
     }
 
     public static int setBitwiseBool(int flags , int flag, boolean bool)

@@ -13,7 +13,7 @@ public enum ModCompatibility {
     ALL(31);
     
     private final int value;
-    private ModCompatibility(int value) { this.value = value; } 
+    ModCompatibility(int value) { this.value = value; }
     
     public int getValue() { return this.value; }
     public static ModCompatibility fromValue(int value) {

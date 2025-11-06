@@ -14,7 +14,7 @@ public enum GameplayPartType implements ValueEnum<Integer> {
     RUMBLER(8);
     
     private final int value;
-    private GameplayPartType(int value) {
+    GameplayPartType(int value) {
         this.value = value;
     }
 

@@ -57,7 +57,7 @@ public enum ToolType implements ValueEnum<Byte> {
     ADVENTURE_SAVE(46);
     
     private final byte value;
-    private ToolType(int value) { this.value = (byte) value; }
+    ToolType(int value) { this.value = (byte) value; }
     public Byte getValue() { return this.value; }
     
     /**

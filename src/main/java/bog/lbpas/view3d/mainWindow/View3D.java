@@ -11,18 +11,14 @@ import bog.lbpas.view3d.managers.EngineMan;
 import bog.lbpas.view3d.managers.MouseInput;
 import bog.lbpas.view3d.managers.RenderMan;
 import bog.lbpas.view3d.managers.WindowMan;
-import bog.lbpas.view3d.renderer.gui.GuiKeybind;
 import bog.lbpas.view3d.renderer.gui.GuiScreen;
-import bog.lbpas.view3d.renderer.gui.cursor.Cursor;
 import bog.lbpas.view3d.renderer.gui.cursor.ECursor;
 import bog.lbpas.view3d.renderer.gui.elements.Button;
 import bog.lbpas.view3d.renderer.gui.elements.Checkbox;
 import bog.lbpas.view3d.renderer.gui.elements.*;
-import bog.lbpas.view3d.renderer.gui.font.FNT;
 import bog.lbpas.view3d.renderer.gui.font.FontRenderer;
 import bog.lbpas.view3d.renderer.gui.ingredients.*;
 import bog.lbpas.view3d.utils.*;
-import common.FileChooser;
 import cwlib.enums.*;
 import cwlib.resources.RMesh;
 import cwlib.structs.mesh.Bone;
@@ -42,7 +38,6 @@ import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
-import java.awt.event.FocusEvent;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.util.List;
@@ -91,7 +86,6 @@ public class View3D implements ILogic {
 
     @Override
     public void init() throws Exception {
-        topBarLine = Line.getLine(window, loader, new Vector2i(3, 23), new Vector2i(window.width - 3, 23));
         windowFrame = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(window.width - 6, window.height - 6)), loader, window);
         windowFrameOuter = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(window.width, window.height)), loader, window);
         renderer.init(this.loader);
@@ -100,17 +94,25 @@ public class View3D implements ILogic {
         LoadedData.init(this);
         ConstantTextures.initTextures(this.loader);
 
+        topBarLine = Line.getLine(window, loader, new Vector2i(3, getFontHeightHeader() + 7), new Vector2i(window.width - 3, getFontHeightHeader() + 7));
+
         things = new ArrayList<>();
         BORDERS = new ArrayList<>();
         POD_EARTH = new ArrayList<>();
 
-        notificationFeed = new NotificationFeed(false, 12, new Vector2f(this.window.width - 248 - 400, this.window.height - 8), 400, renderer, loader, window)
+        notificationFeed = new NotificationFeed(false, 12, new Vector2f(this.window.width - 248 - 400, this.window.height - 8), 350f * (getFontHeight() / 12f), renderer, loader, window)
         {
             @Override
             public void draw(MouseInput mouseInput, boolean overElement) {
-                this.pos.x = this.window.width - (currentScreen instanceof ElementEditing ? 305 : 0) - 400 - 8;
+                this.pos.x = this.window.width - (currentScreen instanceof ElementEditing ? Math.round(250f * (getFontHeight() / 12f)) : 0) - this.size.x - 8;
                 this.pos.y = this.window.height - 8;
                 super.draw(mouseInput, overElement);
+            }
+
+            @Override
+            public void resize() {
+                super.resize();
+                this.size.x = 300f * (getFontHeight() / 12f);
             }
         };
 
@@ -281,7 +283,7 @@ public class View3D implements ILogic {
         things.add(e);
     }
 
-    private int[] prevSelection = new int[0];
+    private final int[] prevSelection = new int[0];
     public MousePicker centerPicker;
     public MouseInput mouseInput;
 
@@ -319,12 +321,12 @@ public class View3D implements ILogic {
         }
         wasDigestingEntries = isDigestingEntries;
 
-        boolean elementFocused = overrideScreen == null ? false : overrideScreen.elementFocused();
+        boolean elementFocused = overrideScreen != null && overrideScreen.elementFocused();
         if(!elementFocused)
-            elementFocused = currentScreen == null ? false : currentScreen.elementFocused();
-        boolean overElement = overrideScreen == null ? false : overrideScreen.isMouseOverElement(mouseInput);
+            elementFocused = currentScreen != null && currentScreen.elementFocused();
+        boolean overElement = overrideScreen != null && overrideScreen.isMouseOverElement(mouseInput);
         if(!overElement)
-            overElement = currentScreen == null ? false : currentScreen.isMouseOverElement(mouseInput);
+            overElement = currentScreen != null && currentScreen.isMouseOverElement(mouseInput);
 
         if(!elementFocused && !overElement)
             camera.movePos((cameraInc.x * Config.CAMERA_MOVE_SPEED) / (EngineMan.fps == 0 ? 60 : EngineMan.fps), (cameraInc.y * Config.CAMERA_MOVE_SPEED) / (EngineMan.fps == 0 ? 60 : EngineMan.fps), (cameraInc.z * Config.CAMERA_MOVE_SPEED) / (EngineMan.fps == 0 ? 60 : EngineMan.fps));
@@ -353,12 +355,43 @@ public class View3D implements ILogic {
                 topBarLine.cleanup(loader);
             if(windowFrame != null)
                 windowFrame.cleanup(loader);
-            topBarLine = Line.getLine(window, loader, new Vector2i(3, 23), new Vector2i(window.width - 3, 23));
+            topBarLine = Line.getLine(window, loader, new Vector2i(3, getFontHeightHeader() + 7), new Vector2i(window.width - 3, getFontHeightHeader() + 7));
             windowFrame = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(window.width - 6, window.height - 6)), loader, window);
             windowFrameOuter = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(window.width, window.height)), loader, window);
 
-            if(currentScreen instanceof GuiKeybind)
-                ((GuiKeybind)currentScreen).resize();
+            int xCoord = Math.round(300f * (getFontHeight() / 12f));
+            int w = Math.round(100f * (getFontHeight() / 12f));
+            int yCoord = 3;
+            elementEditing.pos = new Vector2f(xCoord, yCoord);
+            elementEditing.size = new Vector2f(w, getFontHeightHeader() + 5);
+            xCoord += w - 1;
+            archive.pos = new Vector2f(xCoord, yCoord);
+            archive.size = new Vector2f(w, getFontHeightHeader() + 5);
+            xCoord += w - 1;
+            project.pos = new Vector2f(xCoord, yCoord);
+            project.size = new Vector2f(w, getFontHeightHeader() + 5);
+            xCoord += w - 1;
+            settings.pos = new Vector2f(xCoord, yCoord);
+            settings.size = new Vector2f(w, getFontHeightHeader() + 5);
+
+            float w2 = 60f * (getFontHeight() / 12f);
+            minimizeButton.pos = new Vector2f(window.width - 3 - (w2 * 3) + 2, yCoord);
+            minimizeButton.size = new Vector2f(w2, getFontHeightHeader() + 5);
+            minimizeButton.imageSize = new Vector2f(getFontHeightHeader());
+
+            restMaxButton.pos = new Vector2f(window.width - 3 - (w2 * 2) + 1, yCoord);
+            restMaxButton.size = new Vector2f(w2, getFontHeightHeader() + 5);
+            restMaxButton.imageSize = new Vector2f(getFontHeightHeader());
+
+            closeButton.pos = new Vector2f(window.width - 3 - (w2), yCoord);
+            closeButton.size = new Vector2f(w2, getFontHeightHeader() + 5);
+            closeButton.imageSize = new Vector2f(getFontHeightHeader());
+
+            Archive.resize();
+            ElementEditing.resize();
+            MaterialEditing.resize();
+            ProjectManager.resize();
+            Settings.resize();
         }
 
         this.mouseInput = mouseInput;
@@ -612,7 +645,7 @@ public class View3D implements ILogic {
                 Config.CAMERA_MOVE_SPEED = 1;
             Config.CAMERA_MOVE_SPEED = yOffset > 0 ? Config.CAMERA_MOVE_SPEED * 1.2f : Config.CAMERA_MOVE_SPEED * 0.8f;
             Config.CAMERA_MOVE_SPEED = yOffset > 0 ? Math.ceil(Config.CAMERA_MOVE_SPEED) : Math.floor(Config.CAMERA_MOVE_SPEED);
-            ((Settings) Settings).moveSpeed.setText(Float.toString(Config.CAMERA_MOVE_SPEED));
+            Settings.moveSpeed.setText(Float.toString(Config.CAMERA_MOVE_SPEED));
         }
     }
 
@@ -646,12 +679,20 @@ public class View3D implements ILogic {
     public Settings Settings;
     public MaterialEditing MaterialEditing;
 
+    Button elementEditing;
+    Button archive;
+    Button project;
+    Button settings;
+    ButtonImage minimizeButton;
+    ButtonImage restMaxButton;
+    ButtonImage closeButton;
+
     private void createUI() {
 
-        int xCoord = 325;
-        int w = 125;
+        int xCoord = Math.round(300f * (getFontHeight() / 12f));
+        int w = Math.round(100f * (getFontHeight() / 12f));
         int yCoord = 3;
-        Button elementEditing = new Button("elementEditing", "Scene", new Vector2f(xCoord, yCoord), new Vector2f(w, 21), renderer, loader, window) {
+        elementEditing = new Button("elementEditing", "Scene", new Vector2f(xCoord, yCoord), new Vector2f(w, getFontHeightHeader() + 5), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)setCurrentScreen(ElementEditing);
@@ -663,7 +704,7 @@ public class View3D implements ILogic {
             }
         };
         xCoord += w - 1;
-        Button archive = new Button("archive", "Archive", new Vector2f(xCoord, yCoord), new Vector2f(w, 21), renderer, loader, window) {
+        archive = new Button("archive", "Archive", new Vector2f(xCoord, yCoord), new Vector2f(w, getFontHeightHeader() + 5), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)setCurrentScreen(Archive);
@@ -675,7 +716,7 @@ public class View3D implements ILogic {
             }
         };
         xCoord += w - 1;
-        Button project = new Button("project", "Project", new Vector2f(xCoord, yCoord), new Vector2f(w, 21), renderer, loader, window) {
+        project = new Button("project", "Project", new Vector2f(xCoord, yCoord), new Vector2f(w, getFontHeightHeader() + 5), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)setCurrentScreen(ProjectManager);
@@ -687,7 +728,7 @@ public class View3D implements ILogic {
             }
         };
         xCoord += w - 1;
-        Button settingss = new Button("settingss", "Settings", new Vector2f(xCoord, yCoord), new Vector2f(w, 21), renderer, loader, window) {
+        settings = new Button("settings", "Settings", new Vector2f(xCoord, yCoord), new Vector2f(w, getFontHeightHeader() + 5), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)setCurrentScreen(Settings);
@@ -697,7 +738,9 @@ public class View3D implements ILogic {
             public void draw(MouseInput mouseInput, boolean overOther) {super.draw(mouseInput, overOther);}
         };
 
-        ButtonImage minimizeButton = new ButtonImage("minimizeButton", new Vector2f(window.width - 181, yCoord), new Vector2f(60, 21), new Vector2f(23), renderer, loader, window) {
+        float widthT = 60f * (getFontHeight() / 12f);
+
+        minimizeButton = new ButtonImage("minimizeButton", new Vector2f(window.width - 3 - (widthT * 3) + 2, yCoord), new Vector2f(widthT, getFontHeightHeader() + 5), new Vector2f(getFontHeightHeader()), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
@@ -705,18 +748,12 @@ public class View3D implements ILogic {
             }
 
             @Override
-            public void draw(MouseInput mouseInput, boolean overOther) {
-                this.pos.x = window.width - 181;
-                super.draw(mouseInput, overOther);
-            }
-
-            @Override
             public Texture getImage() {
-                return ConstantTextures.getTexture(ConstantTextures.WINDOW_MINIMIZE, 23, 23, loader);
+                return ConstantTextures.getTexture(ConstantTextures.WINDOW_MINIMIZE, getFontHeightHeader(), getFontHeightHeader(), loader);
             }
         };
 
-        ButtonImage restMaxButton = new ButtonImage("restMaxButton", new Vector2f(window.width - 122, yCoord), new Vector2f(60, 21), new Vector2f(23, 23), renderer, loader, window) {
+        restMaxButton = new ButtonImage("restMaxButton", new Vector2f(window.width - 3 - (widthT * 2) + 1, yCoord), new Vector2f(widthT, getFontHeightHeader() + 5), new Vector2f(getFontHeightHeader()), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
@@ -729,23 +766,17 @@ public class View3D implements ILogic {
             }
 
             @Override
-            public void draw(MouseInput mouseInput, boolean overOther) {
-                this.pos.x = window.width - 122;
-                super.draw(mouseInput, overOther);
-            }
-
-            @Override
             public void secondThread() {
                 super.secondThread();
             }
 
             @Override
             public Texture getImage() {
-                return ConstantTextures.getTexture(this.window.isMaximized ? ConstantTextures.WINDOW_RESTORE : ConstantTextures.WINDOW_MAXIMIZE, 23, 23, loader);
+                return ConstantTextures.getTexture(this.window.isMaximized ? ConstantTextures.WINDOW_RESTORE : ConstantTextures.WINDOW_MAXIMIZE, getFontHeightHeader(), getFontHeightHeader(), loader);
             }
         };
 
-        ButtonImage closeButton = new ButtonImage("closeButton", new Vector2f(window.width - 63, yCoord), new Vector2f(60, 21), new Vector2f(23, 23), renderer, loader, window) {
+        closeButton = new ButtonImage("closeButton", new Vector2f(window.width - 3 - widthT, yCoord), new Vector2f(widthT, getFontHeightHeader() + 5), new Vector2f(getFontHeightHeader()), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
@@ -753,15 +784,8 @@ public class View3D implements ILogic {
             }
 
             @Override
-            public void draw(MouseInput mouseInput, boolean overOther) {
-                this.pos.x = window.width - 63;
-
-                super.draw(mouseInput, overOther);
-            }
-
-            @Override
             public Texture getImage() {
-                return ConstantTextures.getTexture(ConstantTextures.WINDOW_CLOSE, 23, 23, loader);
+                return ConstantTextures.getTexture(ConstantTextures.WINDOW_CLOSE, getFontHeightHeader(), getFontHeightHeader(), loader);
             }
         };
 
@@ -835,12 +859,7 @@ public class View3D implements ILogic {
                 if(!mouseInput.leftButtonPress)
                 {
                     if(this.window.resizing != 0)
-                    {
                         this.window.resizing = 0;
-                        this.window.width = this.window.newWidth;
-                        this.window.height = this.window.newHeight;
-                        this.window.resize = true;
-                    }
 
                     if(this.window.isDragging)
                     {
@@ -849,10 +868,16 @@ public class View3D implements ILogic {
                     }
                 }
             }
+
+            @Override
+            public void resize() {
+                this.size.y = getFontHeightHeader() + 7;
+                super.resize();
+            }
         };
         titleBar.window = window;
         titleBar.pos = new Vector2f(3, 3);
-        titleBar.size = new Vector2f(window.width - 6, 23);
+        titleBar.size = new Vector2f(window.width - 6, getFontHeightHeader() + 7);
         titleBar.id = "titleBar";
 
         ElementEditing = new ElementEditing(this);
@@ -865,7 +890,7 @@ public class View3D implements ILogic {
         ElementEditing.guiElements.add(elementEditing);
         ElementEditing.guiElements.add(archive);
         ElementEditing.guiElements.add(project);
-        ElementEditing.guiElements.add(settingss);
+        ElementEditing.guiElements.add(settings);
 
         Archive = new Archive(this);
 
@@ -877,11 +902,11 @@ public class View3D implements ILogic {
         Archive.guiElements.add(elementEditing);
         Archive.guiElements.add(archive);
         Archive.guiElements.add(project);
-        Archive.guiElements.add(settingss);
+        Archive.guiElements.add(settings);
 
         ProjectManager = new ProjectManager(this);
 
-        ProjectManager.guiElements.add(notificationFeed);
+//        ProjectManager.guiElements.add(notificationFeed);
         ProjectManager.guiElements.add(titleBar);
         ProjectManager.guiElements.add(minimizeButton);
         ProjectManager.guiElements.add(restMaxButton);
@@ -889,7 +914,7 @@ public class View3D implements ILogic {
         ProjectManager.guiElements.add(elementEditing);
         ProjectManager.guiElements.add(archive);
         ProjectManager.guiElements.add(project);
-        ProjectManager.guiElements.add(settingss);
+        ProjectManager.guiElements.add(settings);
 
         Settings = new Settings(this);
 
@@ -901,7 +926,7 @@ public class View3D implements ILogic {
         Settings.guiElements.add(elementEditing);
         Settings.guiElements.add(archive);
         Settings.guiElements.add(project);
-        Settings.guiElements.add(settingss);
+        Settings.guiElements.add(settings);
 
         MaterialEditing = new MaterialEditing(this);
         MaterialEditing.guiElements.add(titleBar);
@@ -1065,15 +1090,17 @@ public class View3D implements ILogic {
             Cursors.setCursor(ECursor.sb_h_double_arrow);
         }
 
-        renderer.doBlur(Consts.GAUSSIAN_RADIUS, Consts.GAUSSIAN_KERNEL, 3, 3, window.width, 20);
-        renderer.drawRect(3, 3, window.width - 6, 20, Config.PRIMARY_COLOR);
+        int fontHeightHeader = getFontHeightHeader();
+
+        renderer.doBlur(Consts.GAUSSIAN_RADIUS, Consts.GAUSSIAN_KERNEL, 3, 3, window.width, fontHeightHeader + 4);
+        renderer.drawRect(3, 3, window.width - 6, fontHeightHeader + 4, Config.PRIMARY_COLOR);
 
         renderer.drawRect(0, 3, 3, window.height - 6, Config.PRIMARY_COLOR);
         renderer.drawRect(0, 0, window.width, 3, Config.PRIMARY_COLOR);
         renderer.drawRect(0, window.height - 3, window.width, window.height, Config.PRIMARY_COLOR);
         renderer.drawRect(window.width - 3, 3, window.width, window.height - 6, Config.PRIMARY_COLOR);
 
-        renderer.drawHeader(Consts.FONT_SET_BOLD + Consts.TITLE + " (v" + Consts.VERSION + ")" + (Config.SHOW_FPS ? " | FPS: " + EngineMan.avgFPS : ""), Config.FONT_COLOR, 7 + 3, (int)(11 - (getFontHeightHeader() / 2) + 3));
+        renderer.drawHeader(Consts.FONT_SET_BOLD + Consts.TITLE + " (v" + Consts.VERSION + ")" + (Config.SHOW_FPS ? " | FPS: " + EngineMan.avgFPS : ""), Config.FONT_COLOR, 7 + 3, 5);
 
 //        double bounce = (-java.lang.Math.pow(1f- (((float)(System.currentTimeMillis() % 5000))/5000f) *2f,2f)+1f) * 100;
 //
@@ -1091,10 +1118,10 @@ public class View3D implements ILogic {
 
         if(Main.debug)
         {
-            if(((Settings)this.Settings).debugOverlayImage.isChecked && (((Settings)this.Settings).overlayImage != null))
-                renderer.drawImageStatic(((Settings)this.Settings).overlayImage.id, 0, 0, window.width, window.height, new Color(1f, 1f, 1f, 0.6f));
+            if(this.Settings.debugOverlayImage.isChecked && (this.Settings.overlayImage != null))
+                renderer.drawImageStatic(this.Settings.overlayImage.id, 0, 0, window.width, window.height, new Color(1f, 1f, 1f, 0.6f));
 
-            if(((Settings)this.Settings).debugScissorTest.isChecked) {
+            if(this.Settings.debugScissorTest.isChecked) {
                 renderer.startScissor(20, 50, 120 - 20, 150 - 50);
                 renderer.drawRect(0, 0, window.width, window.height, Color.red);
                 renderer.startScissor(30, 60, 110 - 30, 140 - 60);
@@ -1126,10 +1153,10 @@ public class View3D implements ILogic {
                 renderer.endScissor();
             }
 
-            boolean vao = ((Checkbox) ((Settings) Settings).debug.tabElements.get(0)).isChecked;
-            boolean vbo = ((Checkbox) ((Settings) Settings).debug.tabElements.get(1)).isChecked;
-            boolean tex = ((Checkbox) ((Settings) Settings).debug.tabElements.get(2)).isChecked;
-            boolean thread = ((Checkbox) ((Settings) Settings).debug.tabElements.get(3)).isChecked;
+            boolean vao = ((Checkbox) Settings.debug.tabElements.get(0)).isChecked;
+            boolean vbo = ((Checkbox) Settings.debug.tabElements.get(1)).isChecked;
+            boolean tex = ((Checkbox) Settings.debug.tabElements.get(2)).isChecked;
+            boolean thread = ((Checkbox) Settings.debug.tabElements.get(3)).isChecked;
 
             int l = 1;
 
@@ -1338,7 +1365,7 @@ public class View3D implements ILogic {
         try {
             String encrypted = Utils.encrypt(copySelection);
 
-            StringSelection selection = new StringSelection("LBPAS" + new String(encrypted));
+            StringSelection selection = new StringSelection("LBPAS" + encrypted);
             Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
             clipboard.setContents(selection, selection);
         }catch (Exception e){e.printStackTrace();}
@@ -1396,7 +1423,7 @@ public class View3D implements ILogic {
 
     public void deleteEntity(int index)
     {
-        bog.lbpas.view3d.core.types.Thing thing = (bog.lbpas.view3d.core.types.Thing) things.get(index);
+        bog.lbpas.view3d.core.types.Thing thing = things.get(index);
         thing.cleanup();
 
         for (int i = things.size() - 1; i >= 0; i--)
@@ -2119,7 +2146,7 @@ public class View3D implements ILogic {
 
                 if(thing.thing.hasPart(Part.SHAPE))
                 {
-                    PShape shape = ((PShape)thing.thing.getPart(Part.SHAPE));
+                    PShape shape = thing.thing.getPart(Part.SHAPE);
                     float thickness = shape.thickness;
                     float bevelSize = shape.bevelSize;
                     float zBias = shape.zBias;
@@ -2136,6 +2163,6 @@ public class View3D implements ILogic {
         loader.loaderThread(this);
         renderer.loaderThread();
         if(ProjectManager != null)
-            ((ProjectManager) ProjectManager).loaderThread();
+            ProjectManager.loaderThread();
     }
 }

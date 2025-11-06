@@ -82,7 +82,8 @@ public class Decal implements Serializable {
     @GsonRevision(branch=0x4431, min=0x7e)
     public boolean dontWantGammaCorrection;
 
-    public Decal() {};
+    public Decal() {}
+
     public Decal(ResourceDescriptor texture) {
         this.texture = texture;
     }

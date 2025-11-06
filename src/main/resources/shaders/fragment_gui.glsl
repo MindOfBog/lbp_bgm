@@ -39,6 +39,8 @@ uniform bool smoothst;
 uniform float smoothstWidth;
 uniform float smoothstEdge;
 
+uniform float guiScale;
+
 vec3 rgb2hsv(vec3 c)
 {
 	vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
@@ -105,16 +107,23 @@ void main(void){
 			{
 				float saturation = (gl_FragCoord.x - minX) / dimensions.size.x;
 				float value = (gl_FragCoord.y - minY) / dimensions.size.y;
-				out_Color = vec4(hsv2rgb(vec3(rgb2hsv(color.rgb).x, saturation, value)), 1.0f);
+				out_Color = vec4(hsv2rgb(vec3(rgb2hsv(color.rgb).x, saturation, value)), color.a);
 			}
 			else if(abstractInt == 2)
 			{
-				bool isXAlternate = mod(floor((gl_FragCoord.x - dimensions.position.x) / 4.0), 2.0) == 0;
-				bool isYAlternate = mod(floor((gl_FragCoord.y - dimensions.position.y) / 4.0), 2.0) == 0;
+				float size = round(guiScale / 6.0) * 2.0;
 
-				bool isWhiteSquare = isXAlternate != isYAlternate;
+				float xBlock = floor((gl_FragCoord.x - dimensions.position.x) / size);
+				float yBlock = floor((gl_FragCoord.y - dimensions.position.y) / size);
+
+				bool isWhiteSquare = mod(xBlock + yBlock, 2.0) == 0.0;
 
 				out_Color = vec4(isWhiteSquare ? vec3(235.0/255.0) : vec3(199.0/255.0), 1.0);
+			}
+			else if(abstractInt == 3)
+			{
+				float alpha = (gl_FragCoord.x - minX) / dimensions.size.x;
+				out_Color = vec4(color.rgb, alpha);
 			}
 		}
 		break;

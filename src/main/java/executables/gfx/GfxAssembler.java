@@ -81,7 +81,7 @@ public class GfxAssembler {
             this.type = type;
         }
 
-        @Override public String toString() { return this.value.toString(); }
+        @Override public String toString() { return this.value; }
     }
 
     public static final Variable getWithSwizzle(StringBuilder shader, RGfxMaterial gfx, MaterialBox box, int port, int type) {

@@ -28,11 +28,11 @@ import org.lwjgl.BufferUtils;
 
 public class RenderSystem {
     public static class DrawCall implements Comparable<DrawCall> {
-        private int VAO;
-        private Texture instance;
-        private Matrix4f[] model;
-        private Vector4f color;
-        private MeshPrimitive primitive;
+        private final int VAO;
+        private final Texture instance;
+        private final Matrix4f[] model;
+        private final Vector4f color;
+        private final MeshPrimitive primitive;
 
         public DrawCall(int VAO, MeshPrimitive primitive, Texture instance, Matrix4f[] model, Vector4f color) {
             this.VAO = VAO;
@@ -64,15 +64,15 @@ public class RenderSystem {
         }
     }
 
-    public static enum RenderMode {
+    public enum RenderMode {
         RENDER,
         SHADOW
-    };
+    }
 
     private static RSceneGraph sceneGraph;
     private static RenderMode renderPath = RenderMode.RENDER;
     private static Camera camera;
-    private static ArrayList<DrawCall> DRAW_CALLS = new ArrayList<>(8196);
+    private static final ArrayList<DrawCall> DRAW_CALLS = new ArrayList<>(8196);
 
     private static float deltaTime;
     private static long lastTime;
@@ -95,7 +95,7 @@ public class RenderSystem {
     private static final int COLOR_RES_X = 1280;
     private static final int COLOR_RES_Y = 720;
 
-    private static boolean SHADOWS_ENABLED = false;
+    private static final boolean SHADOWS_ENABLED = false;
 
     private static boolean waitForGarbageCollect = false;
     private static boolean initialized = false;

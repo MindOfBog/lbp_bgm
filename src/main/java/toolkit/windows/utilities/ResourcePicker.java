@@ -147,7 +147,7 @@ public class ResourcePicker extends javax.swing.JDialog {
                 "GUID", "Path"
             }
         ) {
-            boolean[] canEdit = new boolean [] {
+            final boolean[] canEdit = new boolean [] {
                 false, false
             };
 

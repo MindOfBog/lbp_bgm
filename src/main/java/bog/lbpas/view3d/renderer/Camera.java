@@ -29,13 +29,13 @@ public class Camera {
     {
         if(z != 0)
         {
-            pos.x += (float) Math.sin(Math.toRadians(getRotation().y)) * -1f * z;
-            pos.z += (float) Math.cos(Math.toRadians(getRotation().y)) * z;
+            pos.x += Math.sin(Math.toRadians(getRotation().y)) * -1f * z;
+            pos.z += Math.cos(Math.toRadians(getRotation().y)) * z;
         }
         if(x != 0)
         {
-            pos.x += (float) Math.sin(Math.toRadians(getRotation().y - 90)) * -1f * x;
-            pos.z += (float) Math.cos(Math.toRadians(getRotation().y - 90)) * x;
+            pos.x += Math.sin(Math.toRadians(getRotation().y - 90)) * -1f * x;
+            pos.z += Math.cos(Math.toRadians(getRotation().y - 90)) * x;
         }
         pos.y += y;
     }

@@ -90,17 +90,17 @@ public abstract class PartShape extends iPart {
                     boolean hasSelection = false;
                     ArrayList<Integer> selected = new ArrayList<>();
 
-                    for(int i = 0; i < view.things.size(); i++)
-                        if(view.things.get(i).selected)
+                    for(int i = 0; i < getThings().size(); i++)
+                        if(getThings().get(i).selected)
                         {
                             hasSelection = true;
                             selected.add(i);
                         }
 
-                    if(hasSelection && selected.size() == 1 && ((bog.lbpas.view3d.core.types.Thing)view.things.get(selected.get(0))).thing.hasPart(cwlib.enums.Part.SHAPE))
+                    if(hasSelection && selected.size() == 1 && getThings().get(selected.get(0)).thing.hasPart(cwlib.enums.Part.SHAPE))
                     {
                         view.setCurrentScreen(view.MaterialEditing);
-                        ((MaterialEditing)view.MaterialEditing).selectedVertices.clear();
+                        view.MaterialEditing.selectedVertices.clear();
                     }
                 }
             }
@@ -200,7 +200,13 @@ public abstract class PartShape extends iPart {
 
         Panel lethalPanel = partComboBox.addPanel("lethalPanel");
         lethalPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("lethalstr", "Lethal Type:", view.renderer), 0.55f));
-        LethalType = new ComboBox("ShapeLethalType", "Not", new Vector2f(), new Vector2f(), 160,view.renderer, view.loader, view.window);
+        LethalType = new ComboBox("ShapeLethalType", "Not", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window)
+        {
+            @Override
+            public int tabWidth() {
+                return Math.round(160f * (getFontHeight() / 12f));
+            }
+        };
         lethalPanel.elements.add(new Panel.PanelElement(LethalType, 0.45f));
 
         LethalType.addList("lethalTypes", new ButtonList("lethalTypes", new ArrayList<>(Arrays.asList(cwlib.enums.LethalType.values())), new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window) {
@@ -211,10 +217,13 @@ public abstract class PartShape extends iPart {
                     clicked = index;
 
                     String name = ((LethalType)object).name().replaceAll("_", " ");
-                    name = name.substring(0, 1) + name.substring(1).toLowerCase();
-                    for (int i = 0; i < view.things.size(); i++)
-                        if (view.things.get(i).selected)
-                            ((PShape)((Thing)view.things.get(i)).thing.getPart(cwlib.enums.Part.SHAPE)).lethalType = (LethalType) object;
+                    name = name.charAt(0) + name.substring(1).toLowerCase();
+                    for (int i = 0; i < getThings().size(); i++) {
+                        Thing selected = getThings().get(i);
+                        if (!selected.selected)
+                            continue;
+                        ((PShape) selected.thing.getPart(cwlib.enums.Part.SHAPE)).lethalType = (LethalType) object;
+                    }
                     LethalType.tabTitle = name;
                 }
             }
@@ -245,15 +254,13 @@ public abstract class PartShape extends iPart {
 
             @Override
             public boolean isSelected(Object object, int index) {
-                if (clicked == index)
-                    return true;
-                return false;
+                return clicked == index;
             }
 
             @Override
             public String buttonText(Object object, int index) {
                 String name = ((LethalType)object).name().replaceAll("_", " ");
-                name = name.substring(0, 1) + name.substring(1).toLowerCase();
+                name = name.charAt(0) + name.substring(1).toLowerCase();
                 return name;
             }
 
@@ -270,7 +277,13 @@ public abstract class PartShape extends iPart {
 
         Panel shapeoverridepanel = partComboBox.addPanel("shapeoverridepanel");
         shapeoverridepanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("soundoverridestr", "Sound Overr.:", view.renderer), 0.55f));
-        SoundOverride = new ComboBox("ShapeSoundOverride", "None", new Vector2f(), new Vector2f(), 160, view.renderer, view.loader, view.window);
+        SoundOverride = new ComboBox("ShapeSoundOverride", "None", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window)
+        {
+            @Override
+            public int tabWidth() {
+                return Math.round(160f * (getFontHeight() / 12f));
+            }
+        };
         shapeoverridepanel.elements.add(new Panel.PanelElement(SoundOverride, 0.45f));
 
         SoundOverride.addList("lethalTypes", new ButtonList("lethalTypes", new ArrayList<>(Arrays.asList(AudioMaterial.values())), new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window) {
@@ -281,10 +294,13 @@ public abstract class PartShape extends iPart {
                     clicked = index;
 
                     String name = ((AudioMaterial)object).name().replaceAll("_", " ");
-                    name = name.substring(0, 1) + name.substring(1).toLowerCase();
-                    for (int i = 0; i < view.things.size(); i++)
-                        if (view.things.get(i).selected)
-                            ((PShape)((Thing)view.things.get(i)).thing.getPart(cwlib.enums.Part.SHAPE)).soundEnumOverride = (AudioMaterial) object;
+                    name = name.charAt(0) + name.substring(1).toLowerCase();
+                    for (int i = 0; i < getThings().size(); i++) {
+                        Thing selected = getThings().get(i);
+                        if (!selected.selected)
+                            continue;
+                        ((PShape) selected.thing.getPart(cwlib.enums.Part.SHAPE)).soundEnumOverride = (AudioMaterial) object;
+                    }
                     SoundOverride.tabTitle = name;
                 }
             }
@@ -315,15 +331,13 @@ public abstract class PartShape extends iPart {
 
             @Override
             public boolean isSelected(Object object, int index) {
-                if (clicked == index)
-                    return true;
-                return false;
+                return clicked == index;
             }
 
             @Override
             public String buttonText(Object object, int index) {
                 String name = ((AudioMaterial)object).name().replaceAll("_", " ");
-                name = name.substring(0, 1) + name.substring(1).toLowerCase();
+                name = name.charAt(0) + name.substring(1).toLowerCase();
                 return name;
             }
 
@@ -346,12 +360,14 @@ public abstract class PartShape extends iPart {
                 super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
-                    for (int i = 0; i < view.things.size(); i++)
-                        if (view.things.get(i).selected)
-                        {
-                            PShape shape = ((PShape)((Thing)view.things.get(i)).thing.getPart(cwlib.enums.Part.SHAPE));
-                            shape.flags = Utils.setBitwiseBool(shape.flags, cwlib.enums.ShapeFlags.COLLIDABLE_GAME, this.isChecked);
-                        }
+                    for (int i = 0; i < getThings().size(); i++)
+                    {
+                        Thing selected = getThings().get(i);
+                        if(!selected.selected)
+                            continue;
+                        PShape shape = selected.thing.getPart(Part.SHAPE);
+                        shape.flags = Utils.setBitwiseBool(shape.flags, cwlib.enums.ShapeFlags.COLLIDABLE_GAME, this.isChecked);
+                    }
             }
         });
         FlagCollidablePoppet = Flags.addCheckbox("COLLIDABLE_POPPET", "Colli. Poppet", new Checkbox()
@@ -361,12 +377,14 @@ public abstract class PartShape extends iPart {
                 super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
-                    for (int i = 0; i < view.things.size(); i++)
-                        if (view.things.get(i).selected)
-                        {
-                            PShape shape = ((PShape)((Thing)view.things.get(i)).thing.getPart(cwlib.enums.Part.SHAPE));
-                            shape.flags = Utils.setBitwiseBool(shape.flags, cwlib.enums.ShapeFlags.COLLIDABLE_POPPET, this.isChecked);
-                        }
+                    for (int i = 0; i < getThings().size(); i++)
+                    {
+                        Thing selected = getThings().get(i);
+                        if(!selected.selected)
+                            continue;
+                        PShape shape = selected.thing.getPart(Part.SHAPE);
+                        shape.flags = Utils.setBitwiseBool(shape.flags, cwlib.enums.ShapeFlags.COLLIDABLE_POPPET, this.isChecked);
+                    }
             }
         });
         FlagCollidableWithParent = Flags.addCheckbox("COLLIDABLE_WITH_PARENT", "Colli. w/ Parent", new Checkbox()
@@ -376,24 +394,28 @@ public abstract class PartShape extends iPart {
                 super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
-                    for (int i = 0; i < view.things.size(); i++)
-                        if (view.things.get(i).selected)
-                        {
-                            PShape shape = ((PShape)((Thing)view.things.get(i)).thing.getPart(cwlib.enums.Part.SHAPE));
-                            shape.flags = Utils.setBitwiseBool(shape.flags, cwlib.enums.ShapeFlags.COLLIDABLE_WITH_PARENT, this.isChecked);
-                        }
+                    for (int i = 0; i < getThings().size(); i++)
+                    {
+                        Thing selected = getThings().get(i);
+                        if(!selected.selected)
+                            continue;
+                        PShape shape = selected.thing.getPart(Part.SHAPE);
+                        shape.flags = Utils.setBitwiseBool(shape.flags, cwlib.enums.ShapeFlags.COLLIDABLE_WITH_PARENT, this.isChecked);
+                    }
             }
         });
         Flags.addButton("DEFAULT_FLAGS", "Default Flags", new Button() {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
-                    for (int i = 0; i < view.things.size(); i++)
-                        if (view.things.get(i).selected)
-                        {
-                            PShape shape = ((PShape)((Thing)view.things.get(i)).thing.getPart(cwlib.enums.Part.SHAPE));
-                            shape.flags = cwlib.enums.ShapeFlags.DEFAULT_FLAGS;
-                        }
+                    for (int i = 0; i < getThings().size(); i++)
+                    {
+                        Thing selected = getThings().get(i);
+                        if(!selected.selected)
+                            continue;
+                        PShape shape = selected.thing.getPart(Part.SHAPE);
+                        shape.flags = cwlib.enums.ShapeFlags.DEFAULT_FLAGS;
+                    }
             }
         });
 
@@ -404,9 +426,12 @@ public abstract class PartShape extends iPart {
                 super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
-                    for (int i = 0; i < view.things.size(); i++)
-                        if (view.things.get(i).selected)
-                            ((PShape)((Thing)view.things.get(i)).thing.getPart(cwlib.enums.Part.SHAPE)).isStatic = this.isChecked;
+                    for (int i = 0; i < getThings().size(); i++) {
+                        Thing selected = getThings().get(i);
+                        if (!selected.selected)
+                            continue;
+                        ((PShape) selected.thing.getPart(cwlib.enums.Part.SHAPE)).isStatic = this.isChecked;
+                    }
             }
         });
         Ghosty = partComboBox.addCheckbox("ghosty", "Dephysicalized", new Checkbox()
@@ -416,9 +441,12 @@ public abstract class PartShape extends iPart {
                 super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
-                    for (int i = 0; i < view.things.size(); i++)
-                        if (view.things.get(i).selected)
-                            ((PShape)((Thing)view.things.get(i)).thing.getPart(cwlib.enums.Part.SHAPE)).ghosty = this.isChecked;
+                    for (int i = 0; i < getThings().size(); i++) {
+                        Thing selected = getThings().get(i);
+                        if (!selected.selected)
+                            continue;
+                        ((PShape) selected.thing.getPart(cwlib.enums.Part.SHAPE)).ghosty = this.isChecked;
+                    }
             }
         });
         Ethereal = partComboBox.addCheckbox("ethereal", "Etherial", new Checkbox()
@@ -428,9 +456,12 @@ public abstract class PartShape extends iPart {
                 super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
-                    for (int i = 0; i < view.things.size(); i++)
-                        if (view.things.get(i).selected)
-                            ((PShape)((Thing)view.things.get(i)).thing.getPart(cwlib.enums.Part.SHAPE)).ethereal = this.isChecked;
+                    for (int i = 0; i < getThings().size(); i++) {
+                        Thing selected = getThings().get(i);
+                        if (!selected.selected)
+                            continue;
+                        ((PShape) selected.thing.getPart(cwlib.enums.Part.SHAPE)).ethereal = this.isChecked;
+                    }
             }
         });
 
@@ -500,9 +531,12 @@ public abstract class PartShape extends iPart {
                 super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
-                    for (int i = 0; i < view.things.size(); i++)
-                        if (view.things.get(i).selected)
-                            ((PShape)((Thing)view.things.get(i)).thing.getPart(cwlib.enums.Part.SHAPE)).canCollect = this.isChecked;
+                    for (int i = 0; i < getThings().size(); i++) {
+                        Thing selected = getThings().get(i);
+                        if (!selected.selected)
+                            continue;
+                        ((PShape) selected.thing.getPart(cwlib.enums.Part.SHAPE)).canCollect = this.isChecked;
+                    }
             }
         });
         DefaultClimbable = Extras.addCheckbox("defaultClimbable", "Default Climbable", new Checkbox()
@@ -512,9 +546,12 @@ public abstract class PartShape extends iPart {
                 super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
-                    for (int i = 0; i < view.things.size(); i++)
-                        if (view.things.get(i).selected)
-                            ((PShape)((Thing)view.things.get(i)).thing.getPart(cwlib.enums.Part.SHAPE)).defaultClimbable = this.isChecked;
+                    for (int i = 0; i < getThings().size(); i++) {
+                        Thing selected = getThings().get(i);
+                        if (!selected.selected)
+                            continue;
+                        ((PShape) selected.thing.getPart(cwlib.enums.Part.SHAPE)).defaultClimbable = this.isChecked;
+                    }
             }
         });
         CurrentlyClimbable = Extras.addCheckbox("currentlyClimbable", "Current Climbable", new Checkbox()
@@ -524,9 +561,12 @@ public abstract class PartShape extends iPart {
                 super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
-                    for (int i = 0; i < view.things.size(); i++)
-                        if (view.things.get(i).selected)
-                            ((PShape)((Thing)view.things.get(i)).thing.getPart(cwlib.enums.Part.SHAPE)).currentlyClimbable = this.isChecked;
+                    for (int i = 0; i < getThings().size(); i++) {
+                        Thing selected = getThings().get(i);
+                        if (!selected.selected)
+                            continue;
+                        ((PShape) selected.thing.getPart(cwlib.enums.Part.SHAPE)).currentlyClimbable = this.isChecked;
+                    }
             }
         });
         HeadDucking = Extras.addCheckbox("headDucking", "Head Ducking", new Checkbox()
@@ -536,9 +576,12 @@ public abstract class PartShape extends iPart {
                 super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
-                    for (int i = 0; i < view.things.size(); i++)
-                        if (view.things.get(i).selected)
-                            ((PShape)((Thing)view.things.get(i)).thing.getPart(cwlib.enums.Part.SHAPE)).headDucking = this.isChecked;
+                    for (int i = 0; i < getThings().size(); i++) {
+                        Thing selected = getThings().get(i);
+                        if (!selected.selected)
+                            continue;
+                        ((PShape) selected.thing.getPart(cwlib.enums.Part.SHAPE)).headDucking = this.isChecked;
+                    }
             }
         });
         IsLBP2Shape = Extras.addCheckbox("isLBP2Shape", "LBP2 Shape", new Checkbox()
@@ -548,9 +591,12 @@ public abstract class PartShape extends iPart {
                 super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
-                    for (int i = 0; i < view.things.size(); i++)
-                        if (view.things.get(i).selected)
-                            ((PShape)((Thing)view.things.get(i)).thing.getPart(cwlib.enums.Part.SHAPE)).isLBP2Shape = this.isChecked;
+                    for (int i = 0; i < getThings().size(); i++) {
+                        Thing selected = getThings().get(i);
+                        if (!selected.selected)
+                            continue;
+                        ((PShape) selected.thing.getPart(cwlib.enums.Part.SHAPE)).isLBP2Shape = this.isChecked;
+                    }
             }
         });
         CollidableSackboy = Extras.addCheckbox("collidableSackboy", "Collidable Sackboy", new Checkbox()
@@ -560,9 +606,12 @@ public abstract class PartShape extends iPart {
                 super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
-                    for (int i = 0; i < view.things.size(); i++)
-                        if (view.things.get(i).selected)
-                            ((PShape)((Thing)view.things.get(i)).thing.getPart(cwlib.enums.Part.SHAPE)).collidableSackboy = this.isChecked;
+                    for (int i = 0; i < getThings().size(); i++) {
+                        Thing selected = getThings().get(i);
+                        if (!selected.selected)
+                            continue;
+                        ((PShape) selected.thing.getPart(cwlib.enums.Part.SHAPE)).collidableSackboy = this.isChecked;
+                    }
             }
         });
         CameraExcluderIsSticky = Extras.addCheckbox("cameraExcluderIsSticky", "Cam Excluder is sticky", new Checkbox()
@@ -572,9 +621,12 @@ public abstract class PartShape extends iPart {
                 super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
-                    for (int i = 0; i < view.things.size(); i++)
-                        if (view.things.get(i).selected)
-                            ((PShape)((Thing)view.things.get(i)).thing.getPart(cwlib.enums.Part.SHAPE)).cameraExcluderIsSticky = this.isChecked;
+                    for (int i = 0; i < getThings().size(); i++) {
+                        Thing selected = getThings().get(i);
+                        if (!selected.selected)
+                            continue;
+                        ((PShape) selected.thing.getPart(cwlib.enums.Part.SHAPE)).cameraExcluderIsSticky = this.isChecked;
+                    }
             }
         });
     }
@@ -857,7 +909,7 @@ public abstract class PartShape extends iPart {
         if(!Float.isNaN(lethal) && !Float.isInfinite(lethal))
         {
             String name = cwlib.enums.LethalType.fromValue((int) lethal).name().replaceAll("_", " ");
-            name = name.substring(0, 1) + name.substring(1).toLowerCase();
+            name = name.charAt(0) + name.substring(1).toLowerCase();
 
             LethalType.tabTitle = name;
         }
@@ -867,7 +919,7 @@ public abstract class PartShape extends iPart {
         if(!Float.isNaN(sound) && !Float.isInfinite(sound))
         {
             String name = AudioMaterial.fromValue((int) sound).name().replaceAll("_", " ");
-            name = name.substring(0, 1) + name.substring(1).toLowerCase();
+            name = name.charAt(0) + name.substring(1).toLowerCase();
 
             SoundOverride.tabTitle = name;
         }

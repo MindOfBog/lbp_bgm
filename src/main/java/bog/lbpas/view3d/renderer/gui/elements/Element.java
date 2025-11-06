@@ -27,6 +27,8 @@ public class Element {
 
     Vector2f prevSize;
 
+    boolean scalesWithGui = true;
+
     public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement, boolean focusedElement){}
     public void onKey(int key, int scancode, int action, int mods){}
     public void onChar(int codePoint, int modifiers){}
@@ -44,7 +46,8 @@ public class Element {
             prevSize = new Vector2f(size);
         }
     }
-    public void resize(){}
+    public void resize()
+    {}
 
     public void secondThread(){}
 
@@ -119,5 +122,10 @@ public class Element {
     public void setFocused(boolean focused)
     {
         this.focused = focused;
+    }
+
+    public boolean scalesWithGui()
+    {
+        return this.scalesWithGui;
     }
 }

@@ -8,7 +8,8 @@ public class TranslationPatch extends ModPatch {
     public static class TranslationData {
         private String tag, string;
 
-        public TranslationData() {};
+        public TranslationData() {}
+
         public TranslationData(String tag, String string) {
             this.tag = tag;
             this.string = string;
@@ -28,8 +29,8 @@ public class TranslationPatch extends ModPatch {
         this.setName(name);
     }
 
-    private ArrayList<String> languages = new ArrayList<>();
-    private ArrayList<TranslationData> keys = new ArrayList<>();
+    private final ArrayList<String> languages = new ArrayList<>();
+    private final ArrayList<TranslationData> keys = new ArrayList<>();
 
     public ArrayList<String> getLanguages() { return this.languages; }
     public ArrayList<TranslationData> getKeys() { return this.keys; }

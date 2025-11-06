@@ -13,7 +13,8 @@ public class ParameterOffset implements Serializable {
     public ParameterSubType subType = ParameterSubType.NONE;
     public int[] offsets;
 
-    public ParameterOffset() {};
+    public ParameterOffset() {}
+
     public ParameterOffset(ParameterType type, int[] offsets) {
         this.type = type;
         this.offsets = offsets;

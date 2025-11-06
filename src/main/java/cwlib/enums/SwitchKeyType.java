@@ -7,7 +7,7 @@ public enum SwitchKeyType implements ValueEnum<Integer> {
     IMPACT(1);
     
     private final int value;
-    private SwitchKeyType(int value) {
+    SwitchKeyType(int value) {
         this.value = value;
     }
 

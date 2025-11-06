@@ -18,7 +18,7 @@ public enum CostumePieceCategory {
     HANDS(12),
     WAIST(13);
 
-    private CostumePieceCategory(int index) {
+    CostumePieceCategory(int index) {
         this.index = index;
         this.flag = (1 << index);
     }

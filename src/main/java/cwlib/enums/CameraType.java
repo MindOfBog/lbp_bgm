@@ -9,7 +9,7 @@ public enum CameraType implements ValueEnum<Integer> {
     CUTSCENE(3);
     
     private final int value;
-    private CameraType(int value) {
+    CameraType(int value) {
         this.value = value;
     }
 

@@ -9,7 +9,7 @@ public enum TutorialState implements ValueEnum<Integer> {
     COMPLETED(0x3);
 
     private final int value;
-    private TutorialState(int value) { this.value = value; }
+    TutorialState(int value) { this.value = value; }
     public Integer getValue() { return this.value; }
 
     public static TutorialState fromValue(byte value) {

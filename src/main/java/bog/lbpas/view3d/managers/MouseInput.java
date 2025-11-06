@@ -59,25 +59,25 @@ public class MouseInput {
                 return;
             if(action == GLFW.GLFW_PRESS)
             {
-                leftButtonPress = button == GLFW.GLFW_MOUSE_BUTTON_1 ? true : leftButtonPress;
-                rightButtonPress = button == GLFW.GLFW_MOUSE_BUTTON_2 ? true : rightButtonPress;
-                middleButtonPress = button == GLFW.GLFW_MOUSE_BUTTON_3 ? true : middleButtonPress;
-                mouse4Press = button == GLFW.GLFW_MOUSE_BUTTON_4 ? true : mouse4Press;
-                mouse5Press = button == GLFW.GLFW_MOUSE_BUTTON_5 ? true : mouse5Press;
-                mouse6Press = button == GLFW.GLFW_MOUSE_BUTTON_6 ? true : mouse6Press;
-                mouse7Press = button == GLFW.GLFW_MOUSE_BUTTON_7 ? true : mouse7Press;
-                mouse8Press = button == GLFW.GLFW_MOUSE_BUTTON_8 ? true : mouse8Press;
+                leftButtonPress = button == GLFW.GLFW_MOUSE_BUTTON_1 || leftButtonPress;
+                rightButtonPress = button == GLFW.GLFW_MOUSE_BUTTON_2 || rightButtonPress;
+                middleButtonPress = button == GLFW.GLFW_MOUSE_BUTTON_3 || middleButtonPress;
+                mouse4Press = button == GLFW.GLFW_MOUSE_BUTTON_4 || mouse4Press;
+                mouse5Press = button == GLFW.GLFW_MOUSE_BUTTON_5 || mouse5Press;
+                mouse6Press = button == GLFW.GLFW_MOUSE_BUTTON_6 || mouse6Press;
+                mouse7Press = button == GLFW.GLFW_MOUSE_BUTTON_7 || mouse7Press;
+                mouse8Press = button == GLFW.GLFW_MOUSE_BUTTON_8 || mouse8Press;
             }
             else if(action == GLFW.GLFW_RELEASE)
             {
-                leftButtonPress = button == GLFW.GLFW_MOUSE_BUTTON_1 ? false : leftButtonPress;
-                rightButtonPress = button == GLFW.GLFW_MOUSE_BUTTON_2 ? false : rightButtonPress;
-                middleButtonPress = button == GLFW.GLFW_MOUSE_BUTTON_3 ? false : middleButtonPress;
-                mouse4Press = button == GLFW.GLFW_MOUSE_BUTTON_4 ? false : mouse4Press;
-                mouse5Press = button == GLFW.GLFW_MOUSE_BUTTON_5 ? false : mouse5Press;
-                mouse6Press = button == GLFW.GLFW_MOUSE_BUTTON_6 ? false : mouse6Press;
-                mouse7Press = button == GLFW.GLFW_MOUSE_BUTTON_7 ? false : mouse7Press;
-                mouse8Press = button == GLFW.GLFW_MOUSE_BUTTON_8 ? false : mouse8Press;
+                leftButtonPress = button != GLFW.GLFW_MOUSE_BUTTON_1 && leftButtonPress;
+                rightButtonPress = button != GLFW.GLFW_MOUSE_BUTTON_2 && rightButtonPress;
+                middleButtonPress = button != GLFW.GLFW_MOUSE_BUTTON_3 && middleButtonPress;
+                mouse4Press = button != GLFW.GLFW_MOUSE_BUTTON_4 && mouse4Press;
+                mouse5Press = button != GLFW.GLFW_MOUSE_BUTTON_5 && mouse5Press;
+                mouse6Press = button != GLFW.GLFW_MOUSE_BUTTON_6 && mouse6Press;
+                mouse7Press = button != GLFW.GLFW_MOUSE_BUTTON_7 && mouse7Press;
+                mouse8Press = button != GLFW.GLFW_MOUSE_BUTTON_8 && mouse8Press;
             }
 
             onMouseClick(button, action, mods);

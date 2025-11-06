@@ -11,7 +11,7 @@ public enum EnemyPart implements ValueEnum<Integer> {
     PAINT(5);
     
     private final int value;
-    private EnemyPart(int value) {
+    EnemyPart(int value) {
         this.value = value;
     }
 

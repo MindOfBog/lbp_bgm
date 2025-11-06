@@ -24,7 +24,7 @@ public class FileChooser {
     public static JFrame chooserParent;
 
     public static String getHomePath(String name) {
-        return Paths.get(System.getProperty("user.home"), "Documents", name.replaceAll("[\\\\/:*?\"\'<>|]", "")).toAbsolutePath().toString();
+        return Paths.get(System.getProperty("user.home"), "Documents", name.replaceAll("[\\\\/:*?\"'<>|]", "")).toAbsolutePath().toString();
     }
 
     public static File openFile(String name, String ext, boolean saveFile) throws Exception {

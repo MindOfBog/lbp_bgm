@@ -18,7 +18,7 @@ public class PSequencer implements Serializable {
 
     public float startPoint;
     public int numChannels;
-    private float[] volume = new float[6];
+    private final float[] volume = new float[6];
 
     @GsonRevision(min=0x36a)
     public float playHead;

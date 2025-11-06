@@ -43,7 +43,8 @@ public class RPlan implements Compressable, Serializable {
      */
     public byte compressionFlags = CompressionFlags.USE_ALL_COMPRESSION;
 
-    public RPlan() {};
+    public RPlan() {}
+
     public RPlan(Revision revision, byte compressionFlags, Thing thing, PMetadata metadata) {
         this.revision = revision;
         this.compressionFlags = compressionFlags;

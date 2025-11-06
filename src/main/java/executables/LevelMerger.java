@@ -76,7 +76,7 @@ public class LevelMerger {
         int uid = ((PWorld)level.world.getPart(Part.WORLD)).thingUIDCounter;
 
         for (int i = 1; i < levels.size(); ++i) {
-            PWorld world = ((PWorld)levels.get(i).world.getPart(Part.WORLD));
+            PWorld world = levels.get(i).world.getPart(Part.WORLD);
             for (Thing thing : world.things) {
                 if (thing == null) continue;
                 

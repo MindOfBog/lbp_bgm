@@ -19,7 +19,7 @@ public class Material {
 
     public Texture[] textures;
     public int texCount;
-    public Vector2i gmatMAP[];
+    public Vector2i[] gmatMAP;
     public int gmatCount;
     public boolean disableCulling;
 

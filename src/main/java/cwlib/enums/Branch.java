@@ -30,7 +30,7 @@ public enum Branch {
     private final short id;
     private final short revision;
 
-    private Branch(int head, int id, int revision) {
+    Branch(int head, int id, int revision) {
         this.head = head;
         this.id = (short) id;
         this.revision = (short) revision;

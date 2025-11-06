@@ -34,13 +34,13 @@ import de.javagl.jgltf.model.AnimationModel.Channel;
 import de.javagl.jgltf.model.io.GltfModelReader;
 
 public class AnimationImporter {
-    private static RAnimation SACKBOY = 
+    private static final RAnimation SACKBOY =
         new Resource(FileIO.getResourceFile("/binary/template.anim")).loadResource(RAnimation.class);
     
-    private GltfModel gltf;
+    private final GltfModel gltf;
     private AnimationModel animation;
-    private RAnimation resource;
-    private SkinModel skin;
+    private final RAnimation resource;
+    private final SkinModel skin;
     HashMap<NodeModel, Integer> nodeToIndex = new HashMap<>();
 
     public AnimationImporter(String glbSourcePath) throws IOException {

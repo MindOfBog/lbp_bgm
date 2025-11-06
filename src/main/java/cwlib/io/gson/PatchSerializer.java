@@ -25,7 +25,7 @@ public class PatchSerializer implements JsonDeserializer<ModPatch>, JsonSerializ
     @Override public JsonElement serialize(ModPatch patch, Type type, JsonSerializationContext jsc) {
         switch (patch.getType()) {
             case TRANSLATION: {
-                return jsc.serialize((TranslationPatch) patch, TranslationPatch.class);
+                return jsc.serialize(patch, TranslationPatch.class);
             }
             default: return null;
         }

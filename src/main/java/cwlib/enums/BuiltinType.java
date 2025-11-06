@@ -34,7 +34,7 @@ public enum BuiltinType implements ValueEnum<Integer> {
     F64(0xb);
 
     private final int value;
-    private BuiltinType(int value) {
+    BuiltinType(int value) {
         this.value = value;
     }
 

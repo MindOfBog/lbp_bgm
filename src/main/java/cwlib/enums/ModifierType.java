@@ -22,7 +22,7 @@ public enum ModifierType {
     EXPORT(0xd);
 
     private final int value;
-    private ModifierType(int value) { this.value = value; }
+    ModifierType(int value) { this.value = value; }
 
     public int getValue() { return this.value; }
 

@@ -39,7 +39,7 @@ public class Mesh {
 
     private ResourceDescriptor descriptor;
 
-    private Mesh() {};
+    private Mesh() {}
 
     public static Mesh getFromCache(ResourceDescriptor descriptor) {
         if (descriptor == null) return null;

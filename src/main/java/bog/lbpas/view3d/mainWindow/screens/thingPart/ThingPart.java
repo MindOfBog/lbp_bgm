@@ -28,6 +28,8 @@ public class ThingPart {
 
     public void addParts(ArrayList<Thing> things) {
 
+        lastThings = things;
+
         for(iPart part : parts)
             part.addPartsReset();
 
@@ -60,12 +62,14 @@ public class ThingPart {
         }
     }
 
+    ArrayList<Thing> lastThings;
+
     private void initParts(View3D view, Element currentSelectionTab, ArrayList<Thing> things)
     {
         parts = new ArrayList<>();
         int tabWidth = 225;
         float panelWidth = Math.round(elementList.size.x - 4f);
-        float panelHeight = 20f;
+        float panelHeight = view.getFontHeight() * 1.8f;
         float closeWidth = Utils.round(panelHeight / panelWidth, 3);
         float finalGap = Utils.round(2f / panelWidth, 3);
         float comboWidth = Utils.round(0.997f - closeWidth - finalGap, 3);
@@ -77,11 +81,21 @@ public class ThingPart {
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
             }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
+            }
         });
         parts.add(new PartAnimationTweak(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
             @Override
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
+            }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
             }
         });
         parts.add(new PartAtmosphericTweak(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
@@ -89,11 +103,21 @@ public class ThingPart {
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
             }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
+            }
         });
         parts.add(new PartAudioWorld(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
             @Override
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
+            }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
             }
         });
         parts.add(new PartBody(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
@@ -101,11 +125,21 @@ public class ThingPart {
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
             }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
+            }
         });
         parts.add(new PartCameraTweak(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
             @Override
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
+            }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
             }
         });
         parts.add(new PartCheckpoint(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
@@ -113,11 +147,21 @@ public class ThingPart {
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
             }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
+            }
         });
         parts.add(new PartConnectorHook(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
             @Override
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
+            }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
             }
         });
         parts.add(new PartControlinator(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
@@ -125,11 +169,21 @@ public class ThingPart {
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
             }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
+            }
         });
         parts.add(new PartCostume(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
             @Override
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
+            }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
             }
         });
         parts.add(new PartCreature(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
@@ -137,11 +191,21 @@ public class ThingPart {
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
             }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
+            }
         });
         parts.add(new PartDecorations(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
             @Override
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
+            }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
             }
         });
         parts.add(new PartEffector(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
@@ -149,11 +213,21 @@ public class ThingPart {
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
             }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
+            }
         });
         parts.add(new PartEnemy(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
             @Override
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
+            }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
             }
         });
         parts.add(new PartFader(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
@@ -161,11 +235,21 @@ public class ThingPart {
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
             }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
+            }
         });
         parts.add(new PartGameplayData(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
             @Override
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
+            }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
             }
         });
         parts.add(new PartGeneratedMesh(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
@@ -173,11 +257,21 @@ public class ThingPart {
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
             }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
+            }
         });
         parts.add(new PartGroup(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
             @Override
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
+            }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
             }
         });
         parts.add(new PartHudElem(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
@@ -185,11 +279,21 @@ public class ThingPart {
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
             }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
+            }
         });
         parts.add(new PartInstrument(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
             @Override
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
+            }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
             }
         });
         parts.add(new PartJoint(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
@@ -197,11 +301,21 @@ public class ThingPart {
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
             }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
+            }
         });
         parts.add(new PartLevelSettings(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
             @Override
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
+            }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
             }
         });
         parts.add(new PartMaterialOverride(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
@@ -209,11 +323,21 @@ public class ThingPart {
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
             }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
+            }
         });
         parts.add(new PartMaterialTweak(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
             @Override
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
+            }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
             }
         });
         parts.add(new PartMetadata(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
@@ -221,11 +345,21 @@ public class ThingPart {
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
             }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
+            }
         });
         parts.add(new PartMicrochip(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
             @Override
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
+            }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
             }
         });
         parts.add(new PartNpc(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
@@ -233,11 +367,21 @@ public class ThingPart {
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
             }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
+            }
         });
         parts.add(new PartPhysicsTweak(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
             @Override
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
+            }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
             }
         });
         parts.add(new PartPocketItem(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
@@ -245,11 +389,21 @@ public class ThingPart {
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
             }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
+            }
         });
         parts.add(new PartPoppetPowerup(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
             @Override
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
+            }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
             }
         });
         parts.add(new PartPos(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
@@ -257,11 +411,21 @@ public class ThingPart {
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
             }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
+            }
         });
         parts.add(new PartPowerUp(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
             @Override
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
+            }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
             }
         });
         parts.add(new PartQuest(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
@@ -269,11 +433,21 @@ public class ThingPart {
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
             }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
+            }
         });
         parts.add(new PartRef(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
             @Override
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
+            }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
             }
         });
         parts.add(new PartRenderMesh(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
@@ -281,11 +455,21 @@ public class ThingPart {
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
             }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
+            }
         });
         parts.add(new PartScript(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
             @Override
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
+            }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
             }
         });
         parts.add(new PartScriptName(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
@@ -293,11 +477,21 @@ public class ThingPart {
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
             }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
+            }
         });
         parts.add(new PartSequencer(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
             @Override
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
+            }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
             }
         });
         parts.add(new PartShape(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
@@ -305,11 +499,21 @@ public class ThingPart {
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
             }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
+            }
         });
         parts.add(new PartSpriteLight(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
             @Override
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
+            }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
             }
         });
         parts.add(new PartStickers(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
@@ -317,11 +521,21 @@ public class ThingPart {
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
             }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
+            }
         });
         parts.add(new PartStreamingData(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
             @Override
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
+            }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
             }
         });
         parts.add(new PartStreamingHint(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
@@ -329,11 +543,21 @@ public class ThingPart {
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
             }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
+            }
         });
         parts.add(new PartSwitch(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
             @Override
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
+            }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
             }
         });
         parts.add(new PartSwitchInput(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
@@ -341,11 +565,21 @@ public class ThingPart {
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
             }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
+            }
         });
         parts.add(new PartSwitchKey(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
             @Override
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
+            }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
             }
         });
         parts.add(new PartTagSynchroniser(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
@@ -353,11 +587,21 @@ public class ThingPart {
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
             }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
+            }
         });
         parts.add(new PartTransition(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
             @Override
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
+            }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
             }
         });
         parts.add(new PartTrigger(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
@@ -365,11 +609,21 @@ public class ThingPart {
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
             }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
+            }
         });
         parts.add(new PartWindTweak(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
             @Override
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
+            }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
             }
         });
         parts.add(new PartWorld(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
@@ -377,17 +631,32 @@ public class ThingPart {
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
             }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
+            }
         });
         parts.add(new PartWormhole(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
             @Override
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
             }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
+            }
         });
         parts.add(new PartYellowHead(tabWidth, comboWidth, panelHeight, closeWidth, finalGap, currentSelectionTab, view) {
             @Override
             public void removePart(Part part) {
                 thingPart.removePart(part, things);
+            }
+
+            @Override
+            public ArrayList<Thing> getThings() {
+                return lastThings;
             }
         });
     }
@@ -437,5 +706,14 @@ public class ThingPart {
         Serializable newPart = (Serializable) sConstructor.newInstance();
 
         addPart(part, newPart, things);
+    }
+
+    public void resize(View3D view)
+    {
+        for(iPart part : parts)
+        {
+            part.partPanel.size.y = view.getFontHeight() + 4;
+            part.resize(view);
+        }
     }
 }

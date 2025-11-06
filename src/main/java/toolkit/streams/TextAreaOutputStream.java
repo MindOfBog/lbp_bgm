@@ -5,7 +5,7 @@ import java.io.OutputStream;
 import javax.swing.JTextArea;
 
 public class TextAreaOutputStream extends OutputStream {
-  private JTextArea textControl;
+  private final JTextArea textControl;
   public TextAreaOutputStream(JTextArea control) { this.textControl = control; }
   public void write(int b) throws IOException {
     this.textControl.append(String.valueOf((char)b));

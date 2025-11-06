@@ -80,12 +80,14 @@ public abstract class PartGeneratedMesh extends iPart {
                 super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
-                    for (int i = 0; i < view.things.size(); i++)
-                        if (view.things.get(i).selected)
-                        {
-                            PGeneratedMesh gmesh = ((PGeneratedMesh)((Thing)view.things.get(i)).thing.getPart(cwlib.enums.Part.GENERATED_MESH));
-                            gmesh.visibilityFlags = Utils.setBitwiseBool(gmesh.visibilityFlags, cwlib.enums.VisibilityFlags.PLAY_MODE, this.isChecked);
-                        }
+                    for (int i = 0; i < getThings().size(); i++)
+                    {
+                        Thing selected = getThings().get(i);
+                        if(!selected.selected)
+                            continue;
+                        PGeneratedMesh gmesh = selected.thing.getPart(Part.GENERATED_MESH);
+                        gmesh.visibilityFlags = Utils.setBitwiseBool(gmesh.visibilityFlags, cwlib.enums.VisibilityFlags.PLAY_MODE, this.isChecked);
+                    }
             }
         });
         FlagEditMode = VisibilityFlags.addCheckbox("EDIT_MODE", "Edit mode", new Checkbox()
@@ -95,12 +97,14 @@ public abstract class PartGeneratedMesh extends iPart {
                 super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
-                    for (int i = 0; i < view.things.size(); i++)
-                        if (view.things.get(i).selected)
-                        {
-                            PGeneratedMesh gmesh = ((PGeneratedMesh)((Thing)view.things.get(i)).thing.getPart(cwlib.enums.Part.GENERATED_MESH));
-                            gmesh.visibilityFlags = Utils.setBitwiseBool(gmesh.visibilityFlags, cwlib.enums.VisibilityFlags.EDIT_MODE, this.isChecked);
-                        }
+                    for (int i = 0; i < getThings().size(); i++)
+                    {
+                        Thing selected = getThings().get(i);
+                        if(!selected.selected)
+                            continue;
+                        PGeneratedMesh gmesh = selected.thing.getPart(Part.GENERATED_MESH);
+                        gmesh.visibilityFlags = Utils.setBitwiseBool(gmesh.visibilityFlags, cwlib.enums.VisibilityFlags.EDIT_MODE, this.isChecked);
+                    }
             }
         });
 
@@ -121,12 +125,14 @@ public abstract class PartGeneratedMesh extends iPart {
                 super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
-                    for (int i = 0; i < view.things.size(); i++)
-                        if (view.things.get(i).selected)
-                        {
-                            PGeneratedMesh gmesh = ((PGeneratedMesh)((Thing)view.things.get(i)).thing.getPart(cwlib.enums.Part.GENERATED_MESH));
-                            gmesh.noBevel = !gmesh.noBevel;
-                        }
+                    for (int i = 0; i < getThings().size(); i++)
+                    {
+                        Thing selected = getThings().get(i);
+                        if(!selected.selected)
+                            continue;
+                        PGeneratedMesh gmesh = selected.thing.getPart(Part.GENERATED_MESH);
+                        gmesh.noBevel = !gmesh.noBevel;
+                    }
             }
         });
         Sharded = partComboBox.addCheckbox("Sharded", "Sharded", new Checkbox()
@@ -136,12 +142,14 @@ public abstract class PartGeneratedMesh extends iPart {
                 super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
-                    for (int i = 0; i < view.things.size(); i++)
-                        if (view.things.get(i).selected)
-                        {
-                            PGeneratedMesh gmesh = ((PGeneratedMesh)((Thing)view.things.get(i)).thing.getPart(cwlib.enums.Part.GENERATED_MESH));
-                            gmesh.sharded = !gmesh.sharded;
-                        }
+                    for (int i = 0; i < getThings().size(); i++)
+                    {
+                        Thing selected = getThings().get(i);
+                        if(!selected.selected)
+                            continue;
+                        PGeneratedMesh gmesh = selected.thing.getPart(Part.GENERATED_MESH);
+                        gmesh.sharded = !gmesh.sharded;
+                    }
             }
         });
         IncludeSides = partComboBox.addCheckbox("IncludeSides", "Include Sides", new Checkbox()
@@ -151,12 +159,14 @@ public abstract class PartGeneratedMesh extends iPart {
                 super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
-                    for (int i = 0; i < view.things.size(); i++)
-                        if (view.things.get(i).selected)
-                        {
-                            PGeneratedMesh gmesh = ((PGeneratedMesh)((Thing)view.things.get(i)).thing.getPart(cwlib.enums.Part.GENERATED_MESH));
-                            gmesh.includeSides = !gmesh.includeSides;
-                        }
+                    for (int i = 0; i < getThings().size(); i++)
+                    {
+                        Thing selected = getThings().get(i);
+                        if(!selected.selected)
+                            continue;
+                        PGeneratedMesh gmesh = selected.thing.getPart(Part.GENERATED_MESH);
+                        gmesh.includeSides = !gmesh.includeSides;
+                    }
             }
         });
 

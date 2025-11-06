@@ -107,7 +107,7 @@ public class ElementEditing extends GuiScreen {
     public void init() {
         elementTool = new Transformation3D.Tool(loader);
 
-        camPos = new DropDownTab("camPosition", "Camera position", new Vector2f(10, 21 + 10), new Vector2f(200, getFontHeight() + 4), renderer, loader, window) {
+        camPos = new DropDownTab("camPosition", "Camera position", new Vector2f(10, getFontHeightHeader() + 7 + 7), new Vector2f(160f * (getFontHeight() / 12f), getFontHeight() + 4), renderer, loader, window) {
             @Override
             public void secondThread() {
                 super.secondThread();
@@ -138,347 +138,10 @@ public class ElementEditing extends GuiScreen {
         positionZ = new Textbox("ztex", new Vector2f(), new Vector2f(), renderer, loader, window);
         positionZ.noLetters().noOthers();
         zPos.elements.add(new Panel.PanelElement(positionZ, 0.9f));
-        currentSelection = new DropDownTab("currentSelection", "Current Selection", new Vector2f(524, 21 + 10), new Vector2f(200, getFontHeight() + 4), renderer, loader, window) {
 
-            @Override
-            public void draw(MouseInput mouseInput, boolean overOther) {
-                super.draw(mouseInput, overOther);
-//                if(shouldResize)
-//                {
-//                    resize();
-//                    shouldResize = false;
-//                }
-            }
-
-            @Override
-            public void secondThread() {
-                super.secondThread();
-
-                boolean hasSelection = false;
-                ArrayList<Integer> selected = new ArrayList<>();
-                boolean hasMesh = false;
-                boolean hasMaterial = false;
-                boolean hasAudio = false;
-
-                for (int i = 0; i < mainView.things.size(); i++)
-                    if(mainView.things.get(i) != null && mainView.things.get(i).selected) {
-                        hasSelection = true;
-                        selected.add(i);
-                    }
-
-                try {
-                    String name = selectionName.setTextboxValueString(mainView.getSelectedName());
-                    if (name != null && selected.size() >= 1)
-                        for (int i : selected)
-                            mainView.things.get(i).thing.name = name;
-                } catch (Exception e) {print.stackTrace(e);}
-
-                Thing parent = mainView.getSelectedParent();
-                String parentName = parent == null ? "None" : parent.name;
-                addParentCombo.tabTitle = parentName == null ? "null" : parentName;
-                Thing group = mainView.getSelectedGroup();
-                String groupName = group == null ? "None" : group.name;
-                addGroupCombo.tabTitle = groupName == null ? "null" : groupName;
-
-                shouldResize = true;
-            }
-
-            boolean shouldResize = false;
-        };
-        currentSelection.addString("namestr", "Name:");
-        selectionName = currentSelection.addTextbox("name");
-
-        Panel parentPanel = currentSelection.addPanel("parentPanel");
-        parentPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("parentstr", "Parent:", mainView.renderer), 0.35f));
-        addParentCombo = new ComboBox("addParentCombo", "None", new Vector2f(), new Vector2f(), 215, mainView.renderer, mainView.loader, mainView.window)
-        {
-            @Override
-            public int[] getParentTransform() {
-                return new int[]{(int) java.lang.Math.round(currentSelection.pos.x), (int) java.lang.Math.round(currentSelection.pos.y), (int) java.lang.Math.round(currentSelection.size.x)};
-            }
-        };
-        Button clearParent = addParentCombo.addButton("clearParent", "None", new Button() {
-            @Override
-            public void clickedButton(int button, int action, int mods) {
-                if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
-                {
-                    mainView.setSelectedParent(null);
-                    addParentCombo.tabTitle = "None";
-                }
-            }
-        });
-
-        Textbox searchParents = new Textbox("searchParents", new Vector2f(), new Vector2f(), mainView.renderer, mainView.loader, mainView.window);
-        Panel searchParentsPanel = addParentCombo.addPanel("searchParentsPanel");
-        searchParentsPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("srchPrnt", "Search:", mainView.renderer), 0.4f));
-        searchParentsPanel.elements.add(new Panel.PanelElement(searchParents, 0.6f));
-
-        addParentCombo.addList("parentList", new ButtonList(mainView.things, mainView.renderer, mainView.loader, mainView.window) {
-
-            int hovering = -1;
-
-            @Override
-            public void draw(MouseInput mouseInput, boolean overElement) {
-                hovering = -1;
-                super.draw(mouseInput, overElement);
-            }
-
-            @Override
-            public void clickedButton(Object object, int index, int button, int action, int mods) {
-                if(button == GLFW.GLFW_MOUSE_BUTTON_1)
-                {
-                    if(action == GLFW.GLFW_PRESS)
-                    {
-                        mainView.setSelectedParent(((bog.lbpas.view3d.core.types.Thing)object).thing);
-                        addParentCombo.tabTitle = ((bog.lbpas.view3d.core.types.Thing)object).thing.name;
-                    }
-                }
-            }
-
-            @Override
-            public void hoveringButton(Object object, int index) {
-                hovering = index;
-            }
-
-            @Override
-            public boolean isHighlighted(Object object, int index) {
-                return hovering == index;
-            }
-
-            @Override
-            public boolean isSelected(Object object, int index) {
-                return ((bog.lbpas.view3d.core.types.Thing)object).thing == mainView.getSelectedParent();
-            }
-
-            @Override
-            public String buttonText(Object object, int index) {
-                String name = ((bog.lbpas.view3d.core.types.Thing)object).thing.name;
-                return name == null ? "null" : name;
-            }
-
-            @Override
-            public boolean searchFilter(Object object, int index) {
-                return buttonText(object, index).toLowerCase().contains(searchParents.getText().toLowerCase());
-            }
-
-            @Override
-            public int buttonHeight() {
-                return super.buttonHeight() + 4;
-            }
-        }, 295);
-        parentPanel.elements.add(new Panel.PanelElement(addParentCombo, 0.65f));
-
-        Panel groupPanel = currentSelection.addPanel("groupPanel");
-        groupPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("groupstr", "Group:", mainView.renderer), 0.35f));
-        addGroupCombo = new ComboBox("addGroupCombo", "None", new Vector2f(), new Vector2f(), 215, mainView.renderer, mainView.loader, mainView.window)
-        {
-            @Override
-            public int[] getParentTransform() {
-                return new int[]{(int) java.lang.Math.round(currentSelection.pos.x), (int) java.lang.Math.round(currentSelection.pos.y), (int) java.lang.Math.round(currentSelection.size.x)};
-            }
-        };
-        Button clearGroup = addGroupCombo.addButton("clearGroup", "None", new Button() {
-            @Override
-            public void clickedButton(int button, int action, int mods) {
-                if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
-                {
-                    mainView.setSelectedGroup(null);
-                    addGroupCombo.tabTitle = "None";
-                }
-            }
-        });
-
-        Textbox searchGroup = new Textbox("searchGroup", new Vector2f(), new Vector2f(), mainView.renderer, mainView.loader, mainView.window);
-        Panel searchGroupPanel = addGroupCombo.addPanel("searchGroupPanel");
-        searchGroupPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("srchGrp", "Search:", mainView.renderer), 0.4f));
-        searchGroupPanel.elements.add(new Panel.PanelElement(searchGroup, 0.6f));
-
-        addGroupCombo.addList("addGroupCombo", new ButtonList(mainView.things, mainView.renderer, mainView.loader, mainView.window) {
-
-            int hovering = -1;
-
-            @Override
-            public void draw(MouseInput mouseInput, boolean overElement) {
-                hovering = -1;
-                super.draw(mouseInput, overElement);
-
-            }
-
-            @Override
-            public void clickedButton(Object object, int index, int button, int action, int mods) {
-                if(button == GLFW.GLFW_MOUSE_BUTTON_1)
-                {
-                    if(action == GLFW.GLFW_PRESS)
-                    {
-                        mainView.setSelectedGroup(((bog.lbpas.view3d.core.types.Thing)object).thing);
-                        addGroupCombo.tabTitle = ((bog.lbpas.view3d.core.types.Thing)object).thing.name;
-                    }
-                }
-            }
-
-            @Override
-            public void hoveringButton(Object object, int index) {
-                hovering = index;
-            }
-
-            @Override
-            public boolean isHighlighted(Object object, int index) {
-                return hovering == index;
-            }
-
-            @Override
-            public boolean isSelected(Object object, int index) {
-                return ((bog.lbpas.view3d.core.types.Thing)object).thing == mainView.getSelectedGroup();
-            }
-
-            @Override
-            public String buttonText(Object object, int index) {
-                String name = ((bog.lbpas.view3d.core.types.Thing)object).thing.name;
-                return name == null ? "null" : name;
-            }
-
-            @Override
-            public boolean searchFilter(Object object, int index) {
-                return buttonText(object, index).toLowerCase().contains(searchGroup.getText().toLowerCase());
-            }
-
-            @Override
-            public int buttonHeight() {
-                return super.buttonHeight() + 4;
-            }
-        }, 295);
-        groupPanel.elements.add(new Panel.PanelElement(addGroupCombo, 0.65f));
-
-        Panel partsLabelAdd = currentSelection.addPanel("partsLabelAdd");
-        partsLabelAdd.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("partsstr", "Parts:", mainView.renderer), 0.6f));
-        ComboBox addPartCombo = new ComboBox("addPartCombo", "Add", new Vector2f(), new Vector2f(), 215, mainView.renderer, mainView.loader, mainView.window)
-        {
-            @Override
-            public int[] getParentTransform() {
-                return new int[]{(int) java.lang.Math.round(currentSelection.pos.x), (int) java.lang.Math.round(currentSelection.pos.y), (int) java.lang.Math.round(currentSelection.size.x)};
-            }
-        };
-        ArrayList<Part> pList = new ArrayList<>();
-
-        for(Part part : Part.values())
-            if(part.getSerializable() != null)
-                pList.add(part);
-
-        Collections.sort(pList, new Comparator<Part>() {
-            @Override
-            public int compare(Part o1, Part o2) {
-                return o1.name().compareTo(o2.name());
-            }
-        });
-
-        Textbox searchParts = new Textbox("searchParts", new Vector2f(), new Vector2f(), mainView.renderer, mainView.loader, mainView.window);
-        Panel searchPartsPanel = addPartCombo.addPanel("searchPartsPanel");
-        searchPartsPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("srchPrt", "Search:", mainView.renderer), 0.4f));
-        searchPartsPanel.elements.add(new Panel.PanelElement(searchParts, 0.6f));
-
-        addPartCombo.addList("addpPartList", new ButtonList(pList, mainView.renderer, mainView.loader, mainView.window) {
-
-            int hovering = -1;
-            int clicked = -1;
-
-            @Override
-            public void draw(MouseInput mouseInput, boolean overElement) {
-                hovering = -1;
-                super.draw(mouseInput, overElement);
-
-                if(clicked != hovering)
-                    clicked = -1;
-            }
-
-            @Override
-            public void clickedButton(Object object, int index, int button, int action, int mods) {
-                if(button == GLFW.GLFW_MOUSE_BUTTON_1)
-                {
-                    if(action == GLFW.GLFW_PRESS)
-                    {
-                        clicked = index;
-                        try {
-                            currentSelectionParts.addPart((Part) object, mainView.things);
-                        } catch (Exception e) {
-                            print.stackTrace(e);
-                        }
-                    }
-                }
-            }
-
-            @Override
-            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement, boolean focusedOther) {
-                if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_RELEASE)
-                    clicked = -1;
-                super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
-            }
-
-            @Override
-            public void hoveringButton(Object object, int index) {
-                hovering = index;
-            }
-
-            @Override
-            public boolean isHighlighted(Object object, int index) {
-                return hovering == index;
-            }
-
-            @Override
-            public boolean isSelected(Object object, int index) {
-                return clicked == index;
-            }
-
-            @Override
-            public String buttonText(Object object, int index) {
-
-                String name = "";
-                for(String part : ((Part)object).name().split("_"))
-                    name += part.substring(0, 1).toUpperCase() + part.substring(1).toLowerCase() + " ";
-
-                return name;
-            }
-
-            @Override
-            public boolean searchFilter(Object object, int index) {
-                return buttonText(object, index).toLowerCase().contains(searchParts.getText().toLowerCase());
-            }
-
-            @Override
-            public int buttonHeight() {
-                return super.buttonHeight() + 4;
-            }
-        }, 295);
-        partsLabelAdd.elements.add(new Panel.PanelElement(addPartCombo, 0.4f));
-
-        partsList = new ElementList("partsList", new Vector2f(), new Vector2f(150), renderer, loader, window)
-        {
-            @Override
-            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overOther, boolean focusedOther) {
-
-                if(isMouseOverElement(pos) && (button == GLFW.GLFW_MOUSE_BUTTON_2 || button == GLFW.GLFW_MOUSE_BUTTON_1) && action == GLFW.GLFW_PRESS)
-                    for(Element element : this.elements)
-                    {
-                        Panel panel = (Panel) element;
-                        Element e = panel.elements.get(0).element;
-                        if(e instanceof ComboBox && !((ComboBox)e).isMouseOverTab(pos) && !((ComboBox)e).isMouseOverElement(pos))
-                            ((ComboBox)e).collapsed(true);
-                    }
-
-                super.onClick(mouseInput, pos, button, action, mods, overOther, focusedOther);
-            }
-
-            @Override
-            public int[] getParentTransform() {
-                return new int[]{(int) java.lang.Math.round(this.pos.x), (int) java.lang.Math.round(this.pos.y), (int) java.lang.Math.round(this.size.x)};
-            }
-        };
-        currentSelection.addElementList(partsList);
-
-        currentSelectionParts = new ThingPart(mainView, partsList, currentSelection, mainView.things);
-
-        helpers = new DropDownTab("helpers", "Helpers", new Vector2f(10, 21 + 10 + camPos.getFullHeight() + 3), new Vector2f(200, getFontHeight() + 4), renderer, loader, window).closed();
+        helpers = new DropDownTab("helpers", "Helpers", new Vector2f(10, getFontHeightHeader() + 7 + 7 + camPos.getFullHeight() + 7), new Vector2f(160f * (getFontHeight() / 12f), getFontHeight() + 4), renderer, loader, window).closed();
         levelBorders = helpers.addCheckbox("levelBorders", "Level borders", Config.LEVEL_BORDERS);
-        ComboBox podHelpers = helpers.addComboBox("podHelpers", "Pod helpers", 200);
+        ComboBox podHelpers = helpers.addComboBox("podHelpers", "Pod helpers", 100);
 
         podHelperLBP1 = (Radiobutton) podHelpers.addCheckbox(new Radiobutton("podHelperLBP1", "LBP1", renderer, loader, window)
         {
@@ -600,7 +263,7 @@ public class ElementEditing extends GuiScreen {
             }
         });
 
-        ComboBox thingTemplates = helpers.addComboBox("thingTemplates", "Thing templates", 200);
+        ComboBox thingTemplates = helpers.addComboBox("thingTemplates", "Thing templates", 100);
 
         thingTemplates.addButton("levelBG", "Level BG", new Button() {
             @Override
@@ -633,13 +296,13 @@ public class ElementEditing extends GuiScreen {
             }
         });
 
-        availableAssets = new DropDownTab("availableModels", "Available assets", new Vector2f(217, 21 + 10), new Vector2f(300, getFontHeight() + 4), renderer, loader, window);
+        availableAssets = new DropDownTab("availableModels", "Available assets", new Vector2f(10 + camPos.size.x + 7, getFontHeightHeader() + 7 + 7), new Vector2f(300f * (getFontHeight() / 12f), getFontHeight() + 4), renderer, loader, window);
         Panel assetsPanel = availableAssets.addPanel("assetsPanel");
         assetsPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Search:", renderer), 0.25f));
         availableAssetsSearch = new Textbox("availableAssetsSearch", new Vector2f(), new Vector2f(), renderer, loader, window);
         assetsPanel.elements.add(new Panel.PanelElement(availableAssetsSearch, 0.6425f));
         assetsPanel.elements.add(new Panel.PanelElement(null, 0.0075f));
-        ComboBoxImage filters = new ComboBoxImage("filters", new Vector2f(), new Vector2f(), 150, renderer, loader, window)
+        ComboBoxImage filters = new ComboBoxImage("filters", new Vector2f(), new Vector2f(), renderer, loader, window)
         {
             @Override
             public Texture getImage() {
@@ -648,7 +311,12 @@ public class ElementEditing extends GuiScreen {
 
             @Override
             public int[] getParentTransform() {
-                return new int[]{(int) java.lang.Math.round(availableAssets.pos.x), (int) java.lang.Math.round(availableAssets.pos.y), (int) java.lang.Math.round(availableAssets.size.x)};
+                return new int[]{java.lang.Math.round(availableAssets.pos.x), java.lang.Math.round(availableAssets.pos.y), java.lang.Math.round(availableAssets.size.x)};
+            }
+
+            @Override
+            public int tabWidth() {
+                return java.lang.Math.round(150f * (getFontHeight() / 12f));
             }
         };
         filterPlans = filters.addCheckbox("filterPlans", "Plans", true);
@@ -977,32 +645,490 @@ public class ElementEditing extends GuiScreen {
             public int buttonHeight() {
                 return getFontHeight() + 8;
             }
+
+            @Override
+            public void resize() {
+                super.resize();
+                this.size.y = (int) (400f * (getFontHeight() / 12f));
+            }
         };
 
-        availableAssets.addList("availableModelsList", assetList, 500);
+        availableAssets.addList("availableModelsList", assetList, (int) (400f * (getFontHeight() / 12f)));
 
-        loadedEntitiesHitbox = new Element() {
+        currentSelection = new DropDownTab("currentSelection", "Current Selection", new Vector2f(10 + camPos.size.x + 7 + availableAssets.size.x + 7, getFontHeightHeader() + 7 + 7), new Vector2f(200f * (getFontHeight() / 12f), getFontHeight() + 4), renderer, loader, window) {
+
+            @Override
+            public void draw(MouseInput mouseInput, boolean overOther) {
+                super.draw(mouseInput, overOther);
+//                if(shouldResize)
+//                {
+//                    resize();
+//                    shouldResize = false;
+//                }
+            }
+
             @Override
             public void secondThread() {
                 super.secondThread();
 
-                this.pos.x = window.width - 308;
-                this.size.y = window.height - 27;
+                boolean hasSelection = false;
+                ArrayList<Integer> selected = new ArrayList<>();
+                boolean hasMesh = false;
+                boolean hasMaterial = false;
+                boolean hasAudio = false;
+
+                for (int i = 0; i < mainView.things.size(); i++)
+                    if(mainView.things.get(i) != null && mainView.things.get(i).selected) {
+                        hasSelection = true;
+                        selected.add(i);
+                    }
+
+                try {
+                    String name = selectionName.setTextboxValueString(mainView.getSelectedName());
+                    if (name != null && selected.size() >= 1)
+                        for (int i : selected)
+                            mainView.things.get(i).thing.name = name;
+                } catch (Exception e) {print.stackTrace(e);}
+
+                Thing parent = mainView.getSelectedParent();
+                String parentName = parent == null ? "None" : parent.name;
+                addParentCombo.tabTitle = parentName == null ? "null" : parentName;
+                Thing group = mainView.getSelectedGroup();
+                String groupName = group == null ? "None" : group.name;
+                addGroupCombo.tabTitle = groupName == null ? "null" : groupName;
+
+                shouldResize = true;
+            }
+
+            boolean shouldResize = false;
+        };
+        currentSelection.addString("namestr", "Name:");
+        selectionName = currentSelection.addTextbox("name");
+
+        Panel parentPanel = currentSelection.addPanel("parentPanel");
+        parentPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("parentstr", "Parent:", mainView.renderer), 0.35f));
+        addParentCombo = new ComboBox("addParentCombo", "None", new Vector2f(), new Vector2f(), mainView.renderer, mainView.loader, mainView.window)
+        {
+            @Override
+            public int[] getParentTransform() {
+                return new int[]{java.lang.Math.round(currentSelection.pos.x), java.lang.Math.round(currentSelection.pos.y), java.lang.Math.round(currentSelection.size.x)};
+            }
+
+            @Override
+            public int tabWidth() {
+                return java.lang.Math.round(215f * (getFontHeight() / 12f));
+            }
+        };
+        Button clearParent = addParentCombo.addButton("clearParent", "None", new Button() {
+            @Override
+            public void clickedButton(int button, int action, int mods) {
+                if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
+                {
+                    mainView.setSelectedParent(null);
+                    addParentCombo.tabTitle = "None";
+                }
+            }
+        });
+
+        Textbox searchParents = new Textbox("searchParents", new Vector2f(), new Vector2f(), mainView.renderer, mainView.loader, mainView.window);
+        Panel searchParentsPanel = addParentCombo.addPanel("searchParentsPanel");
+        searchParentsPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("srchPrnt", "Search:", mainView.renderer), 0.4f));
+        searchParentsPanel.elements.add(new Panel.PanelElement(searchParents, 0.6f));
+
+        addParentCombo.addList("parentList", new ButtonList(mainView.things, mainView.renderer, mainView.loader, mainView.window) {
+
+            int hovering = -1;
+
+            @Override
+            public void draw(MouseInput mouseInput, boolean overElement) {
+                hovering = -1;
+                super.draw(mouseInput, overElement);
+            }
+
+            @Override
+            public void clickedButton(Object object, int index, int button, int action, int mods) {
+                if(button == GLFW.GLFW_MOUSE_BUTTON_1)
+                {
+                    if(action == GLFW.GLFW_PRESS)
+                    {
+                        mainView.setSelectedParent(((bog.lbpas.view3d.core.types.Thing)object).thing);
+                        addParentCombo.tabTitle = ((bog.lbpas.view3d.core.types.Thing)object).thing.name;
+                    }
+                }
+            }
+
+            @Override
+            public void hoveringButton(Object object, int index) {
+                hovering = index;
+            }
+
+            @Override
+            public boolean isHighlighted(Object object, int index) {
+                return hovering == index;
+            }
+
+            @Override
+            public boolean isSelected(Object object, int index) {
+                return ((bog.lbpas.view3d.core.types.Thing)object).thing == mainView.getSelectedParent();
+            }
+
+            @Override
+            public String buttonText(Object object, int index) {
+                String name = ((bog.lbpas.view3d.core.types.Thing)object).thing.name;
+                return name == null ? "null" : name;
+            }
+
+            @Override
+            public boolean searchFilter(Object object, int index) {
+                return buttonText(object, index).toLowerCase().contains(searchParents.getText().toLowerCase());
+            }
+
+            @Override
+            public int buttonHeight() {
+                return super.buttonHeight() + 4;
+            }
+        }, 295);
+        parentPanel.elements.add(new Panel.PanelElement(addParentCombo, 0.65f));
+
+        Panel groupPanel = currentSelection.addPanel("groupPanel");
+        groupPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("groupstr", "Group:", mainView.renderer), 0.35f));
+        addGroupCombo = new ComboBox("addGroupCombo", "None", new Vector2f(), new Vector2f(), mainView.renderer, mainView.loader, mainView.window)
+        {
+            @Override
+            public int[] getParentTransform() {
+                return new int[]{java.lang.Math.round(currentSelection.pos.x), java.lang.Math.round(currentSelection.pos.y), java.lang.Math.round(currentSelection.size.x)};
+            }
+
+            @Override
+            public int tabWidth() {
+                return java.lang.Math.round(215f * (getFontHeight() / 12f));
+            }
+        };
+        Button clearGroup = addGroupCombo.addButton("clearGroup", "None", new Button() {
+            @Override
+            public void clickedButton(int button, int action, int mods) {
+                if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
+                {
+                    mainView.setSelectedGroup(null);
+                    addGroupCombo.tabTitle = "None";
+                }
+            }
+        });
+
+        Textbox searchGroup = new Textbox("searchGroup", new Vector2f(), new Vector2f(), mainView.renderer, mainView.loader, mainView.window);
+        Panel searchGroupPanel = addGroupCombo.addPanel("searchGroupPanel");
+        searchGroupPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("srchGrp", "Search:", mainView.renderer), 0.4f));
+        searchGroupPanel.elements.add(new Panel.PanelElement(searchGroup, 0.6f));
+
+        addGroupCombo.addList("addGroupCombo", new ButtonList(mainView.things, mainView.renderer, mainView.loader, mainView.window) {
+
+            int hovering = -1;
+
+            @Override
+            public void draw(MouseInput mouseInput, boolean overElement) {
+                hovering = -1;
+                super.draw(mouseInput, overElement);
+
+            }
+
+            @Override
+            public void clickedButton(Object object, int index, int button, int action, int mods) {
+                if(button == GLFW.GLFW_MOUSE_BUTTON_1)
+                {
+                    if(action == GLFW.GLFW_PRESS)
+                    {
+                        mainView.setSelectedGroup(((bog.lbpas.view3d.core.types.Thing)object).thing);
+                        addGroupCombo.tabTitle = ((bog.lbpas.view3d.core.types.Thing)object).thing.name;
+                    }
+                }
+            }
+
+            @Override
+            public void hoveringButton(Object object, int index) {
+                hovering = index;
+            }
+
+            @Override
+            public boolean isHighlighted(Object object, int index) {
+                return hovering == index;
+            }
+
+            @Override
+            public boolean isSelected(Object object, int index) {
+                return ((bog.lbpas.view3d.core.types.Thing)object).thing == mainView.getSelectedGroup();
+            }
+
+            @Override
+            public String buttonText(Object object, int index) {
+                String name = ((bog.lbpas.view3d.core.types.Thing)object).thing.name;
+                return name == null ? "null" : name;
+            }
+
+            @Override
+            public boolean searchFilter(Object object, int index) {
+                return buttonText(object, index).toLowerCase().contains(searchGroup.getText().toLowerCase());
+            }
+
+            @Override
+            public int buttonHeight() {
+                return super.buttonHeight() + 4;
+            }
+        }, 295);
+        groupPanel.elements.add(new Panel.PanelElement(addGroupCombo, 0.65f));
+
+        Panel partsLabelAdd = currentSelection.addPanel("partsLabelAdd");
+        partsLabelAdd.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("partsstr", "Parts:", mainView.renderer), 0.6f));
+        ComboBox addPartCombo = new ComboBox("addPartCombo", "Add", new Vector2f(), new Vector2f(), mainView.renderer, mainView.loader, mainView.window)
+        {
+            @Override
+            public int[] getParentTransform() {
+                return new int[]{java.lang.Math.round(currentSelection.pos.x), java.lang.Math.round(currentSelection.pos.y), java.lang.Math.round(currentSelection.size.x)};
+            }
+
+            @Override
+            public int tabWidth() {
+                return java.lang.Math.round(215f * (getFontHeight() / 12f));
+            }
+        };
+        ArrayList<Part> pList = new ArrayList<>();
+
+        for(Part part : Part.values())
+            if(part.getSerializable() != null)
+                pList.add(part);
+
+        Collections.sort(pList, new Comparator<Part>() {
+            @Override
+            public int compare(Part o1, Part o2) {
+                return o1.name().compareTo(o2.name());
+            }
+        });
+
+        Textbox searchParts = new Textbox("searchParts", new Vector2f(), new Vector2f(), mainView.renderer, mainView.loader, mainView.window);
+        Panel searchPartsPanel = addPartCombo.addPanel("searchPartsPanel");
+        searchPartsPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("srchPrt", "Search:", mainView.renderer), 0.4f));
+        searchPartsPanel.elements.add(new Panel.PanelElement(searchParts, 0.6f));
+
+        addPartCombo.addList("addpPartList", new ButtonList(pList, mainView.renderer, mainView.loader, mainView.window) {
+
+            int hovering = -1;
+            int clicked = -1;
+
+            @Override
+            public void draw(MouseInput mouseInput, boolean overElement) {
+                hovering = -1;
+                super.draw(mouseInput, overElement);
+
+                if(clicked != hovering)
+                    clicked = -1;
+            }
+
+            @Override
+            public void clickedButton(Object object, int index, int button, int action, int mods) {
+                if(button == GLFW.GLFW_MOUSE_BUTTON_1)
+                {
+                    if(action == GLFW.GLFW_PRESS)
+                    {
+                        clicked = index;
+                        try {
+                            currentSelectionParts.addPart((Part) object, mainView.things);
+                        } catch (Exception e) {
+                            print.stackTrace(e);
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement, boolean focusedOther) {
+                if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_RELEASE)
+                    clicked = -1;
+                super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
+            }
+
+            @Override
+            public void hoveringButton(Object object, int index) {
+                hovering = index;
+            }
+
+            @Override
+            public boolean isHighlighted(Object object, int index) {
+                return hovering == index;
+            }
+
+            @Override
+            public boolean isSelected(Object object, int index) {
+                return clicked == index;
+            }
+
+            @Override
+            public String buttonText(Object object, int index) {
+
+                String name = "";
+                for(String part : ((Part)object).name().split("_"))
+                    name += part.substring(0, 1).toUpperCase() + part.substring(1).toLowerCase() + " ";
+
+                return name;
+            }
+
+            @Override
+            public boolean searchFilter(Object object, int index) {
+                return buttonText(object, index).toLowerCase().contains(searchParts.getText().toLowerCase());
+            }
+
+            @Override
+            public int buttonHeight() {
+                return super.buttonHeight() + 4;
+            }
+        }, 295);
+        partsLabelAdd.elements.add(new Panel.PanelElement(addPartCombo, 0.4f));
+
+        partsList = new ElementList("partsList", new Vector2f(), new Vector2f((int) (130f * (getFontHeight() / 12f))), renderer, loader, window)
+        {
+            @Override
+            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overOther, boolean focusedOther) {
+
+                if(isMouseOverElement(pos) && (button == GLFW.GLFW_MOUSE_BUTTON_2 || button == GLFW.GLFW_MOUSE_BUTTON_1) && action == GLFW.GLFW_PRESS)
+                    for(Element element : this.elements)
+                    {
+                        Panel panel = (Panel) element;
+                        Element e = panel.elements.get(0).element;
+                        if(e instanceof ComboBox && !((ComboBox)e).isMouseOverTab(pos) && !e.isMouseOverElement(pos))
+                            ((ComboBox)e).collapsed(true);
+                    }
+
+                super.onClick(mouseInput, pos, button, action, mods, overOther, focusedOther);
+            }
+
+            @Override
+            public int[] getParentTransform() {
+                return new int[]{java.lang.Math.round(this.pos.x), java.lang.Math.round(this.pos.y), java.lang.Math.round(this.size.x)};
+            }
+
+            @Override
+            public void resize() {
+                super.resize();
+                this.size.y = (int) (130f * (getFontHeight() / 12f));
+            }
+        };
+        currentSelection.addElementList(partsList);
+
+        currentSelectionParts = new ThingPart(mainView, partsList, currentSelection, mainView.things);
+
+        int width = Math.round(250f * (getFontHeight() / 12f));
+
+        loadedEntitiesHitbox = new Element() {
+
+            @Override
+            public void resize() {
+                super.resize();
+
+                int titleBar = getFontHeightHeader() + 7;
+                int width = Math.round(250f * (getFontHeight() / 12f));
+
+                this.pos.x = window.width - width - 3;
+                this.pos.y = titleBar + 3;
+                this.size.y = window.height - 6 - titleBar;
+                this.size.x = width;
+            }
+        };
+
+        int titleBar = getFontHeightHeader() + 7;
+
+        loadedEntitiesHitbox.pos = new Vector2f(window.width - width - 3, getFontHeightHeader() + 7);
+        loadedEntitiesHitbox.size = new Vector2f(width, window.height - 6 - titleBar);
+        loadedEntitiesHitbox.id = "loadedEntitiesHitbox";
+        loadedEntitiesHitbox.window = window;
+
+        int gap = Math.round(2f * (getFontHeight() / 12f));
+        int height = Math.round(getFontHeight() * 2f);
+
+        loadPlanElements = new Button("loadPlanElements", "Load elements from PLAN/LEVEL", new Vector2f(window.width - 3 - loadedEntitiesHitbox.size.x - 1 + (loadedEntitiesHitbox.size.x / 2 - (350f * (getFontHeight() / 12f)) / 2), titleBar + gap), new Vector2f(350f * (getFontHeight() / 12f), height), renderer, loader, window) {
+            @Override
+            public void clickedButton(int button, int action, int mods) {
+                if (button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS) {
+                    File file = null;
+                    try {
+                        file = FileChooser.openFile(null, "plan,pln,bin,lvl", false, false)[0];
+                    } catch (Exception e) {}
+
+                    if (file == null || !file.exists()) return;
+
+                    for (Entity e : mainView.things)
+                    {
+                        e.selected = false;
+                        currentSelectionParts.selectionChange();
+                    }
+
+                    String ext = file.getAbsolutePath();
+                    ext = ext.substring(ext.lastIndexOf(".") + 1);
+
+                    switch(ext)
+                    {
+                        case "plan":
+                        case "pln":
+                            try {
+                                RPlan plan = new Resource(file.getAbsolutePath()).loadResource(RPlan.class);
+                                if (plan == null) return;
+                                Thing[] things = plan.getThings();
+
+                                mainView.addThings(things, null);
+                            } catch (Exception ex) {print.stackTrace(ex);}
+                            break;
+                        case "bin":
+                            try
+                            {
+                                RLevel level = new Resource(file.getAbsolutePath()).loadResource(RLevel.class);
+                                if (level == null)
+                                    return;
+                                ArrayList<Thing> things = ((PWorld)level.world.getPart(Part.WORLD)).things;
+                                things.remove(level.world);
+
+                                mainView.addThings(things, null);
+                            }catch (Exception ex) {print.stackTrace(ex);}
+                            break;
+                        default:
+                            System.err.println("Unknown file type.");
+                            mainView.pushError("File Error", "Unknown file type.");
+                            break;
+                    }
+                }
             }
 
             @Override
             public void resize() {
                 super.resize();
 
-                this.pos.x = window.width - 308;
-                this.size.y = window.height - 27;
+                int titleBar = getFontHeightHeader() + 7;
+                int gap = Math.round(2f * (getFontHeight() / 12f));
+                int height = Math.round(getFontHeight() * 2f);
+                this.pos.y = titleBar + gap;
+                this.size = new Vector2f(246f * (getFontHeight() / 12f), height);
+                this.pos.x = window.width - 3 - loadedEntitiesHitbox.size.x - 1 + (loadedEntitiesHitbox.size.x / 2 - this.size.x / 2);
             }
         };
-        loadedEntitiesHitbox.pos = new Vector2f(window.width - 308, 21);
-        loadedEntitiesHitbox.size = new Vector2f(305, window.height - 27);
-        loadedEntitiesHitbox.id = "loadedEntitiesHitbox";
-        loadedEntitiesHitbox.window = window;
-        loadedEntities = new ButtonList("loadedEntities", mainView.things, new Vector2f(0, 5 + Math.floor(getFontHeight() * 2f + 2) * 2 + 22), new Vector2f(302 - getFontHeight() - 8, 0), renderer, loader, window) {
+        Panel loadedSearchPanel = new Panel(
+                new Vector2f(loadPlanElements.pos.x, titleBar + gap + loadPlanElements.size.y + gap),
+                loadPlanElements.size,
+                renderer)
+        {
+            @Override
+            public void resize() {
+                super.resize();
+
+                int titleBar = getFontHeightHeader() + 7;
+                int gap = Math.round(2f * (getFontHeight() / 12f));
+                int height = Math.round(getFontHeight() * 2f);
+                this.pos.y = titleBar + gap + loadPlanElements.size.y + gap;
+                this.size = loadPlanElements.size;
+                this.pos.x = loadPlanElements.pos.x;
+            }
+        };
+        loadedSearchPanel.window = window;
+        loadedSearchPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Search:", renderer), 0.25f));
+        loadedEntitiesSearch = new Textbox("loadedEntitiesSearch", new Vector2f(), new Vector2f(), renderer, loader, window);
+        loadedSearchPanel.elements.add(new Panel.PanelElement(loadedEntitiesSearch, 0.75f));
+
+        loadedEntities = new ButtonList("loadedEntities", mainView.things, new Vector2f(loadPlanElements.pos.x + (getFontHeight() + 8), titleBar + gap + loadPlanElements.size.y + gap + loadedSearchPanel.size.y + gap), new Vector2f(loadPlanElements.size.x - (getFontHeight() + 8), 0), renderer, loader, window) {
             int lastSelected = 0;
             @Override
             public void clickedButton(Object object, int index, int button, int action, int mods) {
@@ -1140,45 +1266,51 @@ public class ElementEditing extends GuiScreen {
             @Override
             public void secondThread() {
                 super.secondThread();
-
-                this.pos.x = window.width - (305 - getFontHeight() - 8);
-                this.size.y = window.height - (2 + Math.floor(getFontHeight() * 2f + 2) * 2 + (Math.floor(getFontHeight() * 2f) + 4)) - 28;
+                this.pos.x = loadPlanElements.pos.x + (getFontHeight() + 8);
             }
 
             @Override
             public void resize() {
-                this.pos.x = window.width - (305 - getFontHeight() - 8);
-                this.size.y = window.height - (2 + Math.floor(getFontHeight() * 2f + 2) * 2 + (Math.floor(getFontHeight() * 2f) + 4)) - 28;
                 super.resize();
+                int fontHeight = getFontHeight();
+                int titleBar = getFontHeightHeader() + 7;
+                int gap = Math.round(2f * (fontHeight / 12f));
+                int height = Math.round(fontHeight * 2f);
+                this.pos.y = titleBar + gap + loadPlanElements.size.y + gap + loadedSearchPanel.size.y + gap;
+                this.size.y = window.height - 3 - titleBar - gap - loadPlanElements.size.y - gap - loadedSearchPanel.size.y - gap - height - gap - gap;
+                this.size.x = loadPlanElements.size.x - (fontHeight + 8);
+                this.pos.x = loadPlanElements.pos.x + (fontHeight + 8);
             }
 
             @Override
             public void drawButton(int posY, float scrollY, float scrollHeight, int height, Object object, int i, MouseInput mouseInput, boolean overElement) {
                 super.drawButton(posY, scrollY, scrollHeight, height, object, i, mouseInput, overElement);
 
+                int posX = Math.round(pos.x) - height + 2;
+
                 renderer.endScissor();
-                renderer.startScissor((int) pos.x - height, (int) scrollY, (int) size.x + 2 + height, (int) java.lang.Math.ceil(scrollHeight));
+                renderer.startScissor(Math.round(pos.x) - height, Math.round(scrollY), Math.round(size.x) + 2 + height, (int) java.lang.Math.ceil(scrollHeight));
                 bog.lbpas.view3d.core.types.Thing entity = (bog.lbpas.view3d.core.types.Thing) object;
-                renderer.drawRect((int)pos.x - height + 2, posY, height, height, buttonColor(object, i));
+                renderer.drawRect(posX, posY, height, height, buttonColor(object, i));
                 renderer.drawImageStatic(
-                        entity.thing.hasPart(Part.SPRITE_LIGHT) ? ConstantTextures.getTexture(ConstantTextures.ICON_LIGHT, 30, 30, loader) :
-                        entity.thing.hasPart(Part.LEVEL_SETTINGS) ? ConstantTextures.getTexture(ConstantTextures.ICON_LEVEL_SETTINGS, 30, 30, loader) :
-                        entity.thing.hasPart(Part.JOINT) ? ConstantTextures.getTexture(ConstantTextures.ICON_JOINT, 30, 30, loader) :
-                        entity.thing.hasPart(Part.AUDIO_WORLD) ? ConstantTextures.getTexture(ConstantTextures.ICON_AUDIO, 30, 30, loader) :
-                        entity.thing.hasPart(Part.CHECKPOINT) ? ConstantTextures.getTexture(ConstantTextures.ICON_CHECKPOINT, 30, 30, loader) :
-                        (entity.thing.hasPart(Part.TRIGGER) || entity.thing.hasPart(Part.SWITCH_INPUT) || entity.thing.hasPart(Part.SWITCH) || entity.thing.hasPart(Part.SWITCH_KEY)) ? ConstantTextures.getTexture(ConstantTextures.ICON_TRIGGER, 30, 30, loader) :
-                        entity.thing.hasPart(Part.SCRIPT_NAME) || entity.thing.hasPart(Part.SCRIPT) ? ConstantTextures.getTexture(ConstantTextures.ICON_SCRIPT, 30, 30, loader) :
-                        entity.thing.hasPart(Part.NPC) ? ConstantTextures.getTexture(ConstantTextures.ICON_NPC, 30, 30, loader) :
-                        entity.thing.hasPart(Part.COSTUME) ? ConstantTextures.getTexture(ConstantTextures.ICON_COSTUME, 30, 30, loader) :
-                        entity.thing.hasPart(Part.EMITTER) ? ConstantTextures.getTexture(ConstantTextures.ICON_EMITTER, 30, 30, loader) :
-                        entity.thing.hasPart(Part.RENDER_MESH) ? ConstantTextures.getTexture(ConstantTextures.ICON_MESH, 30, 30, loader) :
-                        (entity.thing.hasPart(Part.POS) && ((PPos)entity.thing.getPart(Part.POS)).thingOfWhichIAmABone != null) ? ConstantTextures.getTexture(ConstantTextures.ICON_BONE, 30, 30, loader) :
-                        entity.thing.hasPart(Part.EFFECTOR) ? ConstantTextures.getTexture(ConstantTextures.ICON_EFFECTOR, 30, 30, loader) :
-                        entity.thing.hasPart(Part.SHAPE) ? ConstantTextures.getTexture(ConstantTextures.ICON_SHAPE, 30, 30, loader) :
-                        entity.thing.hasPart(Part.GROUP) ? ConstantTextures.getTexture(ConstantTextures.ICON_GROUP, 30, 30, loader) :
-                        ConstantTextures.getTexture(ConstantTextures.ICON_UNKNOWN, 30, 30, loader)
-                        , (int)pos.x - height + 2, posY, height, height, loader);
-                renderer.drawRectOutline(new Vector2f(pos.x - height + 2, posY), this.outlineButtonExtra, buttonColor2(object, i), false);
+                        entity.thing.hasPart(Part.SPRITE_LIGHT) ? ConstantTextures.getTexture(ConstantTextures.ICON_LIGHT, height, height, loader) :
+                                entity.thing.hasPart(Part.LEVEL_SETTINGS) ? ConstantTextures.getTexture(ConstantTextures.ICON_LEVEL_SETTINGS, height, height, loader) :
+                                        entity.thing.hasPart(Part.JOINT) ? ConstantTextures.getTexture(ConstantTextures.ICON_JOINT, height, height, loader) :
+                                                entity.thing.hasPart(Part.AUDIO_WORLD) ? ConstantTextures.getTexture(ConstantTextures.ICON_AUDIO, height, height, loader) :
+                                                        entity.thing.hasPart(Part.CHECKPOINT) ? ConstantTextures.getTexture(ConstantTextures.ICON_CHECKPOINT, height, height, loader) :
+                                                                (entity.thing.hasPart(Part.TRIGGER) || entity.thing.hasPart(Part.SWITCH_INPUT) || entity.thing.hasPart(Part.SWITCH) || entity.thing.hasPart(Part.SWITCH_KEY)) ? ConstantTextures.getTexture(ConstantTextures.ICON_TRIGGER, height, height, loader) :
+                                                                        entity.thing.hasPart(Part.SCRIPT_NAME) || entity.thing.hasPart(Part.SCRIPT) ? ConstantTextures.getTexture(ConstantTextures.ICON_SCRIPT, height, height, loader) :
+                                                                                entity.thing.hasPart(Part.NPC) ? ConstantTextures.getTexture(ConstantTextures.ICON_NPC, height, height, loader) :
+                                                                                        entity.thing.hasPart(Part.COSTUME) ? ConstantTextures.getTexture(ConstantTextures.ICON_COSTUME, height, height, loader) :
+                                                                                                entity.thing.hasPart(Part.EMITTER) ? ConstantTextures.getTexture(ConstantTextures.ICON_EMITTER, height, height, loader) :
+                                                                                                        entity.thing.hasPart(Part.RENDER_MESH) ? ConstantTextures.getTexture(ConstantTextures.ICON_MESH, height, height, loader) :
+                                                                                                                (entity.thing.hasPart(Part.POS) && ((PPos)entity.thing.getPart(Part.POS)).thingOfWhichIAmABone != null) ? ConstantTextures.getTexture(ConstantTextures.ICON_BONE, height, height, loader) :
+                                                                                                                        entity.thing.hasPart(Part.EFFECTOR) ? ConstantTextures.getTexture(ConstantTextures.ICON_EFFECTOR, height, height, loader) :
+                                                                                                                                entity.thing.hasPart(Part.SHAPE) ? ConstantTextures.getTexture(ConstantTextures.ICON_SHAPE, height, height, loader) :
+                                                                                                                                        entity.thing.hasPart(Part.GROUP) ? ConstantTextures.getTexture(ConstantTextures.ICON_GROUP, height, height, loader) :
+                                                                                                                                                ConstantTextures.getTexture(ConstantTextures.ICON_UNKNOWN, height, height, loader)
+                        , posX, posY, height, height, loader);
+                renderer.drawRectOutline(new Vector2f(posX, posY), this.outlineButtonExtra, buttonColor2(object, i), false);
             }
 
             @Override
@@ -1191,120 +1323,40 @@ public class ElementEditing extends GuiScreen {
                 mainView.deleteEntity(index);
             }
         }.deletable().draggable();
-        loadPlanElements = new Button("loadPlanElements", "Load elements from PLAN/LEVEL", new Vector2f(window.width - 305, 26), new Vector2f(299, getFontHeight() * 2f), renderer, loader, window) {
-            @Override
-            public void clickedButton(int button, int action, int mods) {
-                if (button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS) {
-                    File file = null;
-                    try {
-                        file = FileChooser.openFile(null, "plan,pln,bin,lvl", false, false)[0];
-                    } catch (Exception e) {}
 
-                    if (file == null || !file.exists()) return;
-
-                    for (Entity e : mainView.things)
-                    {
-                        e.selected = false;
-                        currentSelectionParts.selectionChange();
-                    }
-
-                    String ext = file.getAbsolutePath().toString();
-                    ext = ext.substring(ext.lastIndexOf(".") + 1);
-
-                    switch(ext)
-                    {
-                        case "plan":
-                        case "pln":
-                            try {
-                                RPlan plan = new Resource(file.getAbsolutePath()).loadResource(RPlan.class);
-                                if (plan == null) return;
-                                Thing[] things = plan.getThings();
-
-                                mainView.addThings(things, null);
-                            } catch (Exception ex) {print.stackTrace(ex);}
-                            break;
-                        case "bin":
-                            try
-                            {
-                                RLevel level = new Resource(file.getAbsolutePath()).loadResource(RLevel.class);
-                                if (level == null)
-                                    return;
-                                ArrayList<Thing> things = ((PWorld)level.world.getPart(Part.WORLD)).things;
-                                things.remove(level.world);
-
-                                mainView.addThings(things, null);
-                            }catch (Exception ex) {print.stackTrace(ex);}
-                            break;
-                        default:
-                            System.err.println("Unknown file type.");
-                            mainView.pushError("File Error", "Unknown file type.");
-                            break;
-                    }
-                }
-            }
-
-            @Override
-            public void secondThread() {
-                super.secondThread();
-
-                this.pos.x = window.width - 305;
-            }
-
-            @Override
-            public void resize() {
-                super.resize();
-
-                this.pos.x = window.width - 305;
-            }
-        };
-        Panel loadedSearchPanel = new Panel(
-                new Vector2f(window.width - 306, (getFontHeight() * 1.25f + getFontHeight() * 2) + 9),
-                new Vector2f(300, getFontHeight() * 2f),
+        Panel listEditPanel = new Panel(
+                new Vector2f(loadPlanElements.pos.x, Math.round(window.height - 3 - gap - height)),
+                new Vector2f(loadPlanElements.size),
                 renderer)
         {
             @Override
-            public void secondThread() {
-                super.secondThread();
-
-                this.pos.x = window.width - 306;
-            }
-
-            @Override
             public void resize() {
                 super.resize();
 
-                this.pos.x = window.width - 306;
+                int gap = Math.round(2f * (getFontHeight() / 12f));
+                int height = Math.round(getFontHeight() * 2f);
+                this.pos.y = Math.round(window.height - 3 - gap - height);
+                this.size = new Vector2f(loadPlanElements.size);
+                this.pos.x = loadPlanElements.pos.x;
             }
         };
-        loadedSearchPanel.window = window;
-        loadedSearchPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Search:", renderer), 0.25f));
-        loadedEntitiesSearch = new Textbox("loadedEntitiesSearch", new Vector2f(), new Vector2f(), renderer, loader, window);
-        loadedSearchPanel.elements.add(new Panel.PanelElement(loadedEntitiesSearch, 0.75f));
+        listEditPanel.window = window;
 
-        clearAllEntites = new Button("clearAllEntities", "Clear", new Vector2f(), new Vector2f(97f, getFontHeight() * 2f), renderer, loader, window) {
+        float gapWidth = 0.005f;
+        float btnWidth = 0.33f;
+
+        clearAllEntites = new Button("clearAllEntities", "Clear", new Vector2f(), new Vector2f(), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if (button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
                     mainView.clearEntities();
             }
-
-            @Override
-            public void secondThread() {
-                super.secondThread();
-
-                this.pos.x = window.width - 304;
-                this.pos.y = Math.ceil(window.height - getFontHeight() * 2f) - 6;
-            }
-
-            @Override
-            public void resize() {
-                super.resize();
-
-                this.pos.x = window.width - 304;
-                this.pos.y = Math.ceil(window.height - getFontHeight() * 2f) - 6;
-            }
         };
-        newThing = new Button("newThing", "New", new Vector2f(), new Vector2f(97f, getFontHeight() * 2f), renderer, loader, window) {
+
+        listEditPanel.elements.add(new Panel.PanelElement(clearAllEntites, btnWidth));
+        listEditPanel.elements.add(new Panel.PanelElement(null, gapWidth));
+
+        newThing = new Button("newThing", "New", new Vector2f(), new Vector2f(), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if (button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
@@ -1317,24 +1369,12 @@ public class ElementEditing extends GuiScreen {
                     mainView.things.add(newThing);
                 }
             }
-
-            @Override
-            public void secondThread() {
-                super.secondThread();
-
-                this.pos.x = window.width - 304 + 97f + 3;
-                this.pos.y = Math.ceil(window.height - getFontHeight() * 2f) - 6;
-            }
-
-            @Override
-            public void resize() {
-                super.resize();
-
-                this.pos.x = window.width - 304 + 97f + 3;
-                this.pos.y = Math.ceil(window.height - getFontHeight() * 2f) - 6;
-            }
         };
-        sortEntityList = new Button("sortEntityList", "Sort", new Vector2f(), new Vector2f(97f, getFontHeight() * 2f), renderer, loader, window) {
+
+        listEditPanel.elements.add(new Panel.PanelElement(newThing, btnWidth));
+        listEditPanel.elements.add(new Panel.PanelElement(null, gapWidth));
+
+        sortEntityList = new Button("sortEntityList", "Sort", new Vector2f(), new Vector2f(), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if (button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS) {
@@ -1343,8 +1383,8 @@ public class ElementEditing extends GuiScreen {
                                 @Override
                                 public int compare(bog.lbpas.view3d.core.types.Thing e1, bog.lbpas.view3d.core.types.Thing e2) {
                                     return Boolean.compare(
-                                            ((bog.lbpas.view3d.core.types.Thing)e2).thing.hasPart(Part.RENDER_MESH),
-                                            ((bog.lbpas.view3d.core.types.Thing)e1).thing.hasPart(Part.RENDER_MESH));
+                                            e2.thing.hasPart(Part.RENDER_MESH),
+                                            e1.thing.hasPart(Part.RENDER_MESH));
                                 }
                             }
                                     .thenComparing(new Comparator<bog.lbpas.view3d.core.types.Thing>() {
@@ -1355,24 +1395,14 @@ public class ElementEditing extends GuiScreen {
                                     }));
                 }
             }
-
-            @Override
-            public void secondThread() {
-                super.secondThread();
-
-                this.pos.x = window.width - 304 + (97f + 3) * 2;
-                this.pos.y = Math.ceil(window.height - getFontHeight() * 2f) - 6;
-            }
-
-            @Override
-            public void resize() {
-                super.resize();
-
-                this.pos.x = window.width - 304 + (97f + 3) * 2;
-                this.pos.y = Math.ceil(window.height - getFontHeight() * 2f) - 6;
-            }
         };
-        move = (new ButtonImage("move", new Vector2f(window.width - 345, 21 + 10), new Vector2f(30, 30), renderer, loader, window) {
+
+        listEditPanel.elements.add(new Panel.PanelElement(sortEntityList, btnWidth));
+
+        float btnSize = 30f * (getFontHeight() / 12f);
+        int imgSize = Math.round(btnSize * 0.8f);
+
+        move = (new ButtonImage("move", new Vector2f(window.width - 3 - width - btnSize - 7, getFontHeightHeader() + 7 * 2), new Vector2f(btnSize), new Vector2f(imgSize), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
             }
@@ -1391,25 +1421,20 @@ public class ElementEditing extends GuiScreen {
             }
 
             @Override
-            public void secondThread() {
-                super.secondThread();
-
-                this.pos.x = window.width - 345;
-            }
-
-            @Override
             public void resize() {
                 super.resize();
 
-                this.pos.x = window.width - 345;
+                int width = Math.round(250f * (getFontHeight() / 12f));
+                float btnSize = 30f * (getFontHeight() / 12f);
+                this.pos.x = window.width - 3 - width - btnSize - 7;
             }
 
             @Override
             public Texture getImage() {
-                return ConstantTextures.getTexture(ConstantTextures.TRANSFORMATION_MOVE, 30, 30, loader);
+                return getTexture(ConstantTextures.TRANSFORMATION_MOVE);
             }
         }).clicked();
-        rotate = new ButtonImage("rotate", new Vector2f(window.width - 345, 21 + 10 + 37), new Vector2f(30, 30), renderer, loader, window) {
+        rotate = new ButtonImage("rotate", new Vector2f(window.width - 3 - width - btnSize - 7, getFontHeightHeader() + 7 * 3 + btnSize), new Vector2f(btnSize), new Vector2f(imgSize), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
             }
@@ -1428,25 +1453,20 @@ public class ElementEditing extends GuiScreen {
             }
 
             @Override
-            public void secondThread() {
-                super.secondThread();
-
-                this.pos.x = window.width - 345;
-            }
-
-            @Override
             public void resize() {
                 super.resize();
 
-                this.pos.x = window.width - 345;
+                int width = Math.round(250f * (getFontHeight() / 12f));
+                float btnSize = 30f * (getFontHeight() / 12f);
+                this.pos.x = window.width - 3 - width - btnSize - 7;
             }
 
             @Override
             public Texture getImage() {
-                return ConstantTextures.getTexture(ConstantTextures.TRANSFORMATION_ROTATE, 30, 30, loader);
+                return getTexture(ConstantTextures.TRANSFORMATION_ROTATE);
             }
         };
-        scale = new ButtonImage("scale", new Vector2f(window.width - 345, 21 + 10 + 74), new Vector2f(30, 30), renderer, loader, window) {
+        scale = new ButtonImage("scale", new Vector2f(window.width - 3 - width - btnSize - 7, getFontHeightHeader() + 7 * 4 + btnSize * 2), new Vector2f(btnSize), new Vector2f(imgSize), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
             }
@@ -1465,26 +1485,21 @@ public class ElementEditing extends GuiScreen {
             }
 
             @Override
-            public void secondThread() {
-                super.secondThread();
-
-                this.pos.x = window.width - 345;
-            }
-
-            @Override
             public void resize() {
                 super.resize();
 
-                this.pos.x = window.width - 345;
+                int width = Math.round(250f * (getFontHeight() / 12f));
+                float btnSize = 30f * (getFontHeight() / 12f);
+                this.pos.x = window.width - 3 - width - btnSize - 7;
             }
 
             @Override
             public Texture getImage() {
-                return ConstantTextures.getTexture(ConstantTextures.TRANSFORMATION_SCALE, 30, 30, loader);
+                return getTexture(ConstantTextures.TRANSFORMATION_SCALE);
             }
         };
 
-        preview = new ButtonImage("preview", new Vector2f(window.width - 345, 21 + 10 + 111), new Vector2f(30, 30), renderer, loader, window) {
+        preview = new ButtonImage("preview", new Vector2f(window.width - 3 - width - btnSize - 7, getFontHeightHeader() + 7 * 5 + btnSize * 3), new Vector2f(btnSize), new Vector2f(imgSize), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if(action == GLFW.GLFW_PRESS)
@@ -1494,17 +1509,12 @@ public class ElementEditing extends GuiScreen {
             }
 
             @Override
-            public void secondThread() {
-                super.secondThread();
-
-                this.pos.x = window.width - 345;
-            }
-
-            @Override
             public void resize() {
                 super.resize();
 
-                this.pos.x = window.width - 345;
+                int width = Math.round(250f * (getFontHeight() / 12f));
+                float btnSize = 30f * (getFontHeight() / 12f);
+                this.pos.x = window.width - 3 - width - btnSize - 7;
             }
 
             @Override
@@ -1513,7 +1523,7 @@ public class ElementEditing extends GuiScreen {
             }
         };
 
-        frontView = new ButtonImage("frontView", new Vector2f(window.width - 345, 21 + 10 + 148), new Vector2f(30, 30), new Vector2f(26, 24), renderer, loader, window) {
+        frontView = new ButtonImage("frontView", new Vector2f(window.width - 3 - width - btnSize - 7, getFontHeightHeader() + 7 * 6 + btnSize * 4), new Vector2f(btnSize), new Vector2f(imgSize), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if(action == GLFW.GLFW_PRESS)
@@ -1523,17 +1533,12 @@ public class ElementEditing extends GuiScreen {
             }
 
             @Override
-            public void secondThread() {
-                super.secondThread();
-
-                this.pos.x = window.width - 345;
-            }
-
-            @Override
             public void resize() {
                 super.resize();
 
-                this.pos.x = window.width - 345;
+                int width = Math.round(250f * (getFontHeight() / 12f));
+                float btnSize = 30f * (getFontHeight() / 12f);
+                this.pos.x = window.width - 3 - width - btnSize - 7;
             }
 
             @Override
@@ -1546,9 +1551,7 @@ public class ElementEditing extends GuiScreen {
         this.guiElements.add(loadedEntities);
         this.guiElements.add(loadPlanElements);
         this.guiElements.add(loadedSearchPanel);
-        this.guiElements.add(clearAllEntites);
-        this.guiElements.add(newThing);
-        this.guiElements.add(sortEntityList);
+        this.guiElements.add(listEditPanel);
         this.guiElements.add(move);
         this.guiElements.add(rotate);
         this.guiElements.add(scale);
@@ -1852,8 +1855,8 @@ public class ElementEditing extends GuiScreen {
                             {
                                 float scaleZ = -1;
                                 float ratio = -1;
-                                if(((bog.lbpas.view3d.core.types.Thing)ent).thing.hasPart(Part.SHAPE)) {
-                                    PShape shape = ((bog.lbpas.view3d.core.types.Thing) ent).thing.getPart(Part.SHAPE);
+                                if(ent.thing.hasPart(Part.SHAPE)) {
+                                    PShape shape = ent.thing.getPart(Part.SHAPE);
                                     scaleZ = ent.getTransformation().getScale(new Vector3f()).z;
                                     ratio = shape.thickness / scaleZ;
                                 }
@@ -1862,9 +1865,9 @@ public class ElementEditing extends GuiScreen {
                                 if(ent.forceOrtho)
                                     ent.scale.z += difference.z;
 
-                                if(((bog.lbpas.view3d.core.types.Thing)ent).thing.hasPart(Part.SHAPE))
+                                if(ent.thing.hasPart(Part.SHAPE))
                                 {
-                                    PShape shape = ((bog.lbpas.view3d.core.types.Thing)ent).thing.getPart(Part.SHAPE);
+                                    PShape shape = ent.thing.getPart(Part.SHAPE);
                                     scaleZ = ent.getTransformation().getScale(new Vector3f()).z;
                                     shape.thickness = scaleZ * ratio;
                                 }
@@ -1887,8 +1890,8 @@ public class ElementEditing extends GuiScreen {
                         {
                             float scaleZ = -1;
                             float ratio = -1;
-                            if(((bog.lbpas.view3d.core.types.Thing)ent).thing.hasPart(Part.SHAPE)) {
-                                PShape shape = ((bog.lbpas.view3d.core.types.Thing) ent).thing.getPart(Part.SHAPE);
+                            if(ent.thing.hasPart(Part.SHAPE)) {
+                                PShape shape = ent.thing.getPart(Part.SHAPE);
                                 scaleZ = ent.getTransformation().getScale(new Vector3f()).z;
                                 ratio = shape.thickness / scaleZ;
                             }
@@ -1897,9 +1900,9 @@ public class ElementEditing extends GuiScreen {
                             if(ent.forceOrtho)
                                 ent.scale.add(new Vector3f((mousediff * (mainView.camera.getPos().distance(centerPoint))) / 100000f));
 
-                            if(((bog.lbpas.view3d.core.types.Thing)ent).thing.hasPart(Part.SHAPE))
+                            if(ent.thing.hasPart(Part.SHAPE))
                             {
-                                PShape shape = ((bog.lbpas.view3d.core.types.Thing)ent).thing.getPart(Part.SHAPE);
+                                PShape shape = ent.thing.getPart(Part.SHAPE);
                                 scaleZ = ent.getTransformation().getScale(new Vector3f()).z;
                                 shape.thickness = scaleZ * ratio;
                             }
@@ -1915,11 +1918,50 @@ public class ElementEditing extends GuiScreen {
                     rotate.isClicked,
                     scale.isClicked, window, loader, renderer, mouseInput);
 
-        renderer.doBlur(Consts.GAUSSIAN_RADIUS, Consts.GAUSSIAN_KERNEL, window.width - 308, 24, 304, window.height - 28);
-        renderer.drawRect(window.width - 308, 24, 304, window.height - 28, Config.PRIMARY_COLOR);
-        renderer.drawLine(loader, new Vector2i(window.width - 307, 24), new Vector2i(window.width - 307, window.height - 3), Config.SECONDARY_COLOR, false);
+        int fontHeightHeader = getFontHeightHeader();
+
+        int y = fontHeightHeader + 7;
+        int height = window.height - (fontHeightHeader + 7) - 3;
+        int width = Math.round(250f * (getFontHeight() / 12f));
+
+        renderer.doBlur(Consts.GAUSSIAN_RADIUS, Consts.GAUSSIAN_KERNEL, window.width - width - 3, y, width, height);
+        renderer.drawRect(window.width - width - 3, y, width, height, Config.PRIMARY_COLOR);
+        renderer.drawLine(loader, new Vector2i(window.width - width - 3, y), new Vector2i(window.width - width - 3, y + height), Config.SECONDARY_COLOR, false);
 
         super.draw(mouseInput);
+    }
+
+    @Override
+    public void resize() {
+        super.resize();
+
+        camPos.size = new Vector2f(160f * (getFontHeight() / 12f), getFontHeightHeader() + 4);
+        helpers.size = new Vector2f(160f * (getFontHeight() / 12f), getFontHeightHeader() + 4);
+        availableAssets.size = new Vector2f(300f * (getFontHeight() / 12f), getFontHeightHeader() + 4);
+        currentSelection.size = new Vector2f(200f * (getFontHeight() / 12f), getFontHeightHeader() + 4);
+
+        float btnSize = 30f * (getFontHeight() / 12f);
+        int imgSize = Math.round(btnSize * 0.8f);
+
+        move.pos.y = getFontHeightHeader() + 7 * 2;
+        rotate.pos.y = getFontHeightHeader() + 7 * 3 + btnSize;
+        scale.pos.y = getFontHeightHeader() + 7 * 4 + btnSize * 2;
+        preview.pos.y = getFontHeightHeader() + 7 * 5 + btnSize * 3;
+        frontView.pos.y = getFontHeightHeader() + 7 * 6 + btnSize * 4;
+
+        move.size = new Vector2f(btnSize);
+        move.imageSize = new Vector2f(imgSize);
+        rotate.size = new Vector2f(btnSize);
+        rotate.imageSize = new Vector2f(imgSize);
+        scale.size = new Vector2f(btnSize);
+        scale.imageSize = new Vector2f(imgSize);
+        preview.size = new Vector2f(btnSize);
+        preview.imageSize = new Vector2f(imgSize);
+        frontView.size = new Vector2f(btnSize);
+        frontView.imageSize = new Vector2f(imgSize);
+
+        currentSelectionParts.resize(mainView);
+        //todo
     }
 
     @Override

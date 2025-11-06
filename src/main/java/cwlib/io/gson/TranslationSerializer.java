@@ -47,8 +47,7 @@ public class TranslationSerializer implements JsonSerializer<Matrix4f>, JsonDese
         Vector3f col1 = new Vector3f(elements[4], elements[5], elements[6]);
         Vector3f col2 = new Vector3f(elements[8], elements[9], elements[10]);
 
-        boolean canDecompose = true;
-        if (col0.dot(col1) != 0.0f) canDecompose = false;
+        boolean canDecompose = col0.dot(col1) == 0.0f;
         if (col1.dot(col2) != 0.0f) canDecompose = false;
         if (col0.dot(col2) != 0.0f) canDecompose = false;
         if (!canDecompose)

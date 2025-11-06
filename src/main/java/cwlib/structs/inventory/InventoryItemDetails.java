@@ -103,7 +103,8 @@ public class InventoryItemDetails implements Serializable {
     public transient String translatedLocation = "";
     public transient String translatedCategory = "";
 
-    public InventoryItemDetails() {};
+    public InventoryItemDetails() {}
+
     public InventoryItemDetails(PMetadata metadata) {
         // if (metadata.nameTranslationTag != null && metadata.nameTranslationTag.endsWith("_NAME"))
         //     this.translationTag = metadata.nameTranslationTag.split("_NAME")[0]; // LOL

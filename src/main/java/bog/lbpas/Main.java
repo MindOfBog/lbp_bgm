@@ -51,7 +51,7 @@ public class Main {
     public static Thread loaderThread;
     public static Thread entryDigesionThread;
 
-    public static void main(String args[]){
+    public static void main(String[] args){
 
         try { UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName()); } catch (Exception e) {}
 
@@ -636,7 +636,7 @@ public class Main {
                                         if(row.getSHA1().toString().equalsIgnoreCase("0000000000000000000000000000000000000000") && row.getSize() == 0)
                                         {
                                             if(folders.length <= 1)
-                                                fileTree.root.addFolder(String.valueOf(fileTree.root.children.size()), row, rowName, fileTree.itemHeight);
+                                                fileTree.root.addFolder(String.valueOf(fileTree.root.children.size()), row, rowName, fileTree.itemHeight());
                                             else
                                             {
                                                 FileTree.TreeFolder parentFolder = fileTree.root;
@@ -653,20 +653,20 @@ public class Main {
                                                     if(childFolder == null)
                                                     {
                                                         FileDBRow newRow = LoadedData.PROJECT_DATA.newFileDBRow(((path == null || path.isEmpty() || path.isBlank()) ? "" : path + "/"));
-                                                        childFolder = parentFolder.addFolder(String.valueOf(parentFolder.children.size()), newRow, parent, fileTree.itemHeight);
+                                                        childFolder = parentFolder.addFolder(String.valueOf(parentFolder.children.size()), newRow, parent, fileTree.itemHeight());
                                                     }
 
                                                     parentFolder = childFolder;
                                                     path += parent + "/";
                                                 }
 
-                                                parentFolder.addFolder(String.valueOf(parentFolder.children.size()), row, rowName, fileTree.itemHeight);
+                                                parentFolder.addFolder(String.valueOf(parentFolder.children.size()), row, rowName, fileTree.itemHeight());
                                             }
                                         }
                                         else
                                         {
                                             if(folders.length == 0)
-                                                fileTree.root.addItem(String.valueOf(fileTree.root.children.size()), row, rowName, fileTree.itemHeight);
+                                                fileTree.root.addItem(String.valueOf(fileTree.root.children.size()), row, rowName, fileTree.itemHeight());
                                             else
                                             {
                                                 FileTree.TreeFolder parentFolder = fileTree.root;
@@ -683,14 +683,14 @@ public class Main {
                                                     if(childFolder == null)
                                                     {
                                                         FileDBRow newRow = LoadedData.PROJECT_DATA.newFileDBRow(((path == null || path.isEmpty() || path.isBlank()) ? "" : path + "/"));
-                                                        childFolder = parentFolder.addFolder(String.valueOf(parentFolder.children.size()), newRow, parent, fileTree.itemHeight);
+                                                        childFolder = parentFolder.addFolder(String.valueOf(parentFolder.children.size()), newRow, parent, fileTree.itemHeight());
                                                     }
 
                                                     parentFolder = childFolder;
                                                     path += parent + "/";
                                                 }
 
-                                                parentFolder.addItem(String.valueOf(parentFolder.children.size()), row, rowName, fileTree.itemHeight);
+                                                parentFolder.addItem(String.valueOf(parentFolder.children.size()), row, rowName, fileTree.itemHeight());
                                             }
                                         }
                                     }

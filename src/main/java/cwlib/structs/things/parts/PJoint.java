@@ -94,7 +94,8 @@ public class PJoint implements Serializable {
     // MOTOR 9
     // QUANTIZED 10
 
-    public PJoint() {};
+    public PJoint() {}
+
     public PJoint(Thing a, Thing b) {
         this.a = a;
         this.b = b;

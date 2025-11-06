@@ -21,7 +21,7 @@ import cwlib.types.data.SHA1;
  * Big-endian binary input stream.
  */
 public class MemoryInputStream {
-    public static enum SeekMode {
+    public enum SeekMode {
         Begin,
         Relative,
         End
@@ -248,7 +248,7 @@ public class MemoryInputStream {
     public final long uleb128() {
         long result = 0, i = 0;
         while (true) {
-            long b = (long) (this.u8() & 0xFFl);
+            long b = this.u8() & 0xFFl;
             result |= (b & 0x7fl) << 7l * i;
             if ((b & 0x80l) == 0l)
                 break;
@@ -449,7 +449,7 @@ public class MemoryInputStream {
      */
     public final <T extends Enum<T> & ValueEnum<Byte>> T enum8(Class<T> enumeration) {
         byte number = this.i8();
-        List<T> constants = Arrays.asList(enumeration.getEnumConstants());
+        T[] constants = enumeration.getEnumConstants();
         for (T constant : constants)
             if (constant.getValue().equals(number))
                 return constant;
@@ -475,7 +475,7 @@ public class MemoryInputStream {
      */
     public final <T extends Enum<T> & ValueEnum<Integer>> T enum32(Class<T> enumeration, boolean signed) {
         int number = (signed) ? this.s32() : this.i32();
-        List<T> constants = Arrays.asList(enumeration.getEnumConstants());
+        T[] constants = enumeration.getEnumConstants();
         for (T constant : constants)
             if (constant.getValue().equals(number))
                 return constant;

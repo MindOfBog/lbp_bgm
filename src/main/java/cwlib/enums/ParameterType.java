@@ -18,7 +18,7 @@ public enum ParameterType implements ValueEnum<Byte> {
     SPECULAR_COLOR(0xb);
     
     private final byte value;
-    private ParameterType(int value) {
+    ParameterType(int value) {
         this.value = (byte) value;
     }
 

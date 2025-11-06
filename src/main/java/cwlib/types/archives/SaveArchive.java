@@ -40,7 +40,7 @@ public class SaveArchive extends Fart {
      * RBigProfile in bigfarts,
      * RLocalProfile in littlefarts.
      */
-    private SaveKey key = new SaveKey();
+    private final SaveKey key = new SaveKey();
 
     /**
      * Signature used to verify a profile backup
@@ -224,7 +224,7 @@ public class SaveArchive extends Fart {
 
     @Override public byte[] extract(Fat fat) {
         if (fat == null)
-            throw new NullPointerException("Can\'t search for null entry in archive!");
+            throw new NullPointerException("Can't search for null entry in archive!");
         if (fat.getFileArchive() != this)
             throw new IllegalArgumentException("This entry does not belong to this archive!");
         return this.buffers.get(fat);

@@ -72,12 +72,12 @@ public class ResourceSystem {
     private static final ExecutorService databaseService = Executors.newSingleThreadExecutor();
     private static final ExecutorService resourceService = Executors.newSingleThreadExecutor();
 
-    private static ArrayList<FileData> databases = new ArrayList<>();
-    private static ArrayList<Fart> archives = new ArrayList<>();
+    private static final ArrayList<FileData> databases = new ArrayList<>();
+    private static final ArrayList<Fart> archives = new ArrayList<>();
 
     private static RTranslationTable LAMS;
 
-    private static ArrayList<FileNode> selected = new ArrayList<>();
+    private static final ArrayList<FileNode> selected = new ArrayList<>();
     private static FileNode lastSelected;
 
     private static FileData selectedDatabase;
@@ -87,12 +87,12 @@ public class ResourceSystem {
 
     public static void println(Object message) {
         if (ResourceSystem.DISABLE_LOGS || message == null) return;
-        System.out.println("[ResourceSystem] " + message.toString());
+        System.out.println("[ResourceSystem] " + message);
     }
 
     public static void println(String channel, Object message) {
         if (ResourceSystem.DISABLE_LOGS || message == null) return;
-        System.out.println("[" + channel + "] " + message.toString());
+        System.out.println("[" + channel + "] " + message);
     }
     
     public static void reset() {
@@ -293,7 +293,7 @@ public class ResourceSystem {
         if (entry == null) return null;
         ResourceInfo info = entry.getInfo();
         if (info == null) return null;
-        return (T) info.getResource();
+        return info.getResource();
     }
 
     public static void reloadModel(FileData database) {

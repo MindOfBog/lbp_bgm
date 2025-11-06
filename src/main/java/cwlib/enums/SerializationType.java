@@ -11,7 +11,7 @@ public enum SerializationType {
     
     private final String value;
     
-    private SerializationType(String value) { this.value = value; }
+    SerializationType(String value) { this.value = value; }
     
     public String getValue() { return this.value; }
     public static SerializationType fromValue(String value) {

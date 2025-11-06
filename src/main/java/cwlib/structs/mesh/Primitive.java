@@ -51,7 +51,8 @@ public class Primitive implements Serializable {
      */
     private int region;
 
-    public Primitive() {};
+    public Primitive() {}
+
     public Primitive(int minVert, int maxVert, int firstIndex, int numIndices) {
         this.minVert = minVert;
         this.maxVert = maxVert;

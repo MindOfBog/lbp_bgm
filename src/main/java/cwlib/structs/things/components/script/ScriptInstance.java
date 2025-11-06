@@ -67,7 +67,7 @@ public class ScriptInstance implements Serializable {
                 if (0x198 < version && version < 0x19d) serializer.u8(0);
                 serializer.log(field.name + " " + field.machineType);
                 switch (field.machineType) {
-                    case BOOL: field.value = serializer.bool(writing ? (boolean) field.value : false); break;
+                    case BOOL: field.value = serializer.bool(writing && (boolean) field.value); break;
                     case CHAR: field.value = serializer.i8(writing ? (byte) field.value : 0); break;
                     case S32: 
                         field.value = serializer.i32(writing ? (int) field.value : 0); 

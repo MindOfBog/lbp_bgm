@@ -12,7 +12,8 @@ public class SwitchTarget implements Serializable {
     
     @GsonRevision(min=0x327) public int port;
 
-    public SwitchTarget() {};
+    public SwitchTarget() {}
+
     public SwitchTarget(Thing thing) { this.thing = thing; }
     
     @SuppressWarnings("unchecked")

@@ -9,7 +9,7 @@ public enum SwitchBehavior implements ValueEnum<Integer> {
     ONE_SHOT(3);
     
     private final int value;
-    private SwitchBehavior(int value) {
+    SwitchBehavior(int value) {
         this.value = value;
     }
 

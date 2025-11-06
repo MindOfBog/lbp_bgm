@@ -8,7 +8,7 @@ import javax.swing.ImageIcon;
 import toolkit.windows.Toolkit;
 
 public class ArchiveSelector extends javax.swing.JDialog {
-    private DefaultListModel<String> model = new DefaultListModel<>();
+    private final DefaultListModel<String> model = new DefaultListModel<>();
     private Fart[] selectedArchives;
     
     public ArchiveSelector(Toolkit toolkit, boolean modal) {

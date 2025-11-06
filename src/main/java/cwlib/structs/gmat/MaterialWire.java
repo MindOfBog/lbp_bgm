@@ -18,7 +18,7 @@ public class MaterialWire implements Serializable {
     /**
      * Empty constructor for serialization.
      */
-    public MaterialWire() {};
+    public MaterialWire() {}
 
     /**
      * Creates a connection between two boxes.

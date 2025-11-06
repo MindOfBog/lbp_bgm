@@ -22,7 +22,7 @@ public enum ContentsType implements ValueEnum<Integer> {
      */
     private final GUID badgeMeshGUID;
     
-    private ContentsType(int value, GUID mesh) { 
+    ContentsType(int value, GUID mesh) {
         this.value = value; 
         this.badgeMeshGUID = mesh;
     }

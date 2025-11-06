@@ -24,7 +24,7 @@ public enum SlotType implements ValueEnum<Integer> {
 
     private final int value;
 
-    private SlotType(int value) { this.value = value; }
+    SlotType(int value) { this.value = value; }
     public Integer getValue() { return this.value; }
 
     /**

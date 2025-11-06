@@ -30,6 +30,8 @@ public class Main{
 
     public static void main(String[] args){
 
+        try { UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName()); } catch (Exception e) {}
+        
         System.out.println("starting project launcher");
 
 //        Configuration.GLFW_CHECK_THREAD0.set(false);
@@ -133,7 +135,7 @@ public class Main{
             command.add(programJar);
             if(debug)
                 command.add("-debug");
-            command.add("projectPath=" + Paths.get(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI()).toString());
+            command.add("projectPath=" + Paths.get(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI()));
 
             ProcessBuilder pb = new ProcessBuilder(command);
             pb.directory(new File(System.getProperty("user.dir")));

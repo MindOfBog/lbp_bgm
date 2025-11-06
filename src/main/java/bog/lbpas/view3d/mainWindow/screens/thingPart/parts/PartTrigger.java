@@ -38,14 +38,20 @@ public abstract class PartTrigger extends iPart {
     public void init(View3D view) {
         Panel triggerTypePanel = this.partComboBox.addPanel("triggerTypePanel");
         triggerTypePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("triggerTypeStr", "Trigger Type:", view.renderer), 0.525f));
-        triggerTypeCombo = new ComboBox("triggerTypeCombo", "Radius", new Vector2f(), new Vector2f(), 150, view.renderer, view.loader, view.window);
+        triggerTypeCombo = new ComboBox("triggerTypeCombo", "Radius", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window)
+        {
+            @Override
+            public int tabWidth() {
+                return java.lang.Math.round(150f * (getFontHeight() / 12f));
+            }
+        };
 
         ButtonList triggerTypeList = triggerTypeCombo.addList("triggerTypeList", new ButtonList(Arrays.asList(TriggerType.values()), view.renderer, view.loader, view.window) {
             @Override
             public void clickedButton(Object object, int index, int button, int action, int mods) {
                 String name = ((TriggerType)object).name();
                 name = name.replaceAll("_", " ");
-                name = name.substring(0, 1) + name.substring(1).toLowerCase();
+                name = name.charAt(0) + name.substring(1).toLowerCase();
                 triggerTypeCombo.tabTitle = name;
 
                 for(Thing thing : view.things)
@@ -81,7 +87,7 @@ public abstract class PartTrigger extends iPart {
             public String buttonText(Object object, int index) {
                 String name = ((TriggerType)object).name();
                 name = name.replaceAll("_", " ");
-                name = name.substring(0, 1) + name.substring(1).toLowerCase();
+                name = name.charAt(0) + name.substring(1).toLowerCase();
                 return name;
             }
 
@@ -183,14 +189,14 @@ public abstract class PartTrigger extends iPart {
         for(int i : selected)
             if(things.get(i).thing.hasPart(part))
             {
-                PTrigger trigger = ((PTrigger)things.get(i).thing.getPart(part));
+                PTrigger trigger = things.get(i).thing.getPart(part);
 
                 for(TriggerType type : TriggerType.values())
                     if(triggerTypeCombo.tabTitle == null)
                     {
                         String name = trigger.triggerType.name();
                         name = name.replaceAll("_", " ");
-                        name = name.substring(0, 1) + name.substring(1).toLowerCase();
+                        name = name.charAt(0) + name.substring(1).toLowerCase();
                         triggerTypeCombo.tabTitle = name;
                     }
                     else if(!trigger.triggerType.name().equalsIgnoreCase(triggerTypeCombo.tabTitle))
@@ -251,7 +257,7 @@ public abstract class PartTrigger extends iPart {
         for(int i : selected)
             if(things.get(i).thing.hasPart(part))
             {
-                PTrigger trigger = ((PTrigger)things.get(i).thing.getPart(part));
+                PTrigger trigger = things.get(i).thing.getPart(part);
 
                 if(radiusMul.y == 1)
                     trigger.radiusMultiplier = radiusMul.x;

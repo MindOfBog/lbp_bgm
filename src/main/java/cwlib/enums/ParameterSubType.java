@@ -9,7 +9,7 @@ public enum ParameterSubType implements ValueEnum<Byte> {
     Z(0x3);
     
     private final byte value;
-    private ParameterSubType(int value) {
+    ParameterSubType(int value) {
         this.value = (byte) value;
     }
 

@@ -8,7 +8,7 @@ public enum ShadowType implements ValueEnum<Byte> {
     IF_ON_SCREEN(2);
 
     private final byte value;
-    private ShadowType(int value) {
+    ShadowType(int value) {
         this.value = (byte) (value & 0xFF);
     }
 

@@ -18,7 +18,7 @@ import javax.swing.event.DocumentListener;
 
 public class Dependinator extends javax.swing.JFrame {
     private Resource resource;
-    private FileEntry entry;
+    private final FileEntry entry;
 
     private static class Dependentry {
         private final ResourceDescriptor original;
@@ -50,9 +50,9 @@ public class Dependinator extends javax.swing.JFrame {
         }
     }
     
-    private ArrayList<ResourceDescriptor> removed = new ArrayList<>();
+    private final ArrayList<ResourceDescriptor> removed = new ArrayList<>();
     
-    private DefaultListModel<Dependentry> model = new DefaultListModel<>();
+    private final DefaultListModel<Dependentry> model = new DefaultListModel<>();
     
     public Dependinator(Toolkit toolkit, FileEntry entry) {
         this.initComponents();
@@ -85,7 +85,7 @@ public class Dependinator extends javax.swing.JFrame {
                 this.removeDescriptorButton.setEnabled(false);
                 return;
             }
-            descriptor = ((Dependentry)this.model.getElementAt(index)).replacement;
+            descriptor = this.model.getElementAt(index).replacement;
             this.currentDescriptorText.setText(descriptor.toString());
             this.currentDescriptorText.setEnabled(true);
             this.updateDescriptorButton.setEnabled(false);
@@ -115,7 +115,7 @@ public class Dependinator extends javax.swing.JFrame {
             return;
         }
         
-        Dependentry dependentry = ((Dependentry)this.model.getElementAt(this.descriptorList.getSelectedIndex()));
+        Dependentry dependentry = this.model.getElementAt(this.descriptorList.getSelectedIndex());
         ResourceDescriptor newDescriptor = new ResourceDescriptor(
                 text,
                 dependentry.replacement.getType()
@@ -216,7 +216,7 @@ public class Dependinator extends javax.swing.JFrame {
         int index = this.descriptorList.getSelectedIndex();
         if (index == -1) return;
 
-        Dependentry dependentry = (Dependentry) this.model.getElementAt(index);
+        Dependentry dependentry = this.model.getElementAt(index);
 
         String text = this.currentDescriptorText.getText();
         text = text.replaceAll("\\s", "");
@@ -240,7 +240,7 @@ public class Dependinator extends javax.swing.JFrame {
 
         
         for (int i = 0; i < this.model.size(); ++i) {
-            Dependentry dependentry = (Dependentry) this.model.getElementAt(i);
+            Dependentry dependentry = this.model.getElementAt(i);
 
             ResourceDescriptor oldDescriptor = dependentry.original;
             ResourceDescriptor newDescriptor = dependentry.replacement;
@@ -267,7 +267,7 @@ public class Dependinator extends javax.swing.JFrame {
                 this.descriptorList.setSelectedIndex(index - 1);   
         }
 
-        Dependentry dependentry = (Dependentry) this.model.getElementAt(index);
+        Dependentry dependentry = this.model.getElementAt(index);
         
         this.removed.add(dependentry.original);
         this.model.remove(index);

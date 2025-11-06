@@ -78,7 +78,7 @@ public class TreeSelectionListener {
             toolkit.setEditorPanel(node);
             
             if (services.containsKey(magic))
-                ((ResourceService)services.get(magic)).process(tree, entry, data);
+                services.get(magic).process(tree, entry, data);
             
             if (info != null)
                 Toolkit.INSTANCE.generateEntryContext2(tree);

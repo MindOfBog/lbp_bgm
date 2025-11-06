@@ -37,7 +37,8 @@ public class PStickers implements Serializable {
     @GsonRevision(min=0x15d)
     public EyetoyData[] eyetoyData;
 
-    public PStickers() {};
+    public PStickers() {}
+
     public PStickers(ResourceDescriptor sticker) {
         this.decals = new Decal[] { new Decal(sticker) };
     }

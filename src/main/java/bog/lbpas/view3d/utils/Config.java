@@ -48,7 +48,7 @@ public class Config {
 
     public static Color INTERFACE_TERTIARY_COLOR = new Color(136, 136, 136, 191);
     public static Color INTERFACE_TERTIARY_COLOR2 = new Color(179, 179, 179, 255);
-    public static int VIEWER_SHADING = 1;
+    public static int VIEWER_SHADING = 0;
     public static InputMan FORWARD = new InputMan(GLFW.GLFW_KEY_W, false);
     public static InputMan LEFT = new InputMan(GLFW.GLFW_KEY_A, false);
     public static InputMan BACK = new InputMan(GLFW.GLFW_KEY_S, false);
@@ -77,7 +77,7 @@ public class Config {
     public static int SECONDARY_THREAD = 250;
     public static int LOADER_THREAD = 50;
     public static int ENTRY_DIGEST_THREAD = 1000;
-    public static int GUI_SCALE = 10;
+    public static int GUI_SCALE = 12;
 
     private static String buildSettings()
     {

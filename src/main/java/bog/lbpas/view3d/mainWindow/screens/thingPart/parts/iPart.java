@@ -5,6 +5,7 @@ import bog.lbpas.view3d.mainWindow.ConstantTextures;
 import bog.lbpas.view3d.mainWindow.View3D;
 import bog.lbpas.view3d.managers.MouseInput;
 import bog.lbpas.view3d.renderer.gui.elements.*;
+import bog.lbpas.view3d.utils.Consts;
 import cwlib.enums.Part;
 import cwlib.io.Serializable;
 import cwlib.structs.things.Thing;
@@ -32,7 +33,7 @@ public abstract class iPart {
         this.id = id;
         this.name = name;
 
-        partComboBox = new ComboBox(id, name, null, null, tabWidth, view.renderer, view.loader, view.window, false)
+        partComboBox = new ComboBox(id, name, null, null, view.renderer, view.loader, view.window, false)
         {
             @Override
             public int[] getParentTransform() {
@@ -61,11 +62,17 @@ public abstract class iPart {
                 
                 onExtendPart();
             }
+
+
+            @Override
+            public int tabWidth() {
+                return Math.round(tabWidth * (getFontHeight() / 12f));
+            }
         };
         partPanel = new Panel(new Vector2f(0, panelHeight), view.renderer);
         partPanel.elements.add(new Panel.PanelElement(partComboBox, comboWidth));
         partPanel.elements.add(new Panel.PanelElement(null, finalGap));
-        partPanel.elements.add(new Panel.PanelElement(new ButtonImage("closeButton", new Vector2f(0), new Vector2f(22, 22), new Vector2f(23, 23), view.renderer, view.loader, view.window) {
+        partPanel.elements.add(new Panel.PanelElement(new ButtonImage("closeButton", new Vector2f(0), new Vector2f(22, 22), view.renderer, view.loader, view.window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
@@ -74,7 +81,7 @@ public abstract class iPart {
 
             @Override
             public Texture getImage() {
-                return ConstantTextures.getTexture(ConstantTextures.WINDOW_CLOSE, 23, 23, view.loader);
+                return getTexture(ConstantTextures.WINDOW_CLOSE);
             }
         }, closeWidth));
 
@@ -127,7 +134,11 @@ public abstract class iPart {
     public abstract void addValues(ArrayList<Integer> selected, ArrayList<bog.lbpas.view3d.core.types.Thing> things);
 
     public abstract void removePart(Part part);
-    public abstract void init(View3D view);
+    public void init(View3D view)
+    {
+        partComboBox.addString("notAdded1", "The GUI for \"" + Consts.FONT_SET_ITALICS + this.id + Consts.FONT_RESET + "\"");
+        partComboBox.addString("notAdded2", "has not yet been added.");
+    };
     public <T extends Serializable> void addPart(ArrayList<bog.lbpas.view3d.core.types.Thing> things, bog.lbpas.view3d.core.types.Thing thing, T p){}
 
     public float compareNumber(float number, float valueToCompare)
@@ -159,4 +170,6 @@ public abstract class iPart {
     }
 
     public void onExtendPart(){}
+    public abstract ArrayList<bog.lbpas.view3d.core.types.Thing> getThings();
+    public void resize(View3D view){}
 }

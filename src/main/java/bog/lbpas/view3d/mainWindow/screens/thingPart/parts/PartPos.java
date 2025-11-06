@@ -74,30 +74,32 @@ public abstract class PartPos extends iPart {
 
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
                 {
-                    for (int i = 0; i < view.things.size(); i++)
-                        if (view.things.get(i).selected)
+                    for (int i = 0; i < getThings().size(); i++)
+                    {
+                        Thing selected = getThings().get(i);
+                        if(!selected.selected)
+                            continue;
+                        selected.forceOrtho = this.isChecked;
+
+                        if(!selected.forceOrtho)
                         {
-                            ((Thing)view.things.get(i)).forceOrtho = this.isChecked;
-
-                            if(!((Thing)view.things.get(i)).forceOrtho)
-                            {
-                                ((Thing)view.things.get(i)).rotation = null;
-                                ((Thing)view.things.get(i)).scale = null;
-                            }
-                            else
-                            {
-                                if(((Thing)view.things.get(i)).rotation == null)
-                                    ((Thing)view.things.get(i)).rotation = ((Thing)view.things.get(i)).getTransformation().getEulerAnglesXYZ(new Vector3f());
-                                if(((Thing)view.things.get(i)).scale == null)
-                                    ((Thing)view.things.get(i)).scale = ((Thing)view.things.get(i)).getTransformation().getScale(new Vector3f());
-
-                                Vector3f translation = ((Thing)view.things.get(i)).getTransformation().getTranslation(new Vector3f());
-                                ((Thing)view.things.get(i)).setTransformation(
-                                        new Matrix4f().identity().translate(translation)
-                                                .rotateXYZ(((Thing)view.things.get(i)).rotation)
-                                                .scale(((Thing)view.things.get(i)).scale));
-                            }
+                            selected.rotation = null;
+                            selected.scale = null;
                         }
+                        else
+                        {
+                            if(selected.rotation == null)
+                                selected.rotation = selected.getTransformation().getEulerAnglesXYZ(new Vector3f());
+                            if(selected.scale == null)
+                                selected.scale = selected.getTransformation().getScale(new Vector3f());
+
+                            Vector3f translation = selected.getTransformation().getTranslation(new Vector3f());
+                            selected.setTransformation(
+                                    new Matrix4f().identity().translate(translation)
+                                            .rotateXYZ(selected.rotation)
+                                            .scale(selected.scale));
+                        }
+                    }
                 }
             }
         };
@@ -155,7 +157,7 @@ public abstract class PartPos extends iPart {
             if(!things.get(i).forceOrtho)
                 force = false;
 
-        ForcedOrtho.isChecked = selected.size() == 0 ? false : force;
+        ForcedOrtho.isChecked = selected.size() != 0 && force;
 
         if(ForcedOrtho.isChecked && selected.size() == 1)
         {

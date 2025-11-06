@@ -6,11 +6,13 @@ import bog.lbpas.view3d.core.Model;
 import bog.lbpas.view3d.managers.RenderMan;
 import bog.lbpas.view3d.managers.ShaderMan;
 import bog.lbpas.view3d.managers.WindowMan;
+import bog.lbpas.view3d.renderer.gui.font.FontRenderer;
 import bog.lbpas.view3d.renderer.gui.ingredients.*;
 import bog.lbpas.view3d.utils.Config;
 import bog.lbpas.view3d.utils.Transformation;
 import bog.lbpas.view3d.utils.Utils;
 import bog.lbpas.view3d.utils.print;
+import org.joml.Math;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 import org.lwjgl.opengl.*;
@@ -63,6 +65,7 @@ public class GuiRenderer {
         guiShader.createUniform("smoothst");
         guiShader.createUniform("smoothstWidth");
         guiShader.createUniform("smoothstEdge");
+        guiShader.createUniform("guiScale");
 
         line = loader.loadModel(new float[]{0f, 0f, 100f, 100f});
         defaultQuad = defaultQuad(loader);
@@ -86,6 +89,8 @@ public class GuiRenderer {
         ArrayList<int[]> prevScissors = new ArrayList();
         int[] lastScissor = null;
         ArrayList<int[]> scissorEscapes = new ArrayList();
+
+        guiShader.setUniform("guiScale", FontRenderer.getFontHeight(Math.round(Config.GUI_SCALE), FontRenderer.Fonts.get(FontRenderer.textFont)));
 
         for(Drawable drawable : elements)
         {
@@ -461,7 +466,7 @@ public class GuiRenderer {
                     guiShader.setUniform("dimensions", element.pos, element.size);
                     guiShader.setUniform("abstractInt", element.part);
 
-                    if(element.part == 1)
+                    if(element.part == 1 || element.part == 3)
                         guiShader.setUniform("color", element.color);
 
                     GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, GuiRenderer.defaultQuad.vertexCount);

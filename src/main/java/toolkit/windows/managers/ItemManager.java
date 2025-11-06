@@ -55,7 +55,7 @@ public class ItemManager extends javax.swing.JFrame {
     private static final String DEFAULT_DESCRIPTION = "No description was provided.";
     
     private class ItemWrapper {
-        private InventoryItemDetails details;
+        private final InventoryItemDetails details;
         
         private ItemWrapper(InventoryItemDetails details) {
             this.details = details;
@@ -79,13 +79,13 @@ public class ItemManager extends javax.swing.JFrame {
     }
     
     
-    private Revision revision;
+    private final Revision revision;
     private FileEntry entry;
     private RPlan plan;
     
     private BigSave profile;
     private ArrayList<InventoryItem> inventory;
-    private ArrayList<InventoryItemDetails> items;
+    private final ArrayList<InventoryItemDetails> items;
     private InventoryItemDetails selectedDetails;
     private InventoryItem selectedItem;
     private final DefaultListModel model = new DefaultListModel();
@@ -300,8 +300,7 @@ public class ItemManager extends javax.swing.JFrame {
         
         this.creatorsList.addListSelectionListener(e -> {
             int index = this.creatorsList.getSelectedIndex();
-            if (index == -1) this.removeCreatorButton.setEnabled(false);
-            else this.removeCreatorButton.setEnabled(true);
+            this.removeCreatorButton.setEnabled(index != -1);
         });
         
         this.photoUserList.addListSelectionListener(e -> {

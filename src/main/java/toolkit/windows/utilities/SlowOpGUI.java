@@ -10,8 +10,8 @@ import javax.swing.SwingWorker;
 import toolkit.utilities.SlowOp;
 
 public class SlowOpGUI extends javax.swing.JDialog {
-    private SlowOp operation;
-    private boolean wantQuit = false;
+    private final SlowOp operation;
+    private final boolean wantQuit = false;
     private int code;
     
     private SlowOpGUI(Frame parent, SlowOp operation) {

@@ -108,7 +108,7 @@ public abstract class Fart implements Iterable<Fat> {
      */
     public byte[] extract(Fat fat) {
         if (fat == null)
-            throw new NullPointerException("Can\'t search for null entry in archive!");
+            throw new NullPointerException("Can't search for null entry in archive!");
         if (fat.getFileArchive() != this)
             throw new IllegalArgumentException("This entry does not belong to this archive!");
         try (RandomAccessFile archive = new RandomAccessFile(this.file.getAbsolutePath(), "r")) {
@@ -123,7 +123,7 @@ public abstract class Fart implements Iterable<Fat> {
 
     public byte[] extract(Fat fat, int length) {
         if (fat == null)
-            throw new NullPointerException("Can\'t search for null entry in archive!");
+            throw new NullPointerException("Can't search for null entry in archive!");
         if (fat.getFileArchive() != this)
             throw new IllegalArgumentException("This entry does not belong to this archive!");
         try (RandomAccessFile archive = new RandomAccessFile(this.file.getAbsolutePath(), "r")) {

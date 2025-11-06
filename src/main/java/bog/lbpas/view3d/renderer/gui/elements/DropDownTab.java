@@ -147,11 +147,16 @@ public class DropDownTab extends Element{
     {
         if(!containsElementByID(id))
         {
-            ComboBox comboBox = new ComboBox(id, title, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight() + 4), tabWidth, renderer, loader, window)
+            ComboBox comboBox = new ComboBox(id, title, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight() + 4), renderer, loader, window)
             {
                 @Override
                 public int[] getParentTransform() {
-                    return new int[]{(int) Math.round(this.pos.x), (int) Math.round(this.pos.y), (int) Math.round(this.size.x)};
+                    return new int[]{Math.round(this.pos.x), Math.round(this.pos.y), Math.round(this.size.x)};
+                }
+
+                @Override
+                public int tabWidth() {
+                    return Math.round(tabWidth * (getFontHeight() / 12f));
                 }
             };
             tabElements.add(comboBox);
@@ -170,7 +175,7 @@ public class DropDownTab extends Element{
             {
                 @Override
                 public int[] getParentTransform() {
-                    return new int[]{(int) Math.round(parent.pos.x), (int) Math.round(parent.pos.y), (int) Math.round(parent.size.x)};
+                    return new int[]{Math.round(parent.pos.x), Math.round(parent.pos.y), Math.round(parent.size.x)};
                 }
             };
             tabElements.add(elementList);
@@ -396,8 +401,8 @@ public class DropDownTab extends Element{
         if (!renderer.window.isMinimized) {
             if (this.pos.x < 3)
                 this.pos.x = 3;
-            if (this.pos.y < 23)
-                this.pos.y = 23;
+            if (this.pos.y < getFontHeightHeader() + 8)
+                this.pos.y = getFontHeightHeader() + 8;
 
             if (this.pos.x + this.size.x > renderer.window.width - 3)
                 this.pos.x = renderer.window.width - 3 - this.size.x;
@@ -417,8 +422,8 @@ public class DropDownTab extends Element{
         }
 
         drawBackdrop(yOffset);
-        renderer.drawRect(Math.round(Math.round(pos.x)), Math.round(Math.round(pos.y)), Math.round(Math.round(size.x)), Math.round(Math.round(size.y)), (dragging || (mouseInput.rightButtonPress && isMouseOverTab(mouseInput))) && !overOther ? Config.INTERFACE_TERTIARY_COLOR : (isMouseOverTab(mouseInput) && !overOther ? Config.INTERFACE_SECONDARY_COLOR : Config.INTERFACE_PRIMARY_COLOR));
-        renderer.drawRectOutline(pos, outlineSelection, (dragging || (mouseInput.rightButtonPress && isMouseOverTab(mouseInput))) && !overOther ? Config.INTERFACE_TERTIARY_COLOR2 : (isMouseOverTab(mouseInput) && !overOther ? Config.INTERFACE_SECONDARY_COLOR2 : Config.INTERFACE_PRIMARY_COLOR2), false);
+        renderer.drawRect(Math.round(pos.x), Math.round(pos.y), Math.round(size.x), Math.round(size.y), (dragging || (mouseInput.rightButtonPress && isMouseOverTab(mouseInput))) && !overOther ? Config.INTERFACE_TERTIARY_COLOR : (isMouseOverTab(mouseInput) && !overOther ? Config.INTERFACE_SECONDARY_COLOR : Config.INTERFACE_PRIMARY_COLOR));
+        renderer.drawRectOutline(new Vector2f(Math.round(pos.x), Math.round(pos.y)), outlineSelection, (dragging || (mouseInput.rightButtonPress && isMouseOverTab(mouseInput))) && !overOther ? Config.INTERFACE_TERTIARY_COLOR2 : (isMouseOverTab(mouseInput) && !overOther ? Config.INTERFACE_SECONDARY_COLOR2 : Config.INTERFACE_PRIMARY_COLOR2), false);
 
         if(extended && (resizeX || resizeY))
         {
@@ -430,7 +435,7 @@ public class DropDownTab extends Element{
         }
 
         renderer.startScissor(Math.round(pos.x), Math.round(pos.y), Math.round(size.x - size.y), Math.round(size.y));
-        renderer.drawHeader(Consts.FONT_SET_BOLD + tabTitle, Config.FONT_COLOR, Math.round(pos.x + (size.y + fontHeight) / 8f), Math.round(pos.y + size.y / 2f - fontHeight / 2f));
+        renderer.drawHeader(Consts.FONT_SET_BOLD + tabTitle, Config.FONT_COLOR, Math.round(pos.x + (size.y + fontHeight) / 8f), Math.round(pos.y + (size.y / 2f) - (fontHeight / 2f)));
         renderer.endScissor();
 
         float triangleSize = fontHeight * 0.6f;
@@ -457,7 +462,17 @@ public class DropDownTab extends Element{
         super.resize();
 
         for(int i = 0; i < tabElements.size(); i++)
+        {
+            if(tabElements.get(i).scalesWithGui() && tabElements.get(i).size != null)
+                tabElements.get(i).size.y = getFontHeight() + 4;
+
+            if (tabElements.get(i).size == null)
+                tabElements.get(i).size = new Vector2f(size.x - (tabElements.get(i) instanceof ButtonList ? 0 : 4), getFontHeight() + 4);
+            else
+                tabElements.get(i).size = new Vector2f(size.x - (tabElements.get(i) instanceof ButtonList ? 0 : 4), tabElements.get(i).size.y);
+
             tabElements.get(i).resize();
+        }
 
         float yOffset = 0;
         if (extended)
@@ -472,16 +487,16 @@ public class DropDownTab extends Element{
         if(outlineElement != null)
             this.outlineElement.cleanup(loader);
 
-        this.outlineSelection = LineStrip.processVerts(LineStrip.getRectangle(size), loader, window);
-        this.outlineElement = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(size.x, (int) Math.round(2f + yOffset)), LineStrip.UP), loader, window);
+        this.outlineSelection = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(Math.round(size.x), Math.round(size.y))), loader, window);
+        this.outlineElement = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(Math.round(size.x), Math.round(2f + yOffset)), LineStrip.UP), loader, window);
     }
 
     public void drawBackdrop(float yOffset)
     {
-        int x = (int) Math.round(pos.x);
-        int y = (int) Math.round(pos.y);
-        int xSize = (int) Math.round(size.x);
-        int ySize = (int) Math.round((extended ? 2f : 0f) + yOffset + size.y);
+        int x = Math.round(pos.x);
+        int y = Math.round(pos.y);
+        int xSize = Math.round(size.x);
+        int ySize = Math.round((extended ? 2f : 0f) + yOffset + size.y);
         if(Config.PRIMARY_COLOR.getAlpha() < 253 ||
                 Config.INTERFACE_TERTIARY_COLOR.getAlpha() < 253 ||
                 Config.INTERFACE_SECONDARY_COLOR.getAlpha() < 253 ||
@@ -492,8 +507,10 @@ public class DropDownTab extends Element{
 
         if (extended)
         {
-            renderer.drawRect(x, (int) Math.round(pos.y + size.y), xSize, (int) Math.round(2f + yOffset), Config.PRIMARY_COLOR);
-            renderer.drawRectOutline(new Vector2f(pos.x, pos.y + size.y), outlineElement, Config.SECONDARY_COLOR, false);
+            int yE = Math.round(pos.y + size.y);
+
+            renderer.drawRect(x, yE, xSize, Math.round(2f + yOffset), Config.PRIMARY_COLOR);
+            renderer.drawRectOutline(new Vector2f(x, yE), outlineElement, Config.SECONDARY_COLOR, false);
         }
     }
 
@@ -534,12 +551,8 @@ public class DropDownTab extends Element{
             Element element = tabElements.get(i);
             element.pos = new Vector2f(pos.x + (element instanceof ButtonList ? 0 : 2), pos.y + size.y + 2 + yOffset);
 
-            if (element.size == null)
-                element.size = new Vector2f(size.x - (element instanceof ButtonList ? 0 : 4), getFontHeight() + 4);
-            else
-                element.size = new Vector2f(size.x - (element instanceof ButtonList ? 0 : 4), element.size.y);
-
-            yOffset += element.size.y + 2;
+            if(element.size != null)
+                yOffset += element.size.y + 2;
         }
         if (resizeX || resizeY)
             yOffset += 12;
@@ -797,6 +810,7 @@ public class DropDownTab extends Element{
     public static class StringElement extends  Element
     {
         public String string = "";
+        public boolean header = false;
 
         public StringElement(String id, String string, RenderMan renderer)
         {
@@ -811,12 +825,32 @@ public class DropDownTab extends Element{
             this.id = id;
             this.renderer = renderer;
         }
+        public StringElement(String id, String string, RenderMan renderer, boolean header)
+        {
+            this.string = string;
+            this.id = id;
+            this.renderer = renderer;
+            this.header = header;
+        }
+
+        public StringElement(String id, RenderMan renderer, boolean header)
+        {
+            this.string = "";
+            this.id = id;
+            this.renderer = renderer;
+            this.header = header;
+        }
 
         @Override
         public void draw(MouseInput mouseInput, boolean overElement) {
             super.draw(mouseInput, overElement);
 
-            try{renderer.drawString(stringToDraw(), Config.FONT_COLOR, (int) Math.round(pos.x + getFontHeight() / 4), (int) Math.round(pos.y + size.y / 2 - getFontHeight() / 2));}catch (Exception e){}
+            try{
+                if(header)
+                    renderer.drawHeader(Consts.FONT_SET_BOLD + stringToDraw(), Config.FONT_COLOR, Math.round(pos.x + getFontHeight() / 4), Math.round(pos.y + size.y / 2 - getFontHeight() / 2));
+                else
+                    renderer.drawString(stringToDraw(), Config.FONT_COLOR, Math.round(pos.x + getFontHeight() / 4), Math.round(pos.y + size.y / 2 - getFontHeight() / 2));
+            }catch (Exception e){}
         }
 
         public String stringToDraw()
@@ -828,7 +862,6 @@ public class DropDownTab extends Element{
     public static class SeparatorElement extends Element
     {
         Model line;
-
         public SeparatorElement(String id, Vector2f pos, float width, RenderMan renderer, ObjectLoader loader, WindowMan window) {
             this.id = id;
             this.pos = pos;
@@ -837,12 +870,15 @@ public class DropDownTab extends Element{
             this.loader = loader;
             this.window = window;
 
-            line = Line.getLine(window, loader, new Vector2i(0), new Vector2i((int) Math.round(pos.x + width), 0));
+            line = Line.getLine(window, loader, new Vector2i(0), new Vector2i(Math.round(pos.x + width), 0));
+
+            this.scalesWithGui = false;
         }
 
         @Override
         public void resize() {
-            line = Line.getLine(window, loader, new Vector2i(0), new Vector2i((int) Math.round(size.x), 0));
+            super.resize();
+            line = Line.getLine(window, loader, new Vector2i(0), new Vector2i(Math.round(size.x), 0));
         }
 
         @Override

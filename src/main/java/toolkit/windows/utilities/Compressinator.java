@@ -57,7 +57,7 @@ public class Compressinator extends javax.swing.JFrame {
             String postfix = String.format(" [%s]", this.descriptor.getType());
             if (this.entry != null)
                 return this.entry.getName() + postfix;
-            return this.descriptor.toString() + postfix;
+            return this.descriptor + postfix;
         }
 
         @Override public int hashCode() { return this.descriptor.hashCode(); }
@@ -70,7 +70,7 @@ public class Compressinator extends javax.swing.JFrame {
     
     private Revision revision;
     private byte[] dataSource;
-    private DefaultListModel<Dependentry> model = new DefaultListModel<>();
+    private final DefaultListModel<Dependentry> model = new DefaultListModel<>();
     
     public Compressinator() {
         this.initComponents();

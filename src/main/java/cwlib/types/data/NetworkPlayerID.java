@@ -14,7 +14,8 @@ public class NetworkPlayerID implements Serializable {
     private byte[] opt = new byte[8];
     private byte[] reserved = new byte[8];
     
-    public NetworkPlayerID() {};
+    public NetworkPlayerID() {}
+
     public NetworkPlayerID(String psid) {
         this.handle = new NetworkOnlineID(psid);
     }

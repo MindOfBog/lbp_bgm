@@ -38,7 +38,7 @@ public class Bone extends AnimBone {
     /**
      * Creates an empty bone
      */
-    public Bone() {};
+    public Bone() {}
 
     /**
      * Creates an empty named bone

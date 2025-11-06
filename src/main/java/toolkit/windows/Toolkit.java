@@ -214,7 +214,7 @@ public class Toolkit extends javax.swing.JFrame {
         this.exportSceneGraph.setVisible(false);
     }
     
-    private MouseListener showContextMenu = new MouseAdapter() {
+    private final MouseListener showContextMenu = new MouseAdapter() {
         public void mousePressed(MouseEvent e) {
             if (SwingUtilities.isRightMouseButton(e)) {
                 JTree tree = (JTree) e.getComponent();
@@ -1255,7 +1255,7 @@ public class Toolkit extends javax.swing.JFrame {
                 "Field", "Value"
             }
         ) {
-            boolean[] canEdit = new boolean [] {
+            final boolean[] canEdit = new boolean [] {
                 true, false
             };
 
@@ -2213,7 +2213,7 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_openModMetadataActionPerformed
 
     private void editProfileSlotsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editProfileSlotsActionPerformed
-        new SlotManager((BigSave) ResourceSystem.getSelectedDatabase(), null).setVisible(true);
+        new SlotManager(ResourceSystem.getSelectedDatabase(), null).setVisible(true);
     }//GEN-LAST:event_editProfileSlotsActionPerformed
 
     private void newVitaDBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newVitaDBActionPerformed
@@ -2231,8 +2231,7 @@ public class Toolkit extends javax.swing.JFrame {
     public boolean confirmOverwrite(File file) {
         if (file.exists()) {
             int result = JOptionPane.showConfirmDialog(null, "This file already exists, are you sure you want to override it?", "Confirm overwrite", JOptionPane.YES_NO_OPTION);
-            if (result == JOptionPane.NO_OPTION) return false;
-            return true;
+            return result != JOptionPane.NO_OPTION;
         }
         return true;
     }
@@ -2242,7 +2241,7 @@ public class Toolkit extends javax.swing.JFrame {
     }//GEN-LAST:event_createFileArchiveActionPerformed
 
     private void editProfileItemsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editProfileItemsActionPerformed
-        new ItemManager((BigSave) ResourceSystem.getSelectedDatabase()).setVisible(true);
+        new ItemManager(ResourceSystem.getSelectedDatabase()).setVisible(true);
     }//GEN-LAST:event_editProfileItemsActionPerformed
 
     private void installProfileModActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_installProfileModActionPerformed
@@ -2528,7 +2527,7 @@ public class Toolkit extends javax.swing.JFrame {
             FileEntry entry = child.getEntry();
             if (entry != null) {
                 String folder = entry.getFolder();
-                folder = newFolder + folder.substring(parent.length(), folder.length());
+                folder = newFolder + folder.substring(parent.length());
                 entry.setPath(folder + "/" + child.getName());
             }
         }
@@ -2712,7 +2711,7 @@ public class Toolkit extends javax.swing.JFrame {
         
         RLevel level = new RLevel();
         
-        PWorld world = (PWorld) level.world.getPart(Part.WORLD);
+        PWorld world = level.world.getPart(Part.WORLD);
         ArrayList<Thing> things = world.things;
         
         for (ResourceDescriptor descriptor : palette.planList) {
@@ -2916,7 +2915,7 @@ public class Toolkit extends javax.swing.JFrame {
             return;
         }
         
-        FileDB database = (FileDB) ResourceSystem.getSelectedDatabase();
+        FileDB database = ResourceSystem.getSelectedDatabase();
         for (RemapDBRow row : remap) {
             FileDBRow source = database.get(row.getFrom());
             if (source == null) continue;
@@ -3066,7 +3065,7 @@ public class Toolkit extends javax.swing.JFrame {
         hex.repaint();
     }
     
-    public Toolkit run(String args[]) {
+    public Toolkit run(String[] args) {
         for (String arg : args) {
             if (arg.endsWith(".farc"))
                 ArchiveCallbacks.loadFileArchive(new File(arg));

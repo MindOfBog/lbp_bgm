@@ -58,14 +58,15 @@ public abstract class PartGroup extends iPart {
                 super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
-                    for (int i = 0; i < view.things.size(); i++)
-                        if (view.things.get(i).selected)
-                        {
-                            bog.lbpas.view3d.core.types.Thing thing = (bog.lbpas.view3d.core.types.Thing) view.things.get(i);
-                            PGroup group = thing.thing.getPart(Part.GROUP);
+                    for (int i = 0; i < getThings().size(); i++)
+                    {
+                        Thing thing = getThings().get(i);
+                        if(!thing.selected)
+                            continue;
+                        PGroup group = thing.thing.getPart(Part.GROUP);
 
-                            group.flags = Utils.setBitwiseBool(group.flags, GroupFlags.COPYRIGHT, this.isChecked);
-                        }
+                        group.flags = Utils.setBitwiseBool(group.flags, GroupFlags.COPYRIGHT, this.isChecked);
+                    }
             }
         });
         editable = partComboBox.addCheckbox("editable", "Editable", new Checkbox()
@@ -75,14 +76,15 @@ public abstract class PartGroup extends iPart {
                 super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
-                    for (int i = 0; i < view.things.size(); i++)
-                        if (view.things.get(i).selected)
-                        {
-                            bog.lbpas.view3d.core.types.Thing thing = (bog.lbpas.view3d.core.types.Thing) view.things.get(i);
-                            PGroup group = thing.thing.getPart(Part.GROUP);
+                    for (int i = 0; i < getThings().size(); i++)
+                    {
+                        Thing thing = getThings().get(i);
+                        if(!thing.selected)
+                            continue;
+                        PGroup group = thing.thing.getPart(Part.GROUP);
 
-                            group.flags = Utils.setBitwiseBool(group.flags, GroupFlags.EDITABLE, this.isChecked);
-                        }
+                        group.flags = Utils.setBitwiseBool(group.flags, GroupFlags.EDITABLE, this.isChecked);
+                    }
             }
         });
         pickupAllMembers = partComboBox.addCheckbox("pickupAllMembers", "Pickup all members", new Checkbox()
@@ -92,34 +94,42 @@ public abstract class PartGroup extends iPart {
                 super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
-                    for (int i = 0; i < view.things.size(); i++)
-                        if (view.things.get(i).selected)
-                        {
-                            bog.lbpas.view3d.core.types.Thing thing = (bog.lbpas.view3d.core.types.Thing) view.things.get(i);
-                            PGroup group = thing.thing.getPart(Part.GROUP);
+                    for (int i = 0; i < getThings().size(); i++)
+                    {
+                        Thing thing = getThings().get(i);
+                        if(!thing.selected)
+                            continue;
+                        PGroup group = thing.thing.getPart(Part.GROUP);
 
-                            group.flags = Utils.setBitwiseBool(group.flags, GroupFlags.PICKUP_ALL_MEMBERS, this.isChecked);
-                        }
+                        group.flags = Utils.setBitwiseBool(group.flags, GroupFlags.PICKUP_ALL_MEMBERS, this.isChecked);
+                    }
             }
         });
 
         Panel emitterPanel = partComboBox.addPanel("emitterPanel");
         emitterPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("emitterStr", "Emitter:", view.renderer), 0.55f));
-        emitter = new ComboBox("emitter", "None", new Vector2f(), new Vector2f(), 250, view.renderer, view.loader, view.window);
+        emitter = new ComboBox("emitter", "None", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window)
+        {
+            @Override
+            public int tabWidth() {
+                return Math.round(250f * (getFontHeight() / 12f));
+            }
+        };
 
         emitter.addButton("nullEmitter", "None", new Button() {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
-                    for (int i = 0; i < view.things.size(); i++)
-                        if (view.things.get(i).selected)
-                        {
-                            bog.lbpas.view3d.core.types.Thing thing = (bog.lbpas.view3d.core.types.Thing) view.things.get(i);
-                            PGroup group = thing.thing.getPart(Part.GROUP);
+                    for (int i = 0; i < getThings().size(); i++)
+                    {
+                        Thing selected = getThings().get(i);
+                        if(!selected.selected)
+                            continue;
+                        PGroup group = selected.thing.getPart(Part.GROUP);
 
-                            group.emitter = null;
-                            emitter.tabTitle = "None";
-                        }
+                        group.emitter = null;
+                        emitter.tabTitle = "None";
+                    }
             }
         });
 
@@ -132,15 +142,16 @@ public abstract class PartGroup extends iPart {
             @Override
             public void clickedButton(Object object, int index, int button, int action, int mods) {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
-                    for (int i = 0; i < view.things.size(); i++)
-                        if (view.things.get(i).selected)
-                        {
-                            bog.lbpas.view3d.core.types.Thing thing = (bog.lbpas.view3d.core.types.Thing) view.things.get(i);
-                            PGroup group = thing.thing.getPart(Part.GROUP);
+                    for (int i = 0; i < getThings().size(); i++)
+                    {
+                        Thing selected = getThings().get(i);
+                        if(!selected.selected)
+                            continue;
+                        PGroup group = selected.thing.getPart(Part.GROUP);
 
-                            group.emitter = ((bog.lbpas.view3d.core.types.Thing)object).thing;
-                            emitter.tabTitle = group.emitter.name;
-                        }
+                        group.emitter = ((bog.lbpas.view3d.core.types.Thing)object).thing;
+                        emitter.tabTitle = group.emitter.name;
+                    }
             }
 
             int hovering = -1;
@@ -161,15 +172,16 @@ public abstract class PartGroup extends iPart {
 
                 boolean bool = true;
 
-                for (int i = 0; i < view.things.size(); i++)
-                    if (view.things.get(i).selected)
-                    {
-                        bog.lbpas.view3d.core.types.Thing thing = (bog.lbpas.view3d.core.types.Thing) view.things.get(i);
-                        PGroup group = thing.thing.getPart(Part.GROUP);
+                for (int i = 0; i < getThings().size(); i++)
+                {
+                    Thing selected = getThings().get(i);
+                    if(!selected.selected)
+                        continue;
+                    PGroup group = selected.thing.getPart(Part.GROUP);
 
-                        if(group.emitter != th.thing)
-                            bool = false;
-                    }
+                    if(group.emitter != th.thing)
+                        bool = false;
+                }
 
                 return bool;
             }

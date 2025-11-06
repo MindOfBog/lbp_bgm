@@ -93,7 +93,7 @@ public enum ResourceType implements ValueEnum<Integer> {
     private final String folder;
     private final String extension;
     
-    private ResourceType(String magic, int value, Class<? extends Serializable> clazz, String folder, String extension) {
+    ResourceType(String magic, int value, Class<? extends Serializable> clazz, String folder, String extension) {
         this.header = magic;
         this.value = value;
         this.folder = folder;
@@ -101,7 +101,7 @@ public enum ResourceType implements ValueEnum<Integer> {
         this.extension = extension;
     }
 
-    private ResourceType(String magic, int value, String folder, String extension) {
+    ResourceType(String magic, int value, String folder, String extension) {
         this.header = magic;
         this.value = value;
         this.compressable = null;

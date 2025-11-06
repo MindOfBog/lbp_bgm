@@ -58,7 +58,7 @@ public enum AudioMaterial implements ValueEnum<Integer> {
     COLLECTABELL(48);
 
     private final int value;
-    private AudioMaterial(int value) {
+    AudioMaterial(int value) {
         this.value = value;
     }
 

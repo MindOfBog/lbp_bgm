@@ -39,9 +39,9 @@ public class Serializer {
     private final Revision revision;
     private final byte compressionFlags;
 
-    private HashMap<Integer, Object> referenceIDs = new HashMap<>();
-    private HashMap<Object, Integer> referenceObjects = new HashMap<>();
-    private HashSet<ResourceDescriptor> dependencies = new HashSet<>();
+    private final HashMap<Integer, Object> referenceIDs = new HashMap<>();
+    private final HashMap<Object, Integer> referenceObjects = new HashMap<>();
+    private final HashSet<ResourceDescriptor> dependencies = new HashSet<>();
 
     private int nextReference = 1;
 

@@ -31,7 +31,8 @@ public class FieldLayoutDetails implements Serializable {
     public Object value;
     public ScriptObjectType type = ScriptObjectType.NULL;
 
-    public FieldLayoutDetails() {};
+    public FieldLayoutDetails() {}
+
     public FieldLayoutDetails(FieldLayoutDetails details) {
         this.name = details.name;
         this.modifiers = details.modifiers.clone();

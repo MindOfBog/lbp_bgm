@@ -31,7 +31,7 @@ public class OverrideScreen extends GuiScreen {
 
     public void init()
     {
-        solidShading = new Button("solidShading", "Solid", new Vector2f(-1000, 50), new Vector2f(200, 30), renderer, loader, window) {
+        solidShading = new Button("solidShading", "Solid", new Vector2f(-1000, 50), new Vector2f(Math.round(180f * (getFontHeight() / 12f)), Math.round(25f * (getFontHeight() / 12f))), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 Config.VIEWER_SHADING = 1;
@@ -45,8 +45,14 @@ public class OverrideScreen extends GuiScreen {
             public void setClicked(boolean clicked) {
 
             }
+
+            @Override
+            public void resize() {
+                super.resize();
+                this.size = new Vector2f(Math.round(180f * (getFontHeight() / 12f)), Math.round(25f * (getFontHeight() / 12f)));
+            }
         };
-        materialShading = new Button("materialShading", "Material Preview", new Vector2f(-1000, 50), new Vector2f(200, 30), renderer, loader, window) {
+        materialShading = new Button("materialShading", "Material Preview", new Vector2f(-1000, 50), new Vector2f(Math.round(180f * (getFontHeight() / 12f)), Math.round(25f * (getFontHeight() / 12f))), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 Config.VIEWER_SHADING = 0;
@@ -60,8 +66,14 @@ public class OverrideScreen extends GuiScreen {
             public void setClicked(boolean clicked) {
 
             }
+
+            @Override
+            public void resize() {
+                super.resize();
+                this.size = new Vector2f(Math.round(180f * (getFontHeight() / 12f)), Math.round(25f * (getFontHeight() / 12f)));
+            }
         };
-        normalShading = new Button("normalShading", "Normals", new Vector2f(-1000, 50), new Vector2f(200, 30), renderer, loader, window) {
+        normalShading = new Button("normalShading", "Normals", new Vector2f(-1000, 50), new Vector2f(Math.round(180f * (getFontHeight() / 12f)), Math.round(25f * (getFontHeight() / 12f))), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 Config.VIEWER_SHADING = 2;
@@ -74,6 +86,12 @@ public class OverrideScreen extends GuiScreen {
             @Override
             public void setClicked(boolean clicked) {
 
+            }
+
+            @Override
+            public void resize() {
+                super.resize();
+                this.size = new Vector2f(Math.round(180f * (getFontHeight() / 12f)), Math.round(25f * (getFontHeight() / 12f)));
             }
         };
 
@@ -124,14 +142,16 @@ public class OverrideScreen extends GuiScreen {
             renderer.drawCircleOutline(loader, shadingPos, (getStringWidth("Shading") / 2) * 1.35f, Config.INTERFACE_PRIMARY_COLOR2);
             renderer.drawString("Shading", Config.FONT_COLOR, (int) (shadingPos.x - getStringWidth("Shading") / 2), (int) (shadingPos.y - getFontHeight() / 2));
 
-            solidShading.pos.x = shadingPos.x + 50;
+            int size = Math.round((getStringWidth("Shading") / 2) * 1.5f);
+
+            solidShading.pos.x = shadingPos.x + size;
             solidShading.pos.y = shadingPos.y - solidShading.size.y / 2;
 
-            materialShading.pos.x = shadingPos.x - 50 - materialShading.size.x;
+            materialShading.pos.x = shadingPos.x - size - materialShading.size.x;
             materialShading.pos.y = shadingPos.y - materialShading.size.y / 2;
 
             normalShading.pos.x = shadingPos.x - materialShading.size.x / 2;
-            normalShading.pos.y = shadingPos.y - 50 - solidShading.size.y;
+            normalShading.pos.y = shadingPos.y - size - solidShading.size.y;
 
             hitbox.size.x = window.width;
             hitbox.size.y = window.height;

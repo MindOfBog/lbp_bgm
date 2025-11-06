@@ -8,7 +8,7 @@ public enum HairMorph implements ValueEnum<Integer> {
     FRINGE(2);
 
     private final int value;
-    private HairMorph(int value) {
+    HairMorph(int value) {
         this.value = value;
     }
 

@@ -16,7 +16,7 @@ public enum CurveType implements ValueEnum<Integer> {
     MAX(7);
 
     private final int value;
-    private CurveType(int value) {
+    CurveType(int value) {
         this.value = value;
     }
 

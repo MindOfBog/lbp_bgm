@@ -195,7 +195,7 @@ public class RLevel implements Serializable, Compressable {
         plan.revision = new Revision(0x272, 0x4c44, 0x0017);
         plan.compressionFlags = 0x7;
         ArrayList<Thing> things = new ArrayList<>();
-        PWorld world = ((PWorld)this.world.getPart(Part.WORLD));
+        PWorld world = this.world.getPart(Part.WORLD);
         for (Thing thing : world.things) {
             if (thing == this.world) continue;
             if (thing == world.backdrop) continue;

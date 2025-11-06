@@ -8,7 +8,8 @@ public class SoftbodyVertEquivalence implements Serializable {
 
     public short first, count;
 
-    public SoftbodyVertEquivalence() {};
+    public SoftbodyVertEquivalence() {}
+
     public SoftbodyVertEquivalence(int first, int count) {
         this.first = (short) first;
         this.count = (short) count;

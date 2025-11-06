@@ -19,7 +19,7 @@ public class Bin2Plan {
         }
 
         boolean includeChildren = false;
-        if (args.length == 3 && args[2].toUpperCase().equals("CHILDREN")) {
+        if (args.length == 3 && args[2].equalsIgnoreCase("CHILDREN")) {
             System.out.println("Including children in plan generation");
             includeChildren = true;
         }

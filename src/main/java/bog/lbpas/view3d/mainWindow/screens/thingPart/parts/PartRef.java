@@ -85,7 +85,7 @@ public abstract class PartRef extends iPart {
         for(int i : selected)
             if(things.get(i).thing.hasPart(part))
             {
-                PRef ref = ((PRef) things.get(i).thing.getPart(part));
+                PRef ref = things.get(i).thing.getPart(part);
 
                 float oldLif = ref.oldLifetime;
                 if(Float.isInfinite(oldLifetime))
@@ -127,7 +127,7 @@ public abstract class PartRef extends iPart {
         for(int i : selected)
             if(things.get(i).thing.hasPart(part))
             {
-                PRef ref = ((PRef) things.get(i).thing.getPart(part));
+                PRef ref = things.get(i).thing.getPart(part);
 
                 if(oldLif.y == 1)
                     ref.oldLifetime = (int) oldLif.x;

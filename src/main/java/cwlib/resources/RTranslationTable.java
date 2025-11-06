@@ -61,7 +61,7 @@ public class RTranslationTable {
      */
     private HashMap<Long, String> lookup = new HashMap<>();
     
-    public RTranslationTable() {};
+    public RTranslationTable() {}
 
     /**
      * Processes a translation table from a buffer.

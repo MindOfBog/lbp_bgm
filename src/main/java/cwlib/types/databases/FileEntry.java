@@ -48,7 +48,7 @@ public abstract class FileEntry {
     /**
      * Map of resources assigned to this entry.
      */
-    private Object[] resources = new Object[ResourceKeys.MAX_ENTRIES];
+    private final Object[] resources = new Object[ResourceKeys.MAX_ENTRIES];
 
     public String translation;
     public long translatedFor = -1;
@@ -98,7 +98,7 @@ public abstract class FileEntry {
     public String getName() {
         int index = this.path.lastIndexOf("/");
         if (index == -1) return this.path;
-        return this.path.substring(index + 1, this.path.length());
+        return this.path.substring(index + 1);
     }
 
     /**
@@ -148,7 +148,7 @@ public abstract class FileEntry {
             return;
         }
         this.setPath(
-            folder + this.path.substring(index, this.path.length())
+            folder + this.path.substring(index)
         );
     }
 

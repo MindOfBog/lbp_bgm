@@ -1,5 +1,6 @@
 package bog.lbpas.view3d.mainWindow;
 
+import bog.lbpas.view3d.core.types.Thing;
 import bog.lbpas.view3d.managers.assetLoading.ObjectLoader;
 import bog.lbpas.view3d.core.Model;
 import bog.lbpas.view3d.core.Texture;
@@ -13,7 +14,6 @@ import cwlib.structs.texture.CellGcmTexture;
 import cwlib.types.Resource;
 import cwlib.types.archives.Fat;
 import cwlib.types.archives.FileArchive;
-import cwlib.types.archives.SaveArchive;
 import cwlib.types.data.GUID;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
@@ -24,7 +24,6 @@ import cwlib.types.databases.FileEntry;
 import cwlib.types.mods.Mod;
 import cwlib.types.save.BigSave;
 import cwlib.types.save.SaveEntry;
-import executables.gfx.GfxAssembler;
 import org.joml.Vector2i;
 import org.lwjgl.opengl.GL11;
 
@@ -65,6 +64,8 @@ public class LoadedData {
     public static Texture missingTexture;
 
     private static View3D mainView;
+
+    private static final float RH_TONEMAP = 2.5f;
     
     public static void init(View3D view)
     {
@@ -96,7 +97,7 @@ public class LoadedData {
             BufferedImage img = new BufferedImage(254, 254, BufferedImage.TYPE_INT_ARGB);
             for (int x = 0; x < img.getWidth(); x++)
                 for (int y = 0; y < img.getHeight(); y++)
-                    img.setRGB(x, y, new Color((float)(x / 255f), (float)(y / 255f), 0f, 0.5f).getRGB());
+                    img.setRGB(x, y, new Color(x / 255f, y / 255f, 0f, 0.5f).getRGB());
 
             missingTexture = view.loader.loadTexture(img, GL11.GL_LINEAR_MIPMAP_NEAREST, GL11.GL_LINEAR);
             loadedTextures.put(null, missingTexture);
@@ -164,7 +165,7 @@ public class LoadedData {
         if (data == null)
         {
             print.error("Failed loading Mesh: extracted data null");
-            mainView.pushError("Failed loading Msh (" + descriptor.toString() + ")", "Extracted data is null");
+            mainView.pushError("Failed loading Msh (" + descriptor + ")", "Extracted data is null");
             return null;
         }
         RMesh mesh = null;
@@ -177,16 +178,16 @@ public class LoadedData {
     public static RStaticMesh loadStaticMesh(ResourceDescriptor descriptor) {
         if (descriptor == null)
         {
-            print.error("Failed loading Mesh: descriptor null");
-            mainView.pushError("Failed loading Mesh", "Descriptor is null");
+            print.error("Failed loading Static Mesh: descriptor null");
+            mainView.pushError("Failed loading Static Mesh", "Descriptor is null");
             return null;
         }
 
         byte[] data = extract(descriptor);
         if (data == null)
         {
-            print.error("Failed loading Mesh: extracted data null");
-            mainView.pushError("Failed loading Msh (" + descriptor.toString() + ")", "Extracted data is null");
+            print.error("Failed loading Static Mesh: extracted data null");
+            mainView.pushError("Failed loading Smh (" + descriptor + ")", "Extracted data is null");
             return null;
         }
         RStaticMesh mesh = null;
@@ -208,7 +209,7 @@ public class LoadedData {
         if (data == null)
         {
             print.error("Failed loading Plan: extracted data null");
-            mainView.pushError("Failed loading Pln (" + descriptor.toString() + ")", "Extracted data is null");
+            mainView.pushError("Failed loading Pln (" + descriptor + ")", "Extracted data is null");
             return null;
         }
         RPlan mesh = null;
@@ -230,7 +231,7 @@ public class LoadedData {
         if (data == null)
         {
             print.error("Failed loading Level: extracted data null");
-            mainView.pushError("Failed loading Lvl (" + descriptor.toString() + ")", "Extracted data is null");
+            mainView.pushError("Failed loading Lvl (" + descriptor + ")", "Extracted data is null");
             return null;
         }
         RLevel mesh = null;
@@ -252,7 +253,7 @@ public class LoadedData {
         if (data == null)
         {
             print.error("Failed loading GFX Material: extracted data null");
-            mainView.pushError("Failed loading GMat (" + descriptor.toString() + ")", "Extracted data is null");
+            mainView.pushError("Failed loading GMat (" + descriptor + ")", "Extracted data is null");
             return null;
         }
         RGfxMaterial material = null;
@@ -293,7 +294,7 @@ public class LoadedData {
         if (data == null)
         {
             print.error("Failed loading Texture: extracted data null");
-            mainView.pushError("Failed loading Tex (" + descriptor.toString() + ")", "Extracted data is null");
+            mainView.pushError("Failed loading Tex (" + descriptor + ")", "Extracted data is null");
             return null;
         }
         BufferedImage texture = null;
@@ -398,6 +399,9 @@ public class LoadedData {
             for(BigSave bigfart : BIGFARTs)
                 totalEntryCount += bigfart.entries.size();
 
+        if(LoadedData.PROJECT_DATA != null)
+            totalEntryCount += LoadedData.PROJECT_DATA.getEntryCount();
+
         if(!LoadedData.BIGFARTs.isEmpty())
             for(BigSave bigfart : BIGFARTs)
                 for(SaveEntry ent : bigfart.entries)
@@ -470,7 +474,9 @@ public class LoadedData {
 
                                 if(descriptor.getType() == ResourceType.SLOT_LIST)
                                     try{
-                                        slotLists.add(new Resource(farc.extract(descriptor.getSHA1())).loadResource(RSlotList.class));
+                                        byte[] data = farc.extract(descriptor.getSHA1());
+                                        RSlotList slotList = new Resource(data).loadResource(RSlotList.class);
+                                        slotLists.add(slotList);
                                     }catch (Exception e){print.stackTrace(e);}
                                 if(descriptor.getType() == ResourceType.PACKS)
                                     try{
@@ -509,6 +515,11 @@ public class LoadedData {
         }
 
         shouldSetupList = false;
+
+        for(Thing t : mainView.things)
+        {
+            t.reloadModel();
+        }
     }
 
     public static FileEntry getDigestedEntry(ResourceDescriptor descriptor)
@@ -558,6 +569,7 @@ public class LoadedData {
                     gmatMAP[texIndex + i].x = id;
                     gmatMAP[texIndex + i].y = texIndex + i;
                 }
+
                 return -1;
             }
 
@@ -660,8 +672,6 @@ public class LoadedData {
         if(box == null)
             return new String[]{"vec4(0, 0, 0, 1)", "false"};
 
-        float reinhardToneMapping = 2.5f;
-
         switch (box.type)
         {
             case BoxType.MULTIPLY:
@@ -744,7 +754,7 @@ public class LoadedData {
             {
                 return new String[]{"vec4(reinhardToneMapping(vec3(" + Float.intBitsToFloat(box.getParameters()[0]) + ", " +
                         Float.intBitsToFloat(box.getParameters()[1]) + ", " +
-                        Float.intBitsToFloat(box.getParameters()[2]) + "), " + reinhardToneMapping + ").rgb, " +
+                        Float.intBitsToFloat(box.getParameters()[2]) + "), " + RH_TONEMAP + ").rgb, " +
                         Float.intBitsToFloat(box.getParameters()[3]) + ")", "false"};
             }
             case BoxType.CONSTANT:
@@ -768,7 +778,7 @@ public class LoadedData {
             }
             case BoxType.THING_COLOR:
             {
-                return new String[]{"vec4(reinhardToneMapping(thingColor.rgb, " + reinhardToneMapping + ").rgb, thingColor.a)", "false"};
+                return new String[]{"vec4(reinhardToneMapping(thingColor.rgb, " + RH_TONEMAP + ").rgb, thingColor.a)", "false"};
             }
             case BoxType.TEXTURE_SAMPLE:
             default:
@@ -809,10 +819,7 @@ public class LoadedData {
                 if(box.type != BoxType.TEXTURE_SAMPLE)
                     print.warning("MISSING BOX TYPE: " + box.type);
 
-                boolean UV0 = true;
-
-                if(box.type == BoxType.TEXTURE_SAMPLE && box.getParameters()[4] == 1)
-                    UV0 = false;
+                boolean UV0 = box.type != BoxType.TEXTURE_SAMPLE || box.getParameters()[4] != 1;
 
                 return new String[]{"vec4(texture(textureSampler[gmatMAP[gmatIndex + " + (textures.size() - 1) + "].y], " + (UV0 ? "((vec2(fragTextureCoord.x, fragTextureCoord.y) * vec2(" + Float.intBitsToFloat(box.getParameters()[0]) + ", " + Float.intBitsToFloat(box.getParameters()[1]) + ")) + vec2(" + Float.intBitsToFloat(box.getParameters()[2]) + ", " + Float.intBitsToFloat(box.getParameters()[3]) + "))" : "((vec2(fragTextureCoord.z, fragTextureCoord.w) * vec2(" + Float.intBitsToFloat(box.getParameters()[0]) + ", " + Float.intBitsToFloat(box.getParameters()[1]) + ")) + vec2(" + Float.intBitsToFloat(box.getParameters()[2]) + ", " + Float.intBitsToFloat(box.getParameters()[3]) + "))") + "))", Boolean.toString(isBump)};
         }

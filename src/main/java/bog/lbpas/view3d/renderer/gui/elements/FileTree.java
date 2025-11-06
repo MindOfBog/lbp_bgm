@@ -23,9 +23,8 @@ import java.util.ArrayList;
 public abstract class FileTree extends Element{
 
     public TreeFolder root;
-    public float itemHeight;
 
-    public FileTree(String id, String rootName, float itemHeight, Vector2f pos, Vector2f size, RenderMan renderer, ObjectLoader loader, WindowMan window) {
+    public FileTree(String id, String rootName, Vector2f pos, Vector2f size, RenderMan renderer, ObjectLoader loader, WindowMan window) {
         super();
         this.id = id;
         this.pos = pos;
@@ -33,12 +32,11 @@ public abstract class FileTree extends Element{
         this.renderer = renderer;
         this.loader = loader;
         this.window = window;
-        this.itemHeight = itemHeight;
 
         init(rootName);
     }
 
-    public FileTree(String id, String rootName, float itemHeight, RenderMan renderer, ObjectLoader loader, WindowMan window) {
+    public FileTree(String id, String rootName, RenderMan renderer, ObjectLoader loader, WindowMan window) {
         super();
         this.id = id;
         this.pos = new Vector2f();
@@ -46,14 +44,13 @@ public abstract class FileTree extends Element{
         this.renderer = renderer;
         this.loader = loader;
         this.window = window;
-        this.itemHeight = itemHeight;
 
         init(rootName);
     }
 
     private void init(String rootName)
     {
-        root = new TreeFolder("root", null, rootName, true, false, new Vector2f(), new Vector2f(this.size.x, itemHeight), renderer, loader, window) {
+        root = new TreeFolder("root", null, rootName, true, false, new Vector2f(), new Vector2f(this.size.x, itemHeight()), renderer, loader, window) {
 
             @Override
             public Texture getIcon() {
@@ -61,6 +58,8 @@ public abstract class FileTree extends Element{
             }
         };
     }
+
+    public abstract float itemHeight();
 
     public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement, boolean focusedElement)
     {
@@ -309,7 +308,7 @@ public abstract class FileTree extends Element{
                         return ConstantTextures.getTexture(ConstantTextures.RENAME, s, s, loader);
                     }
                 };
-            optionsCombo = new ComboBoxImage("optionsCombo", 200, renderer, loader, window) {
+            optionsCombo = new ComboBoxImage("optionsCombo", renderer, loader, window) {
                 @Override
                 public Texture getImage() {
                     int size = Math.round(this.size.y);
@@ -319,6 +318,11 @@ public abstract class FileTree extends Element{
                 @Override
                 public int[] getParentTransform() {
                     return FileTree.this.getParentTransform();
+                }
+
+                @Override
+                public int tabWidth() {
+                    return java.lang.Math.round(200f * (getFontHeight() / 12f));
                 }
             };
 
@@ -354,7 +358,7 @@ public abstract class FileTree extends Element{
                         prevSize = new Vector2f(size);
                     }
 
-                    renderer.startScissor((int) Math.round(pos.x), (int) Math.round(pos.y), (int) Math.round(size.x), (int) Math.round(size.y));
+                    renderer.startScissor(Math.round(pos.x), Math.round(pos.y), Math.round(size.x), Math.round(size.y));
 
 //            if(isMouseOverElement(mouseInput) || isFocused())
                     renderer.drawRect(Math.round(pos.x), Math.round(pos.y), Math.round(size.x), Math.round(size.y), isMouseOverElement(mouseInput) && !overOther || this.isFocused() || selected ? Config.INTERFACE_SECONDARY_COLOR : Config.INTERFACE_PRIMARY_COLOR);
@@ -375,23 +379,23 @@ public abstract class FileTree extends Element{
                     {
                         try
                         {
-                            if((int) Math.round(pos.x + xScroll + this.size.y / 2 - getFontHeight() / 2) + getStringWidth(text.substring(0, i)) < pos.x)
+                            if(Math.round(pos.x + xScroll + this.size.y / 2 - getFontHeight() / 2) + getStringWidth(text.substring(0, i)) < pos.x)
                                 begin = i;
 
-                            if((int) Math.round(pos.x + xScroll + this.size.y / 2 - getFontHeight() / 2) + getStringWidth(text.substring(0, i + 1)) < pos.x + size.x)
+                            if(Math.round(pos.x + xScroll + this.size.y / 2 - getFontHeight() / 2) + getStringWidth(text.substring(0, i + 1)) < pos.x + size.x)
                                 end = i + 1;
                         }catch (Exception e){}
                     }
 
-                    renderer.drawString(text, textColor(), (int) Math.round(pos.x + xScroll + this.size.y / 2 - getFontHeight() / 2), (int) Math.round(pos.y + this.size.y / 2 - getFontHeight() / 2), begin, end);
+                    renderer.drawString(text, textColor(), Math.round(pos.x + xScroll + this.size.y / 2 - getFontHeight() / 2), Math.round(pos.y + this.size.y / 2 - getFontHeight() / 2), begin, end);
 
                     if(!this.disabled)
                     {
                         if(500 > (System.currentTimeMillis() - Consts.startMillis) % 1000 && isFocused())
                             if(currentSelection == text.length())
-                                renderer.drawString("_", textColor(), (int) Math.round(pos.x + xScroll + getStringWidth(text) + 1 + this.size.y/2 - getFontHeight()/2), (int) Math.round(pos.y + this.size.y/2 - getFontHeight()/2));
+                                renderer.drawString("_", textColor(), Math.round(pos.x + xScroll + getStringWidth(text) + 1 + this.size.y/2 - getFontHeight()/2), Math.round(pos.y + this.size.y/2 - getFontHeight()/2));
                             else
-                                renderer.drawRect((int) Math.round(xScroll + pos.x + getStringWidth(text.substring(0, currentSelection)) + this.size.y/2 - getFontHeight()/2 - 1), (int) Math.round(pos.y + this.size.y/2 - getFontHeight()/2), 1, (int) Math.round(getFontHeight() - 2), textColor());
+                                renderer.drawRect(Math.round(xScroll + pos.x + getStringWidth(text.substring(0, currentSelection)) + this.size.y/2 - getFontHeight()/2 - 1), Math.round(pos.y + this.size.y/2 - getFontHeight()/2), 1, Math.round(getFontHeight() - 2), textColor());
 
                         if(selectedText[0] >= 0 && selectedText[1] >= 0 && selectedText[0] != selectedText[1])
                         {
@@ -420,10 +424,10 @@ public abstract class FileTree extends Element{
                             if (x + width > pos.x + size.x)
                                 width = pos.x + size.x - x;
 
-                            renderer.drawRectInvert((int) Math.round(x - 1), (int) Math.round(pos1[1] - 1), (int) Math.round(width + 1), getFontHeight() + 2);
+                            renderer.drawRectInvert(Math.round(x - 1), Math.round(pos1[1] - 1), Math.round(width + 1), getFontHeight() + 2);
                         }
                     }
-                    renderer.drawRectOutline(new Vector2f((int) Math.round(pos.x), (int) Math.round(pos.y)), outlineRect, isMouseOverElement(mouseInput) && !overOther || this.isFocused() ? Config.INTERFACE_SECONDARY_COLOR2 : Config.INTERFACE_PRIMARY_COLOR2, false);
+                    renderer.drawRectOutline(new Vector2f(Math.round(pos.x), Math.round(pos.y)), outlineRect, isMouseOverElement(mouseInput) && !overOther || this.isFocused() ? Config.INTERFACE_SECONDARY_COLOR2 : Config.INTERFACE_PRIMARY_COLOR2, false);
                     renderer.endScissor();
                 }
 
@@ -535,8 +539,11 @@ public abstract class FileTree extends Element{
 
         @Override
         public void resize() {
+
+            this.size.y = itemHeight();
+
             float button = this.size.y / this.size.x;
-            float gap = 2.25f / this.size.x;
+            float gap = 2f / this.size.x;
             float rest = 1f - (button + gap) * (2 + (hasRename ? 1 : 0) + (hasDelete ? 1 : 0));
 
             this.icon.width = button;
@@ -593,7 +600,7 @@ public abstract class FileTree extends Element{
             if((isMouseOverPanel(mouseInput) || this.optionsCombo.isMouseOverElement(pos)) && !overElement)
             {
                 if(!this.iconButton.isMouseOverElement(pos) &&
-                        (this.deleteButton == null ? true : !this.deleteButton.isMouseOverElement(pos)) &&
+                        (this.deleteButton == null || !this.deleteButton.isMouseOverElement(pos)) &&
                         !this.optionsCombo.isMouseOverElement(pos))
                 {
                     if(action == GLFW.GLFW_PRESS && button != GLFW.GLFW_MOUSE_BUTTON_2)

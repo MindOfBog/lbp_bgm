@@ -8,10 +8,10 @@ import bog.lbpas.view3d.managers.MouseInput;
  */
 public interface IRenderer<T> {
 
-    public void init() throws Exception;
+    void init() throws Exception;
 
-    public void render(MouseInput mouseInput, View3D mainView);
+    void render(MouseInput mouseInput, View3D mainView);
 
-    public void cleanup();
+    void cleanup();
 
 }

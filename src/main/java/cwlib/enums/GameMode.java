@@ -17,7 +17,7 @@ public enum GameMode implements ValueEnum<Integer> {
     // social 3
 
     private final int value;
-    private GameMode(int value) {
+    GameMode(int value) {
         this.value = value;
     }
 

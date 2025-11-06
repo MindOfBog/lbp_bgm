@@ -60,12 +60,12 @@ public enum InventoryObjectType {
     
     private final int value, flags;
     
-    private InventoryObjectType(int value) {
+    InventoryObjectType(int value) {
         this.value = value;
         this.flags = GameVersion.LBP1 | GameVersion.LBP2 | GameVersion.LBP3;
     }
     
-    private InventoryObjectType(int value, int flags) {
+    InventoryObjectType(int value, int flags) {
         this.value = value;
         this.flags = flags;
     }

@@ -265,7 +265,13 @@ public abstract class PartSwitch extends iPart {
 
         Panel typePanel = switchCombo.addPanel("typePanel");
         typePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("typeStr", "Type:", view.renderer), 0.5f));
-        typeCombo = new ComboBox("typeCombo", "Invalid", 200, view.renderer, view.loader, view.window);
+        typeCombo = new ComboBox("typeCombo", "Invalid", view.renderer, view.loader, view.window)
+        {
+            @Override
+            public int tabWidth() {
+                return java.lang.Math.round(200f * (getFontHeight() / 12f));
+            }
+        };
         Panel searchTypePanel = typeCombo.addPanel("searchTypePanel");
         searchTypePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("searchTypeStr", "Search:", view.renderer), 0.4f));
         Textbox searchType = new Textbox("searchType", view.renderer, view.loader, view.window);
@@ -303,7 +309,7 @@ public abstract class PartSwitch extends iPart {
             public String buttonText(Object object, int index) {
                 SwitchType type = (SwitchType) object;
                 String name = type.toString();
-                name = name.substring(0, 1) + name.substring(1).toLowerCase();
+                name = name.charAt(0) + name.substring(1).toLowerCase();
                 name = name.replaceAll("_", " ");
                 return name;
             }
@@ -331,7 +337,13 @@ public abstract class PartSwitch extends iPart {
 
         Panel logicTypePanel = switchCombo.addPanel("logicTypePanel");
         logicTypePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("logicTypeStr", "Logic Type:", view.renderer), 0.5f));
-        logicTypeCombo = new ComboBox("logicTypeCombo", "And", 200, view.renderer, view.loader, view.window);
+        logicTypeCombo = new ComboBox("logicTypeCombo", "And", view.renderer, view.loader, view.window)
+        {
+            @Override
+            public int tabWidth() {
+                return java.lang.Math.round(200f * (getFontHeight() / 12f));
+            }
+        };
         ButtonList logicTypeList = new ButtonList(List.of(SwitchLogicType.values()), view.renderer, view.loader, view.window) {
             @Override
             public void clickedButton(Object object, int index, int button, int action, int mods) {
@@ -365,7 +377,7 @@ public abstract class PartSwitch extends iPart {
             public String buttonText(Object object, int index) {
                 SwitchLogicType type = (SwitchLogicType) object;
                 String name = type.toString();
-                name = name.substring(0, 1) + name.substring(1).toLowerCase();
+                name = name.charAt(0) + name.substring(1).toLowerCase();
                 name = name.replaceAll("_", " ");
                 return name;
             }
@@ -393,7 +405,13 @@ public abstract class PartSwitch extends iPart {
 
         Panel switchBehaviorPanel = switchCombo.addPanel("switchBehaviorPanel");
         switchBehaviorPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("switchBehaviorStr", "Behavior:", view.renderer), 0.5f));
-        switchBehaviorCombo = new ComboBox("switchBehaviorCombo", "Off on", 200, view.renderer, view.loader, view.window);
+        switchBehaviorCombo = new ComboBox("switchBehaviorCombo", "Off on", view.renderer, view.loader, view.window)
+        {
+            @Override
+            public int tabWidth() {
+                return java.lang.Math.round(200f * (getFontHeight() / 12f));
+            }
+        };
         ButtonList switchBehaviorList = new ButtonList(List.of(SwitchBehavior.values()), view.renderer, view.loader, view.window) {
             @Override
             public void clickedButton(Object object, int index, int button, int action, int mods) {
@@ -427,7 +445,7 @@ public abstract class PartSwitch extends iPart {
             public String buttonText(Object object, int index) {
                 SwitchBehavior type = (SwitchBehavior) object;
                 String name = type.toString();
-                name = name.substring(0, 1) + name.substring(1).toLowerCase();
+                name = name.charAt(0) + name.substring(1).toLowerCase();
                 name = name.replaceAll("_", " ");
                 return name;
             }
@@ -508,7 +526,13 @@ public abstract class PartSwitch extends iPart {
         Panel tagColorPanel = tagSensorCombo.addPanel("tagColorPanel");
         tagColorPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("tagColorStr", "Tag Color:", view.renderer), 0.5f));
 
-        tagColorCombo = new ComboBox("tagColorCombo", "Blue", 200, view.renderer, view.loader, view.window);
+        tagColorCombo = new ComboBox("tagColorCombo", "Blue", view.renderer, view.loader, view.window)
+        {
+            @Override
+            public int tabWidth() {
+                return java.lang.Math.round(200f * (getFontHeight() / 12f));
+            }
+        };
         tagColorsList = new ArrayList<>(Arrays.asList("Blue", "Purple", "Pink", "Red", "Yellow", "Light Green", "Green", "Cyan"));
         tagColorCombo.addList("tagColorList", new ButtonList(tagColorsList, view.renderer, view.loader, view.window) {
             @Override
@@ -571,7 +595,13 @@ public abstract class PartSwitch extends iPart {
         Panel tagModePanel = tagSensorCombo.addPanel("tagModePanel");
         tagModePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("tagModeStr", "Output:", view.renderer), 0.5f));
 
-        tagModeCombo = new ComboBox("tagModeCombo", "Closeness", 200, view.renderer, view.loader, view.window);
+        tagModeCombo = new ComboBox("tagModeCombo", "Closeness", view.renderer, view.loader, view.window)
+        {
+            @Override
+            public int tabWidth() {
+                return java.lang.Math.round(200f * (getFontHeight() / 12f));
+            }
+        };
         tagModesList = new ArrayList<>(Arrays.asList("Closeness", "Strength", "Count (LBP3)"));
         tagModeCombo.addList("tagModeList", new ButtonList(tagModesList, view.renderer, view.loader, view.window) {
             @Override
@@ -662,7 +692,13 @@ public abstract class PartSwitch extends iPart {
 
         Panel bulletTypePanel = paintSensorCombo.addPanel("bulletTypePanel");
         bulletTypePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("bulletTypeStr", "Proj. Type:", view.renderer), 0.5f));
-        bulletType = new ComboBox("bulletType", "All", 200, view.renderer, view.loader, view.window);
+        bulletType = new ComboBox("bulletType", "All", view.renderer, view.loader, view.window)
+        {
+            @Override
+            public int tabWidth() {
+                return java.lang.Math.round(200f * (getFontHeight() / 12f));
+            }
+        };
         bulletTypeList = new ArrayList<>(Arrays.asList("All", "Fire", "Electricity", "Plasma", "Water"));
         bulletType.addList("bulletType", new ButtonList(bulletTypeList, view.renderer, view.loader, view.window) {
             @Override
@@ -815,7 +851,13 @@ public abstract class PartSwitch extends iPart {
 
         Panel randomPatternPanel = randomizerCombo.addPanel("randomPatternPanel");
         randomPatternPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("randomPatternStr", "Pattern:", view.renderer), 0.5f));
-        randomPattern = new ComboBox("randomPattern", "One At a Time", 250, view.renderer, view.loader, view.window);
+        randomPattern = new ComboBox("randomPattern", "One At a Time", view.renderer, view.loader, view.window)
+        {
+            @Override
+            public int tabWidth() {
+                return java.lang.Math.round(250f * (getFontHeight() / 12f));
+            }
+        };
         randomPatternList = new ArrayList<>(Arrays.asList("One At a Time", "Add", "Add and Reset When Full", "Toggle"));
         randomPattern.addList("randomPatternList", new ButtonList(randomPatternList, view.renderer, view.loader, view.window) {
             @Override
@@ -877,7 +919,13 @@ public abstract class PartSwitch extends iPart {
 
         Panel randomBehaviorPanel = randomizerCombo.addPanel("randomBehaviorPanel");
         randomBehaviorPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("randomBehaviorStr", "Action:", view.renderer), 0.5f));
-        randomBehaviorCombo = new ComboBox("randomBehaviorCombo", "One At a Time", 200, view.renderer, view.loader, view.window);
+        randomBehaviorCombo = new ComboBox("randomBehaviorCombo", "One At a Time", view.renderer, view.loader, view.window)
+        {
+            @Override
+            public int tabWidth() {
+                return java.lang.Math.round(200f * (getFontHeight() / 12f));
+            }
+        };
         randomBehaviorList = new ArrayList<>(Arrays.asList("On/Off", "Override Pattern"));
         randomBehaviorCombo.addList("randomBehaviorList", new ButtonList(randomBehaviorList, view.renderer, view.loader, view.window) {
             @Override
@@ -1046,7 +1094,7 @@ public abstract class PartSwitch extends iPart {
 
             if(thing.thing.hasPart(part) && thing.selected)
             {
-                PSwitch pSwitch = ((PSwitch)thing.thing.getPart(part));
+                PSwitch pSwitch = thing.thing.getPart(part);
 
                 radius = compareNumber(radius, pSwitch.radius / 21f);
                 minRadius = compareNumber(minRadius, pSwitch.minRadius / 21f);
@@ -1160,7 +1208,7 @@ public abstract class PartSwitch extends iPart {
         {
             this.type = SwitchType.fromValue(type);
             String nm = this.type.name();
-            nm = nm.substring(0, 1) + nm.substring(1).toLowerCase();
+            nm = nm.charAt(0) + nm.substring(1).toLowerCase();
             nm = nm.replaceAll("_", " ");
             typeCombo.tabTitle = nm;
         }
@@ -1170,7 +1218,7 @@ public abstract class PartSwitch extends iPart {
         {
             this.logicType = SwitchLogicType.fromValue(logicType);
             String nm = this.logicType.name();
-            nm = nm.substring(0, 1) + nm.substring(1).toLowerCase();
+            nm = nm.charAt(0) + nm.substring(1).toLowerCase();
             nm = nm.replaceAll("_", " ");
             logicTypeCombo.tabTitle = nm;
         }
@@ -1180,7 +1228,7 @@ public abstract class PartSwitch extends iPart {
         {
             this.behavior = SwitchBehavior.fromValue(behavior);
             String nm = this.behavior.name();
-            nm = nm.substring(0, 1) + nm.substring(1).toLowerCase();
+            nm = nm.charAt(0) + nm.substring(1).toLowerCase();
             nm = nm.replaceAll("_", " ");
             switchBehaviorCombo.tabTitle = nm;
         }
@@ -1231,7 +1279,7 @@ public abstract class PartSwitch extends iPart {
 
             if(thing.thing.hasPart(part) && thing.selected)
             {
-                PSwitch pSwitch = ((PSwitch)thing.thing.getPart(part));
+                PSwitch pSwitch = thing.thing.getPart(part);
 
                 if(switchName != null)
                     pSwitch.name = switchName;

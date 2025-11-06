@@ -83,7 +83,7 @@ public abstract class PartBody extends iPart {
         for(int i : selected)
             if(things.get(i).thing.hasPart(part))
             {
-                PBody body = ((PBody) things.get(i).thing.getPart(part));
+                PBody body = things.get(i).thing.getPart(part);
 
                 if(body.posVel == null)
                     body.posVel = new Vector3f();
@@ -129,7 +129,7 @@ public abstract class PartBody extends iPart {
         for(int i : selected)
             if(things.get(i).thing.hasPart(part))
             {
-                PBody body = ((PBody) things.get(i).thing.getPart(part));
+                PBody body = things.get(i).thing.getPart(part);
 
                 if(posVeX.y == 1)
                     body.posVel.x = (int) posVeX.x;

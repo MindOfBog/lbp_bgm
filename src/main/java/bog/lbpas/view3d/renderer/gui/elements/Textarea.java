@@ -142,9 +142,9 @@ public class Textarea extends Element{
 
             if(500 > (System.currentTimeMillis() - Consts.startMillis) % 1000 && isFocused())
                 if (currentSelection - currentLength == line.length())
-                    renderer.drawString("_", Config.FONT_COLOR, (int) Math.round(pos.x + xScroll + getStringWidth(line) + 1 + getFontHeight() / 2), (int) Math.round(pos.y + getFontHeight() / 2 + (getFontHeight() + 2) * o - yScroll));
+                    renderer.drawString("_", Config.FONT_COLOR, Math.round(pos.x + xScroll + getStringWidth(line) + 1 + getFontHeight() / 2), Math.round(pos.y + getFontHeight() / 2 + (getFontHeight() + 2) * o - yScroll));
                 else if (currentSelection - currentLength >= 0 && currentSelection - currentLength <= line.length())
-                    renderer.drawRect((int) Math.round(xScroll + pos.x + getStringWidth(line.substring(0, curSel)) + getFontHeight() / 2 - 1), (int) Math.round(pos.y + getFontHeight() / 2 + (getFontHeight() + 2) * o - yScroll), 1, (int) Math.round(getFontHeight() - 2), Config.FONT_COLOR);
+                    renderer.drawRect(Math.round(xScroll + pos.x + getStringWidth(line.substring(0, curSel)) + getFontHeight() / 2 - 1), Math.round(pos.y + getFontHeight() / 2 + (getFontHeight() + 2) * o - yScroll), 1, Math.round(getFontHeight() - 2), Config.FONT_COLOR);
 
             if(hasSelected && width >= 0 && selectedText[0] >= 0 && selectedText[1] >= 0 && selectedText[0] != selectedText[1])
                 if((int)(pos.y + getFontHeight() / 2 + (getFontHeight() + 2) * o - yScroll) > pos.y - getFontHeight() &&
@@ -273,7 +273,7 @@ public class Textarea extends Element{
                 try {
                     if(selectedText[1] != -1 && selectedText[0] != -1 && selectedText[1] != selectedText[0])
                     {
-                        text = text.substring(0, selectionStart) + clipboard + text.substring(selectionEnd, text.length());
+                        text = text.substring(0, selectionStart) + clipboard + text.substring(selectionEnd);
                         currentSelection = selectionStart + clipboard.length();
                         selectedText[0] = -1;
                         selectedText[1] = -1;
@@ -284,7 +284,7 @@ public class Textarea extends Element{
                     else
                     {
                         bool = true;
-                        text = text.substring(0, currentSelection) + clipboard + text.substring(currentSelection, text.length());
+                        text = text.substring(0, currentSelection) + clipboard + text.substring(currentSelection);
                         currentSelection += clipboard.length();
                     }
                 }catch (Exception e){}
@@ -295,7 +295,7 @@ public class Textarea extends Element{
                     if(selectedText[1] != -1 && selectedText[0] != -1 && selectedText[1] != selectedText[0])
                     {
                         currentSelection = selectionStart;
-                        text = text.substring(0, selectionStart) + text.substring(selectionEnd, text.length());
+                        text = text.substring(0, selectionStart) + text.substring(selectionEnd);
                         selectedText[0] = -1;
                         selectedText[1] = -1;
                         bool = true;
@@ -305,7 +305,7 @@ public class Textarea extends Element{
                     else
                     {
                         bool = true;
-                        text = text.substring(0, currentSelection - 1) + text.substring(currentSelection, text.length());
+                        text = text.substring(0, currentSelection - 1) + text.substring(currentSelection);
                         currentSelection--;
                     }
                 }catch (Exception e){}
@@ -492,7 +492,7 @@ public class Textarea extends Element{
                     }catch (Exception e){}
 
                     currentSelection = selectionStart;
-                    text = text.substring(0, selectionStart) + text.substring(selectionEnd, text.length());
+                    text = text.substring(0, selectionStart) + text.substring(selectionEnd);
                     selectedText[0] = -1;
                     selectedText[1] = -1;
 
@@ -504,7 +504,7 @@ public class Textarea extends Element{
                 try {
                     if(selectedText[1] != -1 && selectedText[0] != -1 && selectedText[1] != selectedText[0])
                     {
-                        text = text.substring(0, selectionStart) + (char)10 + text.substring(selectionEnd, text.length());
+                        text = text.substring(0, selectionStart) + (char)10 + text.substring(selectionEnd);
                         currentSelection = selectionStart + String.valueOf((char)10).length();
                         selectedText[0] = -1;
                         selectedText[1] = -1;
@@ -515,7 +515,7 @@ public class Textarea extends Element{
                     else
                     {
                         bool = true;
-                        text = text.substring(0, currentSelection) + (char)10 + text.substring(currentSelection, text.length());
+                        text = text.substring(0, currentSelection) + (char)10 + text.substring(currentSelection);
                         currentSelection += String.valueOf((char)10).length();
                     }
                 }catch (Exception e){}
@@ -778,7 +778,7 @@ public class Textarea extends Element{
             if (s != null) {
                 if (selectedText[1] != -1 && selectedText[0] != -1 && selectedText[1] != selectedText[0]) {
                     currentSelection = text.substring(0, selectionStart).length() + 1;
-                    text = text.substring(0, selectionStart) + s + text.substring(selectionEnd, text.length());
+                    text = text.substring(0, selectionStart) + s + text.substring(selectionEnd);
                     selectedText[0] = -1;
                     selectedText[1] = -1;
                     bool = true;
@@ -787,7 +787,7 @@ public class Textarea extends Element{
                 else {
                     bool = true;
                     try {
-                        text = text.substring(0, currentSelection) + s + text.substring(currentSelection, text.length());
+                        text = text.substring(0, currentSelection) + s + text.substring(currentSelection);
                         currentSelection++;
                     } catch (Exception e) {
                     }

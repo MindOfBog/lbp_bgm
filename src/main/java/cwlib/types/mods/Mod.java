@@ -99,7 +99,7 @@ public class Mod extends FileDB  {
     }
     
     private void process(File file) {
-        try (FileSystem fileSystem = FileSystems.newFileSystem(file.toPath(), (java.lang.ClassLoader) null)) {
+        try (FileSystem fileSystem = FileSystems.newFileSystem(file.toPath(), null)) {
             Path configPath = fileSystem.getPath("config.json");
             if (!Files.exists(configPath))
                 throw new SerializationException("Mod is missing config file!");
@@ -179,7 +179,7 @@ public class Mod extends FileDB  {
         if (revision < Revisions.LM_TOOLKIT)
             throw new SerializationException("Mod files below revision LM_TOOLKIT (0x3) are not supported!");
         if (revision > Revisions.LM_MAX)
-            throw new SerializationException(String.format("This mod file (v%s) isn't supported with your version of Craftworld Toolkit (v%s), are you out of date?", String.valueOf(revision), String.valueOf(Revisions.LM_MAX)));
+            throw new SerializationException(String.format("This mod file (v%s) isn't supported with your version of Craftworld Toolkit (v%s), are you out of date?", revision, Revisions.LM_MAX));
         else
             ResourceSystem.println("Mod", "Mod revision is v" + revision);
         

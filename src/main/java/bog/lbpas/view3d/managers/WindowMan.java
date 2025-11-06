@@ -8,10 +8,7 @@ import bog.lbpas.view3d.utils.Config;
 import bog.lbpas.view3d.utils.Cursors;
 import bog.lbpas.view3d.utils.Utils;
 import bog.lbpas.view3d.utils.print;
-import org.joml.Matrix4f;
-import org.joml.Vector2d;
-import org.joml.Vector2i;
-import org.joml.Vector4f;
+import org.joml.*;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
@@ -19,6 +16,7 @@ import org.lwjgl.system.MemoryUtil;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.lang.Math;
 import java.nio.LongBuffer;
 import java.util.ArrayList;
 
@@ -101,15 +99,10 @@ public class WindowMan {
         if(sharedContext == MemoryUtil.NULL)
             throw new RuntimeException("Failed to create shared context.");
 
-        GLFW.glfwSetFramebufferSizeCallback(window, (window, width, height) ->
-        {
-            if(resizing == 0)
-            {
-                this.width = width;
-                this.height = height;
-                this.resize = true;
-            }
-        });
+//        GLFW.glfwSetFramebufferSizeCallback(window, (window, width, height) ->
+//        {
+//
+//        });
 
         GLFW.glfwSetKeyCallback(window, (window, key, scancode, action, mods) ->
         {
@@ -138,7 +131,7 @@ public class WindowMan {
         });
 
         if(maximised)
-            GLFW.glfwMaximizeWindow(window);
+            maximize();
         else
         {
             GLFWVidMode vidMode = GLFW.glfwGetVideoMode(GLFW.glfwGetPrimaryMonitor());
@@ -287,7 +280,7 @@ public class WindowMan {
                     {
                         newHeight = minHeight;
                         Config.WINDOW_HEIGHT = newHeight;
-                        newY = (int) (prevY + (prevHeight - minHeight));
+                        newY = prevY + (prevHeight - minHeight);
                     }
                 }
             }
@@ -347,25 +340,32 @@ public class WindowMan {
                     {
                         newWidth = minWidth;
                         Config.WINDOW_WIDTH = newWidth;
-                        newX = (int) (prevX + (prevWidth - minWidth));
+                        newX = prevX + (prevWidth - minWidth);
                     }
                 }
             }
 
-            if(System.currentTimeMillis() - lastMouseMove < 100)
+            setWindowPosition(newX, newY);
+            setWindowSize(newWidth, newHeight);
+
+            if(System.currentTimeMillis() - lastMouseMove < 200)
             {
-                setWindowPosition(newX, newY);
-                setWindowSize(newWidth, newHeight);
+                shouldResizeInABit = System.currentTimeMillis();
             }
-            else
+        }
+
+        if(shouldResizeInABit != -1)
+        {
+            if(System.currentTimeMillis() - shouldResizeInABit > 500)
             {
-                lastMouseMove = System.currentTimeMillis();
                 this.width = newWidth;
                 this.height = newHeight;
                 this.resize = true;
+                shouldResizeInABit = -1;
             }
         }
     }
+    private long shouldResizeInABit = -1;
 
     long lastMouseMove = 0;
     double lastMouseMoveX = -1;
@@ -485,12 +485,22 @@ public class WindowMan {
     public void maximize()
     {
         GLFW.glfwMaximizeWindow(this.window);
+        Vector2i size = getWindowSize();
+        this.width = size.x;
+        this.height = size.y;
+        this.resize = true;
+        shouldResizeInABit = -1;
     }
 
     public void restore()
     {
         GLFW.glfwRestoreWindow(this.window);
         setWindowSize(Config.WINDOW_WIDTH, Config.WINDOW_HEIGHT);
+        Vector2i size = getWindowSize();
+        this.width = size.x;
+        this.height = size.y;
+        this.resize = true;
+        shouldResizeInABit = -1;
     }
 
     public void minimize()

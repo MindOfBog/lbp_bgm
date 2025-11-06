@@ -26,7 +26,7 @@ public enum ScriptObjectType implements ValueEnum<Integer> {
     ARRAY_F64(20);
     
     private final int value;
-    private ScriptObjectType(int value) {
+    ScriptObjectType(int value) {
         this.value = value;
     }
 

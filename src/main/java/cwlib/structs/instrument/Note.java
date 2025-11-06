@@ -12,7 +12,8 @@ public class Note implements Serializable {
     public int x = 0, y = 0, volume = 0x60, timbre = 0x40;
     public boolean triplet, end;
 
-    public Note(){};
+    public Note(){}
+
     public Note(int x, int y) {
         this.x = x;
         this.y = y;

@@ -746,12 +746,19 @@ public class RenderMan {
         this.processGuiElement(ColorPickerPart.saturationLuminancePicker(x, y, width, height, color, window));
     }
 
+    public void drawAlphaRamp(int x, int y, int width, int height, Vector4f color) {
+        this.processGuiElement(ColorPickerPart.alphaRamp(x, y, width, height, color, window));
+    }
+
     public void drawHUERamp(Vector2f pos, Vector2f size) {
         this.processGuiElement(ColorPickerPart.hueRamp(Math.round(pos.x), Math.round(pos.y), Math.round(size.x), Math.round(size.y), window));
     }
 
     public void drawSaturationLuminancePicker(Vector2f pos, Vector2f size, Vector4f color) {
         this.processGuiElement(ColorPickerPart.saturationLuminancePicker(Math.round(pos.x), Math.round(pos.y), Math.round(size.x), Math.round(size.y), color, window));
+    }
+    public void drawAlphaRamp(Vector2f pos, Vector2f size, Vector4f color) {
+        this.processGuiElement(ColorPickerPart.alphaRamp(Math.round(pos.x), Math.round(pos.y), Math.round(size.x), Math.round(size.y), color, window));
     }
 
     public void drawTransparencyCheckerBoard(Vector2f pos, Vector2f size) {
@@ -764,6 +771,10 @@ public class RenderMan {
 
     public void drawSaturationLuminancePicker(Vector2i pos, Vector2i size, Vector4f color) {
         this.processGuiElement(ColorPickerPart.saturationLuminancePicker(pos.x, pos.y, size.x, size.y, color, window));
+    }
+
+    public void drawAlphaRamp(Vector2i pos, Vector2i size, Vector4f color) {
+        this.processGuiElement(ColorPickerPart.alphaRamp(pos.x, pos.y, size.x, size.y, color, window));
     }
 
     public static int initFrameBuffer()

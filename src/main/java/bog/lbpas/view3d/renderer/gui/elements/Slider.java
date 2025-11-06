@@ -107,9 +107,15 @@ public class Slider extends Element{
             if(action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
                 isSliding = true;
             else if(action == GLFW.GLFW_RELEASE)
+            {
+                if(isSliding)
+                    onValueSet();
                 isSliding = false;
+            }
         }
     }
+
+    public void onValueSet(){}
 
     public float getCurrentValue()
     {
@@ -135,7 +141,11 @@ public class Slider extends Element{
     public void setFocused(boolean focused) {
         super.setFocused(focused);
         if(!focused)
+        {
+            if(isSliding)
+                onValueSet();
             isSliding = false;
+        }
     }
 
     @Override

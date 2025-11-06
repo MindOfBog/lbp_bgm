@@ -10,7 +10,8 @@ public class SortString implements Serializable {
     public String string;
     public int index;
 
-    public SortString() {};
+    public SortString() {}
+
     public SortString(int key, String string, int index) {
         this.lamsKeyID = key;
         this.string = string;

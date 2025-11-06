@@ -39,6 +39,8 @@ public class Thing extends Entity{
 
     public RBevel bevelData;
 
+    public boolean failedLoadingRMesh = false;
+
     public Thing(cwlib.structs.things.Thing thing, ObjectLoader loader)
     {
         this.thing = thing;
@@ -47,7 +49,7 @@ public class Thing extends Entity{
 
     public cwlib.structs.things.Thing[] getBones()
     {
-        PRenderMesh pMesh = ((PRenderMesh)thing.getPart(Part.RENDER_MESH));
+        PRenderMesh pMesh = thing.getPart(Part.RENDER_MESH);
         if(pMesh == null)
             return null;
         cwlib.structs.things.Thing[] ogbones = pMesh.boneThings;
@@ -230,7 +232,7 @@ public class Thing extends Entity{
 
     public void getMesh(ResourceDescriptor meshDescriptor)
     {
-        if(meshDescriptor == null)
+        if(this.failedLoadingRMesh || meshDescriptor == null)
             return;
 
         if(LoadedData.loadedModels.containsKey(meshDescriptor))
@@ -241,18 +243,22 @@ public class Thing extends Entity{
         {
             RMesh mesh = LoadedData.loadMesh(meshDescriptor);
 
+            if(mesh == null)
+                this.failedLoadingRMesh = true;
+
             Model m = null;
 
             try {
                 m = this.loader.loadRMeshArr(mesh);
             }catch (Exception e){e.printStackTrace();}
 
-            if(m != null)
+            if(m != null && !this.failedLoadingRMesh)
             {
                 LoadedData.loadedModels.put(meshDescriptor, m);
             }
 
-            this.renderMesh = LoadedData.loadedModels.get(meshDescriptor);
+            if(!this.failedLoadingRMesh)
+                this.renderMesh = LoadedData.loadedModels.get(meshDescriptor);
         }
     }
 
@@ -368,5 +374,11 @@ public class Thing extends Entity{
                 writer.close();
             }catch (Exception e){e.printStackTrace();}
         }
+    }
+
+    @Override
+    public void reloadModel() {
+        super.reloadModel();
+        this.failedLoadingRMesh = false;
     }
 }

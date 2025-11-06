@@ -35,7 +35,7 @@ public enum MappingMode implements ValueEnum<Byte> {
     PLANARXZ(5);
 
     private final byte value;
-    private MappingMode(int value) {
+    MappingMode(int value) {
         this.value = (byte) value;
     }
 

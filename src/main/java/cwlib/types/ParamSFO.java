@@ -26,7 +26,7 @@ public class ParamSFO {
         }
     }
     
-    private ArrayList<SfoEntry> entries = new ArrayList<SfoEntry>();
+    private final ArrayList<SfoEntry> entries = new ArrayList<SfoEntry>();
     
     public ParamSFO(String titleID, String name) {
         this.addKey("ACCOUNT_ID", FORMAT_UTF8, 0x10, "0000000000000000".getBytes());

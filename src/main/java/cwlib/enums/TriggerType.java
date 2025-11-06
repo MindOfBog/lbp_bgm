@@ -10,7 +10,7 @@ public enum TriggerType implements ValueEnum<Byte> {
     RADIUS_3D(4);
     
     private final byte value;
-    private TriggerType(int value) {
+    TriggerType(int value) {
         this.value = (byte) value;
     }
 

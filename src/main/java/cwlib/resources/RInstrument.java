@@ -20,12 +20,12 @@ public class RInstrument implements Serializable, Compressable {
     public static final int MAX_ARPEGGIO = 0x20;
     public static final int MAX_SPLITS = 0x9;
 
-    private Sample[] samples = new Sample[MAX_SAMPLES];
-    private GUID[] sampleGUIDs = new GUID[MAX_SAMPLES];
-    private int[] splitNotes = new int[MAX_SPLITS];  // KEY NUMBER (PIANO) -> https://www.inspiredacoustics.com/en/MIDI_note_numbers_and_center_frequencies 
+    private final Sample[] samples = new Sample[MAX_SAMPLES];
+    private final GUID[] sampleGUIDs = new GUID[MAX_SAMPLES];
+    private final int[] splitNotes = new int[MAX_SPLITS];  // KEY NUMBER (PIANO) -> https://www.inspiredacoustics.com/en/MIDI_note_numbers_and_center_frequencies
     private int numStack = 1;
-    private Vector2f[] params = new Vector2f[MAX_PARAMS];
-    private byte[] arpeggio = new byte[MAX_ARPEGGIO];
+    private final Vector2f[] params = new Vector2f[MAX_PARAMS];
+    private final byte[] arpeggio = new byte[MAX_ARPEGGIO];
     private boolean arpeggiate = false;
 
     public RInstrument() {

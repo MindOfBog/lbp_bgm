@@ -68,7 +68,7 @@ public abstract class FileData {
             File base = this.file.getParentFile();
             while (base != null) {
                 base = base.getParentFile();
-                if (base != null && base.getName().toUpperCase().equals("USRDIR"))
+                if (base != null && base.getName().equalsIgnoreCase("USRDIR"))
                     break;
             }
 

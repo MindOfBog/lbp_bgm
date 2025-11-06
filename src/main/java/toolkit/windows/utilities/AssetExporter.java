@@ -51,7 +51,7 @@ public class AssetExporter extends JDialog {
         LBP_VITA
     }
     
-    private static MaterialLibrary[] libraries;
+    private static final MaterialLibrary[] libraries;
     static {
         ArrayList<MaterialLibrary> collection = new ArrayList<>();
         collection.add(MaterialLibrary.NONE);
@@ -67,20 +67,20 @@ public class AssetExporter extends JDialog {
         libraries = collection.toArray(MaterialLibrary[]::new);
     }
 
-    public static enum PackageType {
+    public enum PackageType {
         MOD("Mod"), 
         LEVEL_BACKUP("Level Backup");
         
         private final String value;
-        private PackageType(String value) { this.value = value; }
+        PackageType(String value) { this.value = value; }
         @Override public String toString() { return this.value; }
     }
     
-    public static enum RootExportType {
+    public enum RootExportType {
         GUID,
         HASH
-    };
-    
+    }
+
     private class Asset {
         /**
          * Original descriptor of this asset.
@@ -90,7 +90,7 @@ public class AssetExporter extends JDialog {
         /**
          * Associated file entry of this asset.
          */
-        private FileEntry entry;
+        private final FileEntry entry;
         
         /**
          * Cached data used during recursion phase.
@@ -180,7 +180,7 @@ public class AssetExporter extends JDialog {
         defaults.add(new GUID(1087));
     }
     
-    private FileEntry entry;
+    private final FileEntry entry;
     
     public AssetExporter(FileEntry entry) {
         super(Toolkit.INSTANCE, true);
@@ -270,7 +270,7 @@ public class AssetExporter extends JDialog {
         ArrayList<Asset> assets = new ArrayList<>(this.assetModel.size() + 1);
         assets.add(this.root);
         for (int i = 0; i < this.assetModel.size(); ++i)
-            assets.add((Asset) this.assetModel.getElementAt(i));
+            assets.add(this.assetModel.getElementAt(i));
         MaterialLibrary library = (MaterialLibrary) this.materialLibraryCombo.getSelectedItem();
         
         // Add remap support later
@@ -477,7 +477,7 @@ public class AssetExporter extends JDialog {
     
     private boolean areAllAssetsHash() {
         for (int i = 0; i < this.assetModel.size(); ++i) {
-            Asset asset = (Asset) this.assetModel.getElementAt(i);
+            Asset asset = this.assetModel.getElementAt(i);
             if (!asset.locked & !asset.hashinate)
                 return false;
         }
@@ -486,7 +486,7 @@ public class AssetExporter extends JDialog {
     
     private boolean areAllAssetsGUID() {
         for (int i = 0; i < this.assetModel.size(); ++i) {
-            Asset asset = (Asset) this.assetModel.getElementAt(i);
+            Asset asset = this.assetModel.getElementAt(i);
             if (!asset.locked && asset.hashinate)
                 return false;
         }
@@ -501,7 +501,7 @@ public class AssetExporter extends JDialog {
             this.switchReferenceTypeButton.setEnabled(false);
             return;
         }
-        Asset asset = (Asset) this.assetModel.getElementAt(index);
+        Asset asset = this.assetModel.getElementAt(index);
         this.switchReferenceTypeButton.setText("Switch to " + ((asset.hashinate) ? "GUID" : "HASH"));
         this.switchReferenceTypeButton.setEnabled(!asset.locked);
             
@@ -626,7 +626,7 @@ public class AssetExporter extends JDialog {
 
     private void markAllAsGUIDButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_markAllAsGUIDButtonActionPerformed
         for (int i = 0; i < this.assetModel.size(); ++i) {
-            Asset asset = (Asset) this.assetModel.getElementAt(i);
+            Asset asset = this.assetModel.getElementAt(i);
             if (!asset.locked)
                 asset.hashinate = false;
         }
@@ -636,7 +636,7 @@ public class AssetExporter extends JDialog {
 
     private void markAllAsHashButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_markAllAsHashButtonActionPerformed
         for (int i = 0; i < this.assetModel.size(); ++i) {
-            Asset asset = (Asset) this.assetModel.getElementAt(i);
+            Asset asset = this.assetModel.getElementAt(i);
             if (!asset.locked)
                 asset.hashinate = true;
         }
@@ -647,7 +647,7 @@ public class AssetExporter extends JDialog {
     private void switchReferenceTypeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_switchReferenceTypeButtonActionPerformed
         int index = this.assetList.getSelectedIndex();
         if (index == -1) return;
-        Asset asset = (Asset) this.assetModel.getElementAt(index);
+        Asset asset = this.assetModel.getElementAt(index);
         if (asset.locked) return;
         asset.hashinate = !asset.hashinate;
         this.updateButtonStates();

@@ -20,7 +20,7 @@ public enum PrimitiveType implements ValueEnum<Byte> {
     GL_TRIANGLE_STRIP_ADJACENCY(11);
 
     private final byte value;
-    private PrimitiveType(int value) {
+    PrimitiveType(int value) {
         this.value = (byte) (value & 0xFF);
     }
 

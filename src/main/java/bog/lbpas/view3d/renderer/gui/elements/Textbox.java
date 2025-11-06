@@ -80,8 +80,8 @@ public class Textbox extends Element{
     public void draw(MouseInput mouseInput, boolean overOther) {
         super.draw(mouseInput, overOther);
 
-        renderer.startScissor((int) Math.round(pos.x), (int) Math.round(pos.y), (int) Math.round(size.x), (int) Math.round(size.y));
-        renderer.drawRect((int) Math.round(pos.x), (int) Math.round(pos.y), (int) Math.round(size.x), (int) Math.round(size.y), isMouseOverElement(mouseInput) && !overOther || this.isFocused() ? Config.INTERFACE_SECONDARY_COLOR : Config.INTERFACE_PRIMARY_COLOR);
+        renderer.startScissor(Math.round(pos.x), Math.round(pos.y), Math.round(size.x), Math.round(size.y));
+        renderer.drawRect(Math.round(pos.x), Math.round(pos.y), Math.round(size.x), Math.round(size.y), isMouseOverElement(mouseInput) && !overOther || this.isFocused() ? Config.INTERFACE_SECONDARY_COLOR : Config.INTERFACE_PRIMARY_COLOR);
 
         if(!this.isFocused())
         {
@@ -99,23 +99,23 @@ public class Textbox extends Element{
         {
             try
             {
-                if((int) Math.round(pos.x + xScroll + this.size.y / 2 - getFontHeight() / 2) + getStringWidth(text.substring(0, i)) < pos.x)
+                if(Math.round(pos.x + xScroll + this.size.y / 2 - getFontHeight() / 2) + getStringWidth(text.substring(0, i)) < pos.x)
                     begin = i;
 
-                if((int) Math.round(pos.x + xScroll + this.size.y / 2 - getFontHeight() / 2) + getStringWidth(text.substring(0, i + 1)) < pos.x + size.x)
+                if(Math.round(pos.x + xScroll + this.size.y / 2 - getFontHeight() / 2) + getStringWidth(text.substring(0, i + 1)) < pos.x + size.x)
                     end = i + 1;
             }catch (Exception e){}
         }
 
-        renderer.drawString(text, textColor(), (int) Math.round(pos.x + xScroll + this.size.y / 2 - getFontHeight() / 2), (int) Math.round(pos.y + this.size.y / 2 - getFontHeight() / 2), begin, end);
+        renderer.drawString(text, textColor(), Math.round(pos.x + xScroll + this.size.y / 2 - getFontHeight() / 2), Math.round(pos.y + this.size.y / 2 - getFontHeight() / 2), begin, end);
 
         if(!this.disabled)
         {
             if(500 > (System.currentTimeMillis() - Consts.startMillis) % 1000 && isFocused())
                 if(currentSelection == text.length())
-                    renderer.drawString("_", textColor(), (int) Math.round(pos.x + xScroll + getStringWidth(text) + 1 + this.size.y/2 - getFontHeight()/2), (int) Math.round(pos.y + this.size.y/2 - getFontHeight()/2));
+                    renderer.drawString("_", textColor(), Math.round(pos.x + xScroll + getStringWidth(text) + 1 + this.size.y/2 - getFontHeight()/2), Math.round(pos.y + this.size.y/2 - getFontHeight()/2));
                 else
-                    renderer.drawRect((int) Math.round(xScroll + pos.x + getStringWidth(text.substring(0, currentSelection)) + this.size.y/2 - getFontHeight()/2 - 1), (int) Math.round(pos.y + this.size.y/2 - getFontHeight()/2), 1, (int) Math.round(getFontHeight() - 2), textColor());
+                    renderer.drawRect(Math.round(xScroll + pos.x + getStringWidth(text.substring(0, currentSelection)) + this.size.y/2 - getFontHeight()/2 - 1), Math.round(pos.y + this.size.y/2 - getFontHeight()/2), 1, Math.round(getFontHeight() - 2), textColor());
 
             if(selectedText[0] >= 0 && selectedText[1] >= 0 && selectedText[0] != selectedText[1])
             {
@@ -144,10 +144,10 @@ public class Textbox extends Element{
                 if (x + width > pos.x + size.x)
                     width = pos.x + size.x - x;
 
-                renderer.drawRectInvert((int) Math.round(x - 1), (int) Math.round(pos1[1] - 1), (int) Math.round(width + 1), getFontHeight() + 2);
+                renderer.drawRectInvert(Math.round(x - 1), Math.round(pos1[1] - 1), Math.round(width + 1), getFontHeight() + 2);
             }
         }
-        renderer.drawRectOutline(new Vector2f((int) Math.round(pos.x), (int) Math.round(pos.y)), outlineRect, isMouseOverElement(mouseInput) && !overOther || this.isFocused() ? Config.INTERFACE_SECONDARY_COLOR2 : Config.INTERFACE_PRIMARY_COLOR2, false);
+        renderer.drawRectOutline(new Vector2f(Math.round(pos.x), Math.round(pos.y)), outlineRect, isMouseOverElement(mouseInput) && !overOther || this.isFocused() ? Config.INTERFACE_SECONDARY_COLOR2 : Config.INTERFACE_PRIMARY_COLOR2, false);
         renderer.endScissor();
     }
 
@@ -161,7 +161,7 @@ public class Textbox extends Element{
     {
         if(this.outlineRect != null)
             this.outlineRect.cleanup(loader);
-        this.outlineRect = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f((int) Math.round(size.x), (int) Math.round(size.y))), loader, window);
+        this.outlineRect = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(Math.round(size.x), Math.round(size.y))), loader, window);
     }
 
     @Override
@@ -274,7 +274,7 @@ public class Textbox extends Element{
 
                 if(selectionEnd != -1 && selectionEnd != -1)
                 {
-                    text = text.substring(0, selectionStart) + clipboard + text.substring(selectionEnd, text.length());
+                    text = text.substring(0, selectionStart) + clipboard + text.substring(selectionEnd);
                     currentSelection = selectionStart + clipboard.length();
                     selectedText[0] = -1;
                     selectedText[1] = -1;
@@ -285,7 +285,7 @@ public class Textbox extends Element{
                 else
                 {
                     bool = true;
-                    text = text.substring(0, currentSelection) + clipboard + text.substring(currentSelection, text.length());
+                    text = text.substring(0, currentSelection) + clipboard + text.substring(currentSelection);
                     currentSelection += clipboard.length();
                 }
             }
@@ -293,7 +293,7 @@ public class Textbox extends Element{
                 if(selectionEnd != -1 && selectionStart != -1 && selectionStart != selectionEnd)
                 {
                     currentSelection = selectionStart;
-                    text = text.substring(0, selectionStart) + text.substring(selectionEnd, text.length());
+                    text = text.substring(0, selectionStart) + text.substring(selectionEnd);
                     selectedText[0] = -1;
                     selectedText[1] = -1;
                     bool = true;
@@ -303,7 +303,7 @@ public class Textbox extends Element{
                 else if(currentSelection != 0)
                 {
                     bool = true;
-                    text = text.substring(0, currentSelection - 1) + text.substring(currentSelection, text.length());
+                    text = text.substring(0, currentSelection - 1) + text.substring(currentSelection);
                     currentSelection--;
                 }
                 else
@@ -471,7 +471,7 @@ public class Textbox extends Element{
                     }catch (Exception e){}
 
                     currentSelection = selectionStart;
-                    text = text.substring(0, selectionStart) + text.substring(selectionEnd, text.length());
+                    text = text.substring(0, selectionStart) + text.substring(selectionEnd);
                     selectedText[0] = -1;
                     selectedText[1] = -1;
 
@@ -539,7 +539,7 @@ public class Textbox extends Element{
             if (s != null) {
                 if(selectionEnd != -1 && selectionEnd != -1)
                 {
-                    text = text.substring(0, selectionStart) + s + text.substring(selectionEnd, text.length());
+                    text = text.substring(0, selectionStart) + s + text.substring(selectionEnd);
                     currentSelection = selectionStart + s.length();
                     selectedText[0] = -1;
                     selectedText[1] = -1;
@@ -550,7 +550,7 @@ public class Textbox extends Element{
                 else
                 {
                     bool = true;
-                    text = text.substring(0, currentSelection) + s + text.substring(currentSelection, text.length());
+                    text = text.substring(0, currentSelection) + s + text.substring(currentSelection);
                     currentSelection++;
                 }
             }
@@ -612,8 +612,13 @@ public class Textbox extends Element{
     {
         if (!this.isFocused())
         {
-            String v = Float.toString(value);
-            this.setText(v.equalsIgnoreCase("nan") ? "" : v);
+            String numba;
+            if (value == (int) value)
+                numba = Integer.toString((int) value);
+            else
+                numba = Float.toString(value);
+
+            this.setText(Float.isNaN(value) || Float.isInfinite(value) ? "" : numba);
         }
         else
             try

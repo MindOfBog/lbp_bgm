@@ -302,9 +302,9 @@ public class MeshExporter {
                 );
                 
                 for (int j = 0; j < 2; ++j) {
-                    glPrimitive.addAttributes("TEXCOORD_" + String.valueOf(j), 
+                    glPrimitive.addAttributes("TEXCOORD_" + j,
                             glb.createAccessor(
-                                    "TEXCOORD_" + String.valueOf(j), 
+                                    "TEXCOORD_" + j,
                                     5126, 
                                     "VEC2", 
                                     primitive.vertexStart * 0x8, 
@@ -660,10 +660,10 @@ public class MeshExporter {
                 
                 if (box.type == BoxType.TEXTURE_SAMPLE) {
                     int[] params = box.getParameters();
-                    float[] textureScale = new float[] { Float.intBitsToFloat((int) params[0]), Float.intBitsToFloat((int) params[1]) };
-                    float[] textureOffset = new float[] { Float.intBitsToFloat((int) params[2]), Float.intBitsToFloat((int) params[3]) };
-                    int channel = (int) params[4];
-                    int textureIndex = (int) params[5];
+                    float[] textureScale = new float[] { Float.intBitsToFloat(params[0]), Float.intBitsToFloat(params[1]) };
+                    float[] textureOffset = new float[] { Float.intBitsToFloat(params[2]), Float.intBitsToFloat(params[3]) };
+                    int channel = params[4];
+                    int textureIndex = params[5];
                     FileEntry entry = ResourceSystem.get(gmat.textures[textureIndex]);
                     if (entry == null) continue;
                     byte[] texture = this.convertTexture(gmat, textureIndex);
@@ -756,7 +756,7 @@ public class MeshExporter {
                     MaterialWire wire = gmat.findWireFrom(i);
                     if (wire.boxTo == outputBox) {
                         int[] params = box.getParameters();
-                        float[] color = new float[] { Float.intBitsToFloat((int) params[0]) / 255f, Float.intBitsToFloat((int) params[1]) / 255f, Float.intBitsToFloat((int) params[2]) / 255f, Float.intBitsToFloat((int) params[3]) / 255f};
+                        float[] color = new float[] { Float.intBitsToFloat(params[0]) / 255f, Float.intBitsToFloat(params[1]) / 255f, Float.intBitsToFloat(params[2]) / 255f, Float.intBitsToFloat(params[3]) / 255f};
                         if (wire.portTo == 0) {
                             if (material.getExtensions() != null && material.getExtensions().containsKey("KHR_materials_pbrSpecularGlossiness")) {
                                 @SuppressWarnings("unchecked")
@@ -865,7 +865,7 @@ public class MeshExporter {
                         output.f32(pos.y);
                         output.f32(pos.z);
                     }
-                    createBufferView("BONE_TRANSLATION_" + String.valueOf(bone.animHash), posStart, output.getOffset() - posStart);
+                    createBufferView("BONE_TRANSLATION_" + bone.animHash, posStart, output.getOffset() - posStart);
                 }
                 
                 if (animation.isAnimated(bone, AnimationType.ROTATION)) {
@@ -876,7 +876,7 @@ public class MeshExporter {
                         output.f32(rot.z);
                         output.f32(rot.w);
                     }
-                    createBufferView("BONE_ROTATION_" + String.valueOf(bone.animHash), rotStart, output.getOffset() - rotStart);
+                    createBufferView("BONE_ROTATION_" + bone.animHash, rotStart, output.getOffset() - rotStart);
                 }
                 
                 if (animation.isAnimated(bone, AnimationType.SCALE)) {
@@ -886,7 +886,7 @@ public class MeshExporter {
                         output.f32(scale.y);
                         output.f32(scale.z);
                     }
-                    createBufferView("BONE_SCALE_" + String.valueOf(bone.animHash), scaleStart, output.getOffset() - scaleStart);
+                    createBufferView("BONE_SCALE_" + bone.animHash, scaleStart, output.getOffset() - scaleStart);
                 }
             }
 
@@ -952,7 +952,7 @@ public class MeshExporter {
                 primitive.numVerts = getMax(triangles) + 1;
                 for (int triangle : triangles)
                     output.u16((short) triangle);
-                createBufferView("INDICES_" + String.valueOf(i), primitiveStart, output.getOffset() - primitiveStart);
+                createBufferView("INDICES_" + i, primitiveStart, output.getOffset() - primitiveStart);
             }
             output.shrink();
             return output.getBuffer();
@@ -984,7 +984,7 @@ public class MeshExporter {
 
                     for (int triangle : triangles)
                         output.u16((short) (triangle - primitive.getMinVert()));
-                    createBufferView("INDICES_" + String.valueOf(i) + "_" + String.valueOf(j), triangleStart, output.getOffset() - triangleStart);
+                    createBufferView("INDICES_" + i + "_" + j, triangleStart, output.getOffset() - triangleStart);
                 }
             }
             
@@ -1002,7 +1002,7 @@ public class MeshExporter {
                     output.f32(texCoord.x);
                     output.f32(texCoord.y);
                 }
-                createBufferView("TEXCOORD_" + String.valueOf(i), uvStart, output.getOffset() - uvStart);
+                createBufferView("TEXCOORD_" + i, uvStart, output.getOffset() - uvStart);
             }
             if (mesh.getMorphCount() != 0) {
                 Morph[] morphs = mesh.getMorphs();
@@ -1014,7 +1014,7 @@ public class MeshExporter {
                         output.f32(vertex.y);
                         output.f32(vertex.z);
                     }
-                    createBufferView("MORPH_" + String.valueOf(i), morphStart, output.getOffset() - morphStart);
+                    createBufferView("MORPH_" + i, morphStart, output.getOffset() - morphStart);
                 }
                 
                 for (int i = 0; i < mesh.getMorphCount(); ++i) {
@@ -1027,7 +1027,7 @@ public class MeshExporter {
                         output.f32(vertex.z - normals[j].z);
                     }
                     
-                    createBufferView("MORPH_NORMAL_" + String.valueOf(i), morphStart, output.getOffset() - morphStart);
+                    createBufferView("MORPH_NORMAL_" + i, morphStart, output.getOffset() - morphStart);
                 }
             }
 

@@ -8,7 +8,7 @@ public enum PlayMode implements ValueEnum<Integer> {
     TRIGGER_BY_DESTROY(0x2);
     
     private final int value;
-    private PlayMode(int value) {
+    PlayMode(int value) {
         this.value = value;
     }
 

@@ -26,7 +26,7 @@ import java.util.HashSet;
 
 public class BigSave extends FileData {
     public ArrayList<SaveEntry> entries = new ArrayList<>();
-    private HashMap<SHA1, SaveEntry> lookup = new HashMap<>();
+    private final HashMap<SHA1, SaveEntry> lookup = new HashMap<>();
     
     /**
      * Used for determing which moon model positions to use

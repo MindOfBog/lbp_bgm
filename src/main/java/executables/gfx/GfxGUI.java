@@ -53,7 +53,7 @@ public class GfxGUI extends javax.swing.JFrame {
     
     private RGfxMaterial gmat;
     
-    private DefaultListModel textureModel = new DefaultListModel();
+    private final DefaultListModel textureModel = new DefaultListModel();
     
     private String brdf;
     
@@ -102,7 +102,7 @@ public class GfxGUI extends javax.swing.JFrame {
         
         // Update properties
         this.alphaTestLevelSpinner.setValue(this.gmat.alphaTestLevel);
-        this.alphaLayerSpinner.setValue((int) (this.gmat.alphaLayer & 0xFF));
+        this.alphaLayerSpinner.setValue(this.gmat.alphaLayer & 0xFF);
         this.shadowCastComboBox.setSelectedItem(this.gmat.shadowCastMode);
         this.bumpLevelSpinner.setValue(this.gmat.bumpLevel);
         this.cosinePowerSpinner.setValue(this.gmat.cosinePower);
@@ -800,7 +800,7 @@ public class GfxGUI extends javax.swing.JFrame {
         this.alphaModeCombo.setEnabled(isLBP2);
     }//GEN-LAST:event_gameComboBoxActionPerformed
 
-    public static void main(String args[]) {
+    public static void main(String[] args) {
         LafManager.install(new DarculaTheme());
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {

@@ -91,7 +91,7 @@ public enum SwitchType implements ValueEnum<Integer> {
     SPRING_SENSOR(84);
     
     private final int value;
-    private SwitchType(int value) {
+    SwitchType(int value) {
         this.value = value;
     }
     

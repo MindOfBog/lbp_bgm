@@ -129,10 +129,8 @@ public class ProjectManager extends GuiScreen {
     Checkbox makeSizeProportionalPlan;
     Textbox primaryIndexPlan;
     Textbox translationTagPlan;
-    Textbox rColorPlan;
-    Textbox gColorPlan;
-    Textbox bColorPlan;
-    Textbox aColorPlan;
+    ColorPicker colorPlan;
+    public Color planColor = new Color(255, 255, 255, 255);
     Textbox highlightSoundPlan;
     Textbox dateAddedDayPlan;
     Textbox dateAddedMonthPlan;
@@ -173,6 +171,8 @@ public class ProjectManager extends GuiScreen {
     public ArrayList<Texture> listTexImport;
     public ElementList textureListTexImport;
 
+    private ElementList projectFileTree;
+
     public void init()
     {
         worldThing = new Thing();
@@ -187,13 +187,25 @@ public class ProjectManager extends GuiScreen {
         typePlan = new ArrayList<>();
         creatorHistoryListPlan = new ArrayList<>();
 
-        project = new DropDownTab("project", "Project", new Vector2f(10, 21 + 10), new Vector2f(400, getFontHeight() + 4), mainView.renderer, mainView.loader, mainView.window);
+        project = new DropDownTab("project", "Project", new Vector2f(10, getFontHeightHeader() + 7 + 7), new Vector2f(350f * (getFontHeight() / 12f), getFontHeight() + 4), mainView.renderer, mainView.loader, mainView.window);
 
-        ElementList projectFileTree = project.addElementList("projectFileTree", 300);
+        projectFileTree = project.addElementList("projectFileTree", (int) (270f * (getFontHeight() / 12f)));
 
-        buildScene = new ComboBox("buildScene", "Build Scene", new Vector2f(), null, 100, renderer, loader, window);
+        buildScene = new ComboBox("buildScene", "Build Scene", new Vector2f(), null, renderer, loader, window)
+        {
+            @Override
+            public int tabWidth() {
+                return Math.round(100f * (getFontHeight() / 12f));
+            }
+        };
 
-        ComboBox importTextures = new ComboBox("texture", "Texture(s)", new Vector2f(), null, 250, renderer, loader, window);
+        ComboBox importTextures = new ComboBox("texture", "Texture(s)", new Vector2f(), null, renderer, loader, window)
+        {
+            @Override
+            public int tabWidth() {
+                return Math.round(250f * (getFontHeight() / 12f));
+            }
+        };
 
         importTextures.addButton("open", "Open", new Button() {
             @Override
@@ -208,7 +220,13 @@ public class ProjectManager extends GuiScreen {
 
         Panel formatPanel = importTextures.addPanel("formatPanel");
         formatPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("formatStr", "Format:", renderer), 0.4f));
-        ComboBox imgFormat = new ComboBox("formatCombo", "DXT5", 100, renderer, loader, window);
+        ComboBox imgFormat = new ComboBox("formatCombo", "DXT5", renderer, loader, window)
+        {
+            @Override
+            public int tabWidth() {
+                return Math.round(100f * (getFontHeight() / 12f));
+            }
+        };
         formatPanel.elements.add(new Panel.PanelElement(imgFormat, 0.6f));
         imgFormat.addButton("DXT1", new Button() {
             @Override
@@ -280,14 +298,14 @@ public class ProjectManager extends GuiScreen {
                             byte[] imageData = Images.toGTF(texture.image, type, noSRGB, genMips);
 
                             FileDBRow row = LoadedData.PROJECT_DATA.add(modFileTree.getPath(modFileTree.getSelectedItem()) + "/" + fileName.getText(), imageData);
-                            FileTree.TreeItem newItem = ((FileTree.TreeFolder)modFileTree.getSelectedItem()).addItem(String.valueOf(((FileTree.TreeFolder)modFileTree.getSelectedItem()).children.size()), row, fileName.getText(), ((FileTree.TreeFolder)modFileTree.getSelectedItem()).size.y);
+                            FileTree.TreeItem newItem = ((FileTree.TreeFolder)modFileTree.getSelectedItem()).addItem(String.valueOf(((FileTree.TreeFolder)modFileTree.getSelectedItem()).children.size()), row, fileName.getText(), modFileTree.getSelectedItem().size.y);
                         }
                         else
                         {
                             byte[] imageData = Images.toTEX(texture.image, type, noSRGB, genMips);
 
                             FileDBRow row = LoadedData.PROJECT_DATA.add(modFileTree.getPath(modFileTree.getSelectedItem()) + "/" + fileName.getText(), imageData);
-                            FileTree.TreeItem newItem = ((FileTree.TreeFolder)modFileTree.getSelectedItem()).addItem(String.valueOf(((FileTree.TreeFolder)modFileTree.getSelectedItem()).children.size()), row, fileName.getText(), ((FileTree.TreeFolder)modFileTree.getSelectedItem()).size.y);
+                            FileTree.TreeItem newItem = ((FileTree.TreeFolder)modFileTree.getSelectedItem()).addItem(String.valueOf(((FileTree.TreeFolder)modFileTree.getSelectedItem()).children.size()), row, fileName.getText(), modFileTree.getSelectedItem().size.y);
                         }
                     }
 
@@ -298,10 +316,10 @@ public class ProjectManager extends GuiScreen {
             }
         });
 
-        modFileTree = projectFileTree.addFileTree(new FileTree("modFileTree", "Some kind of mod", getFontHeight() * 1.25f + 2, new Vector2f(), new Vector2f(), renderer, loader, window) {
+        modFileTree = projectFileTree.addFileTree(new FileTree("modFileTree", "Some kind of mod", new Vector2f(), new Vector2f(), renderer, loader, window) {
             @Override
             public int[] getParentTransform() {
-                return new int[]{(int) Math.round(project.pos.x), (int) Math.round(project.pos.y), (int) Math.round(project.size.x)};
+                return new int[]{Math.round(project.pos.x), Math.round(project.pos.y), Math.round(project.size.x)};
             }
 
             @Override
@@ -400,7 +418,7 @@ public class ProjectManager extends GuiScreen {
 
                 String path = getPath(treeFolder);
                 FileDBRow row = LoadedData.PROJECT_DATA.add(((path == null || path.isEmpty() || path.isBlank()) ? "" : path + "/") + name, bytes);
-                FileTree.TreeItem newItem = treeFolder.addItem(String.valueOf(treeFolder.children.size()), row, name, this.itemHeight);
+                FileTree.TreeItem newItem = treeFolder.addItem(String.valueOf(treeFolder.children.size()), row, name, this.itemHeight());
 
             }
 
@@ -409,7 +427,7 @@ public class ProjectManager extends GuiScreen {
                 String path = getPath(treeFolder);
                 FileDBRow row = LoadedData.PROJECT_DATA.newFileDBRow(((path == null || path.isEmpty() || path.isBlank()) ? "" : path + "/"));
 
-                TreeFolder newFolder = treeFolder.addFolder(String.valueOf(treeFolder.children.size()), row, "", this.itemHeight);
+                TreeFolder newFolder = treeFolder.addFolder(String.valueOf(treeFolder.children.size()), row, "", this.itemHeight());
                 newFolder.itemName.setFocused(true);
                 treeFolder.selected = false;
                 newFolder.selected = true;
@@ -457,6 +475,12 @@ public class ProjectManager extends GuiScreen {
                 int s = org.joml.Math.round(size.y);
                 return ConstantTextures.getTexture(extended ? ConstantTextures.ICON_GROUP_GEAR_OPEN : ConstantTextures.ICON_GROUP_GEAR, s, s, loader);
             }
+
+            @Override
+            public float itemHeight() {
+                return Math.round(getFontHeight() * 1.25f + 2);
+            }
+
             @Override
             public Texture getItemIcon(String itemName, Vector2f size) {
                 int s = org.joml.Math.round(size.y);
@@ -833,11 +857,16 @@ public class ProjectManager extends GuiScreen {
         creatorPlan = new Textbox("creatorPlan", new Vector2f(), new Vector2f(getFontHeight()), mainView.renderer, mainView.loader, mainView.window);
         creatorPlan.setText("MM_Studio");
         creatorPlanPanel.elements.add(new Panel.PanelElement(creatorPlan, 0.4f));
-        creatorHistoryPlan = new ComboBox("creatorHistoryPlan", "History", new Vector2f(), new Vector2f(), 250, mainView.renderer, mainView.loader, mainView.window)
+        creatorHistoryPlan = new ComboBox("creatorHistoryPlan", "History", new Vector2f(), new Vector2f(), mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public int[] getParentTransform() {
                 return planExport.getTabPosWidth();
+            }
+
+            @Override
+            public int tabWidth() {
+                return Math.round(250f * (getFontHeight() / 12f));
             }
         };
         creatorPlanPanel.elements.add(new Panel.PanelElement(null, 0.002f));
@@ -885,7 +914,13 @@ public class ProjectManager extends GuiScreen {
             public boolean searchFilter(Object object, int index) {
                 return true;
             }
-        }.deletable().draggable(), 150);
+
+            @Override
+            public void resize() {
+                super.resize();
+                this.size.y = Math.round(120f * (getFontHeight() / 12f));
+            }
+        }.deletable().draggable(), Math.round(120f * (getFontHeight() / 12f)));
 
         Panel iconPlanPanel = planExport.addPanel("iconPlanPanel");
         iconPlanPanel.elements.add(new Panel.PanelElement(
@@ -988,11 +1023,16 @@ public class ProjectManager extends GuiScreen {
         locationPanel.elements.add(new Panel.PanelElement(locationIndexPlan, 0.123f));
 
         Panel typePlanPanel = planExport.addPanel("typePlanPanel");
-        ComboBox planType = new ComboBox("planType", "Type", new Vector2f(), new Vector2f(), 250, mainView.renderer, mainView.loader, mainView.window)
+        ComboBox planType = new ComboBox("planType", "Type", new Vector2f(), new Vector2f(), mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public int[] getParentTransform() {
                 return planExport.getTabPosWidth();
+            }
+
+            @Override
+            public int tabWidth() {
+                return Math.round(250f * (getFontHeight() / 12f));
             }
         };
 
@@ -1011,16 +1051,18 @@ public class ProjectManager extends GuiScreen {
         for(InventoryObjectType type : typeArray)
         {
             String name = type.name().replaceAll("_", " ");
-            name = name.substring(0, 1) + name.substring(1).toLowerCase();
+            name = name.charAt(0) + name.substring(1).toLowerCase();
 
             if(lbpType == 1 && type.getGameVersion() == 2)
             {
-                typeList.addString("lbp2Types", "LBP2:");
+                typeList.addSeparator("2sep");
+                typeList.addString("lbp2Types", Consts.FONT_SET_BOLD + "LBP2:");
                 lbpType = 2;
             }
             if(lbpType == 2 && type.getGameVersion() == 3)
             {
-                typeList.addString("lbp3Types", "LBP3:");
+                typeList.addSeparator("3sep");
+                typeList.addString("lbp3Types", Consts.FONT_SET_BOLD + "LBP3:");
                 lbpType = 3;
             }
 
@@ -1030,16 +1072,21 @@ public class ProjectManager extends GuiScreen {
 
         typePlanPanel.elements.add(new Panel.PanelElement(planType, 0.695f));
         typePlanPanel.elements.add(new Panel.PanelElement(null, 0.005f));
-        ComboBox planSubType = new ComboBox("planSubType", "Sub Type", new Vector2f(), new Vector2f(), 250, mainView.renderer, mainView.loader, mainView.window)
+        ComboBox planSubType = new ComboBox("planSubType", "Sub Type", new Vector2f(), new Vector2f(), mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public int[] getParentTransform() {
                 return planExport.getTabPosWidth();
             }
+
+            @Override
+            public int tabWidth() {
+                return Math.round(250f * (getFontHeight() / 12f));
+            }
         };
         typePlanPanel.elements.add(new Panel.PanelElement(planSubType, 0.3f));
 
-        subTypeList = planSubType.addElementList("subTypeList", 250);
+        subTypeList = planSubType.addElementList("subTypeList", org.joml.Math.round(200f * (getFontHeight() / 12f)));
 
         earthRBPlan = new Radiobutton()
         {
@@ -1078,7 +1125,7 @@ public class ProjectManager extends GuiScreen {
             }
         };
 
-        subTypeList.addString("planetText", "Planets:");
+        subTypeList.addString("planetText", Consts.FONT_SET_BOLD + "Planets:");
         subTypeList.addCheckbox("EARTH", "Earth", earthRBPlan);
         subTypeList.addCheckbox("MOON", "Moon", moonRBPlan);
         subTypeList.addCheckbox("ADVENTURE", "Adventure", adventureRBPlan);
@@ -1134,7 +1181,7 @@ public class ProjectManager extends GuiScreen {
                 nonSackboyRBPlan.isChecked = false;
             }
         };
-        subTypeList.addString("costumeText", "Costumes:");
+        subTypeList.addString("costumeText", Consts.FONT_SET_BOLD + "Costumes:");
         subTypeList.addCheckbox("CREATURE_MASK", "Non Sackboy", nonSackboyRBPlan);
         subTypeList.addCheckbox("CREATURE_MASK_GIANT", "Big Toggle", giantRBPlan);
         subTypeList.addCheckbox("CREATURE_MASK_DWARF", "Small Toggle", dwarfRBPlan);
@@ -1176,7 +1223,7 @@ public class ProjectManager extends GuiScreen {
         subTypeList.addCheckbox("FULL_COSTUME", "Full costume");
         subTypeList.addCheckbox("PLAYER_AVATAR", "Player avatar");
 
-        subTypeList.addString("stickersText", "Stickers & Decorations:");
+        subTypeList.addString("stickersText", Consts.FONT_SET_BOLD + "Stickers & Decorations:");
         subTypeList.addCheckbox("PAINTING", "Painting");
         subTypeList.addCheckbox("EARTH_DECORATION", "Earth decoration");
 
@@ -1196,11 +1243,16 @@ public class ProjectManager extends GuiScreen {
         toolTypePlanPanel.elements.add(new Panel.PanelElement(
                 new DropDownTab.StringElement("toolTypePlanStr", "Tool Type:", mainView.renderer),
                 firstSegWidth));
-        toolTypePlan = new ComboBox("toolTypePlan", "None", new Vector2f(), new Vector2f(), 250, mainView.renderer, mainView.loader, mainView.window)
+        toolTypePlan = new ComboBox("toolTypePlan", "None", new Vector2f(), new Vector2f(), mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public int[] getParentTransform() {
                 return extrasPlan.getTabPosWidth();
+            }
+
+            @Override
+            public int tabWidth() {
+                return Math.round(250f * (getFontHeight() / 12f));
             }
         };
         toolTypePlan.addList("toolTypeList", new ButtonList(Arrays.asList(ToolType.values()), mainView.renderer, mainView.loader, mainView.window) {
@@ -1214,7 +1266,7 @@ public class ProjectManager extends GuiScreen {
                         toolTypePln = ToolType.NONE;
 
                     toolTypePlan.tabTitle = toolTypePln.name().replaceAll("_", " ");
-                    toolTypePlan.tabTitle = toolTypePlan.tabTitle.substring(0, 1) + toolTypePlan.tabTitle.substring(1).toLowerCase();
+                    toolTypePlan.tabTitle = toolTypePlan.tabTitle.charAt(0) + toolTypePlan.tabTitle.substring(1).toLowerCase();
                 }
             }
 
@@ -1244,7 +1296,7 @@ public class ProjectManager extends GuiScreen {
             @Override
             public String buttonText(Object object, int index) {
                 String name = ((ToolType)object).name().replaceAll("_", " ");
-                name = name.substring(0, 1) + name.substring(1).toLowerCase();
+                name = name.charAt(0) + name.substring(1).toLowerCase();
                 return name;
             }
 
@@ -1303,107 +1355,26 @@ public class ProjectManager extends GuiScreen {
         translationTagPlan = new Textbox("translationTagPlan", new Vector2f(), new Vector2f(getFontHeight()), mainView.renderer, mainView.loader, mainView.window);
         translationTag.elements.add(new Panel.PanelElement(translationTagPlan, secondSegWidth));
 
-        extrasPlan.addString("colorPlanStr", "Color:");
         Panel colorPlanPanel = extrasPlan.addPanel("colorPlanPanel");
+
+        colorPlanPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("planColorStr", "Plan Color:", mainView.renderer), 0.4f));
+
+        colorPlan = new ColorPicker("colorPlan", mainView.renderer, mainView.loader, mainView.window) {
+            @Override
+            public Color getColor() {
+                return planColor;
+            }
+
+            @Override
+            public void setColor(Color color) {
+                planColor = color;
+            }
+        };
+
+        colorPlanPanel.elements.add(new Panel.PanelElement(colorPlan, 0.6f));
 
         float gap = 0.02f;
         float boxes = 1f - gap;
-
-        rColorPlan = new Textbox("rColorPlan", new Vector2f(), new Vector2f(getFontHeight()), mainView.renderer, mainView.loader, mainView.window)
-        {
-            @Override
-            public void setFocused(boolean focused) {
-                super.setFocused(focused);
-
-                if(focused)
-                    return;
-
-                String text = this.getText();
-
-                if(text.isEmpty() || text.isBlank() || text.equalsIgnoreCase(" "))
-                    return;
-
-                int number = Utils.parseInt(text);
-
-                if(number < 0)
-                    this.setText("0");
-                if(number > 255)
-                    this.setText("255");
-            }
-        }.noLetters().noOthers();
-        colorPlanPanel.elements.add(new Panel.PanelElement(rColorPlan, boxes/4f));
-        colorPlanPanel.elements.add(new Panel.PanelElement(null, gap/3f));
-        gColorPlan = new Textbox("gColorPlan", new Vector2f(), new Vector2f(getFontHeight()), mainView.renderer, mainView.loader, mainView.window)
-        {
-            @Override
-            public void setFocused(boolean focused) {
-                super.setFocused(focused);
-
-                if(focused)
-                    return;
-
-                String text = this.getText();
-
-                if(text.isEmpty() || text.isBlank() || text.equalsIgnoreCase(" "))
-                    return;
-
-                int number = Utils.parseInt(text);
-
-                if(number < 0)
-                    this.setText("0");
-                if(number > 255)
-                    this.setText("255");
-            }
-        }.noLetters().noOthers();
-        colorPlanPanel.elements.add(new Panel.PanelElement(gColorPlan, boxes/4f));
-        colorPlanPanel.elements.add(new Panel.PanelElement(null, gap/3f));
-        bColorPlan = new Textbox("bColorPlan", new Vector2f(), new Vector2f(getFontHeight()), mainView.renderer, mainView.loader, mainView.window)
-        {
-            @Override
-            public void setFocused(boolean focused) {
-                super.setFocused(focused);
-
-                if(focused)
-                    return;
-
-                String text = this.getText();
-
-                if(text.isEmpty() || text.isBlank() || text.equalsIgnoreCase(" "))
-                    return;
-
-                int number = Utils.parseInt(text);
-
-                if(number < 0)
-                    this.setText("0");
-                if(number > 255)
-                    this.setText("255");
-            }
-        }.noLetters().noOthers();
-        colorPlanPanel.elements.add(new Panel.PanelElement(bColorPlan, boxes/4f));
-        colorPlanPanel.elements.add(new Panel.PanelElement(null, gap/3f));
-        aColorPlan = new Textbox("aColorPlan", new Vector2f(), new Vector2f(getFontHeight()), mainView.renderer, mainView.loader, mainView.window)
-        {
-            @Override
-            public void setFocused(boolean focused) {
-                super.setFocused(focused);
-
-                if(focused)
-                    return;
-
-                String text = this.getText();
-
-                if(text.isEmpty() || text.isBlank() || text.equalsIgnoreCase(" "))
-                    return;
-
-                int number = Utils.parseInt(text);
-
-                if(number < 0)
-                    this.setText("0");
-                if(number > 255)
-                    this.setText("255");
-            }
-        }.noLetters().noOthers();
-        colorPlanPanel.elements.add(new Panel.PanelElement(aColorPlan, boxes/4f));
 
         Panel highlightSound = extrasPlan.addPanel("highlightSound");
         highlightSound.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("title", "Highl. Sound (GUID):", renderer), 0.575f));
@@ -1587,11 +1558,16 @@ public class ProjectManager extends GuiScreen {
             }
         };
 
-        ComboBox templateMetadata = new ComboBox("templateMetadata", "Templates", new Vector2f(), new Vector2f(), 200, mainView.renderer, mainView.loader, mainView.window)
+        ComboBox templateMetadata = new ComboBox("templateMetadata", "Templates", new Vector2f(), new Vector2f(), mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public int[] getParentTransform() {
                 return planExport.getTabPosWidth();
+            }
+
+            @Override
+            public int tabWidth() {
+                return Math.round(200f * (getFontHeight() / 12f));
             }
         };
 
@@ -1599,6 +1575,12 @@ public class ProjectManager extends GuiScreen {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 presetObjectPlan();
+            }
+        });
+        templateMetadata.addButton("usrobj", "User Object", new Button() {
+            @Override
+            public void clickedButton(int button, int action, int mods) {
+                presetUserObjectPlan();
             }
         });
         templateMetadata.addButton("mat", "Material", new Button() {
@@ -1654,7 +1636,7 @@ public class ProjectManager extends GuiScreen {
 
                     String nameText = userCreatedNamePlan.getText();
 
-                    FileTree.TreeItem planItem = folder.addItem(String.valueOf(folder.children.size()), row, nameText + ".plan", modFileTree.itemHeight);
+                    FileTree.TreeItem planItem = folder.addItem(String.valueOf(folder.children.size()), row, nameText + ".plan", modFileTree.itemHeight());
                     planItem.itemName.setFocused(true);
                     planItem.itemName.setSelection(nameText.length());
                     folder.selected = false;
@@ -1683,7 +1665,7 @@ public class ProjectManager extends GuiScreen {
 
                     String nameText = userCreatedNamePlan.getText();
 
-                    FileTree.TreeItem planItem = folder.addItem(String.valueOf(folder.children.size()), row, nameText + ".plan", modFileTree.itemHeight);
+                    FileTree.TreeItem planItem = folder.addItem(String.valueOf(folder.children.size()), row, nameText + ".plan", modFileTree.itemHeight());
                     planItem.itemName.setFocused(true);
                     planItem.itemName.setSelection(nameText.length());
                     folder.selected = false;
@@ -1712,7 +1694,7 @@ public class ProjectManager extends GuiScreen {
 
                     String nameText = userCreatedNamePlan.getText();
 
-                    FileTree.TreeItem planItem = folder.addItem(String.valueOf(folder.children.size()), row, nameText + ".plan", modFileTree.itemHeight);
+                    FileTree.TreeItem planItem = folder.addItem(String.valueOf(folder.children.size()), row, nameText + ".plan", modFileTree.itemHeight());
                     planItem.itemName.setFocused(true);
                     planItem.itemName.setSelection(nameText.length());
                     folder.selected = false;
@@ -1740,7 +1722,7 @@ public class ProjectManager extends GuiScreen {
 
                     String nameText = userCreatedNamePlan.getText();
 
-                    FileTree.TreeItem planItem = folder.addItem(String.valueOf(folder.children.size()), row, nameText + ".plan", modFileTree.itemHeight);
+                    FileTree.TreeItem planItem = folder.addItem(String.valueOf(folder.children.size()), row, nameText + ".plan", modFileTree.itemHeight());
                     planItem.itemName.setFocused(true);
                     planItem.itemName.setSelection(nameText.length());
                     folder.selected = false;
@@ -1799,7 +1781,7 @@ public class ProjectManager extends GuiScreen {
 
                     String nameText = userCreatedNamePlan.getText();
 
-                    FileTree.TreeItem planItem = folder.addItem(String.valueOf(folder.children.size()), row, nameText + ".plan", modFileTree.itemHeight);
+                    FileTree.TreeItem planItem = folder.addItem(String.valueOf(folder.children.size()), row, nameText + ".plan", modFileTree.itemHeight());
                     planItem.itemName.setFocused(true);
                     planItem.itemName.setSelection(nameText.length());
                     folder.selected = false;
@@ -1811,16 +1793,21 @@ public class ProjectManager extends GuiScreen {
             }
         });
 
-        binExport = buildScene.addComboBox("binExport", "Bin", 450);// = new DropDownTab("binExport", "Export Bin", new Vector2f(7 * 2 + 3 + 450, 21 + 10), new Vector2f(450, getFontHeight(10) + 4), 10, mainView.renderer, mainView.loader, mainView.window);
+        binExport = buildScene.addComboBox("binExport", "Bin", 450);
 
         Panel addPartsPanel = binExport.addPanel("addPartsPanel");
         addPartsPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("addpartsstr", "Parts:", mainView.renderer), 0.5f));
 
-        ComboBox addPartCombo = new ComboBox("addPartCombo", "Add", new Vector2f(), new Vector2f(), 215, mainView.renderer, mainView.loader, mainView.window)
+        ComboBox addPartCombo = new ComboBox("addPartCombo", "Add", new Vector2f(), new Vector2f(), mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public int[] getParentTransform() {
                 return binExport.getTabPosWidth();
+            }
+
+            @Override
+            public int tabWidth() {
+                return Math.round(215f * (getFontHeight() / 12f));
             }
         };
         ArrayList<Part> pList = new ArrayList<>();
@@ -1912,11 +1899,17 @@ public class ProjectManager extends GuiScreen {
             public int buttonHeight() {
                 return super.buttonHeight() + 4;
             }
-        }, 295);
+
+            @Override
+            public void resize() {
+                super.resize();
+                this.size.y = Math.round(250f * (getFontHeight() / 12f));
+            }
+        }, Math.round(250f * (getFontHeight() / 12f)));
 
         addPartsPanel.elements.add(new Panel.PanelElement(addPartCombo, 0.5f));
 
-        ElementList binParts = binExport.addElementList(new ElementList("binParts", new Vector2f(), new Vector2f(150), renderer, loader, window)
+        ElementList binParts = binExport.addElementList(new ElementList("binParts", new Vector2f(), new Vector2f(Math.round(160f * (getFontHeight() / 12f))), renderer, loader, window)
         {
             @Override
             public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overOther, boolean focusedOther) {
@@ -1926,7 +1919,7 @@ public class ProjectManager extends GuiScreen {
                     {
                         Panel panel = (Panel) element;
                         Element e = panel.elements.get(0).element;
-                        if(e instanceof ComboBox && !((ComboBox)e).isMouseOverTab(pos) && !((ComboBox)e).isMouseOverElement(pos))
+                        if(e instanceof ComboBox && !((ComboBox)e).isMouseOverTab(pos) && !e.isMouseOverElement(pos))
                             ((ComboBox)e).collapsed(true);
                     }
 
@@ -1937,11 +1930,15 @@ public class ProjectManager extends GuiScreen {
             public int[] getParentTransform() {
                 return binExport.getTabPosWidth();
             }
+
+            @Override
+            public void resize() {
+                super.resize();
+                this.size.y = Math.round(160f * (getFontHeight() / 12f));
+            }
         });
 
         thingPart = new ThingPart(mainView, binParts, binExport, worldThingA);
-
-        binExport.addSeparator("exportSeparator").size.y = 11;
 
         selectionOnlyExportBin = binExport.addCheckbox("selectionOnlyExportBin", "Selection Only");
 
@@ -1966,11 +1963,16 @@ public class ProjectManager extends GuiScreen {
             }
         };
 
-        ComboBox templateMetadataBin = new ComboBox("templateMetadataBin", "Templates", new Vector2f(), new Vector2f(), 200, mainView.renderer, mainView.loader, mainView.window)
+        ComboBox templateMetadataBin = new ComboBox("templateMetadataBin", "Templates", new Vector2f(), new Vector2f(), mainView.renderer, mainView.loader, mainView.window)
         {
             @Override
             public int[] getParentTransform() {
                 return binExport.getTabPosWidth();
+            }
+
+            @Override
+            public int tabWidth() {
+                return Math.round(200f * (getFontHeight() / 12f));
             }
         };
 
@@ -2013,7 +2015,7 @@ public class ProjectManager extends GuiScreen {
 
                     FileDBRow row = LoadedData.PROJECT_DATA.add(path + "/.bin", data);
 
-                    FileTree.TreeItem binItem = folder.addItem(String.valueOf(folder.children.size()), row, ".bin", modFileTree.itemHeight);
+                    FileTree.TreeItem binItem = folder.addItem(String.valueOf(folder.children.size()), row, ".bin", modFileTree.itemHeight());
                     binItem.itemName.setFocused(true);
                     binItem.itemName.setSelection(0);
                     folder.selected = false;
@@ -2040,7 +2042,7 @@ public class ProjectManager extends GuiScreen {
 
                     FileDBRow row = LoadedData.PROJECT_DATA.add(path + "/.bin", data);
 
-                    FileTree.TreeItem binItem = folder.addItem(String.valueOf(folder.children.size()), row, ".bin", modFileTree.itemHeight);
+                    FileTree.TreeItem binItem = folder.addItem(String.valueOf(folder.children.size()), row, ".bin", modFileTree.itemHeight());
                     binItem.itemName.setFocused(true);
                     binItem.itemName.setSelection(0);
                     folder.selected = false;
@@ -2067,7 +2069,7 @@ public class ProjectManager extends GuiScreen {
 
                     FileDBRow row = LoadedData.PROJECT_DATA.add(path + "/.bin", data);
 
-                    FileTree.TreeItem binItem = folder.addItem(String.valueOf(folder.children.size()), row, ".bin", modFileTree.itemHeight);
+                    FileTree.TreeItem binItem = folder.addItem(String.valueOf(folder.children.size()), row, ".bin", modFileTree.itemHeight());
                     binItem.itemName.setFocused(true);
                     binItem.itemName.setSelection(0);
                     folder.selected = false;
@@ -2094,7 +2096,7 @@ public class ProjectManager extends GuiScreen {
 
                     FileDBRow row = LoadedData.PROJECT_DATA.add(path + "/.bin", data);
 
-                    FileTree.TreeItem binItem = folder.addItem(String.valueOf(folder.children.size()), row, ".bin", modFileTree.itemHeight);
+                    FileTree.TreeItem binItem = folder.addItem(String.valueOf(folder.children.size()), row, ".bin", modFileTree.itemHeight());
                     binItem.itemName.setFocused(true);
                     binItem.itemName.setSelection(0);
                     folder.selected = false;
@@ -2151,7 +2153,7 @@ public class ProjectManager extends GuiScreen {
 
                     FileDBRow row = LoadedData.PROJECT_DATA.add(path + "/.bin", data);
 
-                    FileTree.TreeItem binItem = folder.addItem(String.valueOf(folder.children.size()), row, ".bin", modFileTree.itemHeight);
+                    FileTree.TreeItem binItem = folder.addItem(String.valueOf(folder.children.size()), row, ".bin", modFileTree.itemHeight());
                     binItem.itemName.setFocused(true);
                     binItem.itemName.setSelection(0);
                     folder.selected = false;
@@ -2164,6 +2166,15 @@ public class ProjectManager extends GuiScreen {
         });
 
         this.guiElements.add(project);
+    }
+
+    @Override
+    public void resize() {
+        super.resize();
+
+        project.size = new Vector2f(350f * (getFontHeight() / 12f), getFontHeightHeader() + 7f);
+        projectFileTree.size.y = (int) (270f * (getFontHeight() / 12f));
+        thingPart.resize(mainView);
     }
 
     public RPlan buildPlan(Revision revision, boolean includeThings)
@@ -2211,10 +2222,10 @@ public class ProjectManager extends GuiScreen {
         long highlGuid = Utils.parseLong(highlightSoundPlan.getText());
         plan.inventoryData.highlightSound = highlGuid < 1 ? null : new GUID(highlGuid);
         plan.inventoryData.colour = Colors.RGBA32.fromVector(new Vector4f(
-                Utils.parseInt(rColorPlan.getText()) / 255f,
-                Utils.parseInt(gColorPlan.getText()) / 255f,
-                Utils.parseInt(bColorPlan.getText()) / 255f,
-                Utils.parseInt(aColorPlan.getText()) / 255f));
+                planColor.getRed() / 255f,
+                planColor.getGreen() / 255f,
+                planColor.getBlue() / 255f,
+                planColor.getAlpha() / 255f));
         EnumSet<InventoryObjectType> types = EnumSet.noneOf(InventoryObjectType.class);
 
         for(Checkbox typeCB : typePlan)
@@ -2299,7 +2310,7 @@ public class ProjectManager extends GuiScreen {
         if(!level.world.hasPart(Part.WORLD))
             level.world.setPart(Part.WORLD, new PWorld());
 
-        PWorld world = ((PWorld)level.world.getPart(Part.WORLD));
+        PWorld world = level.world.getPart(Part.WORLD);
 
         world.things = things;
         if(!hasWorldThing)
@@ -2329,6 +2340,7 @@ public class ProjectManager extends GuiScreen {
         worldThing.setPart(Part.WORLD, new PWorld());
 
         PMetadata metadata = new PMetadata();
+        metadata.icon = new ResourceDescriptor(2551, ResourceType.TEXTURE);
         metadata.type = EnumSet.of(InventoryObjectType.BACKGROUND);
         worldThing.setPart(Part.METADATA, metadata);
 
@@ -2504,10 +2516,7 @@ public class ProjectManager extends GuiScreen {
         disableLoopPreview.isChecked = false;
 
         for(Checkbox c : typePlan)
-            if(c.id.equalsIgnoreCase(InventoryObjectType.BACKGROUND.name()))
-                c.isChecked = true;
-            else
-                c.isChecked = false;
+            c.isChecked = c.id.equalsIgnoreCase(InventoryObjectType.BACKGROUND.name());
 
         madeByAnyRBPlan.isChecked = false;
         madeByOthersRBPlan.isChecked = false;
@@ -2534,10 +2543,34 @@ public class ProjectManager extends GuiScreen {
         disableLoopPreview.isChecked = false;
 
         for(Checkbox c : typePlan)
-            if(c.id.equalsIgnoreCase(InventoryObjectType.READYMADE.name()))
-                c.isChecked = true;
-            else
-                c.isChecked = false;
+            c.isChecked = c.id.equalsIgnoreCase(InventoryObjectType.READYMADE.name());
+
+        madeByAnyRBPlan.isChecked = false;
+        madeByOthersRBPlan.isChecked = false;
+        madeByMeRBPlan.isChecked = false;
+
+        earthRBPlan.isChecked = false;
+        moonRBPlan.isChecked = false;
+        adventureRBPlan.isChecked = false;
+        externalRBPlan.isChecked = false;
+
+        nonSackboyRBPlan.isChecked = false;
+        giantRBPlan.isChecked = false;
+        dwarfRBPlan.isChecked = false;
+        birdRBPlan.isChecked = false;
+        quadRBPlan.isChecked = false;
+    }
+
+    private void presetUserObjectPlan()
+    {
+        used.isChecked = false;
+        hiddenItem.isChecked = false;
+        restrictedLevel.isChecked = false;
+        restrictedPod.isChecked = false;
+        disableLoopPreview.isChecked = false;
+
+        for(Checkbox c : typePlan)
+            c.isChecked = c.id.equalsIgnoreCase(InventoryObjectType.USER_OBJECT.name());
 
         madeByAnyRBPlan.isChecked = false;
         madeByOthersRBPlan.isChecked = false;
@@ -2564,10 +2597,7 @@ public class ProjectManager extends GuiScreen {
         disableLoopPreview.isChecked = false;
 
         for(Checkbox c : typePlan)
-            if(c.id.equalsIgnoreCase(InventoryObjectType.PRIMITIVE_MATERIAL.name()))
-                c.isChecked = true;
-            else
-                c.isChecked = false;
+            c.isChecked = c.id.equalsIgnoreCase(InventoryObjectType.PRIMITIVE_MATERIAL.name());
 
         madeByAnyRBPlan.isChecked = false;
         madeByOthersRBPlan.isChecked = false;
@@ -2688,17 +2718,14 @@ public class ProjectManager extends GuiScreen {
         translationTagPlan.setText(pln.inventoryData.translationTag);
 
         Vector4f color = Colors.RGBA32.toVector(pln.inventoryData.colour);
-        rColorPlan.setText(String.valueOf(Math.round(color.x * 255f)));
-        gColorPlan.setText(String.valueOf(Math.round(color.y * 255f)));
-        bColorPlan.setText(String.valueOf(Math.round(color.z * 255f)));
-        aColorPlan.setText(String.valueOf(Math.round(color.w * 255f)));
+        planColor = new Color(color.x, color.y, color.z, color.w);
 
         if(pln.inventoryData.highlightSound != null)
             highlightSoundPlan.setText(pln.inventoryData.highlightSound.toString());
 
         if(pln.inventoryData.dateAdded != 0)
         {
-            Date date = new Date(pln.inventoryData.dateAdded / 1000);
+            Date date = new Date(pln.inventoryData.dateAdded * 1000);
             dateAddedDayPlan.setText(String.valueOf(date.getDate()));
             dateAddedMonthPlan.setText(String.valueOf(date.getMonth()));
             dateAddedYearPlan.setText(String.valueOf(date.getYear()));

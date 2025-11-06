@@ -106,7 +106,7 @@ public abstract class PartLevelSettings extends iPart {
 
                 if (file == null || !file.exists()) return;
 
-                String ext = file.getAbsolutePath().toString();
+                String ext = file.getAbsolutePath();
                 ext = ext.substring(ext.lastIndexOf(".") + 1);
 
                 switch (ext) {
@@ -161,7 +161,13 @@ public abstract class PartLevelSettings extends iPart {
         importPanel.elements.add(new Panel.PanelElement(ImportPlanBin, 0.4975f));
         importPanel.elements.add(new Panel.PanelElement(null, 0.005f));
 
-        ComboBox importTemplatesCombo = new ComboBox("importTemplatesCombo", "Templates", new Vector2f(), new Vector2f(), 200, view.renderer, view.loader, view.window);
+        ComboBox importTemplatesCombo = new ComboBox("importTemplatesCombo", "Templates", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window)
+        {
+            @Override
+            public int tabWidth() {
+                return java.lang.Math.round(200f * (getFontHeight() / 12f));
+            }
+        };
 
         ArrayList<String> templateNames = new ArrayList<>();
         templateNames.add("Blank (LBP1)");templateNames.add("Tutorials (LBP1)");templateNames.add("Gardens");templateNames.add("Savannah");templateNames.add("Wedding");templateNames.add("Canyons");templateNames.add("Metropolis");templateNames.add("Islands");templateNames.add("Temples");templateNames.add("Wilderness");templateNames.add("Blank (LBP2)");templateNames.add("Tutorials (LBP2)");templateNames.add("Da Vinci's Hideout");templateNames.add("Victoria's Laboratory");templateNames.add("Factory of a Better Tomorrow");templateNames.add("Avalonia");templateNames.add("Eve's Asylum");templateNames.add("Cosmos");
@@ -486,7 +492,13 @@ public abstract class PartLevelSettings extends iPart {
             }
         }, 0.4975f));
         presetsPanel.elements.add(new Panel.PanelElement(null, 0.005f));
-        PresetEdit = new ComboBox("PresetEdit", "Edit", new Vector2f(), new Vector2f(), 250, view.renderer, view.loader, view.window);
+        PresetEdit = new ComboBox("PresetEdit", "Edit", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window)
+        {
+            @Override
+            public int tabWidth() {
+                return java.lang.Math.round(250f * (getFontHeight() / 12f));
+            }
+        };
 
         ElementList presetEditList = PresetEdit.addElementList("presetEditList", 350);
 
@@ -860,7 +872,7 @@ public abstract class PartLevelSettings extends iPart {
         for(int s : selected)
             if(s < things.size() && things.get(s).thing.hasPart(Part.LEVEL_SETTINGS))
             {
-                PLevelSettings levelSettings = ((PLevelSettings)things.get(s).thing.getPart(Part.LEVEL_SETTINGS));
+                PLevelSettings levelSettings = things.get(s).thing.getPart(Part.LEVEL_SETTINGS);
                 presets = levelSettings.presets;
                 Presets.list = presets;
 
@@ -898,7 +910,7 @@ public abstract class PartLevelSettings extends iPart {
         for(int s : selected)
             if(s < things.size() && things.get(s).thing.hasPart(Part.LEVEL_SETTINGS))
             {
-                PLevelSettings levelSettings = ((PLevelSettings)things.get(s).thing.getPart(Part.LEVEL_SETTINGS));
+                PLevelSettings levelSettings = things.get(s).thing.getPart(Part.LEVEL_SETTINGS);
                 presets = levelSettings.presets;
                 Presets.list = presets;
 

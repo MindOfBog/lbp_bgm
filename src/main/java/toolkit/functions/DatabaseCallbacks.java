@@ -146,7 +146,7 @@ public class DatabaseCallbacks {
     } 
     
     public static void newFolder() {                                                 
-        String folder = (String) JOptionPane.showInputDialog("Please input a name for the folder.");
+        String folder = JOptionPane.showInputDialog("Please input a name for the folder.");
         if (folder == null || folder.equals("")) return;
 
         FileData database = ResourceSystem.getSelectedDatabase();
@@ -217,7 +217,7 @@ public class DatabaseCallbacks {
     public static void renameItem() {        
         FileEntry entry = ResourceSystem.getSelected().getEntry();
 
-        String path = (String) JOptionPane.showInputDialog(Toolkit.INSTANCE, "Rename", entry.getPath());
+        String path = JOptionPane.showInputDialog(Toolkit.INSTANCE, "Rename", entry.getPath());
         if (path == null) return;
         
         entry.setPath(Strings.cleanupPath(path));
@@ -277,7 +277,7 @@ public class DatabaseCallbacks {
                     
                     if (response == -1 || response == OPTION_SKIP) continue; // Treat closing dialog as skip
                     else if (response == OPTION_DUPLICATE) {
-                        EntryDialogue dialogue = new EntryDialogue(Toolkit.INSTANCE, (FileDB) destination, entry.getPath(), null);
+                        EntryDialogue dialogue = new EntryDialogue(Toolkit.INSTANCE, destination, entry.getPath(), null);
                         if (!dialogue.wasSubmitted()) {
                             i--;
                             continue;

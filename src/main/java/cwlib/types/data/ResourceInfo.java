@@ -34,7 +34,7 @@ public class ResourceInfo {
     private byte compressionFlags = CompressionFlags.USE_NO_COMPRESSION;
     private ResourceDescriptor[] dependencies = new ResourceDescriptor[0];
     private boolean isMissingDependencies;
-    private FileModel model = new FileModel(new FileNode("DEPENDENCIES", null, null, null));
+    private final FileModel model = new FileModel(new FileNode("DEPENDENCIES", null, null, null));
 
     public <T extends Compressable> ResourceInfo(String name, byte[] source) {
         if (source == null || source.length < 4) return;

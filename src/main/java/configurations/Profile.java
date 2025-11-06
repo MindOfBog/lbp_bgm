@@ -10,7 +10,8 @@ public class Profile {
     public List<String> saves = new ArrayList<>();
     public long language = 0;
     
-    public Profile() {};
+    public Profile() {}
+
     public Profile(String name) { this.name = name; }
     
     @Override public String toString() { return this.name; }

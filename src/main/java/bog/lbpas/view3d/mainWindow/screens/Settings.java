@@ -18,6 +18,7 @@ import bog.lbpas.view3d.utils.Config;
 import bog.lbpas.view3d.utils.Cursors;
 import bog.lbpas.view3d.utils.Utils;
 import bog.lbpas.view3d.utils.print;
+import org.joml.Vector2d;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
 import org.joml.Vector3d;
@@ -88,7 +89,7 @@ public class Settings extends GuiScreen{
     public Slider guiSizeSlider;
 
     public void init() {
-        rendererSettings = new DropDownTab("rendererSettings", "Renderer Settings", new Vector2f(10, 21 + 10), new Vector2f(200, getFontHeight() + 4), renderer, loader, window).closed();
+        rendererSettings = new DropDownTab("rendererSettings", "Renderer Settings", new Vector2f(10, getFontHeightHeader() + 7 * 2), new Vector2f(200f * (getFontHeight() / 12f), getFontHeightHeader() + 7f), renderer, loader, window).closed();
         culling = rendererSettings.addCheckbox("culling", "No culling", Config.NO_CULLING);
 
         Panel fovPanel = rendererSettings.addPanel("fovPanel");
@@ -143,7 +144,7 @@ public class Settings extends GuiScreen{
 
             @Override
             public int[] getParentTransform() {
-                return new int[]{(int) Math.round(rendererSettings.pos.x), (int) Math.round(rendererSettings.pos.y), (int) Math.round(rendererSettings.size.x)};
+                return new int[]{Math.round(rendererSettings.pos.x), Math.round(rendererSettings.pos.y), Math.round(rendererSettings.size.x)};
             }
         };
         outlineColorPanel.elements.add(new Panel.PanelElement(outlineColor, 0.3f));
@@ -164,7 +165,7 @@ public class Settings extends GuiScreen{
 
             @Override
             public int[] getParentTransform() {
-                return new int[]{(int) Math.round(rendererSettings.pos.x), (int) Math.round(rendererSettings.pos.y), (int) Math.round(rendererSettings.size.x)};
+                return new int[]{Math.round(rendererSettings.pos.x), Math.round(rendererSettings.pos.y), Math.round(rendererSettings.size.x)};
             }
         };
         borderColor1Panel.elements.add(new Panel.PanelElement(borderColor1, 0.3f));
@@ -185,7 +186,7 @@ public class Settings extends GuiScreen{
 
             @Override
             public int[] getParentTransform() {
-                return new int[]{(int) Math.round(rendererSettings.pos.x), (int) Math.round(rendererSettings.pos.y), (int) Math.round(rendererSettings.size.x)};
+                return new int[]{Math.round(rendererSettings.pos.x), Math.round(rendererSettings.pos.y), Math.round(rendererSettings.size.x)};
             }
         };
         borderColor2Panel.elements.add(new Panel.PanelElement(borderColor2, 0.3f));
@@ -206,7 +207,7 @@ public class Settings extends GuiScreen{
 
             @Override
             public int[] getParentTransform() {
-                return new int[]{(int) Math.round(rendererSettings.pos.x), (int) Math.round(rendererSettings.pos.y), (int) Math.round(rendererSettings.size.x)};
+                return new int[]{Math.round(rendererSettings.pos.x), Math.round(rendererSettings.pos.y), Math.round(rendererSettings.size.x)};
             }
         };
         borderColor3Panel.elements.add(new Panel.PanelElement(borderColor3, 0.3f));
@@ -227,7 +228,7 @@ public class Settings extends GuiScreen{
 
             @Override
             public int[] getParentTransform() {
-                return new int[]{(int) Math.round(rendererSettings.pos.x), (int) Math.round(rendererSettings.pos.y), (int) Math.round(rendererSettings.size.x)};
+                return new int[]{Math.round(rendererSettings.pos.x), Math.round(rendererSettings.pos.y), Math.round(rendererSettings.size.x)};
             }
         };
         borderColor4Panel.elements.add(new Panel.PanelElement(borderColor4, 0.3f));
@@ -248,7 +249,7 @@ public class Settings extends GuiScreen{
 
             @Override
             public int[] getParentTransform() {
-                return new int[]{(int) Math.round(rendererSettings.pos.x), (int) Math.round(rendererSettings.pos.y), (int) Math.round(rendererSettings.size.x)};
+                return new int[]{Math.round(rendererSettings.pos.x), Math.round(rendererSettings.pos.y), Math.round(rendererSettings.size.x)};
             }
         };
         earthColorPanel.elements.add(new Panel.PanelElement(earthColor, 0.3f));
@@ -269,24 +270,37 @@ public class Settings extends GuiScreen{
 
             @Override
             public int[] getParentTransform() {
-                return new int[]{(int) Math.round(rendererSettings.pos.x), (int) Math.round(rendererSettings.pos.y), (int) Math.round(rendererSettings.size.x)};
+                return new int[]{Math.round(rendererSettings.pos.x), Math.round(rendererSettings.pos.y), Math.round(rendererSettings.size.x)};
             }
         };
         podColorPanel.elements.add(new Panel.PanelElement(podColor, 0.3f));
 
         //------------------------------------
 
-        guiSettings = new DropDownTab("guiSettings", "GUI Settings", new Vector2f(10, 21 + 10 + 7 + rendererSettings.getFullHeight()), new Vector2f(200, getFontHeight() + 4), renderer, loader, window).closed();
+        guiSettings = new DropDownTab("guiSettings", "GUI Settings", new Vector2f(10, getFontHeightHeader() + 7 * 3 + rendererSettings.getFullHeight()), new Vector2f(200f * (getFontHeight() / 12f), getFontHeightHeader() + 7f), renderer, loader, window).closed();
 
         float gap = 1f / (guiSettings.size.x - 5f);
         float element = 0.5f - (gap / 2);
 
-//        Panel guiSizePanel = guiSettings.addPanel("guiSizePanel");TODO
-//        guiSizePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("guiSizeStr", "Gui Size:", renderer), 0.4f));
-//        guiSizeSlider = new Slider("guiSizeSlider", new Vector2f(), new Vector2f(), renderer, loader, window, 16, 12, 32);
-//        guiSizePanel.elements.add(new Panel.PanelElement(guiSizeSlider, 0.6f));
-//
-//        guiSettings.addSeparator("backdropSep");
+        Panel guiSizePanel = guiSettings.addPanel("guiSizePanel");
+        guiSizePanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("guiSizeStr", "Gui Size:", renderer), 0.4f));
+        guiSizeSlider = new Slider("guiSizeSlider", new Vector2f(), new Vector2f(), renderer, loader, window, 16, 12, 24)
+        {
+            @Override
+            public void onValueSet() {
+                super.onValueSet();
+
+                Vector2f guiSize = setSliderValue(Config.GUI_SCALE);
+                if(guiSize.y == 1)
+                {
+                    Config.GUI_SCALE = Math.round(guiSize.x);
+                    window.resize = true;
+                }
+            }
+        };
+        guiSizePanel.elements.add(new Panel.PanelElement(guiSizeSlider, 0.6f));
+
+        guiSettings.addSeparator("backdropSep");
 
         guiSettings.addString("primarySecondaryColorLabel", "Backdrop Color:");
 
@@ -304,7 +318,7 @@ public class Settings extends GuiScreen{
 
             @Override
             public int[] getParentTransform() {
-                return new int[]{(int) Math.round(guiSettings.pos.x), (int) Math.round(guiSettings.pos.y), (int) Math.round(guiSettings.size.x)};
+                return new int[]{Math.round(guiSettings.pos.x), Math.round(guiSettings.pos.y), Math.round(guiSettings.size.x)};
             }
         };
         primaryColorPanel.elements.add(new Panel.PanelElement(primaryColor, element));
@@ -322,7 +336,7 @@ public class Settings extends GuiScreen{
 
             @Override
             public int[] getParentTransform() {
-                return new int[]{(int) Math.round(guiSettings.pos.x), (int) Math.round(guiSettings.pos.y), (int) Math.round(guiSettings.size.x)};
+                return new int[]{Math.round(guiSettings.pos.x), Math.round(guiSettings.pos.y), Math.round(guiSettings.size.x)};
             }
         };
         primaryColorPanel.elements.add(new Panel.PanelElement(secondaryColor, element));
@@ -343,7 +357,7 @@ public class Settings extends GuiScreen{
 
             @Override
             public int[] getParentTransform() {
-                return new int[]{(int) Math.round(guiSettings.pos.x), (int) Math.round(guiSettings.pos.y), (int) Math.round(guiSettings.size.x)};
+                return new int[]{Math.round(guiSettings.pos.x), Math.round(guiSettings.pos.y), Math.round(guiSettings.size.x)};
             }
         };
         interfacePrimaryColorPanel.elements.add(new Panel.PanelElement(interfacePrimaryColor, element));
@@ -361,7 +375,7 @@ public class Settings extends GuiScreen{
 
             @Override
             public int[] getParentTransform() {
-                return new int[]{(int) Math.round(guiSettings.pos.x), (int) Math.round(guiSettings.pos.y), (int) Math.round(guiSettings.size.x)};
+                return new int[]{Math.round(guiSettings.pos.x), Math.round(guiSettings.pos.y), Math.round(guiSettings.size.x)};
             }
         };
         interfacePrimaryColorPanel.elements.add(new Panel.PanelElement(interfacePrimaryColor2, element));
@@ -382,7 +396,7 @@ public class Settings extends GuiScreen{
 
             @Override
             public int[] getParentTransform() {
-                return new int[]{(int) Math.round(guiSettings.pos.x), (int) Math.round(guiSettings.pos.y), (int) Math.round(guiSettings.size.x)};
+                return new int[]{Math.round(guiSettings.pos.x), Math.round(guiSettings.pos.y), Math.round(guiSettings.size.x)};
             }
         };
         interfaceSecondaryColorPanel.elements.add(new Panel.PanelElement(interfaceSecondaryColor, element));
@@ -400,7 +414,7 @@ public class Settings extends GuiScreen{
 
             @Override
             public int[] getParentTransform() {
-                return new int[]{(int) Math.round(guiSettings.pos.x), (int) Math.round(guiSettings.pos.y), (int) Math.round(guiSettings.size.x)};
+                return new int[]{Math.round(guiSettings.pos.x), Math.round(guiSettings.pos.y), Math.round(guiSettings.size.x)};
             }
         };
         interfaceSecondaryColorPanel.elements.add(new Panel.PanelElement(interfaceSecondaryColor2, element));
@@ -421,7 +435,7 @@ public class Settings extends GuiScreen{
 
             @Override
             public int[] getParentTransform() {
-                return new int[]{(int) Math.round(guiSettings.pos.x), (int) Math.round(guiSettings.pos.y), (int) Math.round(guiSettings.size.x)};
+                return new int[]{Math.round(guiSettings.pos.x), Math.round(guiSettings.pos.y), Math.round(guiSettings.size.x)};
             }
         };
         interfaceTertiaryColorPanel.elements.add(new Panel.PanelElement(interfaceTertiaryColor, element));
@@ -439,7 +453,7 @@ public class Settings extends GuiScreen{
 
             @Override
             public int[] getParentTransform() {
-                return new int[]{(int) Math.round(guiSettings.pos.x), (int) Math.round(guiSettings.pos.y), (int) Math.round(guiSettings.size.x)};
+                return new int[]{Math.round(guiSettings.pos.x), Math.round(guiSettings.pos.y), Math.round(guiSettings.size.x)};
             }
         };
         interfaceTertiaryColorPanel.elements.add(new Panel.PanelElement(interfaceTertiaryColor2, element));
@@ -464,7 +478,7 @@ public class Settings extends GuiScreen{
 
             @Override
             public int[] getParentTransform() {
-                return new int[]{(int) Math.round(guiSettings.pos.x), (int) Math.round(guiSettings.pos.y), (int) Math.round(guiSettings.size.x)};
+                return new int[]{Math.round(guiSettings.pos.x), Math.round(guiSettings.pos.y), Math.round(guiSettings.size.x)};
             }
         };
         fontColorPanel.elements.add(new Panel.PanelElement(fontColor, 0.3f));
@@ -472,7 +486,13 @@ public class Settings extends GuiScreen{
         Panel headerPanel = guiSettings.addPanel("headerPanel");
         headerPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Header:", renderer), 0.35f));
 
-        ComboBox headerCombo = new ComboBox("", Config.FONT_HEADER, new Vector2f(), new Vector2f(), 200, renderer, loader, window);
+        ComboBox headerCombo = new ComboBox("", Config.FONT_HEADER, new Vector2f(), new Vector2f(), renderer, loader, window)
+        {
+            @Override
+            public int tabWidth() {
+                return Math.round(200f * (getFontHeight() / 12f));
+            }
+        };
 
         ButtonList headerList = new ButtonList("", FontRenderer.Fonts, new Vector2f(), new Vector2f(), renderer, loader, window) {
             @Override
@@ -481,6 +501,7 @@ public class Settings extends GuiScreen{
                     FontRenderer.headerFont = index;
                 Config.FONT_HEADER = FontRenderer.Fonts.get(index).info.face;
                 headerCombo.tabTitle = Config.FONT_HEADER;
+                window.resize = true;
             }
 
             @Override
@@ -522,14 +543,20 @@ public class Settings extends GuiScreen{
                 return super.buttonHeight() * 2;
             }
         };
-        headerCombo.addList("headerList", headerList, 80);
+        headerCombo.addList("headerList", headerList, 250);
 
         headerPanel.elements.add(new Panel.PanelElement(headerCombo, 0.65f));
 
         Panel textPanel = guiSettings.addPanel("textPanel");
         textPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Text:", renderer), 0.35f));
 
-        ComboBox textCombo = new ComboBox("", Config.FONT_TEXT, new Vector2f(), new Vector2f(), 200, renderer, loader, window);
+        ComboBox textCombo = new ComboBox("", Config.FONT_TEXT, new Vector2f(), new Vector2f(), renderer, loader, window)
+        {
+            @Override
+            public int tabWidth() {
+                return Math.round(200f * (getFontHeight() / 12f));
+            }
+        };
 
         ButtonList textList = new ButtonList("", FontRenderer.Fonts, new Vector2f(), new Vector2f(), renderer, loader, window) {
             @Override
@@ -538,6 +565,7 @@ public class Settings extends GuiScreen{
                     FontRenderer.textFont = index;
                 Config.FONT_TEXT = FontRenderer.Fonts.get(index).info.face;
                 textCombo.tabTitle = Config.FONT_TEXT;
+                window.resize = true;
             }
 
             @Override
@@ -579,7 +607,7 @@ public class Settings extends GuiScreen{
                 return super.buttonHeight() * 2;
             }
         };
-        textCombo.addList("textList", textList, 80);
+        textCombo.addList("textList", textList, 250);
 
         textPanel.elements.add(new Panel.PanelElement(textCombo, 0.65f));
 
@@ -589,7 +617,13 @@ public class Settings extends GuiScreen{
         Panel cursorPanel = guiSettings.addPanel("cursorPanel");
         cursorPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Cursor:", renderer), 0.35f));
 
-        ComboBox cursorCombo = new ComboBox("", Config.CURSOR, new Vector2f(), new Vector2f(), 200, renderer, loader, window);
+        ComboBox cursorCombo = new ComboBox("", Config.CURSOR, new Vector2f(), new Vector2f(), renderer, loader, window)
+        {
+            @Override
+            public int tabWidth() {
+                return Math.round(200f * (getFontHeight() / 12f));
+            }
+        };
         ButtonList cursorList = new ButtonList("", Cursors.loadedCursors, new Vector2f(), new Vector2f(), renderer, loader, window) {
             @Override
             public void clickedButton(Object object, int index, int button, int action, int mods) {
@@ -638,7 +672,7 @@ public class Settings extends GuiScreen{
                 return super.buttonHeight() * 2;
             }
         };
-        cursorCombo.addList("cursorList", cursorList, 80);
+        cursorCombo.addList("cursorList", cursorList, 250);
 
         cursorPanel.elements.add(new Panel.PanelElement(cursorCombo, 0.65f));
 
@@ -654,7 +688,7 @@ public class Settings extends GuiScreen{
         showFPS = guiSettings.addCheckbox("showFPS", "Show FPS", Config.SHOW_FPS);
         legacyFD = guiSettings.addCheckbox("legacyFD", "Native File Dialogue", Config.LEGACY_FD);
 
-        controls = new DropDownTab("controls", "Controls", new Vector2f(10, 21 + 10 + 14 + rendererSettings.getFullHeight() + guiSettings.getFullHeight()), new Vector2f(200, getFontHeight() + 4), renderer, loader, window).closed();
+        controls = new DropDownTab("controls", "Controls", new Vector2f(10, getFontHeightHeader() + 7 * 4 + rendererSettings.getFullHeight() + guiSettings.getFullHeight()), new Vector2f(200f * (getFontHeight() / 12f), getFontHeightHeader() + 7f), renderer, loader, window).closed();
 
         float buttonWidth = 0.62f;
 
@@ -906,7 +940,7 @@ public class Settings extends GuiScreen{
         sensitivity.setText(Float.toString(Config.MOUSE_SENS));
         sensitivityPanel.elements.add(new Panel.PanelElement(sensitivity, 0.475f));
 
-        performance = new DropDownTab("performance", "Performance", new Vector2f(10, 21 + 10 + 21 + rendererSettings.getFullHeight() + guiSettings.getFullHeight() + controls.getFullHeight()), new Vector2f(200, getFontHeight() + 4), renderer, loader, window).closed();
+        performance = new DropDownTab("performance", "Performance", new Vector2f(10, getFontHeightHeader() + 7 * 5 + rendererSettings.getFullHeight() + guiSettings.getFullHeight() + controls.getFullHeight()), new Vector2f(200f * (getFontHeight() / 12f), getFontHeightHeader() + 7f), renderer, loader, window).closed();
         disableBlur = performance.addCheckbox("disableBlur", "Disable blur", Config.DISABLE_BLUR);
         disableSSAO = performance.addCheckbox("disableSSAO", "Disable SSAO", Config.DISABLE_SSAO);
 
@@ -939,9 +973,24 @@ public class Settings extends GuiScreen{
         this.guiElements.add(performance);
     }
 
+    @Override
+    public void resize() {
+
+        rendererSettings.size = new Vector2f(200f * (getFontHeight() / 12f), getFontHeightHeader() + 7f);
+        controls.size = new Vector2f(200f * (getFontHeight() / 12f), getFontHeightHeader() + 7f);
+
+        if(!guiSizeSlider.isSliding)
+            guiSettings.size = new Vector2f(200f * (getFontHeight() / 12f), getFontHeightHeader() + 7f);
+
+        performance.size = new Vector2f(200f * (getFontHeight() / 12f), getFontHeightHeader() + 7f);
+        if(debug != null)
+            debug.size = new Vector2f(200f * (getFontHeight() / 12f), getFontHeightHeader() + 7f);
+
+    }
+
     public void initDebug()
     {
-        debug = new DropDownTab("debug", "Debug", new Vector2f(217, 21 + 10), new Vector2f(200, getFontHeight() + 4), renderer, loader, window).closed();
+        debug = new DropDownTab("debug", "Debug", new Vector2f(17 + rendererSettings.size.x, getFontHeightHeader() + 7 + 7), new Vector2f(200f * (getFontHeight() / 12f), getFontHeightHeader() + 7f), renderer, loader, window).closed();
         debug.addCheckbox("vaoCount", "VAO Count");
         debug.addCheckbox("vboCount", "VBO Count");
         debug.addCheckbox("textureCount", "Texture Count");
@@ -1016,12 +1065,7 @@ public class Settings extends GuiScreen{
         if(outlineDistSlider.y == 1)
             Config.OUTLINE_DISTANCE = outlineDistSlider.x;
 
-//        Vector2f guiSize = guiSizeSlider.setSliderValue(Config.GUI_SCALE);TODO
-//        if(guiSize.y == 1)
-//        {
-//            Config.GUI_SCALE = Math.round(guiSize.x);
-//            window.resize = true;
-//        }
+        guiSizeSlider.setSliderValue(Config.GUI_SCALE);
 
         float cursorSize = Utils.parseFloat(this.cursorSize.getText());
         if(cursorSize == 0)

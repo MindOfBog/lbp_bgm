@@ -9,7 +9,8 @@ public class UserCreatedDetails implements Serializable {
     public String name;
     public String description;
 
-    public UserCreatedDetails(){};
+    public UserCreatedDetails(){}
+
     public UserCreatedDetails(String name, String description) {
         this.name = name;
         this.description = description;

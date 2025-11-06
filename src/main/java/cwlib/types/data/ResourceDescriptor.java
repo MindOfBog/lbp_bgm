@@ -160,8 +160,7 @@ public final class ResourceDescriptor {
     public boolean isValid() {
         if (this.guid != null) return true;
         if (this.sha1 != null) {
-            if (this.sha1.equals(SHA1.EMPTY)) return false;
-            return true;
+            return !this.sha1.equals(SHA1.EMPTY);
         }
         return false;
     }
@@ -186,7 +185,7 @@ public final class ResourceDescriptor {
         if (this.sha1 != null && this.guid != null)
             return String.format("%s (%s)", this.sha1, this.guid);
         if (this.sha1 != null) 
-            return "h" + this.sha1.toString();
+            return "h" + this.sha1;
         else if (this.guid != null)
             return this.guid.toString();
         return "null";

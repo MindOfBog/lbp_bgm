@@ -18,7 +18,7 @@ import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 public class RAnimation implements Serializable, Compressable {
-    public static enum AnimationType {
+    public enum AnimationType {
         ROTATION,
         SCALE,
         POSITION

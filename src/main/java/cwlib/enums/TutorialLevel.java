@@ -59,7 +59,7 @@ public enum TutorialLevel implements ValueEnum<Integer> {
     VIDEO_NO_JOIN_POST(0x30);
 
     private final int value;
-    private TutorialLevel(int value) { this.value = value; }
+    TutorialLevel(int value) { this.value = value; }
     public Integer getValue() { return this.value; }
     
     /**

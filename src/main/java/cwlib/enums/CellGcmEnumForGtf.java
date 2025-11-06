@@ -13,7 +13,7 @@ public enum CellGcmEnumForGtf {
     R5G5B5(0x8f);
 
     private final int value;
-    private CellGcmEnumForGtf(int value) { this.value = value; }
+    CellGcmEnumForGtf(int value) { this.value = value; }
     public int getValue() { return this.value; }
     public static CellGcmEnumForGtf fromValue(int value) {
         for (CellGcmEnumForGtf type : CellGcmEnumForGtf.values()) {

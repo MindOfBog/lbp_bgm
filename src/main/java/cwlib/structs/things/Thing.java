@@ -59,10 +59,11 @@ public class Thing implements Serializable {
     public short flags;
     public byte extraFlags;
 
-    private Serializable[] parts = new Serializable[0x3f];
+    private final Serializable[] parts = new Serializable[0x3f];
 
-    public Thing(){};
-    public Thing(int UID) { 
+    public Thing(){}
+
+    public Thing(int UID) {
         this.UID = UID; 
     }
 

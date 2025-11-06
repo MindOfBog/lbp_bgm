@@ -1,6 +1,7 @@
 package bog.lbpas.view3d.renderer.gui.elements;
 
 import bog.lbpas.view3d.core.Texture;
+import bog.lbpas.view3d.mainWindow.ConstantTextures;
 import bog.lbpas.view3d.managers.assetLoading.ObjectLoader;
 import bog.lbpas.view3d.core.Model;
 import bog.lbpas.view3d.managers.MouseInput;
@@ -16,6 +17,7 @@ import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
 
 import java.awt.*;
+import java.util.HashMap;
 
 /**
  * @author Bog
@@ -75,8 +77,13 @@ public abstract class ButtonImage extends Element{
     public void draw(MouseInput mouseInput, boolean overOther) {
         super.draw(mouseInput, overOther);
 
+        int x = Math.round(pos.x);
+        int y = Math.round(pos.y);
+        int width = Math.round(size.x);
+        int height = Math.round(size.y);
+
         if(this.outlineRect == null)
-            this.outlineRect = LineStrip.processVerts(LineStrip.getRectangle(size), loader, window);
+            this.outlineRect = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(x, y)), loader, window);
 
         if(size.x != prevSize.x || size.y != prevSize.y)
         {
@@ -89,11 +96,11 @@ public abstract class ButtonImage extends Element{
 
         Color[] colors = getColors(mouseInput, overOther);
 
-        renderer.drawRect(Math.round(pos.x), Math.round(pos.y), Math.round(size.x), Math.round(size.y), colors[0]);
+        renderer.drawRect(x, y, width, height, colors[0]);
         Texture image = getImage();
         if(image.id != -1)
             renderer.drawImageStatic(image, Math.round(pos.x + (size.x / 2f) - (this.imageSize.x / 2f)), Math.round(pos.y + (size.y / 2f) - (this.imageSize.y / 2f)), Math.round(this.imageSize.x), Math.round(this.imageSize.y), loader);
-        renderer.drawRectOutline(pos, outlineRect, colors[1], false);
+        renderer.drawRectOutline(new Vector2f(x, y), outlineRect, colors[1], false);
     }
     @Override
     public void resize() {
@@ -128,7 +135,7 @@ public abstract class ButtonImage extends Element{
     {
         if(this.outlineRect != null)
             this.outlineRect.cleanup(loader);
-        this.outlineRect = LineStrip.processVerts(LineStrip.getRectangle(size), loader, window);
+        this.outlineRect = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(Math.round(size.x), Math.round(size.y))), loader, window);
     }
 
     @Override
@@ -147,4 +154,9 @@ public abstract class ButtonImage extends Element{
     }
 
     public abstract Texture getImage();
+
+    public Texture getTexture(HashMap<String, Texture> texture)
+    {
+        return ConstantTextures.getTexture(texture, (int) this.imageSize.x, (int) this.imageSize.y, loader);
+    }
 }

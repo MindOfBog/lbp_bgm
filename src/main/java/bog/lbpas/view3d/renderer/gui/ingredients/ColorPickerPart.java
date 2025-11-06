@@ -44,6 +44,16 @@ public class ColorPickerPart extends Drawable{
         return part;
     }
 
+    public static ColorPickerPart alphaRamp(int x, int y, int width, int height, Vector4f color, WindowMan window)
+    {
+        ColorPickerPart part = new ColorPickerPart();
+        part.pos = new Vector2i(x, window.height - y);
+        part.size =  new Vector2i(width, height);
+        part.part = 3;
+        part.color = color;
+        return part;
+    }
+
     @Override
     public Type getType() {
         return Type.COLOR_PICKER;

@@ -43,8 +43,8 @@ public class FileDB extends FileData implements Iterable<FileDBRow> {
      */
     protected FileDB(File file, DatabaseType type) {
         super(file, type);
-    };
-    
+    }
+
     /**
      * For databases that inherit FileDB
      */
@@ -53,7 +53,7 @@ public class FileDB extends FileData implements Iterable<FileDBRow> {
         this.revision = revision;
         this.entries = new ArrayList<>(DEFAULT_CAPACITY);
         this.lookup = new HashMap<>(DEFAULT_CAPACITY);
-    };
+    }
 
     /**
      * Creates a FileDB with specified version and capacity.
@@ -125,7 +125,7 @@ public class FileDB extends FileData implements Iterable<FileDBRow> {
                 only the extensions, so we'll use the hash of the resource in place of a name. */
             if (path.startsWith(".")) {
                 path = String.format("data/%s/%s%s",
-                    FileDB.getFolderFromExtension(path), sha1.toString(), path);
+                    FileDB.getFolderFromExtension(path), sha1, path);
             }
 
             FileDBRow entry = new FileDBRow(this, path, timestamp, size, sha1, guid);

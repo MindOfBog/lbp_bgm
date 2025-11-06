@@ -8,7 +8,7 @@ public enum FunctionType implements ValueEnum<Byte> {
     SETTER(2);
 
     private final byte value;
-    private FunctionType(int value) {
+    FunctionType(int value) {
         this.value = (byte) value;
     }
 

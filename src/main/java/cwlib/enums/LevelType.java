@@ -14,7 +14,7 @@ public enum LevelType implements ValueEnum<Integer> {
     LBP2_DLC_HUB(8);
 
     private final int value;
-    private LevelType(int value) {
+    LevelType(int value) {
         this.value = value;
     }
 

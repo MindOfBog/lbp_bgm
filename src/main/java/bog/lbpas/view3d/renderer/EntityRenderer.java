@@ -51,7 +51,7 @@ public class EntityRenderer implements IRenderer{
     public WindowMan window;
     public ObjectLoader loader;
 
-    private Material defaultMaterial = new Material();
+    private final Material defaultMaterial = new Material();
 
     public int drawnThingMeshes = 0;
 
@@ -633,7 +633,7 @@ public class EntityRenderer implements IRenderer{
                                         e1.selected = false;
 
                             entity.selected = !entity.selected;
-                            ((ElementEditing)mainView.ElementEditing).currentSelectionParts.selectionChange();
+                            mainView.ElementEditing.currentSelectionParts.selectionChange();
                         }
                         else if(outY == 2)
                         {
@@ -803,7 +803,7 @@ public class EntityRenderer implements IRenderer{
                                     lastShader.setUniform("highlightColor", model.material.overlayColor);
                                 }
 
-                                lastShader.setUniform("bones", (cwlib.structs.things.Thing[])null, (Bone[])null);
+                                lastShader.setUniform("bones", null, (Bone[])null);
                                 lastShader.setUniform("hasBones", false);
 
                                 //render basic meshes
@@ -939,7 +939,7 @@ public class EntityRenderer implements IRenderer{
         }
     }
 
-    private static Material noCol = new Material(new Vector4f(0f, 0f, 0f, 1f), 0f);
+    private static final Material noCol = new Material(new Vector4f(0f, 0f, 0f, 1f), 0f);
 
     public void bindNoCullColor(Model model, boolean isThing)
     {

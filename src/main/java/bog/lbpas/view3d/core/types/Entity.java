@@ -23,13 +23,13 @@ public class Entity {
     ObjectLoader loader;
 
     public Entity(Model model, Matrix4f transformation, ObjectLoader loader) {
-        this.model = new ArrayList<Model>(Arrays.asList(new Model[]{model}));
+        this.model = new ArrayList<Model>(Arrays.asList(model));
         this.transformation = transformation;
         this.loader = loader;
     }
 
     public Entity(Model model, Vector3f pos, Vector3f rotation, Vector3f scale, ObjectLoader loader) {
-        this.model = new ArrayList<Model>(Arrays.asList(new Model[]{model}));
+        this.model = new ArrayList<Model>(Arrays.asList(model));
         this.transformation = new Matrix4f().identity()
                 .translate(pos)
                 .rotateAffineXYZ(Math.toRadians(rotation.x), Math.toRadians(rotation.y), Math.toRadians(rotation.z))

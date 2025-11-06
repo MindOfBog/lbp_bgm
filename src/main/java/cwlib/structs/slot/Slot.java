@@ -86,7 +86,8 @@ public class Slot implements Serializable {
     public transient int gameVersion;
     public transient SHA1[] resources;
 
-    public Slot() {};
+    public Slot() {}
+
     public Slot(SlotID id, ResourceDescriptor root, Vector4f location) {
         this.id = id;
         this.root = root;

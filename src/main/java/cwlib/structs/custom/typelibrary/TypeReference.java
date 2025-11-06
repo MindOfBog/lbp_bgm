@@ -17,7 +17,8 @@ public class TypeReference implements Serializable {
     public byte dimensionCount;
     public ResourceDescriptor script;
 
-    public TypeReference() {};
+    public TypeReference() {}
+
     public TypeReference(MachineType machineType, BuiltinType fishType) {
         this.machineType = machineType;
         this.fishType = fishType;
@@ -62,8 +63,7 @@ public class TypeReference implements Serializable {
             if (this.name == null && type.name == null) return true;
             if (this.name != null)
                 return this.name.equals(type.name);
-            else if (type.name != null)
-                return false;
+            else return type.name == null;
         }
 
         return true;

@@ -89,12 +89,10 @@ public final class Bytes {
     public static int toIntegerBE(byte[] b) {
         if (b == null)
             throw new NullPointerException("Can't read data type from null byte array!");
-        return (int) (
-            (b[0] & 0xFF) << 24 | 
-            (b[1] & 0xFF) << 16 | 
-            (b[2] & 0xFF) << 8 | 
-            (b[3] & 0xFF) << 0
-        );
+        return (b[0] & 0xFF) << 24 |
+        (b[1] & 0xFF) << 16 |
+        (b[2] & 0xFF) << 8 |
+        (b[3] & 0xFF) << 0;
     }
 
     /**
@@ -105,12 +103,10 @@ public final class Bytes {
     public static int toIntegerLE(byte[] b) {
         if (b == null)
             throw new NullPointerException("Can't read data type from null byte array!");
-        return (int) (
-            (b[0] & 0xFF) << 0 |
-            (b[1] & 0xFF) << 8 |
-            (b[2] & 0xFF) << 16 |
-            (b[3] & 0xFF) << 24
-        );
+        return (b[0] & 0xFF) << 0 |
+        (b[1] & 0xFF) << 8 |
+        (b[2] & 0xFF) << 16 |
+        (b[3] & 0xFF) << 24;
     }
     
         /**

@@ -7,5 +7,5 @@ import cwlib.enums.ResourceType;
 
 @Retention(RetentionPolicy.RUNTIME)
 public @interface GsonResourceType {
-    public ResourceType value();
+    ResourceType value();
 }

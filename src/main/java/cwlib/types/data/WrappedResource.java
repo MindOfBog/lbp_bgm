@@ -16,7 +16,8 @@ public class WrappedResource {
     public ResourceType type;
     public Object resource;
 
-    public WrappedResource(){};
+    public WrappedResource(){}
+
     public WrappedResource(Resource resource) {
         this.revision = resource.getRevision();
         this.type = resource.getResourceType();

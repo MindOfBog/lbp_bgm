@@ -96,7 +96,7 @@ public enum Part {
      * @param version The minimum version required for this part to be serialized
      * @param serializable The serializable class represented by this part
      */
-    private Part(int index, int version, Class<?> serializable) {
+    Part(int index, int version, Class<?> serializable) {
         this.index = index;
         this.version = version;
         this.serializable = serializable;
@@ -199,9 +199,7 @@ public enum Part {
                 }
             }
             else if (!serializer.isWriting()) {
-                if (serializer.i32(0) != 0)
-                    return false;
-                return true;
+                return serializer.i32(0) == 0;
             }
             return false;
         }

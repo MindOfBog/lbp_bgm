@@ -25,7 +25,7 @@ public class Camera implements Serializable {
 
     public Camera() {
         this(-19518.318359375f, 1997.4072265625f, 1195.43371582031f);
-    };
+    }
 
     public Camera(Vector3f translation, Vector3f euler) {
         this.translation = translation;

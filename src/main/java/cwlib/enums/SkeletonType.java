@@ -14,7 +14,7 @@ public enum SkeletonType implements ValueEnum<Byte> {
     QUAD(4);
 
     private final byte value;
-    private SkeletonType(int value) {
+    SkeletonType(int value) {
         this.value = (byte) (value & 0xFF);
     }
 

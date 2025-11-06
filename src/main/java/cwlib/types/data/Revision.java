@@ -46,9 +46,8 @@ public final class Revision {
     }
 
     public boolean isLBP1() { return this.head <= Revision.LBP1_FINAL_REVISION; }
-    public boolean isLBP2() { 
-        if (this.isLBP1() || this.isLBP3() || this.isVita()) return false;
-        return true;
+    public boolean isLBP2() {
+        return !this.isLBP1() && !this.isLBP3() && !this.isVita();
     }
     public boolean isLBP3() { return this.head >> 0x10 != 0; }
 

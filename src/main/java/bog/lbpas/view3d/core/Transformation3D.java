@@ -74,7 +74,7 @@ public class Transformation3D{
                 new int[]{0, 1});
     }
 
-    public static enum ToolType
+    public enum ToolType
     {
         INVALID(-1),
 
@@ -97,7 +97,7 @@ public class Transformation3D{
 
         public final int value;
 
-        private ToolType(int value) {
+        ToolType(int value) {
             this.value = value;
         }
 

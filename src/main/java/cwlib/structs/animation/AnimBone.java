@@ -29,7 +29,8 @@ public class AnimBone implements Serializable {
      */
     public int nextSibling = -1;
 
-    public AnimBone() {};
+    public AnimBone() {}
+
     public AnimBone(int animHash, int parent, int firstChild, int nextSibling) {
         this.animHash = animHash;
         this.parent = parent;

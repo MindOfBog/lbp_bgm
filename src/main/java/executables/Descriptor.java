@@ -29,10 +29,8 @@ public class Descriptor {
             return;
         }
 
-        boolean includeNull = false;
-        if (args.length == 3 && args[2].toUpperCase().equals("NULL"))
-            includeNull = true;
-        
+        boolean includeNull = args.length == 3 && args[2].equalsIgnoreCase("NULL");
+
         if (!new File(args[0]).exists()) {
             System.err.println("Level file doesn't exist!");
             return;

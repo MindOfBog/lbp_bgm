@@ -46,7 +46,7 @@ import toolkit.windows.Toolkit;
 import toolkit.windows.utilities.ResourcePicker;
 
 public class SlotManager extends javax.swing.JFrame {
-    private static Slot EMPTY_SLOT;
+    private static final Slot EMPTY_SLOT;
     static {
         EMPTY_SLOT = new Slot();
         EMPTY_SLOT.id = new SlotID(SlotType.DEVELOPER, 0);
@@ -81,11 +81,11 @@ public class SlotManager extends javax.swing.JFrame {
     /**
      * The type of file we're editing.
      */
-    private EditorType type;
+    private final EditorType type;
     
     private class SlotEntry {
-        private SlotID id;
-        private Slot slot;
+        private final SlotID id;
+        private final Slot slot;
         
         public SlotEntry(Slot slot) {
             this.id = slot.id;
@@ -97,14 +97,14 @@ public class SlotManager extends javax.swing.JFrame {
         @Override public boolean equals(Object other) {
             if (other == this) return true;
             if (other instanceof SlotID)
-                return ((SlotID)other).equals(this.id);
+                return other.equals(this.id);
             if (!(other instanceof SlotEntry)) return false;
             SlotEntry o = (SlotEntry) other;
             return o.id.equals(this.id);
         }
     }
     
-    private FileEntry entry;
+    private final FileEntry entry;
     
     public ArrayList<Slot> slots;
     public ArrayList<Pack> packs;

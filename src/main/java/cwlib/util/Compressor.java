@@ -126,8 +126,6 @@ public final class Compressor {
         }
 
         byte[] compressed = Bytes.combine(zlibStreams);
-        return Bytes.combine(new byte[][] {
-            output.getBuffer(), compressed
-        });
+        return Bytes.combine(output.getBuffer(), compressed);
     }
 }

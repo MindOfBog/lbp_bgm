@@ -84,36 +84,36 @@ public class ModelImporter {
     private static class SoftbodyImportData {
         private int minSpringVert = 0xFFFF;
         private int maxSpringVert = 0x0;
-        private ArrayList<SoftbodyVertEquivalence> vertEquivalences = new ArrayList<>();
-        private ArrayList<SoftbodySpring> springs = new ArrayList<>();
-        private ArrayList<Integer> springyTriIndices = new ArrayList<>();
+        private final ArrayList<SoftbodyVertEquivalence> vertEquivalences = new ArrayList<>();
+        private final ArrayList<SoftbodySpring> springs = new ArrayList<>();
+        private final ArrayList<Integer> springyTriIndices = new ArrayList<>();
     }
 
-    private ModelImportConfig config;
-    private GltfModel gltf;
+    private final ModelImportConfig config;
+    private final GltfModel gltf;
 
-    private ArrayList<String> morphs = new ArrayList<>();
+    private final ArrayList<String> morphs = new ArrayList<>();
     private Bone[] bones;
-    private ArrayList<Primitive> primitives = new ArrayList<>();
+    private final ArrayList<Primitive> primitives = new ArrayList<>();
 
-    private HashMap<String, Integer> targetLookup = new HashMap<>();
-    private HashMap<String, Integer> jointLookup = new HashMap<>();
+    private final HashMap<String, Integer> targetLookup = new HashMap<>();
+    private final HashMap<String, Integer> jointLookup = new HashMap<>();
 
     private int attributeCount, morphCount;
     private int vertexOffset, indexOffset;
-    private MemoryOutputStream[] vertexStreams = new MemoryOutputStream[35];
+    private final MemoryOutputStream[] vertexStreams = new MemoryOutputStream[35];
     private MemoryOutputStream attributeStream = null;
     private MemoryOutputStream indexStream = null;
 
     SoftbodyImportData softbody = new SoftbodyImportData();
 
-    private Vector2f minUV = new Vector2f(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY);
-    private Vector2f maxUV = new Vector2f(Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY);
+    private final Vector2f minUV = new Vector2f(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY);
+    private final Vector2f maxUV = new Vector2f(Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY);
 
-    private HashMap<Bone, Vector3f> minVert = new HashMap<>();
-    private HashMap<Bone, Vector3f> maxVert = new HashMap<>();
+    private final HashMap<Bone, Vector3f> minVert = new HashMap<>();
+    private final HashMap<Bone, Vector3f> maxVert = new HashMap<>();
 
-    private HashMap<MaterialModel, Primitive> gltfMaterials = new HashMap<>();
+    private final HashMap<MaterialModel, Primitive> gltfMaterials = new HashMap<>();
 
     private boolean isMissingSkeleton = false;
     private boolean hasSpringData = false;
@@ -326,7 +326,7 @@ public class ModelImporter {
                         jointCache[j] = 0;
                 } else {
                     for (int j = 0; j < 4; ++j)
-                        jointCache[j] = this.getJointIndex(skin.getJoints().get((int) (joints.get() & 0xff)));
+                        jointCache[j] = this.getJointIndex(skin.getJoints().get(joints.get() & 0xff));
                 }
 
                 // Update min/max for bones
@@ -424,7 +424,7 @@ public class ModelImporter {
             ShortBuffer indexAccessor = meshPrimitive.getIndices().getAccessorData().createByteBuffer().asShortBuffer();
             int[] triCache = new int[numIndices];
             for (int i = 0; i < numIndices; ++i) {
-                int index = (int) (indexAccessor.get() & 0xffff) + minVert;
+                int index = (indexAccessor.get() & 0xffff) + minVert;
                 triCache[i] = index;
                 this.indexStream.u16(index);
             }

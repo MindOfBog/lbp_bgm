@@ -15,7 +15,7 @@ public enum GameProgressionStatus implements ValueEnum<Integer> {
     FIRST_GROUP_COMPLETED(4);
 
     private final int value;
-    private GameProgressionStatus(int value) {
+    GameProgressionStatus(int value) {
         this.value = value;
     }
 

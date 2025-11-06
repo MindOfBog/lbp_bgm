@@ -18,8 +18,8 @@ public class RemapDB implements Iterable<RemapDBRow> {
         public GUID getTo() { return this.to; }
     }
     
-    private int revision;
-    private RemapDBRow[] rows;
+    private final int revision;
+    private final RemapDBRow[] rows;
     
     public RemapDB(File file) {
         MemoryInputStream stream = new MemoryInputStream(file.getAbsolutePath());

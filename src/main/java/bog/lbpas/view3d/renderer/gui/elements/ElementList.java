@@ -42,6 +42,8 @@ public class ElementList extends Element{
         this.loader = loader;
         this.window = window;
         elements = new ArrayList<>();
+
+        this.scalesWithGui = false;
     }
 
     public float getFullHeight()
@@ -85,9 +87,9 @@ public class ElementList extends Element{
             button.buttonText = buttonText;
             button.pos = new Vector2f(0, 0);
             if(button.size == null)
-                button.size = new Vector2f(size.x - 4, getFontHeight() + 4);
+                button.size = new Vector2f((size.x - 2.0f - size.x * 0.05f) -4, getFontHeight() + 4);
             else
-                button.size.x = size.x - 4;
+                button.size.x = (size.x - 2.0f - size.x * 0.05f) -4;
             button.renderer = renderer;
             button.window = window;
             button.loader = loader;
@@ -102,9 +104,9 @@ public class ElementList extends Element{
         {
             elementList.pos = new Vector2f(0, 0);
             if(elementList.size == null)
-                elementList.size = new Vector2f(this.size.x - 4, getFontHeight() + 4);
+                elementList.size = new Vector2f((size.x - 2.0f - size.x * 0.05f) -4, getFontHeight() + 4);
             else
-                elementList.size.x = this.size.x - 4;
+                elementList.size.x = (size.x - 2.0f - size.x * 0.05f) -4;
             elementList.renderer = renderer;
             elementList.window = window;
             elementList.loader = loader;
@@ -120,11 +122,16 @@ public class ElementList extends Element{
         if(!containsElementByID(id))
         {
             ElementList elList = this;
-            ComboBox comboBox = new ComboBox(id, title, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight() + 4), tabWidth, renderer, loader, window)
+            ComboBox comboBox = new ComboBox(id, title, new Vector2f(0, 0), new Vector2f((size.x - 2.0f - size.x * 0.05f) -4, getFontHeight() + 4), renderer, loader, window)
             {
                 @Override
                 public int[] getParentTransform() {
                     return elList.getParentTransform();
+                }
+
+                @Override
+                public int tabWidth() {
+                    return Math.round(tabWidth * (getFontHeight() / 12f));
                 }
             };
             elements.add(comboBox);
@@ -149,7 +156,7 @@ public class ElementList extends Element{
     {
         if(!containsElementByID(id))
         {
-            ElementList elementList = new ElementList(id, new Vector2f(0, 0), new Vector2f(this.size.x - 4, getFontHeight() + 4), renderer, loader, window);
+            ElementList elementList = new ElementList(id, new Vector2f(0, 0), new Vector2f((size.x - 2.0f - size.x * 0.05f) -4, getFontHeight() + 4), renderer, loader, window);
             elements.add(elementList);
             return elementList;
         }
@@ -204,26 +211,26 @@ public class ElementList extends Element{
     public void addSlider(String id)
     {
         if(!containsElementByID(id))
-            elements.add(new Slider(id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight() + 4), renderer, loader, window));
+            elements.add(new Slider(id, new Vector2f(0, 0), new Vector2f((size.x - 2.0f - size.x * 0.05f) -4, getFontHeight() + 4), renderer, loader, window));
     }
 
     public void addSlider(String id, float sliderPosition, float min, float max)
     {
         if(!containsElementByID(id))
-            elements.add(new Slider(id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight() + 4), renderer, loader, window, sliderPosition, min, max));
+            elements.add(new Slider(id, new Vector2f(0, 0), new Vector2f((size.x - 2.0f - size.x * 0.05f) -4, getFontHeight() + 4), renderer, loader, window, sliderPosition, min, max));
     }
 
     public void addTextbox(String id)
     {
         if(!containsElementByID(id))
-            elements.add(new Textbox(id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight() + 4), renderer, loader, window));
+            elements.add(new Textbox(id, new Vector2f(0, 0), new Vector2f((size.x - 2.0f - size.x * 0.05f) -4, getFontHeight() + 4), renderer, loader, window));
     }
 
     public void addTextbox(String id, boolean numbers, boolean letters, boolean others)
     {
         if(!containsElementByID(id))
         {
-            Textbox tb = new Textbox(id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight() + 4), renderer, loader, window);
+            Textbox tb = new Textbox(id, new Vector2f(0, 0), new Vector2f((size.x - 2.0f - size.x * 0.05f) -4, getFontHeight() + 4), renderer, loader, window);
             tb.numbers = numbers;
             tb.letters = letters;
             tb.others = others;
@@ -235,7 +242,7 @@ public class ElementList extends Element{
     {
         if(!containsElementByID(id))
         {
-            Textbox tb = new Textbox(id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight() + 4), renderer, loader, window);
+            Textbox tb = new Textbox(id, new Vector2f(0, 0), new Vector2f((size.x - 2.0f - size.x * 0.05f) -4, getFontHeight() + 4), renderer, loader, window);
             tb.setText(text);
             elements.add(tb);
         }
@@ -245,7 +252,7 @@ public class ElementList extends Element{
     {
         if(!containsElementByID(id))
         {
-            Textbox tb = new Textbox(id, new Vector2f(0, 0), new Vector2f(size.x - 4, getFontHeight() + 4), renderer, loader, window);
+            Textbox tb = new Textbox(id, new Vector2f(0, 0), new Vector2f((size.x - 2.0f - size.x * 0.05f) -4, getFontHeight() + 4), renderer, loader, window);
             tb.numbers = numbers;
             tb.letters = letters;
             tb.others = others;
@@ -258,7 +265,7 @@ public class ElementList extends Element{
     {
         if(!containsElementByID(id))
         {
-            Panel p = new Panel(new Vector2f(size.x - 4, getFontHeight() + 4), renderer);
+            Panel p = new Panel(new Vector2f((size.x - 2.0f - size.x * 0.05f) -4, getFontHeight() + 4), renderer);
             p.id = id;
             elements.add(p);
             return p;
@@ -275,7 +282,7 @@ public class ElementList extends Element{
                 p.pos = new Vector2f();
             if(p.size == null)
                 p.size = new Vector2f(0, getFontHeight() + 4);
-            p.size.x = size.x - 4;
+            p.size.x = (size.x - 2.0f - size.x * 0.05f) -4;
             if(p.size.y == 0)
                 p.size.y = getFontHeight() + 4;
             if(p.id == null)
@@ -293,13 +300,19 @@ public class ElementList extends Element{
             elements.add(new DropDownTab.StringElement(id, string, renderer));
     }
 
+    public void addString(String id, String string, boolean header)
+    {
+        if(!containsElementByID(id))
+            elements.add(new DropDownTab.StringElement(id, string, renderer, header));
+    }
+
     public void addList(String id, ButtonList buttonList, int height)
     {
         if(!containsElementByID(id))
         {
             buttonList.id = id;
             buttonList.pos = new Vector2f(0, 0);
-            buttonList.size = new Vector2f(size.x - 4, height);
+            buttonList.size = new Vector2f((size.x - 2.0f - size.x * 0.05f) -4, height);
             elements.add(buttonList);
         }
     }
@@ -308,7 +321,7 @@ public class ElementList extends Element{
         if(!containsElementByID(tree.id))
         {
             elements.add(tree);
-            tree.size = new Vector2f(size.x - 4, 0);
+            tree.size = new Vector2f((size.x - 2.0f - size.x * 0.05f) -4, 0);
             return tree;
         }
         else
@@ -376,8 +389,18 @@ public class ElementList extends Element{
     public void resize() {
         super.resize();
 
-        for(int i = 0; i < elements.size(); i++)
-            elements.get(i).resize();
+        for(Element e : elements)
+        {
+            if(e.scalesWithGui() && e.size != null)
+                e.size.y = getFontHeight() + 4;
+
+            if (e.size == null)
+                e.size = new Vector2f((size.x - 2.0f - size.x * 0.05f) - 4, getFontHeight() + 4);
+            else
+                e.size.x = (size.x - 2.0f - size.x * 0.05f) - 4;
+
+            e.resize();
+        }
 
         float yOffset = 0;
         yOffset = updateElements(yOffset);

@@ -17,7 +17,7 @@ public enum ScriptVariableType implements ValueEnum<Byte> {
     private final byte value;
     private final Class<? extends Serializable> serializable;
 
-    private ScriptVariableType(int value, Class<? extends Serializable> serializable) {
+    ScriptVariableType(int value, Class<? extends Serializable> serializable) {
         this.value = (byte) value;
         this.serializable = serializable;
     }

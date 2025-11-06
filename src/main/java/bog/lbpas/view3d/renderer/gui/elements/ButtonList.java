@@ -50,6 +50,8 @@ public abstract class ButtonList<T> extends Element{
         this.pos = pos;
         this.size = size;
         this.prevSize = size;
+
+        this.scalesWithGui = false;
     }
 
     public ButtonList(List list, RenderMan renderer, ObjectLoader loader, WindowMan window)
@@ -62,6 +64,8 @@ public abstract class ButtonList<T> extends Element{
         this.pos = new Vector2f();
         this.size = new Vector2f();
         this.prevSize = size;
+
+        this.scalesWithGui = false;
     }
 
     @Override

@@ -13,7 +13,7 @@ public enum TextureWrap implements ValueEnum<Byte> {
     MIRROR_ONCE_CLAMP(8);
     
     private final byte value;
-    private TextureWrap(int value) {
+    TextureWrap(int value) {
         this.value = (byte) (value & 0xFF);
     }
 

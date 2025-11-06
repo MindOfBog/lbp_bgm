@@ -211,7 +211,7 @@ public class RMesh implements Compressable, Serializable {
     private SkeletonType skeletonType = SkeletonType.SACKBOY;
 
     /* Creates an empty mesh, used for serialization. */
-    public RMesh() {};
+    public RMesh() {}
 
     public RMesh(byte[][] streams, byte[] attributes, byte[] indices, Bone[] bones) {
         // We're not using triangle strips, we're using triangle lists,

@@ -15,7 +15,8 @@ public class NetworkOnlineID implements Serializable {
     private byte term = '\0';
     private byte[] dummy = new byte[3];
     
-    public NetworkOnlineID() {};
+    public NetworkOnlineID() {}
+
     public NetworkOnlineID(String psid) {
         if (psid == null) return;
         if (psid.length() > 16)

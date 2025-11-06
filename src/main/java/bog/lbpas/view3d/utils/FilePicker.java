@@ -13,7 +13,6 @@ import cwlib.types.archives.FileArchive;
 import cwlib.types.databases.FileDB;
 import cwlib.types.databases.FileDBRow;
 import cwlib.types.save.BigSave;
-import org.joml.Math;
 import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
 
@@ -43,7 +42,7 @@ public class FilePicker {
         if(loadMap)
         {
             try {
-                File maps[] = FileChooser.openFiles("map");
+                File[] maps = FileChooser.openFiles("map");
 
                 if(maps != null && maps.length != 0)
                     for(File file : maps)
@@ -168,7 +167,7 @@ public class FilePicker {
         if(loadProjectTextures)
         {
             try {
-                File texs[] = FileChooser.openFiles("png,jpg,jpeg,dds");
+                File[] texs = FileChooser.openFiles("png,jpg,jpeg,dds");
 
                 if(texs != null && texs.length != 0)
                     for(File file : texs)
@@ -192,7 +191,7 @@ public class FilePicker {
 
                         panel.elements.add(new Panel.PanelElement(null, gap));
 
-                        ComboBoxImage optionsCombo = new ComboBoxImage("optionsCombo", 200, new Vector2f(23, 23), mainView.renderer, mainView.loader, mainView.window) {
+                        ComboBoxImage optionsCombo = new ComboBoxImage("optionsCombo", new Vector2f(23, 23), mainView.renderer, mainView.loader, mainView.window) {
                             @Override
                             public Texture getImage() {
                                 return ConstantTextures.getTexture(ConstantTextures.OPTIONS, 23, 23, loader);
@@ -201,6 +200,11 @@ public class FilePicker {
                             @Override
                             public int[] getParentTransform() {
                                 return list.getParentTransform();
+                            }
+
+                            @Override
+                            public int tabWidth() {
+                                return Math.round(200f * (getFontHeight() / 12f));
                             }
                         };
 

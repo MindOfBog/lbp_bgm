@@ -20,7 +20,7 @@ public abstract class Drawable {
         return this;
     }
 
-    public static enum Type
+    public enum Type
     {
         INVALID(-1),
         TRI_STRIP(0),
@@ -35,7 +35,7 @@ public abstract class Drawable {
 
         public final int value;
 
-        private Type(int value) {
+        Type(int value) {
             this.value = value;
         }
 

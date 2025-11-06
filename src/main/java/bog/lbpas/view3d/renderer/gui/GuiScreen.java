@@ -222,7 +222,7 @@ public class GuiScreen {
         return null;
     }
 
-    private HashMap<Integer, Element> movetoEnd = new HashMap();
+    private final HashMap<Integer, Element> movetoEnd = new HashMap();
 
     public boolean onClick(MouseInput mouseInput, int button, int action, int mods)
     {
@@ -251,7 +251,7 @@ public class GuiScreen {
 
             if(element instanceof DropDownTab &&
                     (button == GLFW.GLFW_MOUSE_BUTTON_1 || button == GLFW.GLFW_MOUSE_BUTTON_2) &&
-                    (((DropDownTab)element).isMouseOverTab(mouseInput) || ((DropDownTab)element).isMouseOverElement(mouseInput)) &&
+                    (((DropDownTab)element).isMouseOverTab(mouseInput) || element.isMouseOverElement(mouseInput)) &&
                     !overOther && !focusedOther)
                 movetoEnd.put(i, element);
         }
@@ -295,6 +295,9 @@ public class GuiScreen {
         }
 
         return overElement;
+    }
+
+    public void resize() {
     }
 
     public int getStringWidth(String text)

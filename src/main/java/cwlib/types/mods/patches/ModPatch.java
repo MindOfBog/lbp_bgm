@@ -7,7 +7,7 @@ import cwlib.io.gson.PatchSerializer;
 
 @JsonAdapter(PatchSerializer.class)
 public abstract class ModPatch {
-    private PatchType type;
+    private final PatchType type;
     private String name;
 
     protected ModPatch(PatchType type) {

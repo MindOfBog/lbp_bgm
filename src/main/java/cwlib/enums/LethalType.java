@@ -20,7 +20,7 @@ public enum LethalType implements ValueEnum<Integer> {
     DROWNED(14);
 
     private final int value;
-    private LethalType(int value) {
+    LethalType(int value) {
         this.value = value;
     }
 

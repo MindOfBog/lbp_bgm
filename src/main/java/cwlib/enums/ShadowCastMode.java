@@ -8,7 +8,7 @@ public enum ShadowCastMode implements ValueEnum<Byte> {
     ALPHA(0x2);
 
     private final byte value;
-    private ShadowCastMode(int value) {
+    ShadowCastMode(int value) {
         this.value = (byte) (value & 0xFF);
     }
 

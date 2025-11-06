@@ -16,7 +16,7 @@ public enum DatabaseType {
     private final String name;
     private final String extension;
 
-    private DatabaseType(String name, String extension, boolean hasKeys, boolean hasData) {
+    DatabaseType(String name, String extension, boolean hasKeys, boolean hasData) {
         this.name = name;
         this.extension = extension;
         this.hasGUIDs = hasKeys; 

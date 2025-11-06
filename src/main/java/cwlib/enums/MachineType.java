@@ -46,7 +46,7 @@ public enum MachineType implements ValueEnum<Integer> {
     F64(0xd);
 
     private final int value;
-    private MachineType(int value) {
+    MachineType(int value) {
         this.value = value;
     }
 

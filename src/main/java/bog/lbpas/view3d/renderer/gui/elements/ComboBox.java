@@ -21,13 +21,11 @@ import java.util.ArrayList;
 /**
  * @author Bog
  */
-public class ComboBox extends Element{
+public abstract class ComboBox extends Element{
 
     public String tabTitle = "";
     public ArrayList<Element> comboElements;
     public boolean extended = false;
-
-    public int tabWidth;
 
     public boolean autoCollapse = true;
 
@@ -41,7 +39,7 @@ public class ComboBox extends Element{
         comboElements = new ArrayList<>();
     }
 
-    public ComboBox(String id, String tabTitle, Vector2f pos, Vector2f size, int tabWidth, RenderMan renderer, ObjectLoader loader, WindowMan window)
+    public ComboBox(String id, String tabTitle, Vector2f pos, Vector2f size, RenderMan renderer, ObjectLoader loader, WindowMan window)
     {
         this.id = id;
         this.tabTitle = tabTitle;
@@ -50,11 +48,10 @@ public class ComboBox extends Element{
         this.renderer = renderer;
         this.loader = loader;
         this.window = window;
-        this.tabWidth = tabWidth;
         comboElements = new ArrayList<>();
     }
 
-    public ComboBox(String id, String tabTitle, int tabWidth, RenderMan renderer, ObjectLoader loader, WindowMan window)
+    public ComboBox(String id, String tabTitle, RenderMan renderer, ObjectLoader loader, WindowMan window)
     {
         this.id = id;
         this.tabTitle = tabTitle;
@@ -63,13 +60,12 @@ public class ComboBox extends Element{
         this.renderer = renderer;
         this.loader = loader;
         this.window = window;
-        this.tabWidth = tabWidth;
         comboElements = new ArrayList<>();
     }
 
-    public ComboBox(String id, String tabTitle, Vector2f pos, Vector2f size, int tabWidth, RenderMan renderer, ObjectLoader loader, WindowMan window, boolean autoCollapse)
+    public ComboBox(String id, String tabTitle, Vector2f pos, Vector2f size, RenderMan renderer, ObjectLoader loader, WindowMan window, boolean autoCollapse)
     {
-        this(id, tabTitle, pos, size, tabWidth, renderer, loader, window);
+        this(id, tabTitle, pos, size, renderer, loader, window);
         this.autoCollapse = autoCollapse;
     }
     
@@ -91,7 +87,7 @@ public class ComboBox extends Element{
         if (extended)
             yOffset = updateElements(yOffset);
 
-        if(tabWidth != prevSize.x || size.y != prevSize.y || prevYOff != yOffset)
+        if(tabWidth() != prevSize.x || size.y != prevSize.y || prevYOff != yOffset)
         {
             refreshOutline(yOffset);
             prevSize.x = size.x;
@@ -184,9 +180,9 @@ public class ComboBox extends Element{
             button.buttonText = buttonText;
             button.pos = new Vector2f(0, 0);
             if(button.size == null)
-                button.size = new Vector2f(tabWidth - 4, getFontHeight() + 4);
+                button.size = new Vector2f(tabWidth() - 4, getFontHeight() + 4);
             else
-                button.size.x = tabWidth - 4;
+                button.size.x = tabWidth() - 4;
             button.renderer = renderer;
             button.window = window;
             button.loader = loader;
@@ -202,9 +198,9 @@ public class ComboBox extends Element{
             button.buttonText = buttonText;
             button.pos = new Vector2f(0, 0);
             if(button.size == null)
-                button.size = new Vector2f(tabWidth - 4, getFontHeight() + 4);
+                button.size = new Vector2f(tabWidth() - 4, getFontHeight() + 4);
             else
-                button.size.x = tabWidth - 4;
+                button.size.x = tabWidth() - 4;
             button.renderer = renderer;
             button.window = window;
             button.loader = loader;
@@ -219,9 +215,9 @@ public class ComboBox extends Element{
         {
             elementList.pos = new Vector2f(0, 0);
             if(elementList.size == null)
-                elementList.size = new Vector2f(tabWidth - 4, getFontHeight() + 4);
+                elementList.size = new Vector2f(tabWidth() - 4, getFontHeight() + 4);
             else
-                elementList.size.x = tabWidth - 4;
+                elementList.size.x = tabWidth() - 4;
             elementList.renderer = renderer;
             elementList.window = window;
             elementList.loader = loader;
@@ -237,11 +233,16 @@ public class ComboBox extends Element{
         if(!containsElementByID(id))
         {
             ComboBox parent = this;
-            ComboBox comboBox = new ComboBox(id, title, new Vector2f(0, 0), new Vector2f(this.tabWidth - 4, getFontHeight() + 4), tabWidth, renderer, loader, window)
+            ComboBox comboBox = new ComboBox(id, title, new Vector2f(0, 0), new Vector2f(this.tabWidth() - 4, getFontHeight() + 4), renderer, loader, window)
             {
                 @Override
                 public int[] getParentTransform() {
                     return parent.getTabPosWidth();
+                }
+
+                @Override
+                public int tabWidth() {
+                    return Math.round(tabWidth * (getFontHeight() / 12f));
                 }
             };
             comboElements.add(comboBox);
@@ -256,7 +257,7 @@ public class ComboBox extends Element{
         if(!containsElementByID(id))
         {
             ComboBox parent = this;
-            ElementList elementList = new ElementList(id, new Vector2f(0, 0), new Vector2f(tabWidth - 4, height), renderer, loader, window)
+            ElementList elementList = new ElementList(id, new Vector2f(0, 0), new Vector2f(tabWidth() - 4, height), renderer, loader, window)
             {
                 @Override
                 public int[] getParentTransform() {
@@ -328,26 +329,26 @@ public class ComboBox extends Element{
     public void addSlider(String id)
     {
         if(!containsElementByID(id))
-            comboElements.add(new Slider(id, new Vector2f(0, 0), new Vector2f(tabWidth - 4, getFontHeight() + 4), renderer, loader, window));
+            comboElements.add(new Slider(id, new Vector2f(0, 0), new Vector2f(tabWidth() - 4, getFontHeight() + 4), renderer, loader, window));
     }
 
     public void addSlider(String id, float sliderPosition, float min, float max)
     {
         if(!containsElementByID(id))
-            comboElements.add(new Slider(id, new Vector2f(0, 0), new Vector2f(tabWidth - 4, getFontHeight() + 4), renderer, loader, window, sliderPosition, min, max));
+            comboElements.add(new Slider(id, new Vector2f(0, 0), new Vector2f(tabWidth() - 4, getFontHeight() + 4), renderer, loader, window, sliderPosition, min, max));
     }
 
     public void addTextbox(String id)
     {
         if(!containsElementByID(id))
-            comboElements.add(new Textbox(id, new Vector2f(0, 0), new Vector2f(tabWidth - 4, getFontHeight() + 4), renderer, loader, window));
+            comboElements.add(new Textbox(id, new Vector2f(0, 0), new Vector2f(tabWidth() - 4, getFontHeight() + 4), renderer, loader, window));
     }
 
     public void addTextbox(String id, boolean numbers, boolean letters, boolean others)
     {
         if(!containsElementByID(id))
         {
-            Textbox tb = new Textbox(id, new Vector2f(0, 0), new Vector2f(tabWidth - 4, getFontHeight() + 4), renderer, loader, window);
+            Textbox tb = new Textbox(id, new Vector2f(0, 0), new Vector2f(tabWidth() - 4, getFontHeight() + 4), renderer, loader, window);
             tb.numbers = numbers;
             tb.letters = letters;
             tb.others = others;
@@ -359,7 +360,7 @@ public class ComboBox extends Element{
     {
         if(!containsElementByID(id))
         {
-            Textbox tb = new Textbox(id, new Vector2f(0, 0), new Vector2f(tabWidth - 4, getFontHeight() + 4), renderer, loader, window);
+            Textbox tb = new Textbox(id, new Vector2f(0, 0), new Vector2f(tabWidth() - 4, getFontHeight() + 4), renderer, loader, window);
             tb.setText(text);
             comboElements.add(tb);
         }
@@ -369,7 +370,7 @@ public class ComboBox extends Element{
     {
         if(!containsElementByID(id))
         {
-            Textbox tb = new Textbox(id, new Vector2f(0, 0), new Vector2f(tabWidth - 4, getFontHeight() + 4), renderer, loader, window);
+            Textbox tb = new Textbox(id, new Vector2f(0, 0), new Vector2f(tabWidth() - 4, getFontHeight() + 4), renderer, loader, window);
             tb.numbers = numbers;
             tb.letters = letters;
             tb.others = others;
@@ -382,7 +383,7 @@ public class ComboBox extends Element{
     {
         if(!containsElementByID(id))
         {
-            Panel p = new Panel(new Vector2f(tabWidth - 4, getFontHeight() + 4), renderer);
+            Panel p = new Panel(new Vector2f(tabWidth() - 4, getFontHeight() + 4), renderer);
             p.id = id;
             comboElements.add(p);
             return p;
@@ -399,7 +400,7 @@ public class ComboBox extends Element{
                 p.pos = new Vector2f();
             if(p.size == null)
                 p.size = new Vector2f(0, getFontHeight() + 4);
-            p.size.x = tabWidth - 4;
+            p.size.x = tabWidth() - 4;
             if(p.size.y == 0)
                 p.size.y = getFontHeight() + 4;
             if(p.id == null)
@@ -428,7 +429,7 @@ public class ComboBox extends Element{
         {
             buttonList.id = id;
             buttonList.pos = new Vector2f(0, 0);
-            buttonList.size = new Vector2f(tabWidth - 4, height);
+            buttonList.size = new Vector2f(tabWidth() - 4, height);
             comboElements.add(buttonList);
         }
         return buttonList;
@@ -440,7 +441,7 @@ public class ComboBox extends Element{
         {
             buttonList.id = id;
             buttonList.pos = new Vector2f(0, 0);
-            buttonList.size = new Vector2f(tabWidth - 4, 8 + (buttonList.buttonHeight() + 2) * buttonList.list.size());
+            buttonList.size = new Vector2f(tabWidth() - 4, 8 + (buttonList.buttonHeight() + 2) * buttonList.list.size());
             comboElements.add(buttonList);
         }
         return buttonList;
@@ -450,7 +451,7 @@ public class ComboBox extends Element{
     {
         if(!containsElementByID(id))
         {
-            DropDownTab.SeparatorElement sep = new DropDownTab.SeparatorElement(id, new Vector2f(0), tabWidth - 4, renderer, loader, window);
+            DropDownTab.SeparatorElement sep = new DropDownTab.SeparatorElement(id, new Vector2f(0), tabWidth() - 4, renderer, loader, window);
             comboElements.add(sep);
             return sep;
         }
@@ -463,7 +464,19 @@ public class ComboBox extends Element{
         super.resize();
 
         for(Element e : comboElements)
+        {
+            if(e.scalesWithGui() && e.size != null)
+                e.size.y = getFontHeight() + 4;
+
+            int xSize = Math.round(tabWidth());
+
+            if (e.size == null)
+                e.size = new Vector2f(xSize - (e instanceof ButtonList ? 0 : 4), getFontHeight() + 4);
+            else
+                e.size.x = xSize - (e instanceof ButtonList ? 0 : 4);
+
             e.resize();
+        }
 
         float yOffset = 0;
         if (extended)
@@ -478,7 +491,7 @@ public class ComboBox extends Element{
         if(outlineElement != null)
             this.outlineElement.cleanup(loader);
         this.outlineSelection = LineStrip.processVerts(LineStrip.getRectangle(size), loader, window);
-        this.outlineElement = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(tabWidth, (int) Math.round(2f + yOffset))), loader, window);
+        this.outlineElement = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(tabWidth(), Math.round(2f + yOffset))), loader, window);
     }
 
     public void drawBackdrop(float yOffset)
@@ -488,17 +501,17 @@ public class ComboBox extends Element{
         float ypos = !comboElements.isEmpty() && comboElements.get(0).pos != null ? comboElements.get(0).pos.y - 2 : pos.y;
         float xpos = (parentTransform == null ? pos.x + size.x : parentTransform[0] + parentTransform[2]) + size.y / 2;
 
-        int x = (int) Math.round(xpos);
-        int y = (int) Math.round(ypos);
-        int xSize = (int) Math.round(tabWidth);
-        int ySize = (int) Math.round((extended ? 2f : 0f) + yOffset);
+        int x = Math.round(xpos);
+        int y = Math.round(ypos);
+        int xSize = Math.round(tabWidth());
+        int ySize = Math.round((extended ? 2f : 0f) + yOffset);
 
         if(x + xSize > window.width)
-            x = (int) Math.round((parentTransform == null ? pos.x : parentTransform[0]) - size.y / 2 - xSize);
+            x = Math.round((parentTransform == null ? pos.x : parentTransform[0]) - size.y / 2 - xSize);
 
         renderer.doBlur(Consts.GAUSSIAN_RADIUS, Consts.GAUSSIAN_KERNEL, x, y, xSize, ySize);
 
-        renderer.drawRect(x, y, xSize, (int) Math.round(2f + yOffset), Config.PRIMARY_COLOR);
+        renderer.drawRect(x, y, xSize, Math.round(2f + yOffset), Config.PRIMARY_COLOR);
         renderer.drawRectOutline(new Vector2f(x, y), outlineElement, Config.SECONDARY_COLOR, false);
     }
 
@@ -509,12 +522,12 @@ public class ComboBox extends Element{
         float ypos = !comboElements.isEmpty() && comboElements.get(0).pos != null ? comboElements.get(0).pos.y - 2 : pos.y;
         float xpos = (parentTransform == null ? pos.x + (size == null ? 0 : size.x) : parentTransform[0] + parentTransform[2]) + (size == null ? 0 : size.y) / 2;
 
-        int x = (int) Math.round(xpos);
-        int y = (int) Math.round(ypos);
-        int xSize = (int) Math.round(tabWidth);
+        int x = Math.round(xpos);
+        int y = Math.round(ypos);
+        int xSize = Math.round(tabWidth());
 
         if(x + xSize > window.width)
-            x = (int) Math.round((parentTransform == null ? pos.x : parentTransform[0]) - (size == null ? 0 : size.y) / 2 - xSize);
+            x = Math.round((parentTransform == null ? pos.x : parentTransform[0]) - (size == null ? 0 : size.y) / 2 - xSize);
 
         return new int[]{x, y, xSize};
     }
@@ -536,19 +549,14 @@ public class ComboBox extends Element{
 
             int[] parentTransform = getParentTransform();
 
-            int x = (int) Math.round((parentTransform == null ? pos.x + size.x : parentTransform[0] + parentTransform[2]) + size.y / 2);
-            int y = (int) Math.round(pos.y);
-            int xSize = (int) Math.round(tabWidth);
+            int x = Math.round((parentTransform == null ? pos.x + size.x : parentTransform[0] + parentTransform[2]) + size.y / 2);
+            int y = Math.round(pos.y);
+            int xSize = Math.round(tabWidth());
 
             if(x + xSize > window.width)
-                x = (int) Math.round((parentTransform == null ? pos.x : parentTransform[0]) - xSize - size.y / 2);
+                x = Math.round((parentTransform == null ? pos.x : parentTransform[0]) - xSize - size.y / 2);
 
             element.pos = new Vector2f(x + (element instanceof ButtonList ? 0 : 2), y + 2 + yOffset);
-
-            if (element.size == null)
-                element.size = new Vector2f(xSize - (element instanceof ButtonList ? 0 : 4), getFontHeight() + 4);
-            else
-                element.size.x = xSize - (element instanceof ButtonList ? 0 : 4);
 
             yOffset += element.size.y + 2;
         }
@@ -631,13 +639,13 @@ public class ComboBox extends Element{
 
         int[] parentTransform = getParentTransform();
 
-        int x = (int) Math.round((parentTransform == null ? pos.x + size.x : parentTransform[0] + parentTransform[2]) + size.y / 2);
-        int y = (int) Math.round(pos.y);
-        int xSize = (int) Math.round(tabWidth);
-        int ySize = (int) Math.round((extended ? 2f : 0f) + yOffset);
+        int x = Math.round((parentTransform == null ? pos.x + size.x : parentTransform[0] + parentTransform[2]) + size.y / 2);
+        int y = Math.round(pos.y);
+        int xSize = Math.round(tabWidth());
+        int ySize = Math.round((extended ? 2f : 0f) + yOffset);
 
         if(x + xSize > window.width)
-            x = (int) Math.round((parentTransform == null ? pos.x : parentTransform[0]) - size.y / 2 - xSize);
+            x = Math.round((parentTransform == null ? pos.x : parentTransform[0]) - size.y / 2 - xSize);
 
         boolean overElement = (mousePos.x > x && mousePos.y > y && mousePos.x < x + xSize && mousePos.y < y + ySize) || isMouseOverTab(mousePos);
 
@@ -850,4 +858,6 @@ public class ComboBox extends Element{
     }
 
     public void onExtend(){}
+
+    public abstract int tabWidth();
 }

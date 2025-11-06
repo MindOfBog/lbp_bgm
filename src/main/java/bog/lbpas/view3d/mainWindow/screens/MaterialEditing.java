@@ -51,6 +51,9 @@ public class MaterialEditing extends GuiScreen {
 
     ButtonImage frontView;
 
+    DropDownTab bevelDataTab;
+    DropDownTab shapeDataTab;
+
     public void init()
     {
         selectedVertices = new ArrayList<>();
@@ -69,7 +72,7 @@ public class MaterialEditing extends GuiScreen {
             }
         });
 
-        DropDownTab bevelDataTab = new DropDownTab("bevelDataTab", "Bevel Data" , new Vector2f(7, 21 + 7), new Vector2f(350, getFontHeight() + 4), mainView.renderer, mainView.loader, mainView.window);
+        bevelDataTab = new DropDownTab("bevelDataTab", "Bevel Data" , new Vector2f(7, 21 + 7), new Vector2f(350f * (getFontHeight() / 12f), getFontHeight() + 4), mainView.renderer, mainView.loader, mainView.window);
         bevelDataTab.addString(new DropDownTab.StringElement("bev", mainView.renderer)
         {
             @Override
@@ -149,7 +152,7 @@ public class MaterialEditing extends GuiScreen {
         });
         this.guiElements.add(bevelDataTab);
 
-        DropDownTab shapeDataTab = new DropDownTab("shapeDataTab", "Current Selection" , new Vector2f(7 * 2 + 350, 21 + 7), new Vector2f(200, getFontHeight() + 4), mainView.renderer, mainView.loader, mainView.window);
+        shapeDataTab = new DropDownTab("shapeDataTab", "Current Selection" , new Vector2f(7 * 2 + bevelDataTab.size.x, 21 + 7), new Vector2f(200f * (getFontHeight() / 12f), getFontHeight() + 4), mainView.renderer, mainView.loader, mainView.window);
 
         Panel xPosPanel = shapeDataTab.addPanel("xPosPanel");
         xPosPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("xPosStr", "X:", mainView.renderer), 0.1f));
@@ -706,6 +709,14 @@ public class MaterialEditing extends GuiScreen {
             }
 
         super.draw(mouseInput);
+    }
+
+    @Override
+    public void resize() {
+        super.resize();
+
+        bevelDataTab.size = new Vector2f(350f * (getFontHeight() / 12f), getFontHeight() + 4);
+        shapeDataTab.size = new Vector2f(200f * (getFontHeight() / 12f), getFontHeight() + 4);
     }
 
     @Override

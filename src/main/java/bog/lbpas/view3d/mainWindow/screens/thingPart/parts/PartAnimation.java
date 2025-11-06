@@ -16,7 +16,7 @@ public abstract class PartAnimation extends iPart {
 
     @Override
     public void init(View3D view) {
-
+        super.init(view);
     }
 
     @Override

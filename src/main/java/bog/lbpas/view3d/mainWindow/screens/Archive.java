@@ -48,7 +48,7 @@ public class Archive extends GuiScreen {
 
     public void init()
     {
-        mapList = new DropDownTab("mapList", "MAPs", new Vector2f(10, 21 + 10), new Vector2f(200, getFontHeight() + 4), renderer, loader, window)
+        mapList = new DropDownTab("mapList", "MAPs", new Vector2f(10, getFontHeightHeader() + 7 + 7), new Vector2f(200f * (getFontHeight() / 12f), getFontHeightHeader() + 4), renderer, loader, window)
         {
 
         };
@@ -94,9 +94,15 @@ public class Archive extends GuiScreen {
             public int buttonHeight() {
                 return getFontHeight() + 4;
             }
-        }.deletable().draggable(), 150);
 
-        farcList = new DropDownTab("farcList", "FARCs", new Vector2f(7 * 2 + 3 + 200, 21 + 10), new Vector2f(200, getFontHeight() + 4), renderer, loader, window)
+            @Override
+            public void resize() {
+                super.resize();
+                this.size.y = (int) (120f * (getFontHeight() / 12f));
+            }
+        }.deletable().draggable(), (int) (120f * (getFontHeight() / 12f)));
+
+        farcList = new DropDownTab("farcList", "FARCs", new Vector2f(7 * 2 + 3 + mapList.size.x, getFontHeightHeader() + 7 + 7), new Vector2f(200f * (getFontHeight() / 12f), getFontHeightHeader() + 4), renderer, loader, window)
         {
 
         };
@@ -142,9 +148,15 @@ public class Archive extends GuiScreen {
             public int buttonHeight() {
                 return getFontHeight() + 4;
             }
-        }.deletable().draggable(), 150);
 
-        fartList = new DropDownTab("fartList", "BIG Profiles", new Vector2f(7 * 3 + 3 + 400, 21 + 10), new Vector2f(200, getFontHeight() + 4), renderer, loader, window)
+            @Override
+            public void resize() {
+                super.resize();
+                this.size.y = (int) (120f * (getFontHeight() / 12f));
+            }
+        }.deletable().draggable(), (int) (120f * (getFontHeight() / 12f)));
+
+        fartList = new DropDownTab("fartList", "BIG Profiles", new Vector2f(7 * 3 + 3 + mapList.size.x + farcList.size.x, getFontHeightHeader() + 7 + 7), new Vector2f(200f * (getFontHeight() / 12f), getFontHeightHeader() + 4), renderer, loader, window)
         {
 
         };
@@ -190,9 +202,15 @@ public class Archive extends GuiScreen {
             public int buttonHeight() {
                 return getFontHeight() + 4;
             }
-        }.deletable().draggable(), 150);
 
-        translations = new DropDownTab("translations", "Translations", new Vector2f(10, 21 + 10 + mapList.getFullHeight() + 7), new Vector2f(325, getFontHeight() + 4), renderer, loader, window);
+            @Override
+            public void resize() {
+                super.resize();
+                this.size.y = (int) (120f * (getFontHeight() / 12f));
+            }
+        }.deletable().draggable(), (int) (120f * (getFontHeight() / 12f)));
+
+        translations = new DropDownTab("translations", "Translations", new Vector2f(10, getFontHeightHeader() + 7 + 7 + mapList.getFullHeight() + 7), new Vector2f(300f * (getFontHeight() / 12f), getFontHeightHeader() + 4), renderer, loader, window);
         translations.addButton("None", new Button() {
             @Override
             public void clickedButton(int button, int action, int mods) {
@@ -312,11 +330,27 @@ public class Archive extends GuiScreen {
                 hovering = -1;
                 super.draw(mouseInput, overElement);
             }
-        }, 150);
+
+            @Override
+            public void resize() {
+                super.resize();
+                this.size.y = (int) (120f * (getFontHeight() / 12f));
+            }
+        }, (int) (120f * (getFontHeight() / 12f)));
 
         this.guiElements.add(mapList);
         this.guiElements.add(farcList);
         this.guiElements.add(fartList);
         this.guiElements.add(translations);
+    }
+
+    @Override
+    public void resize() {
+        super.resize();
+
+        mapList.size = new Vector2f(200f * (getFontHeight() / 12f), getFontHeightHeader() + 4);
+        farcList.size = new Vector2f(200f * (getFontHeight() / 12f), getFontHeightHeader() + 4);
+        fartList.size = new Vector2f(200f * (getFontHeight() / 12f), getFontHeightHeader() + 4);
+        translations.size = new Vector2f(300f * (getFontHeight() / 12f), getFontHeightHeader() + 4);
     }
 }

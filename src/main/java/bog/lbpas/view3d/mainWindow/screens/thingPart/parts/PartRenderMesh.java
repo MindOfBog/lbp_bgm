@@ -114,11 +114,16 @@ public abstract class PartRenderMesh extends iPart {
 
         Panel setBoneThingPanel = boneThings.addPanel("setBoneThingPanel");
         setBoneThingPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("setBoneThingstr", "Thing:", view.renderer), 0.275f));
-        setThingCombo = new ComboBox("setThingCombo", "None", 200, view.renderer, view.loader, view.window)
+        setThingCombo = new ComboBox("setThingCombo", "None", view.renderer, view.loader, view.window)
         {
             @Override
             public int[] getParentTransform() {
                 return boneThings.getTabPosWidth();
+            }
+
+            @Override
+            public int tabWidth() {
+                return Math.round(200f * (getFontHeight() / 12f));
             }
         };
 
@@ -127,13 +132,15 @@ public abstract class PartRenderMesh extends iPart {
             public void clickedButton(int button, int action, int mods) {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
                 {
-                    for(int i = 0; i < view.things.size(); i++)
-                        if(view.things.get(i).selected)
-                            if(view.things.get(i).renderMesh != null)
-                            {
-                                PRenderMesh rmesh = view.things.get(i).thing.getPart(Part.RENDER_MESH);
-                                rmesh.boneThings[selectedBone] = null;
-                            }
+                    for (int i = 0; i < getThings().size(); i++) {
+                        Thing selected = getThings().get(i);
+                        if (!selected.selected)
+                            continue;
+                        if (selected.renderMesh != null) {
+                            PRenderMesh rmesh = selected.thing.getPart(Part.RENDER_MESH);
+                            rmesh.boneThings[selectedBone] = null;
+                        }
+                    }
                     setThingCombo.tabTitle = "None";
                 }
             }
@@ -160,13 +167,15 @@ public abstract class PartRenderMesh extends iPart {
                 {
                     if(action == GLFW.GLFW_PRESS)
                     {
-                        for(int i = 0; i < view.things.size(); i++)
-                            if(view.things.get(i).selected)
-                                if(view.things.get(i).renderMesh != null)
-                                {
-                                    PRenderMesh rmesh = view.things.get(i).thing.getPart(Part.RENDER_MESH);
-                                    rmesh.boneThings[selectedBone] = ((bog.lbpas.view3d.core.types.Thing)object).thing;
-                                }
+                        for (int i = 0; i < getThings().size(); i++) {
+                            Thing selected = getThings().get(i);
+                            if (!selected.selected)
+                                continue;
+                            if (selected.renderMesh != null) {
+                                PRenderMesh rmesh = selected.thing.getPart(Part.RENDER_MESH);
+                                rmesh.boneThings[selectedBone] = ((bog.lbpas.view3d.core.types.Thing) object).thing;
+                            }
+                        }
                         setThingCombo.tabTitle = ((bog.lbpas.view3d.core.types.Thing)object).thing.name;
                     }
                 }
@@ -242,9 +251,12 @@ public abstract class PartRenderMesh extends iPart {
                 super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
-                    for (int i = 0; i < view.things.size(); i++)
-                        if (view.things.get(i).selected)
-                            ((PRenderMesh)((Thing)view.things.get(i)).thing.getPart(cwlib.enums.Part.RENDER_MESH)).animLoop = this.isChecked;
+                    for (int i = 0; i < getThings().size(); i++) {
+                        Thing selected = getThings().get(i);
+                        if (!selected.selected)
+                            continue;
+                        ((PRenderMesh) selected.thing.getPart(cwlib.enums.Part.RENDER_MESH)).animLoop = this.isChecked;
+                    }
             }
         });
 
@@ -280,15 +292,24 @@ public abstract class PartRenderMesh extends iPart {
                 super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
-                    for (int i = 0; i < view.things.size(); i++)
-                        if (view.things.get(i).selected)
-                            ((PRenderMesh)((Thing)view.things.get(i)).thing.getPart(cwlib.enums.Part.RENDER_MESH)).RTTEnable = this.isChecked;
+                    for (int i = 0; i < getThings().size(); i++) {
+                        Thing selected = getThings().get(i);
+                        if (!selected.selected)
+                            continue;
+                        ((PRenderMesh) selected.thing.getPart(cwlib.enums.Part.RENDER_MESH)).RTTEnable = this.isChecked;
+                    }
             }
         });
 
         Panel shadowCastPanel = partComboBox.addPanel("shadowCastPanel");
         shadowCastPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("shadowstr", "Cast Shadows:", view.renderer), 0.55f));
-        CastShadows = new ComboBox("RMeshCastShadows", "Always", new Vector2f(), new Vector2f(), 160,view.renderer, view.loader, view.window);
+        CastShadows = new ComboBox("RMeshCastShadows", "Always", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window)
+        {
+            @Override
+            public int tabWidth() {
+                return Math.round(160f * (getFontHeight() / 12f));
+            }
+        };
         shadowCastPanel.elements.add(new Panel.PanelElement(CastShadows, 0.45f));
 
         CastShadows.addList("shadowTypes", new ButtonList("shadowTypes", new ArrayList<>(Arrays.asList(ShadowType.values())), new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window) {
@@ -299,10 +320,13 @@ public abstract class PartRenderMesh extends iPart {
                     clicked = index;
 
                     String name = ((ShadowType)object).name().replaceAll("_", " ");
-                    name = name.substring(0, 1) + name.substring(1).toLowerCase();
-                    for (int i = 0; i < view.things.size(); i++)
-                        if (view.things.get(i).selected)
-                            ((PRenderMesh)((Thing)view.things.get(i)).thing.getPart(cwlib.enums.Part.RENDER_MESH)).castShadows = (ShadowType) object;
+                    name = name.charAt(0) + name.substring(1).toLowerCase();
+                    for (int i = 0; i < getThings().size(); i++) {
+                        Thing selected = getThings().get(i);
+                        if (!selected.selected)
+                            continue;
+                        ((PRenderMesh) selected.thing.getPart(cwlib.enums.Part.RENDER_MESH)).castShadows = (ShadowType) object;
+                    }
                     CastShadows.tabTitle = name;
                 }
             }
@@ -333,15 +357,13 @@ public abstract class PartRenderMesh extends iPart {
 
             @Override
             public boolean isSelected(Object object, int index) {
-                if (clicked == index)
-                    return true;
-                return false;
+                return clicked == index;
             }
 
             @Override
             public String buttonText(Object object, int index) {
                 String name = ((ShadowType)object).name().replaceAll("_", " ");
-                name = name.substring(0, 1) + name.substring(1).toLowerCase();
+                name = name.charAt(0) + name.substring(1).toLowerCase();
                 return name;
             }
 
@@ -359,12 +381,15 @@ public abstract class PartRenderMesh extends iPart {
                 super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
-                    for (int i = 0; i < view.things.size(); i++)
-                        if (view.things.get(i).selected)
-                        {
-                            PRenderMesh rmesh = ((PRenderMesh)((Thing)view.things.get(i)).thing.getPart(cwlib.enums.Part.RENDER_MESH));
-                            rmesh.visibilityFlags = Utils.setBitwiseBool(rmesh.visibilityFlags, cwlib.enums.VisibilityFlags.PLAY_MODE, this.isChecked);
-                        }
+                    for (int i = 0; i < getThings().size(); i++)
+                    {
+                        Thing selected = getThings().get(i);
+                        if(!selected.selected)
+                            continue;
+
+                        PRenderMesh rmesh = selected.thing.getPart(Part.RENDER_MESH);
+                        rmesh.visibilityFlags = Utils.setBitwiseBool(rmesh.visibilityFlags, cwlib.enums.VisibilityFlags.PLAY_MODE, this.isChecked);
+                    }
             }
         });
         FlagEditMode = VisibilityFlags.addCheckbox("EDIT_MODE", "Edit mode", new Checkbox()
@@ -374,12 +399,15 @@ public abstract class PartRenderMesh extends iPart {
                 super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
 
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
-                    for (int i = 0; i < view.things.size(); i++)
-                        if (view.things.get(i).selected)
-                        {
-                            PRenderMesh rmesh = ((PRenderMesh)((Thing)view.things.get(i)).thing.getPart(cwlib.enums.Part.RENDER_MESH));
-                            rmesh.visibilityFlags = Utils.setBitwiseBool(rmesh.visibilityFlags, cwlib.enums.VisibilityFlags.EDIT_MODE, this.isChecked);
-                        }
+                    for (int i = 0; i < getThings().size(); i++)
+                    {
+                        Thing selected = getThings().get(i);
+                        if(!selected.selected)
+                            continue;
+
+                        PRenderMesh rmesh = selected.thing.getPart(Part.RENDER_MESH);
+                        rmesh.visibilityFlags = Utils.setBitwiseBool(rmesh.visibilityFlags, cwlib.enums.VisibilityFlags.EDIT_MODE, this.isChecked);
+                    }
             }
         });
 
@@ -546,7 +574,7 @@ public abstract class PartRenderMesh extends iPart {
             String name = castShadows.replaceAll("_", " ");
 
             if(name.length() > 0)
-            name = name.substring(0, 1) + name.substring(1).toLowerCase();
+            name = name.charAt(0) + name.substring(1).toLowerCase();
 
             CastShadows.tabTitle = name;
         }

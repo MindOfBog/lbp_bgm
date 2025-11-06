@@ -22,7 +22,7 @@ public class MemoryOutputStream {
     private byte[] buffer;
 
     private int offset = 0;
-    private int length;
+    private final int length;
     private byte compressionFlags;
 
     private boolean isLittleEndian = false;

@@ -12,7 +12,8 @@ public class PhotoUser implements Serializable {
     public String user;
     public Vector4f bounds = new Vector4f().zero();
 
-    public PhotoUser() {};
+    public PhotoUser() {}
+
     public PhotoUser(String psid) {
         if (psid == null) return;
         if (psid.length() > 0x14)
