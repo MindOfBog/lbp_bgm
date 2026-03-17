@@ -1,18 +1,17 @@
 package cwlib.util;
 
-import org.apache.commons.lang3.ArrayUtils;
+import org.bytedeco.javacv.FFmpegFrameGrabber;
+import org.bytedeco.javacv.Frame;
 import org.joml.Math;
 import org.xiph.speex.Bits;
 import org.xiph.speex.NbDecoder;
 import org.xiph.speex.NbEncoder;
-import org.xiph.speex.SpeexEncoder;
 
 import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.util.ArrayList;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 public class Audio {
 
@@ -36,24 +35,8 @@ public class Audio {
             return 0;
         }
 
-        public static PCMAudio loadAndConvert(File inputFile) throws Exception {
-            AudioInputStream sourceStream = AudioSystem.getAudioInputStream(inputFile);
-            AudioFormat sourceFormat = sourceStream.getFormat();
+        public static PCMAudio loadAndConvertForSpeex(File inputFile) throws Exception {
 
-            //first convert to a standard pcm format
-            AudioFormat pcmFormat = new AudioFormat(
-                    AudioFormat.Encoding.PCM_SIGNED,
-                    sourceFormat.getSampleRate(),
-                    16,
-                    sourceFormat.getChannels(),
-                    sourceFormat.getChannels() * 2,
-                    sourceFormat.getSampleRate(),
-                    false // little endian
-            );
-
-            AudioInputStream pcmStream = AudioSystem.getAudioInputStream(pcmFormat, sourceStream);
-
-            //then to the lbp specific one
             AudioFormat targetFormat = new AudioFormat(
                     AudioFormat.Encoding.PCM_SIGNED,
                     Speex.SAMPLE_RATE,
@@ -64,20 +47,33 @@ public class Audio {
                     false  //little endian
             );
 
-            AudioInputStream finalStream = AudioSystem.getAudioInputStream(targetFormat, pcmStream);
+            try (FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(inputFile)) {
+                grabber.setSampleRate((int) targetFormat.getSampleRate());
+                grabber.setAudioChannels(targetFormat.getChannels());
+                grabber.setAudioBitrate(Speex.BITS_PER_SAMPLE);
 
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            byte[] buffer = new byte[4096];
-            int bytesRead;
-            while ((bytesRead = finalStream.read(buffer)) != -1) {
-                out.write(buffer, 0, bytesRead);
+                grabber.start();
+
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                Frame frame;
+
+                while ((frame = grabber.grabFrame()) != null) {
+                    if (frame.samples == null) continue;
+
+                    java.nio.ShortBuffer sb = (java.nio.ShortBuffer) frame.samples[0];
+                    byte[] b = new byte[sb.limit() * 2];
+
+                    ByteBuffer.wrap(b).order(targetFormat.isBigEndian() ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN).asShortBuffer().put(sb);
+
+                    out.write(b);
+                }
+
+                grabber.stop();
+                grabber.release();
+                grabber.close();
+
+                return new PCMAudio(out.toByteArray(), Speex.SAMPLE_RATE, Speex.CHANNEL_COUNT, Speex.BITS_PER_SAMPLE);
             }
-
-            finalStream.close();
-            pcmStream.close();
-            sourceStream.close();
-
-            return new PCMAudio(out.toByteArray(), 8000, 1, 16);
         }
     }
 

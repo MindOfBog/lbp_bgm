@@ -88,12 +88,15 @@ public class FilePicker {
         JSON_EXTENSION = new FileNameExtensionFilter("JSON (*.json)", "json");
         AUDIO_EXTENSIONS = new FileNameExtensionFilter[]
                 {
-                        new FileNameExtensionFilter("All Audio Formats (*.wav, *.mp3, *.ogg, *.au, *.aiff)", "wav", "mp3", "ogg", "au", "aiff"),
+                        new FileNameExtensionFilter("All Supported Audio (*.wav, *.mp3, *.ogg, ...)",
+                                "wav", "mp3", "ogg", "flac", "m4a", "aac", "wma", "au", "aiff"),
                         new FileNameExtensionFilter("WAV (*.wav)", "wav"),
                         new FileNameExtensionFilter("MP3 (*.mp3)", "mp3"),
-                        new FileNameExtensionFilter("Vorbis (*.ogg)", "ogg"),
-                        new FileNameExtensionFilter("SUN/NEXT AUDIO (*.au)", "au"),
-                        new FileNameExtensionFilter("APPLE (*.aiff)", "aiff"),
+                        new FileNameExtensionFilter("Vorbis/Ogg (*.ogg)", "ogg"),
+                        new FileNameExtensionFilter("FLAC Lossless (*.flac)", "flac"),
+                        new FileNameExtensionFilter("AAC/M4A Apple (*.m4a, *.aac)", "m4a", "aac"),
+                        new FileNameExtensionFilter("WMA Windows (*.wma)", "wma"),
+                        new FileNameExtensionFilter("Legacy formats (*.au, *.aiff)", "au", "aiff")
                 };
     }
 

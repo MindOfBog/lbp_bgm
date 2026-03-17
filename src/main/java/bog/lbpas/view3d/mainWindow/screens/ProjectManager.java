@@ -1,12 +1,10 @@
 package bog.lbpas.view3d.mainWindow.screens;
 
 import bog.lbpas.view3d.core.Texture;
-import bog.lbpas.view3d.core.types.Entity;
 import bog.lbpas.view3d.mainWindow.ConstantTextures;
 import bog.lbpas.view3d.mainWindow.LoadedData;
 import bog.lbpas.view3d.mainWindow.View3D;
 import bog.lbpas.view3d.mainWindow.screens.thingPart.ThingPart;
-import bog.lbpas.view3d.managers.AudioMan;
 import bog.lbpas.view3d.managers.MouseInput;
 import bog.lbpas.view3d.renderer.gui.GuiScreen;
 import bog.lbpas.view3d.renderer.gui.elements.Button;
@@ -610,7 +608,7 @@ public class ProjectManager extends GuiScreen {
 
                                     try
                                     {
-                                        RVoip voip = new RVoip(Audio.PCMAudio.loadAndConvert(file));
+                                        RVoip voip = new RVoip(Audio.PCMAudio.loadAndConvertForSpeex(file));
                                         String name = file.getName();
                                         String newName = name.substring(0, name.lastIndexOf(".")) + ".vop";
 
