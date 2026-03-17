@@ -3,7 +3,8 @@ package cwlib.structs.profile;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 
-public class LegacyInventoryCollection implements Serializable {
+public class LegacyInventoryCollection implements Serializable
+{
     public static final int BASE_ALLOCATION_SIZE = 0x10;
 
     public InventoryView[] inventoryViews;
@@ -11,21 +12,20 @@ public class LegacyInventoryCollection implements Serializable {
     public int collectionID;
     public int actionOnItemSelect;
 
-    @SuppressWarnings("unchecked")
-    @Override public LegacyInventoryCollection serialize(Serializer serializer, Serializable structure) {
-        LegacyInventoryCollection collection = (structure == null) ? new LegacyInventoryCollection() : (LegacyInventoryCollection) structure;
+    @Override
+    public void serialize(Serializer serializer)
+    {
+        inventoryViews =
+            serializer.array(inventoryViews, InventoryView.class, true);
 
-        collection.inventoryViews = 
-            serializer.array(collection.inventoryViews, InventoryView.class, true);
-
-        collection.currentPageNumber = serializer.i32(collection.currentPageNumber);
-        collection.collectionID = serializer.i32(collection.collectionID);
-        collection.actionOnItemSelect = serializer.i32(collection.actionOnItemSelect);
-
-        return collection;
+        currentPageNumber = serializer.i32(currentPageNumber);
+        collectionID = serializer.i32(collectionID);
+        actionOnItemSelect = serializer.i32(actionOnItemSelect);
     }
 
-    @Override public int getAllocatedSize() {
+    @Override
+    public int getAllocatedSize()
+    {
         int size = LegacyInventoryCollection.BASE_ALLOCATION_SIZE;
         if (this.inventoryViews != null)
             for (InventoryView view : this.inventoryViews)

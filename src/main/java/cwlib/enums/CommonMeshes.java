@@ -2,7 +2,8 @@ package cwlib.enums;
 
 import cwlib.types.data.GUID;
 
-public final class CommonMeshes {
+public final class CommonMeshes
+{
     /**
      * GUID reference to the badge mesh used by level themes.
      */

@@ -891,14 +891,6 @@ public class Utils {
         return kernel;
     }
 
-    public static float[] toPrimitive(List<Float> floatList)
-    {
-        float[] array = new float[floatList.size()];
-        for(int i = 0; i < floatList.size(); i++)
-            array[i] = floatList.get(i);
-        return array;
-    }
-
     public static Vector3f getClosestPointOnLine(Vector3f linePosition, Vector3f lineDirection, Vector3f point) {
         Vector3f directionNormalized = new Vector3f(lineDirection).normalize();
         Vector3f lineToPoint = new Vector3f(point).sub(linePosition);

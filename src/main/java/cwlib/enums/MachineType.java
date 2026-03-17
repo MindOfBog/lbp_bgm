@@ -6,7 +6,8 @@ import cwlib.io.ValueEnum;
  * The underlying native "machine" types used
  * by the Fish scripting environment.
  */
-public enum MachineType implements ValueEnum<Integer> {
+public enum MachineType implements ValueEnum<Integer>
+{
     VOID(0x0),
     BOOL(0x1),
     CHAR(0x2),
@@ -29,7 +30,7 @@ public enum MachineType implements ValueEnum<Integer> {
      */
     RAW_PTR(0x8),
     REF_PTR(0x9),
-    
+
     /**
      * Often time, scripts that inherit from
      * Thing's will be of type safeptr.
@@ -46,15 +47,22 @@ public enum MachineType implements ValueEnum<Integer> {
     F64(0xd);
 
     private final int value;
-    MachineType(int value) {
+
+    MachineType(int value)
+    {
         this.value = value;
     }
 
-    public Integer getValue() { return this.value; }
+    public Integer getValue()
+    {
+        return this.value;
+    }
 
-    public static MachineType fromValue(int value) {
-        for (MachineType type : MachineType.values()) {
-            if (type.value == value) 
+    public static MachineType fromValue(int value)
+    {
+        for (MachineType type : MachineType.values())
+        {
+            if (type.value == value)
                 return type;
         }
         return null;

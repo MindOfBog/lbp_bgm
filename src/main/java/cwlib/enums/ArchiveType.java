@@ -1,6 +1,7 @@
 package cwlib.enums;
 
-public enum ArchiveType {
+public enum ArchiveType
+{
     FARC,
     SAVE
 }

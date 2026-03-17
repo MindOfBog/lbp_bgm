@@ -3,7 +3,8 @@ package cwlib.enums;
 /**
  * Variable types used in reflection.
  */
-public enum VariableType {
+public enum VariableType
+{
     NUL,
     S8,
     U8,

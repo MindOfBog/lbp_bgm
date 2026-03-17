@@ -16,104 +16,120 @@ import cwlib.io.serializer.Serializer;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 
-public class PMetadata implements Serializable {
+public class PMetadata implements Serializable
+{
     public static final int BASE_ALLOCATION_SIZE = 0x160;
 
-    @GsonRevision(branch=0, max=0x296)
-    @GsonRevision(branch=0x4c44, max=1)
-    @Deprecated public Value value = new Value();
+    @GsonRevision(branch = 0, max = 0x296)
+    @GsonRevision(branch = 0x4c44, max = 1)
+    @Deprecated
+    public Value value = new Value();
 
-    @GsonRevision(branch=0, max=0x2ba)
-    @GsonRevision(branch=0x4c44, max=0x7)
+    @GsonRevision(branch = 0, max = 0x2ba)
+    @GsonRevision(branch = 0x4c44, max = 0x7)
     public String nameTranslationTag, locationTag, categoryTag;
-    @GsonRevision(max=0x158) public String descTranslationTag;
-    
-    @GsonRevision(min=0x2bb)
-    @GsonRevision(branch=0x4c44, min=0x8)
+    @GsonRevision(max = 0x158)
+    public String descTranslationTag;
+
+    @GsonRevision(min = 0x2bb)
+    @GsonRevision(branch = 0x4c44, min = 0x8)
     public long titleKey, descriptionKey, location, category;
-    
-    @GsonRevision(min=0x195) public int primaryIndex;
+
+    @GsonRevision(min = 0x195)
+    public int primaryIndex;
     public int fluffCost;
     public EnumSet<InventoryObjectType> type = EnumSet.noneOf(InventoryObjectType.class);
     public int subType;
     public long creationDate;
-    
+
     public ResourceDescriptor icon;
     public PhotoMetadata photoMetadata;
-    
-    @GsonRevision(min=0x15f) public boolean referencable;
-    @GsonRevision(min=0x205) public boolean allowEmit;
-    
-    @SuppressWarnings("unchecked")
-    @Override public PMetadata serialize(Serializer serializer, Serializable structure) {
-        PMetadata metadata = (structure == null) ? new PMetadata() : (PMetadata) structure;
-        
+
+    @GsonRevision(min = 0x15f)
+    public boolean referencable;
+    @GsonRevision(min = 0x205)
+    public boolean allowEmit;
+
+    @Override
+    public void serialize(Serializer serializer)
+    {
         Revision revision = serializer.getRevision();
         int version = revision.getVersion();
 
-        boolean hasDepreciatedValue = (version < 0x297 && !revision.isLeerdammer()) || (revision.isLeerdammer() && !revision.has(Branch.LEERDAMMER, Revisions.LD_RESOURCES));
+        boolean hasDepreciatedValue =
+            (version < 0x297 && !revision.isLeerdammer()) || (revision.isLeerdammer() && !revision.has(Branch.LEERDAMMER, Revisions.LD_RESOURCES));
 
         if (hasDepreciatedValue)
-            metadata.value = serializer.struct(metadata.value, Value.class);
-        
-        if (revision.has(Branch.LEERDAMMER, Revisions.LD_LAMS_KEYS) || version > 0x2ba) {
-            metadata.titleKey = serializer.u32(metadata.titleKey);
-            metadata.descriptionKey = serializer.u32(metadata.descriptionKey);
-            metadata.location = serializer.u32(metadata.location);
-            metadata.category = serializer.u32(metadata.category);
-        } else {
-            metadata.nameTranslationTag = serializer.str(metadata.nameTranslationTag);
+            value = serializer.struct(value, Value.class);
+
+        if (revision.has(Branch.LEERDAMMER, Revisions.LD_LAMS_KEYS) || version > 0x2ba)
+        {
+            titleKey = serializer.u32(titleKey);
+            descriptionKey = serializer.u32(descriptionKey);
+            location = serializer.u32(location);
+            category = serializer.u32(category);
+        }
+        else
+        {
+            nameTranslationTag = serializer.str(nameTranslationTag);
             if (version < 0x159)
-                metadata.descTranslationTag = serializer.str(metadata.descTranslationTag);
+                descTranslationTag = serializer.str(descTranslationTag);
             else if (!serializer.isWriting())
-                metadata.descTranslationTag = metadata.nameTranslationTag + "_DESC";
-            
-            metadata.locationTag = serializer.str(metadata.locationTag);
-            metadata.categoryTag = serializer.str(metadata.categoryTag);
-            if (!serializer.isWriting()) {
-                if (version < 0x159) {
-                    metadata.titleKey =
-                        RTranslationTable.makeLamsKeyID(metadata.nameTranslationTag);
-                    metadata.descriptionKey =
-                        RTranslationTable.makeLamsKeyID(metadata.descTranslationTag);
-                } else {
-                    metadata.titleKey = RTranslationTable.makeLamsKeyID(metadata.nameTranslationTag + "_NAME");
-                    metadata.titleKey = RTranslationTable.makeLamsKeyID(metadata.nameTranslationTag + "_DESC");
+                descTranslationTag = nameTranslationTag + "_DESC";
+
+            locationTag = serializer.str(locationTag);
+            categoryTag = serializer.str(categoryTag);
+            if (!serializer.isWriting())
+            {
+                if (version < 0x159)
+                {
+                    titleKey =
+                        RTranslationTable.makeLamsKeyID(nameTranslationTag);
+                    descriptionKey =
+                        RTranslationTable.makeLamsKeyID(descTranslationTag);
                 }
-                
-                metadata.location 
-                        = RTranslationTable.makeLamsKeyID(metadata.locationTag);
-                metadata.category 
-                        = RTranslationTable.makeLamsKeyID(metadata.categoryTag);
+                else
+                {
+                    titleKey =
+                        RTranslationTable.makeLamsKeyID(nameTranslationTag + "_NAME");
+                    titleKey =
+                        RTranslationTable.makeLamsKeyID(nameTranslationTag + "_DESC");
+                }
+
+                location
+                    = RTranslationTable.makeLamsKeyID(locationTag);
+                category
+                    = RTranslationTable.makeLamsKeyID(categoryTag);
             }
         }
-        
+
         if (version >= 0x195)
-            metadata.primaryIndex = serializer.i32(metadata.primaryIndex);
-        metadata.fluffCost = serializer.i32(metadata.fluffCost);
+            primaryIndex = serializer.i32(primaryIndex);
+        fluffCost = serializer.i32(fluffCost);
 
         if (hasDepreciatedValue) serializer.i32(0); // unknown
-        
+
         if (serializer.isWriting())
-            serializer.getOutput().i32(InventoryObjectType.getFlags(metadata.type));
+            serializer.getOutput().i32(InventoryObjectType.getFlags(type));
         else
-            metadata.type = InventoryObjectType.fromFlags(serializer.getInput().i32(), serializer.getRevision());
-        
-        metadata.subType = serializer.i32(metadata.subType);
-        metadata.creationDate = serializer.u32(metadata.creationDate);
-        
-        metadata.icon = serializer.resource(metadata.icon, ResourceType.TEXTURE);
-        metadata.photoMetadata = serializer.reference(metadata.photoMetadata, PhotoMetadata.class);
-        
+            type = InventoryObjectType.fromFlags(serializer.getInput().i32(),
+                serializer.getRevision());
+
+        subType = serializer.i32(subType);
+        creationDate = serializer.u32(creationDate);
+
+        icon = serializer.resource(icon, ResourceType.TEXTURE);
+        photoMetadata = serializer.reference(photoMetadata, PhotoMetadata.class);
+
         if (version >= 0x15f)
-            metadata.referencable = serializer.bool(metadata.referencable);
+            referencable = serializer.bool(referencable);
         if (version >= 0x205)
-            metadata.allowEmit = serializer.bool(metadata.allowEmit);
-        
-        return metadata;
+            allowEmit = serializer.bool(allowEmit);
     }
 
-    @Override public int getAllocatedSize() {
+    @Override
+    public int getAllocatedSize()
+    {
         int size = BASE_ALLOCATION_SIZE;
         if (this.nameTranslationTag != null) size += this.nameTranslationTag.length();
         if (this.descTranslationTag != null) size += this.descTranslationTag.length();

@@ -4,18 +4,27 @@ import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.components.Decoration;
 
-public class PDecorations implements Serializable {
+public class PDecorations implements Serializable
+{
     public Decoration[] decorations;
-    
-    @SuppressWarnings("unchecked")
-    @Override public PDecorations serialize(Serializer serializer, Serializable structure) {
-        PDecorations decorations = (structure == null) ? new PDecorations() : (PDecorations) structure;
-        
-        decorations.decorations = serializer.array(decorations.decorations, Decoration.class);
-        
-        return decorations;
+
+    public PDecorations() { }
+
+    public PDecorations(Decoration decor)
+    {
+        this.decorations = new Decoration[] { decor };
+    }
+
+    @Override
+    public void serialize(Serializer serializer)
+    {
+        decorations = serializer.array(decorations, Decoration.class);
     }
 
     // TODO: Actually implement
-    @Override public int getAllocatedSize() { return 0; }
+    @Override
+    public int getAllocatedSize()
+    {
+        return 0;
+    }
 }

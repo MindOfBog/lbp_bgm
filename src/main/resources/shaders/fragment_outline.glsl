@@ -22,7 +22,7 @@ void main(){
         discard;
     }
 
-	out_Color = vec4(0.0);
+//	out_Color = texture(originalTexture, centerTexCoords);
 
     float avgAlpha = 0.0f;
 
@@ -33,13 +33,15 @@ void main(){
         if(vertical)
             coords = centerTexCoords + vec2(0.0, pixelSize * i);
         else
-            coords = centerTexCoords + vec2(pixelSize * i, 0.0);
+            coords = centerTexCoords + vec2(pixelSize * i, 0.0f);
 
         vec4 coordColor = texture(originalTexture, coords);
 
-        if(coordColor.a != 0.0f)
-            out_Color.a = 1.0f;
+        avgAlpha += coordColor.a;
     }
+
+    out_Color.a += out_Color.a = avgAlpha / float(radius * 2 + 1);
+    out_Color.a = smoothstep(0.0f, 0.5f, clamp(out_Color.a, 0.0f, 1.0f));
 
     out_Color.r = color.r;
     out_Color.g = color.g;

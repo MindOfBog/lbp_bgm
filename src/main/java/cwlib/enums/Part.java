@@ -9,7 +9,8 @@ import java.util.ArrayList;
 /**
  * Part related enumerations used for serialization.
  */
-public enum Part {
+public enum Part
+{
     BODY(0x0, PartHistory.BODY, PBody.class),
     JOINT(0x1, PartHistory.JOINT, PJoint.class),
     WORLD(0x2, PartHistory.WORLD, PWorld.class),
@@ -92,30 +93,46 @@ public enum Part {
 
     /**
      * Creates a part.
-     * @param index Index of this part
-     * @param version The minimum version required for this part to be serialized
+     *
+     * @param index        Index of this part
+     * @param version      The minimum version required for this part to be serialized
      * @param serializable The serializable class represented by this part
      */
-    Part(int index, int version, Class<?> serializable) {
+    Part(int index, int version, Class<?> serializable)
+    {
         this.index = index;
         this.version = version;
         this.serializable = serializable;
     }
 
-    public int getIndex() { return this.index; }
-    public int getVersion() { return this.version; }
-    public Class<?> getSerializable() { return this.serializable; }
+    public int getIndex()
+    {
+        return this.index;
+    }
+
+    public int getVersion()
+    {
+        return this.version;
+    }
+
+    public Class<?> getSerializable()
+    {
+        return this.serializable;
+    }
 
     /**
      * Prepares a name used when serializating
      * this part using reflection.
+     *
      * @return Field name
      */
-    public String getNameForReflection() {
+    public String getNameForReflection()
+    {
         String name = this.name().toLowerCase();
         String[] words = name.split("_");
 
-        for (int i = 0; i < words.length; ++i) {
+        for (int i = 0; i < words.length; ++i)
+        {
             String word = words[i];
             words[i] = Character.toUpperCase(word.charAt(0)) + word.substring(1);
         }
@@ -125,21 +142,24 @@ public enum Part {
         /* Switch is a reserved keyword */
         // if (name == "switch")
         //     name = "switchBase";
-        
+
         return name;
     }
 
     /**
      * Gets all the parts that can be serialized
      * by a set of flags.
-     * @param head Head revision of resource
-     * @param flags Flags determing what parts can be serialized by a Thing
+     *
+     * @param head    Head revision of resource
+     * @param flags   Flags determing what parts can be serialized by a Thing
      * @param version Parts revision
      * @return Parts
      */
-    public static Part[] fromFlags(int head, long flags, int version) {
+    public static Part[] fromFlags(int head, long flags, int version)
+    {
         ArrayList<Part> parts = new ArrayList<>(64);
-        for (Part part : Part.values()) {
+        for (Part part : Part.values())
+        {
             if (part.hasPart(head, flags, version))
                 parts.add(part);
         }
@@ -147,64 +167,74 @@ public enum Part {
     }
 
     /**
-     * Checks whether or not a thing testForMouse this part
-    * based on version and part flags.
-     * @param head Head revision of resource
-     * @param flags Flags determing what parts can be serialized by a Thing
+     * Checks whether or not a thing contains this part
+     * based on version and part flags.
+     *
+     * @param head    Head revision of resource
+     * @param flags   Flags determing what parts can be serialized by a Thing
      * @param version Version determing what parts existed at this point
-     * @return Whether or not a thing testForMouse this part
+     * @return Whether or not a thing contains this part
      */
-    public boolean hasPart(int head, long flags, int version) {
+    public boolean hasPart(int head, long flags, int version)
+    {
         if ((head & 0xFFFF) >= 0x13c && (this.index >= 0x36 && this.index <= 0x3c))
             return false;
         if ((head & 0xFFFF) >= 0x18c && this == Part.PARTICLE_EMITTER_2)
             return false;
         if ((head >> 0x10) >= 0x107 && this == Part.CREATOR_ANIM)
             return false;
-        
+
         int index = this.index;
-        if (version >= PartHistory.CREATOR_ANIM) {
+        if (version >= PartHistory.CREATOR_ANIM)
+        {
             if (this == Part.CREATOR_ANIM)
                 return ((1L << 0x29) & flags) != 0;
             if (((head >> 0x10) < 0x107) && index > 0x28) index++;
         }
-        
+
         return version >= this.version
-            && (((1L << index) & flags) != 0);
+               && (((1L << index) & flags) != 0);
     }
 
     /**
      * (De)serializes this part to a stream.
-     * @param <T> Type of part
-     * @param thing Thing that potentially testForMouse this part
-     * @param version Version determing what parts existed at this point
-     * @param flags Flags determing what parts can be serialized by this Thing
+     *
+     * @param <T>        Type of part
+     * @param thing      Thing that potentially contains this part
+     * @param version    Version determing what parts existed at this point
+     * @param flags      Flags determing what parts can be serialized by this Thing
      * @param serializer Instance of a serializer stream
      * @return Whether or not the operation succeeded
      */
     @SuppressWarnings("unchecked")
-    public <T extends Serializable> boolean serialize(Serializable[] parts, int version, long flags, Serializer serializer) {
+    public <T extends Serializable> boolean serialize(Serializable[] parts, int version,
+                                                      long flags, Serializer serializer)
+    {
         /* The Thing doesn't have this part, so it's "successful" */
         if (!this.hasPart(serializer.getRevision().getHead(), flags, version))
             return true;
 
         T part = (T) parts[this.index];
 
-        if (this.serializable == null) {
-            if (serializer.isWriting()) {
+        if (this.serializable == null)
+        {
+            if (serializer.isWriting())
+            {
                 if (part != null) return false;
-                else {
+                else
+                {
                     serializer.i32(0);
                     return true;
                 }
             }
-            else if (!serializer.isWriting()) {
+            else if (!serializer.isWriting())
+            {
                 return serializer.i32(0) == 0;
             }
             return false;
         }
 
-        parts[this.index] = serializer.reference(part, (Class<T>)this.serializable);
+        parts[this.index] = serializer.reference(part, (Class<T>) this.serializable);
 
         return true;
     }

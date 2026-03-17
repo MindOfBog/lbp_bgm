@@ -8,85 +8,97 @@ import cwlib.io.Serializable;
 import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 
-public class InputRecording implements Serializable {
+public class InputRecording implements Serializable
+{
     public static final int BASE_ALLOCATION_SIZE = 0x80;
 
     public byte[] inputBuffer;
     public int[] offsetBuffer;
     public int[] absoluteExpressionBuffer;
 
-    @GsonRevision(min=0x2de)
+    @GsonRevision(min = 0x2de)
     public Matrix4f startWorldTransform;
 
-    @GsonRevision(min=0x2de)
+    @GsonRevision(min = 0x2de)
     public Matrix4f[] startLocalSceneGraph;
 
-    @GsonRevision(min=0x2e0)
+    @GsonRevision(min = 0x2e0)
     public Vector3f startFootPos;
 
-    @GsonRevision(min=0x2e1)
+    @GsonRevision(min = 0x2e1)
     public Vector3f[] startVelocities;
 
-    @GsonRevision(min=0x3c5)
+    @GsonRevision(min = 0x3c5)
     public boolean recordingContainsMoveData;
 
-    @GsonRevision(branch=0x4c44, min=0x3a)
+    @GsonRevision(branch = 0x4c44, min = 0x3a)
     public boolean recordingContainsVitaData; // Vita, perhaps obviously
 
-    @SuppressWarnings("unchecked")
-    @Override public InputRecording serialize(Serializer serializer, Serializable structure) {
-        InputRecording recording = (structure == null) ? new InputRecording() : (InputRecording) structure;
-        
+    @Override
+    public void serialize(Serializer serializer)
+    {
         int version = serializer.getRevision().getVersion();
 
         if (version > 0x28f)
-            recording.inputBuffer = serializer.bytearray(recording.inputBuffer);
+            inputBuffer = serializer.bytearray(inputBuffer);
         if (version > 0x28f)
-            recording.offsetBuffer = serializer.intvector(recording.offsetBuffer);
+            offsetBuffer = serializer.intvector(offsetBuffer);
         if (version > 0x2a5)
-            recording.absoluteExpressionBuffer = serializer.intvector(recording.absoluteExpressionBuffer);
+            absoluteExpressionBuffer =
+                serializer.intvector(absoluteExpressionBuffer);
 
-        if (version > 0x2dd) {
-            recording.startWorldTransform = serializer.m44(recording.startWorldTransform);
-            if (!serializer.isWriting()) recording.startLocalSceneGraph = new Matrix4f[serializer.getInput().i32()];
-            else {
-                if (recording.startLocalSceneGraph == null)
-                    recording.startLocalSceneGraph = new Matrix4f[0];
-                serializer.getOutput().i32(recording.startLocalSceneGraph.length);
+        if (version > 0x2dd)
+        {
+            startWorldTransform = serializer.m44(startWorldTransform);
+            if (!serializer.isWriting())
+                startLocalSceneGraph = new Matrix4f[serializer.getInput().i32()];
+            else
+            {
+                if (startLocalSceneGraph == null)
+                    startLocalSceneGraph = new Matrix4f[0];
+                serializer.getOutput().i32(startLocalSceneGraph.length);
             }
-            for (int i = 0; i < recording.startLocalSceneGraph.length; ++i)
-                recording.startLocalSceneGraph[i] = serializer.m44(recording.startLocalSceneGraph[i]);
+            for (int i = 0; i < startLocalSceneGraph.length; ++i)
+                startLocalSceneGraph[i] =
+                    serializer.m44(startLocalSceneGraph[i]);
         }
 
         if (version > 0x2df)
-            recording.startFootPos = serializer.v3(recording.startFootPos);
-        
-        if (version > 0x2e0) {
-            if (!serializer.isWriting()) recording.startVelocities = new Vector3f[serializer.getInput().i32()];
-            else {
-                if (recording.startVelocities == null)
-                    recording.startVelocities = new Vector3f[0];
-                serializer.getOutput().i32(recording.startVelocities.length);
+            startFootPos = serializer.v3(startFootPos);
+
+        if (version > 0x2e0)
+        {
+            if (!serializer.isWriting())
+                startVelocities = new Vector3f[serializer.getInput().i32()];
+            else
+            {
+                if (startVelocities == null)
+                    startVelocities = new Vector3f[0];
+                serializer.getOutput().i32(startVelocities.length);
             }
-            for (int i = 0; i < recording.startVelocities.length; ++i)
-                recording.startVelocities[i] = serializer.v3(recording.startVelocities[i]);
+            for (int i = 0; i < startVelocities.length; ++i)
+                startVelocities[i] = serializer.v3(startVelocities[i]);
         }
 
         if (version > 0x3c4)
-            recording.recordingContainsMoveData = serializer.bool(recording.recordingContainsMoveData);
+            recordingContainsMoveData =
+                serializer.bool(recordingContainsMoveData);
 
         if (serializer.getRevision().has(Branch.DOUBLE11, 0x3a))
-            recording.recordingContainsVitaData = serializer.bool(recording.recordingContainsVitaData);
-        
-        return recording;
+            recordingContainsVitaData =
+                serializer.bool(recordingContainsVitaData);
     }
 
-    @Override public int getAllocatedSize() {
+    @Override
+    public int getAllocatedSize()
+    {
         int size = InputRecording.BASE_ALLOCATION_SIZE;
         if (this.inputBuffer != null) size += (this.inputBuffer.length);
         if (this.offsetBuffer != null) size += (this.offsetBuffer.length * 0x4);
-        if (this.absoluteExpressionBuffer != null) size += (this.absoluteExpressionBuffer.length * 0x4);
-        if (this.startLocalSceneGraph != null) size += (this.startLocalSceneGraph.length * 0x40);
+        if (this.absoluteExpressionBuffer != null)
+            size += (this.absoluteExpressionBuffer.length * 0x4);
+        if (this.startLocalSceneGraph != null)
+            size += (this.startLocalSceneGraph.length * 0x40);
         if (this.startVelocities != null) size += (this.startVelocities.length * 0x10);
         return size;
     }

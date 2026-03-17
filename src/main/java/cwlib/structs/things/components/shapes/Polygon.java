@@ -13,9 +13,10 @@ import cwlib.io.streams.MemoryOutputStream;
  * Collection of vertices that make up
  * a collision shape.
  */
-public class Polygon implements Serializable {
+public class Polygon implements Serializable
+{
     public static final int BASE_ALLOCATION_SIZE = 0x10;
-    
+
     /**
      * Vertices that make up this polygon.
      */
@@ -25,11 +26,11 @@ public class Polygon implements Serializable {
         new Vector3f(100, 100, 0),
         new Vector3f(100, -100, 0)
     };
-    
+
     /**
      * Whether or not this polygon needs the Z vertex.
      */
-    @GsonRevision(min=0x341)
+    @GsonRevision(min = 0x341)
     public boolean requiresZ = true;
 
     /**
@@ -38,64 +39,71 @@ public class Polygon implements Serializable {
      */
     public int[] loops = { 4 };
 
-    @SuppressWarnings("unchecked")
-    @Override public Polygon serialize(Serializer serializer, Serializable structure) {
-        Polygon polygon = (structure == null) ? new Polygon() : (Polygon) structure;
-
-        if (serializer.getRevision().getVersion() < 0x341) {
-            polygon.requiresZ = true;
-            if (serializer.isWriting()) {
-                if (polygon.vertices == null) 
+    @Override
+    public void serialize(Serializer serializer)
+    {
+        if (serializer.getRevision().getVersion() < 0x341)
+        {
+            requiresZ = true;
+            if (serializer.isWriting())
+            {
+                if (vertices == null)
                     serializer.getOutput().i32(0);
-                else serializer.i32(polygon.vertices.length);
-            } else polygon.vertices = new Vector3f[serializer.getInput().i32()];
-            if (polygon.vertices != null)
-                for (int i = 0; i < polygon.vertices.length; ++i)
-                    polygon.vertices[i] = serializer.v3(polygon.vertices[i]);
-            polygon.loops = serializer.intvector(polygon.loops);
-            return polygon;
+                else serializer.i32(vertices.length);
+            }
+            else vertices = new Vector3f[serializer.getInput().i32()];
+            if (vertices != null)
+                for (int i = 0; i < vertices.length; ++i)
+                    vertices[i] = serializer.v3(vertices[i]);
+            loops = serializer.intvector(loops);
+            return;
         }
 
-        if (serializer.isWriting()) {
+        if (serializer.isWriting())
+        {
             MemoryOutputStream stream = serializer.getOutput();
-            if (polygon.vertices != null && polygon.vertices.length != 0) {
-                stream.i32(polygon.vertices.length);
-                stream.bool(polygon.requiresZ);
-                if (polygon.requiresZ)
-                    for (Vector3f vertex : polygon.vertices)
+            if (vertices != null && vertices.length != 0)
+            {
+                stream.i32(vertices.length);
+                stream.bool(requiresZ);
+                if (requiresZ)
+                    for (Vector3f vertex : vertices)
                         stream.v3(vertex);
                 else
-                    for (Vector3f vertex : polygon.vertices)
+                    for (Vector3f vertex : vertices)
                         stream.v2(new Vector2f(vertex.x, vertex.y));
             }
-            else {
+            else
+            {
                 stream.i32(0);
                 stream.bool(false);
             }
-            polygon.loops = serializer.intvector(polygon.loops);
-            return polygon;
+            loops = serializer.intvector(loops);
+            return;
         }
 
         MemoryInputStream stream = serializer.getInput();
-        polygon.vertices = new Vector3f[stream.i32()];
-        polygon.requiresZ = stream.bool();
-        if (polygon.vertices.length != 0) {
-            for (int i = 0; i < polygon.vertices.length; ++i) {
+        vertices = new Vector3f[stream.i32()];
+        requiresZ = stream.bool();
+        if (vertices.length != 0)
+        {
+            for (int i = 0; i < vertices.length; ++i)
+            {
                 Vector3f vertex = null;
-                if (polygon.requiresZ)
+                if (requiresZ)
                     vertex = stream.v3();
-                else 
+                else
                     vertex = new Vector3f(stream.f32(), stream.f32(), 0.0f);
-                polygon.vertices[i] = vertex;
+                vertices[i] = vertex;
             }
         }
 
-        polygon.loops = serializer.intvector(polygon.loops);
-
-        return polygon;
+        loops = serializer.intvector(loops);
     }
 
-    @Override public int getAllocatedSize() {
+    @Override
+    public int getAllocatedSize()
+    {
         int size = BASE_ALLOCATION_SIZE;
         if (this.vertices != null)
             size += (this.vertices.length * 0xC);

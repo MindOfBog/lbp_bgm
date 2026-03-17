@@ -4,7 +4,8 @@ import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 
-public class PPocketItem implements Serializable {
+public class PPocketItem implements Serializable
+{
     public static final int BASE_ALLOCATION_SIZE = 0x50;
 
     public short flags;
@@ -12,12 +13,13 @@ public class PPocketItem implements Serializable {
     public float aimModifier;
     public int lifetime;
 
-    @SuppressWarnings("unchecked")
-    @Override public PPocketItem serialize(Serializer serializer, Serializable structure) {
-        PPocketItem item = (structure == null) ? new PPocketItem() : (PPocketItem) structure;
+    @Override
+    public void serialize(Serializer serializer)
+    {
         int subVersion = serializer.getRevision().getSubVersion();
 
-        if (subVersion < 0x15) {
+        if (subVersion < 0x15)
+        {
             serializer.str(null);
             serializer.u16(0);
         }
@@ -25,7 +27,7 @@ public class PPocketItem implements Serializable {
         if (subVersion >= 0x15 && subVersion < 0x14d)
             serializer.u16(0);
 
-        item.flags = serializer.i16(item.flags);
+        flags = serializer.i16(flags);
 
         if (subVersion >= 0x14 && subVersion < 0x60)
             serializer.resource(null, ResourceType.PLAN, true);
@@ -38,16 +40,18 @@ public class PPocketItem implements Serializable {
             serializer.u8(0);
 
         if (subVersion > 0x3d)
-            item.powerUpType = serializer.i8(item.powerUpType);
+            powerUpType = serializer.i8(powerUpType);
 
         if (subVersion > 0x3f)
-            item.aimModifier = serializer.f32(item.aimModifier);
+            aimModifier = serializer.f32(aimModifier);
 
         if (subVersion > 0x55)
-            item.lifetime = serializer.i32(item.lifetime);
-
-        return item;
+            lifetime = serializer.i32(lifetime);
     }
-    
-    @Override public int getAllocatedSize() { return PPocketItem.BASE_ALLOCATION_SIZE; }
+
+    @Override
+    public int getAllocatedSize()
+    {
+        return PPocketItem.BASE_ALLOCATION_SIZE;
+    }
 }

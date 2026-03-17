@@ -151,7 +151,6 @@ public class EntityRenderer implements IRenderer{
         thingShader.createUniform("viewMatrix");
         thingShader.createListUniform("bones", 100);
         thingShader.createUniform("hasBones");
-        thingShader.createUniform("triangleOffset");
 
         basicShader.createVertexShader(vertex);
         basicShader.createFragmentShader(shaderCode);
@@ -180,7 +179,6 @@ public class EntityRenderer implements IRenderer{
         basicShader.createUniform("viewMatrix");
         basicShader.createListUniform("bones", 100);
         basicShader.createUniform("hasBones");
-        basicShader.createUniform("triangleOffset");
 
         outlineFlatShader.createVertexShader(vertex);
         outlineFlatShader.createFragmentShader(
@@ -213,7 +211,6 @@ public class EntityRenderer implements IRenderer{
         outlineFlatShader.createUniform("viewMatrix");
         outlineFlatShader.createListUniform("bones", 100);
         outlineFlatShader.createUniform("hasBones");
-        outlineFlatShader.createUniform("triangleOffset");
 
         solidShader.createVertexShader(vertex);
         String solidShaderCode = Utils.loadResource("/shaders/fragment.glsl").replaceAll("//%&AMBIENTC",
@@ -264,7 +261,6 @@ public class EntityRenderer implements IRenderer{
         solidShader.createUniform("viewMatrix");
         solidShader.createListUniform("bones", 100);
         solidShader.createUniform("hasBones");
-        solidShader.createUniform("triangleOffset");
 
         normalShader.createVertexShader(vertex);
         String normalShaderCode = Utils.loadResource("/shaders/fragment.glsl").replaceAll("//%&AMBIENTC",
@@ -299,7 +295,6 @@ public class EntityRenderer implements IRenderer{
         normalShader.createUniform("viewMatrix");
         normalShader.createListUniform("bones", 100);
         normalShader.createUniform("hasBones");
-        normalShader.createUniform("triangleOffset");
 
         shaderMousePick.createVertexShader(Utils.loadResource("/shaders/vertex.glsl"));
         shaderMousePick.createFragmentShader(Utils.loadResource("/shaders/fragment_mouse.glsl"));
@@ -309,7 +304,6 @@ public class EntityRenderer implements IRenderer{
         shaderMousePick.createUniform("viewMatrix");
         shaderMousePick.createListUniform("bones", 100);
         shaderMousePick.createUniform("hasBones");
-        shaderMousePick.createUniform("triangleOffset");
         shaderMousePick.createUniform("arrayIndex");
 
         mouseBuffer = new FBO() {
@@ -464,7 +458,6 @@ public class EntityRenderer implements IRenderer{
                 tempShader.createUniform("viewMatrix");
                 tempShader.createListUniform("bones", 100);
                 tempShader.createUniform("hasBones");
-                tempShader.createUniform("triangleOffset");
 
                 actuallUpdateShader = false;
                 success = true;
@@ -766,8 +759,8 @@ public class EntityRenderer implements IRenderer{
                             }
                 }
 
-        lastShader.setUniform("fogNear", -1);
-        lastShader.setUniform("fogFar", -1);
+        lastShader.setUniform("fogNear", -1f);
+        lastShader.setUniform("fogFar", -1f);
 
         if(!(mainView.currentScreen instanceof ElementEditing))
             outline = false;

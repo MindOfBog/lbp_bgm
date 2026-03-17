@@ -5,7 +5,8 @@ import org.joml.Vector3f;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 
-public class QuestTracker implements Serializable { 
+public class QuestTracker implements Serializable
+{
     public static final int BASE_ALLOCATION_SIZE = 0x20;
 
     public Vector3f position;
@@ -14,31 +15,33 @@ public class QuestTracker implements Serializable {
     public int questKey;
     public int objectiveKey;
 
-    @SuppressWarnings("unchecked")
-    @Override public QuestTracker serialize(Serializer serializer, Serializable structure) {
-        QuestTracker tracker = (structure == null) ? new QuestTracker() : (QuestTracker) structure;
+    @Override
+    public void serialize(Serializer serializer)
+    {
         int subVersion = serializer.getRevision().getSubVersion();
 
-        if (subVersion > 0xeb) {
-            tracker.position = serializer.v3(tracker.position);
-            tracker.questID = serializer.struct(tracker.questID, StreamingID.class);
+        if (subVersion > 0xeb)
+        {
+            position = serializer.v3(position);
+            questID = serializer.struct(questID, StreamingID.class);
         }
 
         if (subVersion > 0xf3)
-            tracker.objectiveID = serializer.struct(tracker.questID, StreamingID.class);
+            objectiveID = serializer.struct(questID, StreamingID.class);
 
-        if (subVersion > 0x140) {
-            tracker.questKey = serializer.i32(tracker.questKey);
-            tracker.objectiveKey = serializer.i32(tracker.objectiveKey);
+        if (subVersion > 0x140)
+        {
+            questKey = serializer.i32(questKey);
+            objectiveKey = serializer.i32(objectiveKey);
         }
 
         // jenkins(?) hash of questID and objectiveID
         // for keys if revision too early
-
-        return tracker;
     }
 
-    @Override public int getAllocatedSize() {
+    @Override
+    public int getAllocatedSize()
+    {
         int size = QuestTracker.BASE_ALLOCATION_SIZE;
         if (this.questID != null)
             size += this.questID.getAllocatedSize();

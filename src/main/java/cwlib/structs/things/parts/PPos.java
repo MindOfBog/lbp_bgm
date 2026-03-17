@@ -1,58 +1,65 @@
 package cwlib.structs.things.parts;
 
+import com.google.gson.annotations.JsonAdapter;
+
 import cwlib.enums.Part;
 import cwlib.io.Serializable;
 import cwlib.io.gson.GsonRevision;
 import cwlib.io.gson.TranslationSerializer;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
+import cwlib.types.data.Revision;
 
 import org.joml.Matrix4f;
-import org.joml.Vector3f;
-
-import com.google.gson.annotations.JsonAdapter;
 
 /**
  * This part represents a Thing's
  * position in the world, as well
  * as information about a bone.
  */
-public class PPos implements Serializable {
+public class PPos implements Serializable
+{
     public static final int BASE_ALLOCATION_SIZE = 0x100;
 
     public Thing thingOfWhichIAmABone;
     public int animHash;
-    
-    @GsonRevision(max=0x340) 
+
+    @GsonRevision(max = 0x340)
     @JsonAdapter(TranslationSerializer.class)
-    public Matrix4f localPosition = new Matrix4f();
+    public Matrix4f localPosition = new Matrix4f().identity();
 
-    @JsonAdapter(TranslationSerializer.class) 
-    public Matrix4f worldPosition = new Matrix4f();
+    @JsonAdapter(TranslationSerializer.class)
+    public Matrix4f worldPosition = new Matrix4f().identity();
 
-    private transient Vector3f translation = new Vector3f();
-    private transient Vector3f rotation = new Vector3f();
-    private transient Vector3f scale = new Vector3f();
+    public PPos() { }
 
-    public PPos() {};
-    public PPos(Matrix4f wpos) { this(wpos, wpos); }
-    
-    public PPos(Thing root, int animHash) { 
+    public PPos(Matrix4f wpos)
+    {
+        this(wpos, wpos);
+    }
+
+    public PPos(Thing root, int animHash)
+    {
         this.thingOfWhichIAmABone = root;
         this.animHash = animHash;
     }
-    public PPos(Matrix4f wpos, Matrix4f pos) {
+
+    public PPos(Matrix4f wpos, Matrix4f pos)
+    {
         this.worldPosition = wpos;
         this.localPosition = pos;
     }
-    public PPos(Thing root, int animHash, Matrix4f wpos) {
+
+    public PPos(Thing root, int animHash, Matrix4f wpos)
+    {
         this.thingOfWhichIAmABone = root;
         this.animHash = animHash;
         this.worldPosition = wpos;
-        this.localPosition = wpos;
+        this.localPosition = new Matrix4f(wpos);
     }
 
-    public PPos(Thing root, int animHash, Matrix4f wpos, Matrix4f pos) {
+    public PPos(Thing root, int animHash, Matrix4f wpos, Matrix4f pos)
+    {
         this.thingOfWhichIAmABone = root;
         this.animHash = animHash;
         this.worldPosition = wpos;
@@ -69,41 +76,40 @@ public class PPos implements Serializable {
 
         PPos parent = thing.parent.getPart(Part.POS);
 
+        // This generally shouldn't happen, but make sure to check it anyway
         if (parent == null) return;
 
         Matrix4f inv = parent.worldPosition.invert(new Matrix4f());
         localPosition = inv.mul(worldPosition);
     }
+    
+    public void fixup(Thing thing, Revision revision)
+    {
+        // Local positions were removed, so we should re-calculate them
+        if (revision.getVersion() >= 0x341 || localPosition == null || (localPosition.properties() & Matrix4f.PROPERTY_IDENTITY) != 0)
+            recomputeLocalPos(thing);
+    }
 
-    public Matrix4f getWorldPosition() { return this.worldPosition; }
-    public Matrix4f getLocalPosition() { return this.localPosition; }
-
-    public Vector3f getTranslation() { return this.translation; }
-    public Vector3f getRotation() { return this.rotation; }
-    public Vector3f getScale() { return this.scale; }
-
-    @SuppressWarnings("unchecked")
-    @Override public PPos serialize(Serializer serializer, Serializable structure) {
-        PPos pos = (structure == null) ? new PPos() : (PPos) structure;
-        
+    @Override
+    public void serialize(Serializer serializer)
+    {
         int version = serializer.getRevision().getVersion();
-        
-        pos.thingOfWhichIAmABone = serializer.reference(pos.thingOfWhichIAmABone, Thing.class);
-        pos.animHash = serializer.i32(pos.animHash);
-        
-        if (version < 0x341)
-            pos.localPosition = serializer.m44(pos.localPosition);
-        pos.worldPosition = serializer.m44(pos.worldPosition);
 
-        if (pos.localPosition == null)
-            pos.localPosition = pos.worldPosition;
+        thingOfWhichIAmABone = serializer.reference(thingOfWhichIAmABone, Thing.class);
+        animHash = serializer.i32(animHash);
+
+        if (version < 0x341)
+            localPosition = serializer.m44(localPosition);
+        worldPosition = serializer.m44(worldPosition);
 
         // Unknown value, depreciated very early
         if (version < 0x155)
             serializer.i32(0);
-        
-        return pos;
     }
 
-    @Override public int getAllocatedSize() { return PPos.BASE_ALLOCATION_SIZE; }
+    @Override
+    public int getAllocatedSize()
+    {
+        return PPos.BASE_ALLOCATION_SIZE;
+    }
 }

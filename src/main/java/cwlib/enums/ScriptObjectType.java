@@ -2,7 +2,8 @@ package cwlib.enums;
 
 import cwlib.io.ValueEnum;
 
-public enum ScriptObjectType implements ValueEnum<Integer> {
+public enum ScriptObjectType implements ValueEnum<Integer>
+{
     NULL(0),
     ARRAY_BOOL(1),
     ARRAY_CHAR(2),
@@ -24,17 +25,24 @@ public enum ScriptObjectType implements ValueEnum<Integer> {
     EXPOSED_COLLECTBUBBLE(18),
     ARRAY_S64(19),
     ARRAY_F64(20);
-    
+
     private final int value;
-    ScriptObjectType(int value) {
+
+    ScriptObjectType(int value)
+    {
         this.value = value;
     }
 
-    public Integer getValue() { return this.value; }
+    public Integer getValue()
+    {
+        return this.value;
+    }
 
-    public static ScriptObjectType fromValue(int value) {
-        for (ScriptObjectType type : ScriptObjectType.values()) {
-            if (type.value == value) 
+    public static ScriptObjectType fromValue(int value)
+    {
+        for (ScriptObjectType type : ScriptObjectType.values())
+        {
+            if (type.value == value)
                 return type;
         }
         return null;

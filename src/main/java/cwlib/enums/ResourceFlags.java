@@ -5,7 +5,8 @@ package cwlib.enums;
  * generally they aren't used often, if at all in serialization,
  * but they're still stored anyway.
  */
-public final class ResourceFlags {
+public final class ResourceFlags
+{
     public static final int NONE = 0x0;
     public static final int REF_COUNT_DIRTY = 0x2;
     public static final int CONTAINS_EYETOY = 0x80;

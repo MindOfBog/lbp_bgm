@@ -11,12 +11,11 @@ import cwlib.resources.*;
 import cwlib.structs.bevel.BevelVertex;
 import cwlib.structs.gmat.MaterialBox;
 import cwlib.structs.texture.CellGcmTexture;
-import cwlib.types.Resource;
+import cwlib.types.SerializedResource;
 import cwlib.types.archives.Fat;
 import cwlib.types.archives.FileArchive;
 import cwlib.types.data.GUID;
 import cwlib.types.data.ResourceDescriptor;
-import cwlib.types.data.Revision;
 import cwlib.types.data.SHA1;
 import cwlib.types.databases.FileDB;
 import cwlib.types.databases.FileDBRow;
@@ -53,6 +52,8 @@ public class LoadedData {
     public static ArrayList<ResourceDescriptor> digestedEntriesDescriptors;
     public static HashMap<Long, FileEntry> digestedEntriesGUID;
     public static HashMap<String, FileEntry> digestedEntriesSHA1;
+    public static HashMap<String, FileEntry> digestedEntriesFileName;
+    public static HashMap<String, ResourceDescriptor> digestedDescriptorsFileName;
 
     public static HashMap<ResourceDescriptor, Model> loadedModels;
     public static HashMap<ResourceDescriptor, ArrayList<Model>> loadedStaticModels;
@@ -70,10 +71,9 @@ public class LoadedData {
     public static void init(View3D view)
     {
         if(PROJECT_DATA == null)
-            PROJECT_DATA = new Mod(new Revision(
-                    Branch.MIZUKI.getHead(),
-                    Branch.MIZUKI.getID(),
-                    Branch.MIZUKI.getRevision()));
+        {
+            PROJECT_DATA = new Mod();//todo
+        }
         mainView = view;
         loadedModels = new HashMap<>();
         loadedStaticModels = new HashMap<>();
@@ -88,6 +88,8 @@ public class LoadedData {
         digestedEntriesDescriptors = new ArrayList<>();
         digestedEntriesGUID = new HashMap<>();
         digestedEntriesSHA1 = new HashMap<>();
+        digestedEntriesFileName = new HashMap<>();
+        digestedDescriptorsFileName = new HashMap<>();
 
         slotLists = new ArrayList<>();
         packs = new ArrayList<>();
@@ -169,7 +171,7 @@ public class LoadedData {
             return null;
         }
         RMesh mesh = null;
-        try { mesh = new Resource(data).loadResource(RMesh.class); }
+        try { mesh = new SerializedResource(data).loadResource(RMesh.class); }
         catch (Exception e) { print.stackTrace(e); }
 
         return mesh;
@@ -191,7 +193,7 @@ public class LoadedData {
             return null;
         }
         RStaticMesh mesh = null;
-        try {mesh = new RStaticMesh(new Resource(data));}
+        try {mesh = new RStaticMesh(new SerializedResource(data));}
         catch (Exception e) { print.stackTrace(e); }
 
         return mesh;
@@ -213,7 +215,7 @@ public class LoadedData {
             return null;
         }
         RPlan mesh = null;
-        try { mesh = new Resource(data).loadResource(RPlan.class); }
+        try { mesh = new SerializedResource(data).loadResource(RPlan.class); }
         catch (Exception e) { print.stackTrace(e); }
 
         return mesh;
@@ -235,7 +237,7 @@ public class LoadedData {
             return null;
         }
         RLevel mesh = null;
-        try { mesh = new Resource(data).loadResource(RLevel.class); }
+        try { mesh = new SerializedResource(data).loadResource(RLevel.class); }
         catch (Exception e) { print.stackTrace(e); }
 
         return mesh;
@@ -257,7 +259,7 @@ public class LoadedData {
             return null;
         }
         RGfxMaterial material = null;
-        try { material = new Resource(data).loadResource(RGfxMaterial.class); }
+        try { material = new SerializedResource(data).loadResource(RGfxMaterial.class); }
         catch (Exception e) { print.stackTrace(e); }
 
         return material;
@@ -276,7 +278,7 @@ public class LoadedData {
             return defaultBevel;
 
         RBevel RBevel = null;
-        try { RBevel = new Resource(data).loadResource(RBevel.class); }
+        try { RBevel = new SerializedResource(data).loadResource(RBevel.class); }
         catch (Exception e) { print.stackTrace(e); }
 
         return RBevel;
@@ -299,7 +301,7 @@ public class LoadedData {
         }
         BufferedImage texture = null;
         try {
-            RTexture resource = new RTexture(new Resource(data));
+            RTexture resource = new RTexture(new SerializedResource(data));
             texture = resource.getImage();
         }
         catch (Exception e) { print.stackTrace(e); }
@@ -406,6 +408,7 @@ public class LoadedData {
             for(BigSave bigfart : BIGFARTs)
                 for(SaveEntry ent : bigfart.entries)
                 {
+                    ent.archive = bigfart.archive;
                     ResourceDescriptor descriptor = new ResourceDescriptor(ent, bigfart);
 
                     if(!digestedEntriesSHA1s.contains(descriptor.getSHA1().toString()))
@@ -417,11 +420,11 @@ public class LoadedData {
 
                         if(descriptor.getType() == ResourceType.SLOT_LIST)
                             try{
-                                slotLists.add(new Resource(bigfart.extract(descriptor.getSHA1())).loadResource(RSlotList.class));
+                                slotLists.add(new SerializedResource(bigfart.extract(descriptor.getSHA1())).loadResource(RSlotList.class));
                             }catch (Exception e){}
                         if(descriptor.getType() == ResourceType.PACKS)
                             try{
-                                packs.add(new Resource(bigfart.extract(descriptor.getSHA1())).loadResource(RPacks.class));
+                                packs.add(new SerializedResource(bigfart.extract(descriptor.getSHA1())).loadResource(RPacks.class));
                             }catch (Exception e){}
                     }
 
@@ -447,14 +450,16 @@ public class LoadedData {
                                 digestedEntriesDescriptors.add(descriptor);
                                 digestedEntriesSHA1.put(descriptor.getSHA1().toString(), entry);
                                 digestedEntriesGUID.put(descriptor.getGUID().getValue(), entry);
+                                digestedEntriesFileName.put(entry.getName(), entry);
+                                digestedDescriptorsFileName.put(entry.getName(), descriptor);
 
                                 if(descriptor.getType() == ResourceType.SLOT_LIST)
                                     try{
-                                        slotLists.add(new Resource(farc.extract(descriptor.getSHA1())).loadResource(RSlotList.class));
+                                        slotLists.add(new SerializedResource(farc.extract(descriptor.getSHA1())).loadResource(RSlotList.class));
                                     }catch (Exception e){}
                                 if(descriptor.getType() == ResourceType.PACKS)
                                     try{
-                                        packs.add(new Resource(farc.extract(descriptor.getSHA1())).loadResource(RPacks.class));
+                                        packs.add(new SerializedResource(farc.extract(descriptor.getSHA1())).loadResource(RPacks.class));
                                     }catch (Exception e){}
                             }
                         }
@@ -471,16 +476,22 @@ public class LoadedData {
                                 digestedEntriesDescriptors.add(descriptor);
                                 digestedEntriesSHA1.put(descriptor.getSHA1().toString(), entry);
                                 digestedEntriesGUID.put(descriptor.getGUID().getValue(), entry);
+                                digestedEntriesFileName.put(entry.getName(), entry);
+                                digestedDescriptorsFileName.put(entry.getName(), descriptor);
 
                                 if(descriptor.getType() == ResourceType.SLOT_LIST)
                                     try{
                                         byte[] data = farc.extract(descriptor.getSHA1());
-                                        RSlotList slotList = new Resource(data).loadResource(RSlotList.class);
-                                        slotLists.add(slotList);
+
+                                        if(data != null)
+                                        {
+                                            RSlotList slotList = new SerializedResource(data).loadResource(RSlotList.class);
+                                            slotLists.add(slotList);
+                                        }
                                     }catch (Exception e){print.stackTrace(e);}
                                 if(descriptor.getType() == ResourceType.PACKS)
                                     try{
-                                        packs.add(new Resource(farc.extract(descriptor.getSHA1())).loadResource(RPacks.class));
+                                        packs.add(new SerializedResource(farc.extract(descriptor.getSHA1())).loadResource(RPacks.class));
                                     }catch (Exception e){}
                             }
                         }
@@ -502,14 +513,16 @@ public class LoadedData {
                 digestedEntriesDescriptors.add(descriptor);
                 digestedEntriesSHA1.put(descriptor.getSHA1().toString(), entry);
                 digestedEntriesGUID.put(descriptor.getGUID().getValue(), entry);
+                digestedEntriesFileName.put(entry.getName(), entry);
+                digestedDescriptorsFileName.put(entry.getName(), descriptor);
 
                 if(descriptor.getType() == ResourceType.SLOT_LIST)
                     try{
-                        slotLists.add(new Resource(LoadedData.PROJECT_DATA.extract(descriptor.getSHA1())).loadResource(RSlotList.class));
+                        slotLists.add(new SerializedResource(LoadedData.PROJECT_DATA.extract(descriptor.getSHA1())).loadResource(RSlotList.class));
                     }catch (Exception e){}
                 if(descriptor.getType() == ResourceType.PACKS)
                     try{
-                        packs.add(new Resource(LoadedData.PROJECT_DATA.extract(descriptor.getSHA1())).loadResource(RPacks.class));
+                        packs.add(new SerializedResource(LoadedData.PROJECT_DATA.extract(descriptor.getSHA1())).loadResource(RPacks.class));
                     }catch (Exception e){}
             }
         }
@@ -543,6 +556,16 @@ public class LoadedData {
         return digestedEntriesGUID.get(guid.getValue());
 //        ResourceDescriptor descriptor = digestedEntriesDescriptors.stream().filter(ResourceDescriptor -> ResourceDescriptor.getGUID().equals(guid)).findFirst().get();
 //        return digestedEntries.get(digestedEntriesDescriptors.indexOf(descriptor));
+    }
+
+    public static FileEntry getDigestedEntry(String fileName)
+    {
+        return digestedEntriesFileName.get(fileName);
+    }
+
+    public static ResourceDescriptor getDigestedResourceDescriptor(String fileName)
+    {
+        return digestedDescriptorsFileName.get(fileName);
     }
 
     public static boolean shouldUpdateShader = false;
@@ -802,7 +825,7 @@ public class LoadedData {
                     }
                     else
                         try {
-                            RTexture resource = new RTexture(new Resource(data));
+                            RTexture resource = new RTexture(new SerializedResource(data));
                             CellGcmTexture t = resource.getInfo();
                             if(t != null)
                                 isBump = t.isBumpTexture();

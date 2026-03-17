@@ -24,6 +24,7 @@ import java.awt.datatransfer.StringSelection;
  */
 public class Textbox extends Element{
 
+    private String prevText = "";
     public String text = "";
     boolean numbers = true;
     boolean letters = true;
@@ -149,6 +150,14 @@ public class Textbox extends Element{
         }
         renderer.drawRectOutline(new Vector2f(Math.round(pos.x), Math.round(pos.y)), outlineRect, isMouseOverElement(mouseInput) && !overOther || this.isFocused() ? Config.INTERFACE_SECONDARY_COLOR2 : Config.INTERFACE_PRIMARY_COLOR2, false);
         renderer.endScissor();
+
+        if(!prevText.equals(text))
+        {
+            if(onTextChanged(text))
+                prevText = text;
+            else
+                text = prevText;
+        }
     }
 
     @Override
@@ -500,6 +509,14 @@ public class Textbox extends Element{
                 text = number % 1 == 0 ? Integer.toString((int) min) : Float.toString(min);
         }
 
+        if(!prevText.equals(text))
+        {
+            if(onTextChanged(text))
+                prevText = text;
+            else
+                text = prevText;
+        }
+
         super.onKey(key, scancode, action, mods);
     }
 
@@ -571,6 +588,15 @@ public class Textbox extends Element{
             if (!bool)
                 currentSelection = text.length();
         }
+
+        if(!prevText.equals(text))
+        {
+            if(onTextChanged(text))
+                prevText = text;
+            else
+                text = prevText;
+        }
+
         super.onChar(codePoint, modifiers);
     }
 
@@ -726,7 +752,7 @@ public class Textbox extends Element{
         return null;
     }
 
-    int getCursorPos(MouseInput mouseInput)
+    protected int getCursorPos(MouseInput mouseInput)
     {
         Vector2d pos = mouseInput.currentPos;
         float xScroll = getXScroll(mouseInput);
@@ -790,5 +816,10 @@ public class Textbox extends Element{
             if(selectedText[0] == -1)
                 selectedText[0] = currentSelection;
         }
+    }
+
+    public boolean onTextChanged(String text)
+    {
+        return true;
     }
 }

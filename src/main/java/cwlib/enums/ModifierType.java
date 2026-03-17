@@ -5,7 +5,8 @@ import java.util.EnumSet;
 /**
  * All possible modifiers for functions, fields, etc in a script.
  */
-public enum ModifierType {
+public enum ModifierType
+{
     STATIC(0x0),
     NATIVE(0x1),
     EPHEMERAL(0x2),
@@ -22,11 +23,19 @@ public enum ModifierType {
     EXPORT(0xd);
 
     private final int value;
-    ModifierType(int value) { this.value = value; }
 
-    public int getValue() { return this.value; }
+    ModifierType(int value)
+    {
+        this.value = value;
+    }
 
-    public static short getFlags(EnumSet<ModifierType> set) {
+    public int getValue()
+    {
+        return this.value;
+    }
+
+    public static short getFlags(EnumSet<ModifierType> set)
+    {
         short flags = 0;
         if (set == null) return flags;
         for (ModifierType type : set)
@@ -34,7 +43,8 @@ public enum ModifierType {
         return flags;
     }
 
-    public static EnumSet<ModifierType> fromValue(int value) {
+    public static EnumSet<ModifierType> fromValue(int value)
+    {
         EnumSet<ModifierType> bitset = EnumSet.noneOf(ModifierType.class);
         for (ModifierType type : ModifierType.values())
             if ((value & (1 << type.value)) != 0)
@@ -42,10 +52,11 @@ public enum ModifierType {
         return bitset;
     }
 
-    public static String toModifierString(EnumSet<ModifierType> set) {
+    public static String toModifierString(EnumSet<ModifierType> set)
+    {
         String[] modifiers = new String[set.size()];
         int i = 0;
-        for (ModifierType type : set) 
+        for (ModifierType type : set)
             modifiers[i++] = type.toString().toLowerCase();
         return String.join(" ", modifiers);
     }

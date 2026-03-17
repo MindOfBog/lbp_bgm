@@ -1,10 +1,12 @@
 package bog.lbpas.view3d.mainWindow.screens;
 
 import bog.lbpas.view3d.core.Texture;
+import bog.lbpas.view3d.core.types.Entity;
 import bog.lbpas.view3d.mainWindow.ConstantTextures;
 import bog.lbpas.view3d.mainWindow.LoadedData;
 import bog.lbpas.view3d.mainWindow.View3D;
 import bog.lbpas.view3d.mainWindow.screens.thingPart.ThingPart;
+import bog.lbpas.view3d.managers.AudioMan;
 import bog.lbpas.view3d.managers.MouseInput;
 import bog.lbpas.view3d.renderer.gui.GuiScreen;
 import bog.lbpas.view3d.renderer.gui.elements.Button;
@@ -19,6 +21,7 @@ import cwlib.enums.*;
 import cwlib.io.serializer.SerializationData;
 import cwlib.resources.RLevel;
 import cwlib.resources.RPlan;
+import cwlib.resources.RVoip;
 import cwlib.structs.inventory.CreationHistory;
 import cwlib.structs.inventory.InventoryItemDetails;
 import cwlib.structs.inventory.UserCreatedDetails;
@@ -28,7 +31,7 @@ import cwlib.structs.things.components.script.InstanceLayout;
 import cwlib.structs.things.components.script.ScriptInstance;
 import cwlib.structs.things.components.script.ScriptObject;
 import cwlib.structs.things.parts.*;
-import cwlib.types.Resource;
+import cwlib.types.SerializedResource;
 import cwlib.types.archives.FileArchive;
 import cwlib.types.data.*;
 import cwlib.types.databases.FileDB;
@@ -37,12 +40,11 @@ import cwlib.types.save.BigSave;
 import cwlib.util.Colors;
 import cwlib.util.GsonUtils;
 import cwlib.util.Images;
+import cwlib.util.Audio;
 import gr.zdimensions.jsquish.Squish;
 import org.joml.*;
 import org.lwjgl.glfw.GLFW;
-import toolkit.utilities.FileChooser;
 
-import javax.activation.DataHandler;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
@@ -53,12 +55,12 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.lang.Math;
 import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -160,6 +162,8 @@ public class ProjectManager extends GuiScreen {
     Button customRevisionBinExport;
     public Checkbox selectionOnlyExportBin;
 
+    public ComboBox smhExport;
+
     Thing worldThing;
     ArrayList<bog.lbpas.view3d.core.types.Thing> worldThingA;
     ThingPart thingPart;
@@ -187,7 +191,7 @@ public class ProjectManager extends GuiScreen {
         typePlan = new ArrayList<>();
         creatorHistoryListPlan = new ArrayList<>();
 
-        project = new DropDownTab("project", "Project", new Vector2f(10, getFontHeightHeader() + 7 + 7), new Vector2f(350f * (getFontHeight() / 12f), getFontHeight() + 4), mainView.renderer, mainView.loader, mainView.window);
+        project = new DropDownTab("project", "Project", new Vector2f(10, getFontHeightHeader() + 7 + 7), new Vector2f(350f * (getFontHeight() / 12f), getFontHeightHeader() + 7), mainView.renderer, mainView.loader, mainView.window);
 
         projectFileTree = project.addElementList("projectFileTree", (int) (270f * (getFontHeight() / 12f)));
 
@@ -419,7 +423,6 @@ public class ProjectManager extends GuiScreen {
                 String path = getPath(treeFolder);
                 FileDBRow row = LoadedData.PROJECT_DATA.add(((path == null || path.isEmpty() || path.isBlank()) ? "" : path + "/") + name, bytes);
                 FileTree.TreeItem newItem = treeFolder.addItem(String.valueOf(treeFolder.children.size()), row, name, this.itemHeight());
-
             }
 
             @Override
@@ -434,9 +437,91 @@ public class ProjectManager extends GuiScreen {
             }
 
             @Override
-            public void addOptionsItem(ComboBox comboBox, TreeItem treeItem) {
-                comboBox.addComboBox("mod", "Modify", 10);
-                comboBox.addSeparator("sep");
+            public void addOptionsItem(ComboBox comboBox, TreeItem treeItem) {//todo
+                if(treeItem.item instanceof FileDBRow)
+                {
+                    FileDBRow row = (FileDBRow) treeItem.item;
+                    ResourceType type = ResourceType.fromExtension(row.getName());
+
+                    Panel guidPanel = comboBox.addPanel("guidPanel");
+                    guidPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("guidLabel", "GUID:", renderer), 0.4f));
+
+                    Textbox guidTextbox = new Textbox("guidTextbox", new Vector2f(), new Vector2f(), renderer, loader, window)
+                    {
+                        @Override
+                        public void secondThread() {
+                            super.secondThread();
+
+                            if(!this.isFocused() && (this.text.isEmpty() || this.text.isBlank()))
+                            {
+                                row.setGUID(row.getFileDB().getNextGUID());
+                                this.setText(row.getGUID().toString());
+                            }
+                        }
+
+                        @Override
+                        public boolean onTextChanged(String text) {
+                            if(text != null && !text.matches("^[g0-9].*") && !(text.isEmpty() || text.isBlank()))
+                                return false;
+
+                            long guid = 0;
+                            String g = text.startsWith("g") ? text.substring(1) : text;
+
+                            if(g.isEmpty() || g.isBlank())
+                                return false;
+
+                            try
+                            {
+                                row.setGUID(Long.parseLong(g));
+                                return true;
+                            }catch (Exception e) {print.stackTrace(e);}
+
+                            return false;
+                        }
+                    };
+                    guidTextbox.setText(row.getGUID().toString());
+                    guidPanel.elements.add(new Panel.PanelElement(guidTextbox, 0.6f));
+
+                    switch (type)
+                    {
+                        case VOIP_RECORDING:
+                            AudioPlayer vopPlayer = comboBox.addAudioPlayer(new AudioPlayer() {
+                                @Override
+                                public Audio.PCMAudio audio() {
+                                    RVoip vop = new SerializedResource(LoadedData.PROJECT_DATA.extract(row.getSHA1())).loadResource(RVoip.class);
+                                    return vop.getDecodedPCM();
+                                }
+                            });
+
+                            treeItem.onDeleteActions.add(() -> vopPlayer.cleanup());
+
+                            comboBox.addButton("export", "Export", new Button() {
+                                @Override
+                                public void clickedButton(int button, int action, int mods) {
+
+                                }
+                            });
+//                            comboBox.addComboBox("export", "Export", 10);
+
+                            break;
+                    }
+
+                    comboBox.addSeparator("sep").size.y = 5;
+
+                    comboBox.addButton("extract", "Extract", new Button() {
+                        @Override
+                        public void clickedButton(int button, int action, int mods) {
+                            FilePicker.extractItem(row);
+                        }
+                    });
+                }
+                else
+                {
+                    comboBox.addString("unknownFile", "Unknown/Invalid entry");
+
+                    comboBox.addSeparator("sep").size.y = 5;
+                }
+
                 super.addOptionsItem(comboBox, treeItem);
             }
 
@@ -465,7 +550,85 @@ public class ProjectManager extends GuiScreen {
                     }
                 });
 
-                comboBox.addSeparator("sep");
+                comboBox.addSeparator("sep").size.y = 5;
+                super.addOptionsFolder(comboBox, folder);
+            }
+
+            @Override
+            public void addOptionsRoot(ComboBox comboBox, TreeFolder folder) {
+                comboBox.addButton("load", "Load Asset(s)", new Button() {
+                    @Override
+                    public void clickedButton(int button, int action, int mods) {
+                        if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
+                        {
+                            String path = getPath(folder);
+                            FilePicker.loadProjectAssets(((path == null || path.isEmpty() || path.isBlank()) ? "" : path + "/"), folder);
+                        }
+                    }
+                });
+                comboBox.addButton("otherMod", "Load Asset(s) from Mod", new Button() {
+                    @Override
+                    public void clickedButton(int button, int action, int mods) {
+                        if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
+                        {
+                            FilePicker.loadProjectAssetsFromMod(folder);
+                        }
+                    }
+                });
+                comboBox.comboElements.add(buildScene);
+                ComboBox importCombo = comboBox.addComboBox("import", "Import", 200);
+
+                importCombo.comboElements.add(importTextures);
+
+                importCombo.addButton("model", "Model", new Button() {
+                    @Override
+                    public void clickedButton(int button, int action, int mods) {
+                        if(action == GLFW.GLFW_RELEASE)
+                            mainView.pushWarning("Trolled", "we not there yet twin...\nI'm lazy");
+                    }
+                });
+
+                importCombo.addButton("voip", "Voip audio", new Button() {
+                    @Override
+                    public void clickedButton(int button, int action, int mods) {
+                        if(action == GLFW.GLFW_RELEASE)
+                        {
+                            TreeItem selectedItem = modFileTree.getSelectedItem();
+
+                            CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+                                File[] files = null;
+                                try {
+                                    files = FilePicker.openFiles(FilePicker.AUDIO_EXTENSIONS, false, true);
+                                } catch (Exception e) {}
+
+                                if (files == null) return;
+
+                                for(File file : files)
+                                {
+                                    if(!file.exists())
+                                        continue;
+
+                                    try
+                                    {
+                                        RVoip voip = new RVoip(Audio.PCMAudio.loadAndConvert(file));
+                                        String name = file.getName();
+                                        String newName = name.substring(0, name.lastIndexOf(".")) + ".vop";
+
+                                        byte[] data = SerializedResource.compress(voip.build(new Revision(Revisions.ARCADE), CompressionFlags.USE_NO_COMPRESSION));
+
+                                        FileDBRow row = LoadedData.PROJECT_DATA.add(modFileTree.getPath(selectedItem) + "/" + newName, data);
+                                        renderer.runInOglContext(() -> ((FileTree.TreeFolder)selectedItem).addItem(String.valueOf(((FileTree.TreeFolder)selectedItem).children.size()), row, newName, selectedItem.size.y));
+                                    }catch (Exception e)
+                                    {
+                                        print.stackTrace(e);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+
+                comboBox.addSeparator("sep").size.y = 5;
                 super.addOptionsFolder(comboBox, folder);
             }
 
@@ -509,6 +672,8 @@ public class ProjectManager extends GuiScreen {
                         return ConstantTextures.getTexture(ConstantTextures.FILE_SOFTBODY, s, s, loader);
                     case "tex":
                         return ConstantTextures.getTexture(ConstantTextures.FILE_TEXTURE, s, s, loader);
+                    case "vop":
+                        return ConstantTextures.getTexture(ConstantTextures.FILE_AUDIO, s, s, loader);
                 }
 
                 return ConstantTextures.getTexture(ConstantTextures.FILE_UNKNOWN, s, s, loader);
@@ -751,13 +916,13 @@ public class ProjectManager extends GuiScreen {
 
                     jsonFile.add("project", project);
 
-                    byte[] sceneBuilderPlan = Resource.compress(buildPlan(new Revision(Branch.MIZUKI.getHead(), Branch.MIZUKI.getID(), Branch.MIZUKI.getRevision()), false).build());
-                    byte[] sceneBuilderBin = Resource.compress(buildBin(new Revision(Branch.MIZUKI.getHead(), Branch.MIZUKI.getID(), Branch.MIZUKI.getRevision()), false));
+                    byte[] sceneBuilderPlan = SerializedResource.compress(buildPlan(new Revision(Branch.MIZUKI.getHead(), Branch.MIZUKI.getID(), Branch.MIZUKI.getRevision()), false).build());
+                    byte[] sceneBuilderBin = SerializedResource.compress(buildBin(new Revision(Branch.MIZUKI.getHead(), Branch.MIZUKI.getID(), Branch.MIZUKI.getRevision()), false));
                     byte[] dataMap = LoadedData.PROJECT_DATA.build();
                     byte[] dataFarc = LoadedData.PROJECT_DATA.archive.build(false);
 
-                    byte[] worldPlan = Resource.compress(buildPlan(new Revision(Branch.MIZUKI.getHead(), Branch.MIZUKI.getID(), Branch.MIZUKI.getRevision()), true).build());
-                    JsonElement element = GsonUtils.GSON.toJsonTree(mainView.selectedThingsBuiltThingArray);
+                    byte[] worldPlan = SerializedResource.compress(buildPlan(new Revision(Branch.MIZUKI.getHead(), Branch.MIZUKI.getID(), Branch.MIZUKI.getRevision()), true).build());
+                    JsonElement element = GsonUtils.GetGson().toJsonTree(mainView.selectedThingsBuiltThingArray);
                     jsonFile.add("selectedThings", element.getAsJsonArray());
 
                     byte[] dataJson = jsonFile.toString().getBytes();
@@ -1043,7 +1208,7 @@ public class ProjectManager extends GuiScreen {
         Collections.sort(typeArray, new Comparator<InventoryObjectType>() {
             @Override
             public int compare(InventoryObjectType o1, InventoryObjectType o2) {
-                return Integer.compare(o1.getGameVersion(), o2.getGameVersion());
+                return Integer.compare(o1.flags, o2.flags);
             }
         });
 
@@ -1053,13 +1218,13 @@ public class ProjectManager extends GuiScreen {
             String name = type.name().replaceAll("_", " ");
             name = name.charAt(0) + name.substring(1).toLowerCase();
 
-            if(lbpType == 1 && type.getGameVersion() == 2)
+            if(lbpType == 1 && type.flags == GameVersion.LBP2)
             {
                 typeList.addSeparator("2sep");
                 typeList.addString("lbp2Types", Consts.FONT_SET_BOLD + "LBP2:");
                 lbpType = 2;
             }
-            if(lbpType == 2 && type.getGameVersion() == 3)
+            if(lbpType == 2 && type.flags == GameVersion.LBP3)
             {
                 typeList.addSeparator("3sep");
                 typeList.addString("lbp3Types", Consts.FONT_SET_BOLD + "LBP3:");
@@ -1628,7 +1793,7 @@ public class ProjectManager extends GuiScreen {
                     if(folder == null)
                         return;
 
-                    byte[] data = Resource.compress(buildPlan(new Revision(Branch.LEERDAMMER.getHead(), Branch.LEERDAMMER.getID(), Branch.LEERDAMMER.getRevision()), true).build());
+                    byte[] data = SerializedResource.compress(buildPlan(new Revision(Branch.LEERDAMMER.getHead(), Branch.LEERDAMMER.getID(), Branch.LEERDAMMER.getRevision()), true).build());
 
                     String path = modFileTree.getPath(folder);
 
@@ -1657,7 +1822,7 @@ public class ProjectManager extends GuiScreen {
                     if (folder == null)
                         return;
 
-                    byte[] data = Resource.compress(buildPlan(new Revision(Revisions.LBP2_MAX), true).build());
+                    byte[] data = SerializedResource.compress(buildPlan(new Revision(Revisions.LBP2_MAX), true).build());
 
                     String path = modFileTree.getPath(folder);
 
@@ -1686,7 +1851,7 @@ public class ProjectManager extends GuiScreen {
                     if(folder == null)
                         return;
 
-                    byte[] data = Resource.compress(buildPlan(new Revision(Branch.DOUBLE11.getHead(), Branch.DOUBLE11.getID(), Branch.DOUBLE11.getRevision()), true).build());
+                    byte[] data = SerializedResource.compress(buildPlan(new Revision(Branch.DOUBLE11.getHead(), Branch.DOUBLE11.getID(), Branch.DOUBLE11.getRevision()), true).build());
 
                     String path = modFileTree.getPath(folder);
 
@@ -1714,7 +1879,7 @@ public class ProjectManager extends GuiScreen {
                     if(folder == null)
                         return;
 
-                    byte[] data = Resource.compress(buildPlan(new Revision(Revisions.LBP3_MAX), true).build());
+                    byte[] data = SerializedResource.compress(buildPlan(new Revision(Revisions.LBP3_MAX), true).build());
 
                     String path = modFileTree.getPath(folder);
 
@@ -1773,7 +1938,7 @@ public class ProjectManager extends GuiScreen {
                     else
                         plan = buildPlan(new Revision(Utils.parseIntA(revision)), true);
 
-                    byte[] data = Resource.compress(plan.build());
+                    byte[] data = SerializedResource.compress(plan.build());
 
                     String path = modFileTree.getPath(folder);
 
@@ -1793,7 +1958,7 @@ public class ProjectManager extends GuiScreen {
             }
         });
 
-        binExport = buildScene.addComboBox("binExport", "Bin", 450);
+        binExport = buildScene.addComboBox("binExport", "Bin (Level)", 450);
 
         Panel addPartsPanel = binExport.addPanel("addPartsPanel");
         addPartsPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("addpartsstr", "Parts:", mainView.renderer), 0.5f));
@@ -2009,7 +2174,7 @@ public class ProjectManager extends GuiScreen {
                     if(folder == null)
                         return;
 
-                    byte[] data = Resource.compress(buildBin(new Revision(Branch.LEERDAMMER.getHead(), Branch.LEERDAMMER.getID(), Branch.LEERDAMMER.getRevision()), true));
+                    byte[] data = SerializedResource.compress(buildBin(new Revision(Branch.LEERDAMMER.getHead(), Branch.LEERDAMMER.getID(), Branch.LEERDAMMER.getRevision()), true));
 
                     String path = modFileTree.getPath(folder);
 
@@ -2036,7 +2201,7 @@ public class ProjectManager extends GuiScreen {
                     if(folder == null)
                         return;
 
-                    byte[] data = Resource.compress(buildBin(new Revision(Revisions.LBP2_MAX), true));
+                    byte[] data = SerializedResource.compress(buildBin(new Revision(Revisions.LBP2_MAX), true));
 
                     String path = modFileTree.getPath(folder);
 
@@ -2063,7 +2228,7 @@ public class ProjectManager extends GuiScreen {
                     if(folder == null)
                         return;
 
-                    byte[] data = Resource.compress(buildBin(new Revision(Branch.DOUBLE11.getHead(), Branch.DOUBLE11.getID(), Branch.DOUBLE11.getRevision()), true));
+                    byte[] data = SerializedResource.compress(buildBin(new Revision(Branch.DOUBLE11.getHead(), Branch.DOUBLE11.getID(), Branch.DOUBLE11.getRevision()), true));
 
                     String path = modFileTree.getPath(folder);
 
@@ -2090,7 +2255,7 @@ public class ProjectManager extends GuiScreen {
                     if(folder == null)
                         return;
 
-                    byte[] data = Resource.compress(buildBin(new Revision(Revisions.LBP3_MAX), true), true);
+                    byte[] data = SerializedResource.compress(buildBin(new Revision(Revisions.LBP3_MAX), true), true);
 
                     String path = modFileTree.getPath(folder);
 
@@ -2147,7 +2312,7 @@ public class ProjectManager extends GuiScreen {
                     else
                         bin = buildBin(new Revision(Utils.parseIntA(revision)), true);
 
-                    byte[] data = Resource.compress(bin);
+                    byte[] data = SerializedResource.compress(bin);
 
                     String path = modFileTree.getPath(folder);
 
@@ -2165,6 +2330,9 @@ public class ProjectManager extends GuiScreen {
             }
         });
 
+        smhExport = buildScene.addComboBox("smhExport", "Static Mesh", 450);
+
+//todo
         this.guiElements.add(project);
     }
 
@@ -2294,7 +2462,7 @@ public class ProjectManager extends GuiScreen {
 
         ArrayList<Thing> things = includeThings ? mainView.buildThingArrayList(selectionOnlyExportBin.isChecked) : new ArrayList<>();
 
-        level.world = this.worldThing;
+        level.worldThing = this.worldThing;
 
         boolean hasWorldThing = false;
         for(int i = 0; i < things.size(); i++)
@@ -2303,14 +2471,14 @@ public class ProjectManager extends GuiScreen {
                 if(hasWorldThing)
                     things.remove(i);
 
-                level.world = things.get(i);
+                level.worldThing = things.get(i);
                 hasWorldThing = true;
             }
 
-        if(!level.world.hasPart(Part.WORLD))
-            level.world.setPart(Part.WORLD, new PWorld());
+        if(!level.worldThing.hasPart(Part.WORLD))
+            level.worldThing.setPart(Part.WORLD, new PWorld());
 
-        PWorld world = level.world.getPart(Part.WORLD);
+        PWorld world = level.worldThing.getPart(Part.WORLD);
 
         world.things = things;
         if(!hasWorldThing)
@@ -2451,7 +2619,7 @@ public class ProjectManager extends GuiScreen {
             field.fishType = BuiltinType.VOID;
             field.instanceOffset = 36;
             field.arrayBaseMachineType = MachineType.VOID;
-            field.type = ScriptObjectType.NULL;
+//            field.type = ScriptObjectType.NULL;todo
             field.value = new ScriptObject();
             ((ScriptObject) field.value).type = ScriptObjectType.INSTANCE;
             ((ScriptObject) field.value).value = new ScriptInstance();
@@ -2466,7 +2634,7 @@ public class ProjectManager extends GuiScreen {
             field.fishType = BuiltinType.VOID;
             field.instanceOffset = 40;
             field.arrayBaseMachineType = MachineType.SAFE_PTR;
-            field.type = ScriptObjectType.NULL;
+//            field.type = ScriptObjectType.NULL;
             field.value = new ScriptObject();
             ((ScriptObject)field.value).type = ScriptObjectType.ARRAY_SAFE_PTR;
             ((ScriptObject)field.value).value = new Thing[]{};
@@ -2622,12 +2790,12 @@ public class ProjectManager extends GuiScreen {
 
         try
         {
-            File file = FileChooser.openFile(null, "bin,lvl", false);
+            File file = FilePicker.openFiles(FilePicker.setupLBPExtensionFilter(null, new ResourceType[]{ResourceType.LEVEL}), false, false)[0];
 
             if(file != null)
             {
                 name = file.getName();
-                lvl = new Resource(file.getAbsolutePath()).loadResource(RLevel.class);
+                lvl = new SerializedResource(file.getAbsolutePath()).loadResource(RLevel.class);
             }
         }catch (Exception e)
         {
@@ -2636,14 +2804,14 @@ public class ProjectManager extends GuiScreen {
         }
 
         if(lvl != null)
-            if(lvl.world != null)
+            if(lvl.worldThing != null)
                 importMetadataBin(lvl);
     }
 
     public void importMetadataBin(RLevel lvl)
     {
         for(Part part : Part.values())
-            worldThing.setPart(part, lvl.world.getPart(part));
+            worldThing.setPart(part, lvl.worldThing.getPart(part));
     }
 
     private void importMetadataPlan()
@@ -2653,12 +2821,12 @@ public class ProjectManager extends GuiScreen {
 
         try
         {
-            File file = FileChooser.openFile(null, "plan,pln", false);
+            File file = FilePicker.openFiles(FilePicker.setupLBPExtensionFilter(null, new ResourceType[]{ResourceType.PLAN}), false, false)[0];
 
             if(file != null)
             {
                 name = file.getName();
-                pln = new Resource(file.getAbsolutePath()).loadResource(RPlan.class);
+                pln = new SerializedResource(file.getAbsolutePath()).loadResource(RPlan.class);
             }
         }catch (Exception e)
         {

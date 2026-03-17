@@ -4,19 +4,22 @@ import bog.lbpas.view3d.managers.assetLoading.ObjectLoader;
 import bog.lbpas.view3d.core.Model;
 import bog.lbpas.view3d.mainWindow.LoadedData;
 import bog.lbpas.view3d.utils.CWLibUtils.SkeletonUtils;
-import bog.lbpas.view3d.utils.print;
+import bog.lbpas.view3d.utils.FilePicker;
 import cwlib.enums.LethalType;
 import cwlib.enums.Part;
 import cwlib.resources.RBevel;
 import cwlib.resources.RMesh;
 import cwlib.resources.RStaticMesh;
+import cwlib.structs.mesh.Bone;
 import cwlib.structs.things.parts.*;
 import cwlib.types.data.ResourceDescriptor;
+import cwlib.types.databases.FileDBRow;
+import cwlib.types.databases.FileEntry;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-import toolkit.utilities.FileChooser;
 
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -57,7 +60,11 @@ public class Thing extends Entity{
 
         for(int i = 0; i < bones.length; i++)
             bones[i] = new cwlib.structs.things.Thing();
-        bones = SkeletonUtils.computeBoneThings(bones, new cwlib.structs.things.Thing().setPart(Part.POS, new PPos(getTransformation())), this.getTransformation(), renderMesh.mesh.getBones());
+
+        cwlib.structs.things.Thing t = new cwlib.structs.things.Thing();
+        t.setPart(Part.POS, new PPos(getTransformation()));
+
+        bones = SkeletonUtils.computeBoneThings(bones, t, this.getTransformation(), renderMesh.mesh.getBones());
 
         if(ogbones != null && ogbones.length == bones.length)
             for(int i = 0; i < ogbones.length; i++)
@@ -238,6 +245,8 @@ public class Thing extends Entity{
         if(LoadedData.loadedModels.containsKey(meshDescriptor))
         {
             this.renderMesh = LoadedData.loadedModels.get(meshDescriptor);
+
+            buildName(this.thing);
         }
         else
         {
@@ -247,6 +256,8 @@ public class Thing extends Entity{
                 this.failedLoadingRMesh = true;
 
             Model m = null;
+
+            buildName(this.thing);
 
             try {
                 m = this.loader.loadRMeshArr(mesh);
@@ -298,10 +309,9 @@ public class Thing extends Entity{
 
     public void exportModelOBJ()
     {
-        File file = FileChooser.openFile(
+        File file = FilePicker.saveFile(
                 this.thing.name + ".obj",
-                "obj",
-                true
+                new FileNameExtensionFilter[]{new FileNameExtensionFilter("OBJ (*.obj)", "obj")}
         );
 
         if (file != null)
@@ -380,5 +390,83 @@ public class Thing extends Entity{
     public void reloadModel() {
         super.reloadModel();
         this.failedLoadingRMesh = false;
+    }
+
+    public static void buildName(cwlib.structs.things.Thing thing) {
+        if(thing.name == null || thing.name.isEmpty() || thing.name.isBlank())
+        {
+            ResourceDescriptor ent = null;
+
+            if (thing.hasPart(Part.RENDER_MESH) && ((PRenderMesh) thing.getPart(Part.RENDER_MESH)).mesh != null) {
+                ent = ((PRenderMesh) thing.getPart(Part.RENDER_MESH)).mesh;
+            } else if (thing.hasPart(Part.GENERATED_MESH) && ((PGeneratedMesh) thing.getPart(Part.GENERATED_MESH)).gfxMaterial != null) {
+                ent = ((PGeneratedMesh) thing.getPart(Part.GENERATED_MESH)).gfxMaterial;
+            } else if (thing.hasPart(Part.SCRIPT_NAME) && ((PScriptName) thing.getPart(Part.SCRIPT_NAME)).name != null) {
+                thing.name = ((PScriptName) thing.getPart(Part.SCRIPT_NAME)).name;
+            } else if (thing.hasPart(Part.SCRIPT) && ((PScript) thing.getPart(Part.SCRIPT)).instance.script != null) {
+                ent = ((PScript) thing.getPart(Part.SCRIPT)).instance.script;
+            } else if (thing.hasPart(Part.EFFECTOR)) {
+                thing.name = "Effector";
+            } else if (thing.hasPart(Part.LEVEL_SETTINGS)) {
+                thing.name = "Level Settings";
+            } else if (thing.hasPart(Part.SHAPE)) {
+                thing.name = "Shape";
+            } else if (thing.hasPart(Part.CHECKPOINT)) {
+                thing.name = "Checkpoint";
+            } else if (thing.hasPart(Part.TRIGGER) && ((PTrigger) thing.getPart(Part.TRIGGER)).triggerType != null) {
+                thing.name = ((PTrigger) thing.getPart(Part.TRIGGER)).triggerType.name();
+                thing.name = "Trigger " + thing.name.substring(0, 1).toUpperCase() + thing.name.substring(1).toLowerCase();
+            } else if (thing.hasPart(Part.EMITTER)) {
+                thing.name = "Emitter";
+            } else if (thing.hasPart(Part.GROUP)) {
+                thing.name = "Group";
+            } else if (thing.hasPart(Part.AUDIO_WORLD)) {
+                thing.name = "Audio";
+            } else if (thing.hasPart(Part.SPRITE_LIGHT)) {
+                thing.name = "Light";
+            } else if (thing.hasPart(Part.SWITCH_INPUT)) {
+                thing.name = "Switch Input";
+            } else if (thing.hasPart(Part.SWITCH)) {
+                thing.name = "Switch";
+            } else if (thing.hasPart(Part.JOINT)) {
+                thing.name = "Joint";
+            } else if (thing.hasPart(Part.SWITCH_KEY)) {
+                thing.name = "Tag";
+            }
+
+            if (ent != null) {
+                FileEntry e = LoadedData.getDigestedEntry(ent);
+
+                if (e != null) {
+                    String name = e.getName();
+
+                    int extInd = name.lastIndexOf(".");
+                    boolean nameIsHash = name.substring(0, extInd != -1 ? extInd : name.length()).equalsIgnoreCase(e.getSHA1().toString());
+
+                    if (!(e instanceof FileDBRow) && nameIsHash)
+                        name = name.substring(name.length() - 12);
+
+                    thing.name = name.substring(0, name.lastIndexOf("."));
+                }
+            }
+        }
+
+        if(thing.hasPart(Part.RENDER_MESH) && ((PRenderMesh)thing.getPart(Part.RENDER_MESH)).mesh != null)
+        {
+            RMesh msh = LoadedData.loadMesh(((PRenderMesh)thing.getPart(Part.RENDER_MESH)).mesh);
+            if(msh != null)
+                for(int i = 0; i < ((PRenderMesh)thing.getPart(Part.RENDER_MESH)).boneThings.length; i++)
+                {
+                    cwlib.structs.things.Thing th = ((PRenderMesh)thing.getPart(Part.RENDER_MESH)).boneThings[i];
+
+                    if(!(th.name == null || th.name.isEmpty() || th.name.isBlank()))
+                        continue;
+
+                    Bone[] bonearray = msh.getBones();
+                    if(th!= null && th.name == null && i < bonearray.length && bonearray[i] != null)
+                        th.name = msh.getBones()[i].getName();
+
+                }
+        }
     }
 }

@@ -2,7 +2,8 @@ package cwlib.enums;
 
 import cwlib.io.ValueEnum;
 
-public enum SwitchType implements ValueEnum<Integer> {
+public enum SwitchType implements ValueEnum<Integer>
+{
     INVALID(-1),
     BUTTON(0),
     LEVER(1),
@@ -89,16 +90,24 @@ public enum SwitchType implements ValueEnum<Integer> {
     RACE_START(82),
     DECORATION_MOUNT(83),
     SPRING_SENSOR(84);
-    
+
     private final int value;
-    SwitchType(int value) {
+
+    SwitchType(int value)
+    {
         this.value = value;
     }
-    
-    public Integer getValue() { return this.value; }
-    public static SwitchType fromValue(int value) {
-        for (SwitchType type : SwitchType.values()) {
-            if (type.value == value) 
+
+    public Integer getValue()
+    {
+        return this.value;
+    }
+
+    public static SwitchType fromValue(int value)
+    {
+        for (SwitchType type : SwitchType.values())
+        {
+            if (type.value == value)
                 return type;
         }
         return null;

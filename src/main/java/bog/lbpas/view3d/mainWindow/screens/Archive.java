@@ -10,7 +10,6 @@ import bog.lbpas.view3d.utils.print;
 import cwlib.enums.ResourceType;
 import cwlib.resources.RPlan;
 import cwlib.resources.RTranslationTable;
-import cwlib.types.Resource;
 import cwlib.types.archives.FileArchive;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.databases.FileDB;

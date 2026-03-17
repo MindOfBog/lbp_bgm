@@ -389,8 +389,10 @@ public class ElementList extends Element{
     public void resize() {
         super.resize();
 
-        for(Element e : elements)
+        for(int i = 0; i < elements.size(); i++)
         {
+            Element e = elements.get(i);
+
             if(e.scalesWithGui() && e.size != null)
                 e.size.y = getFontHeight() + 4;
 

@@ -1,6 +1,7 @@
 package cwlib.enums;
 
-public enum State {
+public enum State
+{
     INIT,
     ERRORED,
     READY

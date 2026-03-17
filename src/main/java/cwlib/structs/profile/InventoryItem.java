@@ -18,7 +18,8 @@ import cwlib.types.data.ResourceDescriptor;
  * Represents an instance of an item in your inventory.
  * Used in the RLocalProfile and RBigProfile.
  */
-public class InventoryItem implements Serializable {
+public class InventoryItem implements Serializable
+{
     public static final int BASE_ALLOCATION_SIZE = 0x40;
 
     /**
@@ -34,7 +35,7 @@ public class InventoryItem implements Serializable {
     /**
      * Cache of GUID for this item.
      */
-    @GsonRevision(min=262, lbp3=true)
+    @GsonRevision(min = 262, lbp3 = true)
     public GUID guid;
 
     /**
@@ -45,9 +46,9 @@ public class InventoryItem implements Serializable {
     /**
      * Tutorial related data, see ETutorialLevels
      */
-    @GsonRevision(max=875)
+    @GsonRevision(max = 875)
     public TutorialLevel tutorialLevel = TutorialLevel.UNKNOWN;
-    @GsonRevision(max=875)
+    @GsonRevision(max = 875)
     public TutorialLevel tutorialVideo = TutorialLevel.UNKNOWN;
 
     /**
@@ -59,16 +60,17 @@ public class InventoryItem implements Serializable {
     /**
      * Index of user defined category in the string table.
      */
-    @GsonRevision(min=842)
+    @GsonRevision(min = 842)
     public int userCategoryIndex;
 
 
-    public InventoryItem() {}
+    public InventoryItem() { }
 
-    public InventoryItem(int UID, ResourceDescriptor descriptor, InventoryItemDetails details) {
-        if (details == null) 
+    public InventoryItem(int UID, ResourceDescriptor descriptor, InventoryItemDetails details)
+    {
+        if (details == null)
             details = new InventoryItemDetails();
-        
+
         details.dateAdded = new Date().getTime() / 1000;
 
         this.UID = UID;
@@ -76,41 +78,48 @@ public class InventoryItem implements Serializable {
         this.plan = descriptor;
     }
 
-    @SuppressWarnings("unchecked")
-    @Override public InventoryItem serialize(Serializer serializer, Serializable structure) {
-        InventoryItem item = (structure == null) ? new InventoryItem() : (InventoryItem) structure;
-
-        item.plan = serializer.resource(item.plan, ResourceType.PLAN, true);
-        if (item.plan != null)
-            serializer.addDependency(item.plan);
+    @Override
+    public void serialize(Serializer serializer)
+    {
+        plan = serializer.resource(plan, ResourceType.PLAN, true);
+        if (plan != null)
+            serializer.addDependency(plan);
 
         if (serializer.getRevision().getSubVersion() >= Revisions.ITEM_GUID)
-            item.guid = serializer.guid(item.guid);
-        
-        item.details = serializer.struct(item.details, InventoryItemDetails.class);
+            guid = serializer.guid(guid);
+
+        details = serializer.struct(details, InventoryItemDetails.class);
 
         int version = serializer.getRevision().getVersion();
 
-        if (version >= Revisions.ITEM_FLAGS) {
-            item.UID = serializer.i32(item.UID, true);
-            if (version < Revisions.REMOVE_LBP1_TUTORIALS) {
-                if (serializer.isWriting()) {
-                    serializer.getOutput().i32(item.tutorialLevel.getValue(), true);
-                    serializer.getOutput().i32(item.tutorialVideo.getValue(), true);
-                } else {
-                    item.tutorialLevel = TutorialLevel.fromValue(serializer.getInput().i32(true));
-                    item.tutorialVideo = TutorialLevel.fromValue(serializer.getInput().i32(true));
+        if (version >= Revisions.ITEM_FLAGS)
+        {
+            UID = serializer.i32(UID, true);
+            if (version < Revisions.REMOVE_LBP1_TUTORIALS)
+            {
+                if (serializer.isWriting())
+                {
+                    serializer.getOutput().i32(tutorialLevel.getValue(), true);
+                    serializer.getOutput().i32(tutorialVideo.getValue(), true);
+                }
+                else
+                {
+                    tutorialLevel =
+                        TutorialLevel.fromValue(serializer.getInput().i32(true));
+                    tutorialVideo =
+                        TutorialLevel.fromValue(serializer.getInput().i32(true));
                 }
             }
-            item.flags = serializer.i32(item.flags, true);
+            flags = serializer.i32(flags, true);
             if (version >= Revisions.USER_CATEGORIES)
-                item.userCategoryIndex = serializer.i32(item.userCategoryIndex, true); 
-        } else throw new SerializationException("InventoryItem's below r565 are not supported!");
-
-        return item;
+                userCategoryIndex = serializer.i32(userCategoryIndex, true);
+        }
+        else throw new SerializationException("InventoryItem's below r565 are not supported!");
     }
 
-    @Override public int getAllocatedSize() { 
-        return InventoryItem.BASE_ALLOCATION_SIZE + this.details.getAllocatedSize(); 
+    @Override
+    public int getAllocatedSize()
+    {
+        return InventoryItem.BASE_ALLOCATION_SIZE + this.details.getAllocatedSize();
     }
 }

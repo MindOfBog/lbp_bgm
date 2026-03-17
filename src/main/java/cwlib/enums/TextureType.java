@@ -3,7 +3,8 @@ package cwlib.enums;
 /**
  * Texture types used in RShaderCache
  */
-public class TextureType {
+public class TextureType
+{
     public static final int DIFFUSE = 0;
     public static final int SPECULAR = 1;
     public static final int BUMP = 2;

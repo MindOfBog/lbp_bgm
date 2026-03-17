@@ -10,15 +10,17 @@ import cwlib.structs.things.Thing;
 import cwlib.structs.things.components.GlobalThingDescriptor;
 import cwlib.types.data.ResourceDescriptor;
 
-public class PoppetTweakObjectPlacement implements Serializable {
+public class PoppetTweakObjectPlacement implements Serializable
+{
     public static int BASE_ALLOCATION_SIZE = 0x100;
 
     public Thing[] objectList;
     public Matrix4f startMatrix;
 
-    @GsonRevision(max=0x15f)
-    @Deprecated public GlobalThingDescriptor thing;
-    @GsonRevision(min=0x160)
+    @GsonRevision(max = 0x15f)
+    @Deprecated
+    public GlobalThingDescriptor thing;
+    @GsonRevision(min = 0x160)
     public ResourceDescriptor plan;
 
     public Thing proxyObject;
@@ -30,43 +32,44 @@ public class PoppetTweakObjectPlacement implements Serializable {
     public float rotate;
     public float scale;
 
-    @GsonRevision(min=0x26c)
+    @GsonRevision(min = 0x26c)
     public int lastGridMoveFrame, lastGridRotateFrame, lastGridScaleFrame;
 
 
-    @SuppressWarnings("unchecked")
-    @Override public PoppetTweakObjectPlacement serialize(Serializer serializer, Serializable structure) {
-        PoppetTweakObjectPlacement object = 
-            (structure == null) ? new PoppetTweakObjectPlacement() : (PoppetTweakObjectPlacement) structure;
-
+    @Override
+    public void serialize(Serializer serializer)
+    {
         int version = serializer.getRevision().getVersion();
 
-        object.objectList = serializer.thingarray(object.objectList);
-        object.startMatrix = serializer.m44(object.startMatrix);
-        
-        if (version < 0x160) 
-            object.thing = serializer.struct(object.thing, GlobalThingDescriptor.class);
+        objectList = serializer.thingarray(objectList);
+        startMatrix = serializer.m44(startMatrix);
+
+        if (version < 0x160)
+            thing = serializer.struct(thing, GlobalThingDescriptor.class);
         else
-            object.plan = serializer.resource(object.plan, ResourceType.PLAN, true, false, false);
-        
-        object.proxyObject = serializer.thing(object.proxyObject);
-        object.backZ = serializer.s32(object.backZ);
-        object.thickness = serializer.s32(object.thickness);
-        object.backToZPos = serializer.f32(object.backToZPos);
-        object.rotate = serializer.f32(object.rotate);
-        object.scale = serializer.f32(object.scale);
+            plan = serializer.resource(plan, ResourceType.PLAN, true, false, false);
 
-        if (version  > 0x26b) {
-            object.lastGridMoveFrame = serializer.i32(object.lastGridMoveFrame);
-            object.lastGridRotateFrame = serializer.i32(object.lastGridRotateFrame);
-            object.lastGridScaleFrame = serializer.i32(object.lastGridScaleFrame);
+        proxyObject = serializer.thing(proxyObject);
+        backZ = serializer.s32(backZ);
+        thickness = serializer.s32(thickness);
+        backToZPos = serializer.f32(backToZPos);
+        rotate = serializer.f32(rotate);
+        scale = serializer.f32(scale);
+
+        if (version > 0x26b)
+        {
+            lastGridMoveFrame = serializer.i32(lastGridMoveFrame);
+            lastGridRotateFrame = serializer.i32(lastGridRotateFrame);
+            lastGridScaleFrame = serializer.i32(lastGridScaleFrame);
         }
-
-        return object;
     }
 
 
-    @Override public int getAllocatedSize() { return PoppetTweakObjectPlacement.BASE_ALLOCATION_SIZE; }
-    
+    @Override
+    public int getAllocatedSize()
+    {
+        return PoppetTweakObjectPlacement.BASE_ALLOCATION_SIZE;
+    }
+
 
 }

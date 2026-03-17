@@ -2,7 +2,8 @@ package cwlib.enums;
 
 import cwlib.io.ValueEnum;
 
-public enum LethalType implements ValueEnum<Integer> {
+public enum LethalType implements ValueEnum<Integer>
+{
     NOT(0),
     FIRE(1),
     ELECTRIC(2),
@@ -20,15 +21,22 @@ public enum LethalType implements ValueEnum<Integer> {
     DROWNED(14);
 
     private final int value;
-    LethalType(int value) {
+
+    LethalType(int value)
+    {
         this.value = value;
     }
 
-    public Integer getValue() { return this.value; }
+    public Integer getValue()
+    {
+        return this.value;
+    }
 
-    public static LethalType fromValue(int value) {
-        for (LethalType type : LethalType.values()) {
-            if (type.value == value) 
+    public static LethalType fromValue(int value)
+    {
+        for (LethalType type : LethalType.values())
+        {
+            if (type.value == value)
                 return type;
         }
         return null;

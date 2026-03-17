@@ -9,7 +9,11 @@ import cwlib.io.streams.MemoryOutputStream;
 /**
  * Represents GTF texture information for PS3.
  */
-public final class CellGcmTexture {
+public final class CellGcmTexture
+{
+    public static final int REMAP_ARGB = 0xaae4;
+    public static final int REMAP_BBBB = 0xa9ff;
+
     private final CellGcmEnumForGtf format;
     private final byte mipmap;
     private final byte dimension;
@@ -17,27 +21,47 @@ public final class CellGcmTexture {
     private final int remap;
     private final short width, height, depth;
     private final byte location;
-    private final byte flags;
+    private byte flags;
     private final int pitch, offset;
     private SerializationType method = SerializationType.COMPRESSED_TEXTURE;
 
-    public CellGcmTexture(byte[] dds, boolean noSRGB) {
+    public CellGcmTexture(byte[] dds, boolean noSRGB)
+    {
         int type = DDSReader.getType(dds);
-        switch (type) {
-            case 0xFF: this.format = CellGcmEnumForGtf.B8; break;
-            case 1146639409: this.format = CellGcmEnumForGtf.DXT1; break;
-            case 1146639411: this.format = CellGcmEnumForGtf.DXT3; break;
-            case 1146639413: this.format = CellGcmEnumForGtf.DXT5; break;
-            case 65538: this.format = CellGcmEnumForGtf.A1R5G5B5; break;
-            case 196610: this.format = CellGcmEnumForGtf.A4R4G4B4; break;
-            case 327682: this.format = CellGcmEnumForGtf.R5G5B5; break;
-            case 196612: this.format = CellGcmEnumForGtf.A8R8G8B8; break;
-            default: throw new IllegalArgumentException("Invalid format!");
+        switch (type)
+        {
+            case 16711680:
+                this.format = CellGcmEnumForGtf.B8;
+                break;
+            case 1146639409:
+                this.format = CellGcmEnumForGtf.DXT1;
+                break;
+            case 1146639411:
+                this.format = CellGcmEnumForGtf.DXT3;
+                break;
+            case 1146639413:
+                this.format = CellGcmEnumForGtf.DXT5;
+                break;
+            case 65538:
+                this.format = CellGcmEnumForGtf.A1R5G5B5;
+                break;
+            case 196610:
+                this.format = CellGcmEnumForGtf.A4R4G4B4;
+                break;
+            case 327682:
+                this.format = CellGcmEnumForGtf.R5G5B5;
+                break;
+            case 196612:
+                this.format = CellGcmEnumForGtf.A8R8G8B8;
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid format!");
         }
+
         this.mipmap = (byte) DDSReader.getMipmap(dds);
         this.dimension = 2;
         this.cubemap = 0;
-        this.remap = 0xaae4;
+        this.remap = format == CellGcmEnumForGtf.B8 ? CellGcmTexture.REMAP_BBBB : CellGcmTexture.REMAP_ARGB;
         this.width = (short) DDSReader.getWidth(dds);
         this.height = (short) DDSReader.getHeight(dds);
         this.depth = 1;
@@ -47,7 +71,9 @@ public final class CellGcmTexture {
         this.offset = 0;
     }
 
-    public CellGcmTexture(CellGcmEnumForGtf format, short width, short height, byte mips, boolean noSRGB) {
+    public CellGcmTexture(CellGcmEnumForGtf format, short width, short height, byte mips,
+                          boolean noSRGB)
+    {
         this.format = format;
         this.mipmap = mips;
         this.dimension = 2;
@@ -61,15 +87,17 @@ public final class CellGcmTexture {
         this.pitch = 0;
         this.offset = 0;
     }
-    
+
     /**
      * Deserializes TextureInfo from stream.
+     *
      * @param stream Stream to read texture info from
      * @param method Texture type
      */
-    public CellGcmTexture(MemoryInputStream stream, SerializationType method) {
+    public CellGcmTexture(MemoryInputStream stream, SerializationType method)
+    {
         this.method = method;
-        
+
         // I don't want to grab the full structure for this right now,
         // and it's not really necessary for anything either, so I guess I'll finish
         // it at some other point
@@ -99,9 +127,11 @@ public final class CellGcmTexture {
 
     /**
      * Writes this header to an output stream.
+     *
      * @param stream Memory output stream
      */
-    public void write(MemoryOutputStream stream) {
+    public void write(MemoryOutputStream stream)
+    {
         stream.u8(this.format.getValue());
         stream.i8(this.mipmap);
         stream.i8(this.dimension);
@@ -116,17 +146,58 @@ public final class CellGcmTexture {
         stream.i32(this.offset, true);
     }
 
-    public CellGcmEnumForGtf getFormat() { return this.format; }
-    public int getMipCount() { return this.mipmap & 0xFF; }
-    public int getWidth() { return this.width; }
-    public int getHeight() { return this.height; }
-    public int getDepth() { return this.depth; }
-    public SerializationType getMethod() { return this.method; }
+    public CellGcmEnumForGtf getFormat()
+    {
+        return this.format;
+    }
 
-    public boolean isBumpTexture() { return (this.flags & 0x1) != 0; }
-    public boolean isVolumeTexture() { return (this.dimension > 2); }
+    public int getMipCount()
+    {
+        return this.mipmap & 0xFF;
+    }
 
-    public void setMethod(SerializationType method) {
+    public int getWidth()
+    {
+        return this.width;
+    }
+
+    public int getHeight()
+    {
+        return this.height;
+    }
+
+    public int getDepth()
+    {
+        return this.depth;
+    }
+
+    public SerializationType getMethod()
+    {
+        return this.method;
+    }
+
+    public boolean isCubemap()
+    {
+        return this.cubemap == 1;
+    }
+
+    public boolean isBumpTexture()
+    {
+        return (this.flags & 0x1) != 0;
+    }
+
+    public boolean isVolumeTexture()
+    {
+        return (this.dimension > 2);
+    }
+
+    public void fixupFlags()
+    {
+        this.flags = (byte) (this.flags & 0x1);
+    }
+
+    public void setMethod(SerializationType method)
+    {
         this.method = method;
     }
 }

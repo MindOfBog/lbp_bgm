@@ -6,13 +6,13 @@ import cwlib.enums.ResourceType;
 import cwlib.enums.SerializationType;
 import cwlib.types.data.GUID;
 import cwlib.types.data.Revision;
-import cwlib.io.Compressable;
-import cwlib.io.Serializable;
+import cwlib.io.Resource;
 import cwlib.io.serializer.SerializationData;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.instrument.Sample;
 
-public class RInstrument implements Serializable, Compressable {
+public class RInstrument implements Resource
+{
     public static final int BASE_ALLOCATION_SIZE = 0x200;
 
     public static final int MAX_SAMPLES = 0x8;
@@ -23,12 +23,14 @@ public class RInstrument implements Serializable, Compressable {
     private final Sample[] samples = new Sample[MAX_SAMPLES];
     private final GUID[] sampleGUIDs = new GUID[MAX_SAMPLES];
     private final int[] splitNotes = new int[MAX_SPLITS];  // KEY NUMBER (PIANO) -> https://www.inspiredacoustics.com/en/MIDI_note_numbers_and_center_frequencies
+
     private int numStack = 1;
     private final Vector2f[] params = new Vector2f[MAX_PARAMS];
     private final byte[] arpeggio = new byte[MAX_ARPEGGIO];
     private boolean arpeggiate = false;
 
-    public RInstrument() {
+    public RInstrument()
+    {
         for (int i = 0; i < MAX_SAMPLES; ++i)
             this.samples[i] = new Sample();
         for (int i = 0; i < MAX_PARAMS; ++i)
@@ -38,65 +40,101 @@ public class RInstrument implements Serializable, Compressable {
         this.splitNotes[0] = 87;
     }
 
-    @SuppressWarnings("unchecked")
-    @Override public RInstrument serialize(Serializer serializer, Serializable structure) {
-        RInstrument inst = (structure == null) ? new RInstrument() : (RInstrument) structure;
+    @Override
+    public void serialize(Serializer serializer)
+    {
+        serializer.i32(MAX_SAMPLES);
+        for (int i = 0; i < MAX_SAMPLES; ++i)
+            samples[i] = serializer.struct(samples[i], Sample.class);
 
         serializer.i32(MAX_SAMPLES);
         for (int i = 0; i < MAX_SAMPLES; ++i)
-            inst.samples[i] = serializer.struct(inst.samples[i], Sample.class);
-
-        serializer.i32(MAX_SAMPLES);
-        for (int i = 0; i < MAX_SAMPLES; ++i)
-            inst.sampleGUIDs[i] = serializer.guid(inst.sampleGUIDs[i]);
+            sampleGUIDs[i] = serializer.guid(sampleGUIDs[i]);
 
         serializer.i32(MAX_SPLITS);
         for (int i = 0; i < MAX_SPLITS; ++i)
-            inst.splitNotes[i] = serializer.s32(inst.splitNotes[i]);
-        
-        inst.numStack = serializer.s32(inst.numStack);
+            splitNotes[i] = serializer.s32(splitNotes[i]);
 
-        for (int i = 0; i < MAX_PARAMS; ++i) {
+        numStack = serializer.s32(numStack);
+
+        for (int i = 0; i < MAX_PARAMS; ++i)
+        {
             serializer.i32(2); // Technically a float array, but it's always of length 2
-            serializer.v2(inst.params[i]);
+            params[i] = serializer.v2(params[i]);
         }
 
         serializer.i32(MAX_ARPEGGIO);
         for (int i = 0; i < MAX_ARPEGGIO; ++i)
-            inst.arpeggio[i] = serializer.i8(inst.arpeggio[i]);
-        
-        inst.arpeggiate = serializer.bool(inst.arpeggiate);
+            arpeggio[i] = serializer.i8(arpeggio[i]);
 
-        return inst;
+        arpeggiate = serializer.bool(arpeggiate);
     }
-    
-    @Override public int getAllocatedSize() { 
+
+    @Override
+    public int getAllocatedSize()
+    {
         int size = BASE_ALLOCATION_SIZE;
         return size;
     }
 
-    @Override public SerializationData build(Revision revision, byte compressionFlags) {
-        Serializer serializer = new Serializer(this.getAllocatedSize(), revision, compressionFlags);
+    @Override
+    public SerializationData build(Revision revision, byte compressionFlags)
+    {
+        Serializer serializer = new Serializer(this.getAllocatedSize(), revision,
+            compressionFlags);
         serializer.struct(this, RInstrument.class);
         return new SerializationData(
-            serializer.getBuffer(), 
-            revision, 
+            serializer.getBuffer(),
+            revision,
             compressionFlags,
             ResourceType.INSTRUMENT,
-            SerializationType.BINARY, 
+            SerializationType.BINARY,
             serializer.getDependencies()
         );
     }
 
-    public int getNumStack() { return this.numStack; }
-    public void setNumStack(int numStack) { this.numStack = numStack; }
+    public int getNumStack()
+    {
+        return this.numStack;
+    }
 
-    public boolean getArpeggiate() { return this.arpeggiate; }
-    public void setArpeggiate(boolean arpeggiate) { this.arpeggiate = arpeggiate; }
+    public void setNumStack(int numStack)
+    {
+        this.numStack = numStack;
+    }
 
-    public Sample[] getSamples() { return this.samples; }
-    public GUID[] getSampleGUIDs() { return this.sampleGUIDs; }
-    public int[] getSplitNotes() { return this.splitNotes; }
-    public Vector2f[] getParams() { return this.params; }
-    public byte[] getArppegio() { return this.arpeggio; }
+    public boolean getArpeggiate()
+    {
+        return this.arpeggiate;
+    }
+
+    public void setArpeggiate(boolean arpeggiate)
+    {
+        this.arpeggiate = arpeggiate;
+    }
+
+    public Sample[] getSamples()
+    {
+        return this.samples;
+    }
+
+    public GUID[] getSampleGUIDs()
+    {
+        return this.sampleGUIDs;
+    }
+
+    public int[] getSplitNotes()
+    {
+        return this.splitNotes;
+    }
+
+    public Vector2f[] getParams()
+    {
+        return this.params;
+    }
+
+    public byte[] getArppegio()
+    {
+        return this.arpeggio;
+    }
 }

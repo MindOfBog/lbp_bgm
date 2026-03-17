@@ -1,6 +1,7 @@
 package cwlib.types.mods;
 
-public class ModInfo {
+public class ModInfo
+{
     public String ID = "sample";
     public String type = "pack";
     public String title = "Untitled Mod";

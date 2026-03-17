@@ -13,6 +13,7 @@ import bog.lbpas.view3d.renderer.gui.cursor.ECursor;
 import bog.lbpas.view3d.renderer.gui.elements.*;
 import bog.lbpas.view3d.renderer.gui.elements.Button;
 import bog.lbpas.view3d.renderer.gui.elements.Panel;
+import bog.lbpas.view3d.renderer.gui.ingredients.LineStrip;
 import bog.lbpas.view3d.utils.*;
 import cwlib.enums.Part;
 import cwlib.resources.RBevel;
@@ -54,8 +55,11 @@ public class MaterialEditing extends GuiScreen {
     DropDownTab bevelDataTab;
     DropDownTab shapeDataTab;
 
+    Vector2f selectionBoxStart = null;
+
     public void init()
     {
+        screenPositions = new HashMap<>();
         selectedVertices = new ArrayList<>();
         vertexTool = new Transformation3D.Tool(loader);
 
@@ -245,11 +249,34 @@ public class MaterialEditing extends GuiScreen {
     RBevel bev;
 
     ArrayList<Model> lineStrips;
-
+    HashMap<Vector3f, Integer> screenPositions;
     @Override
     public void draw(MouseInput mouseInput) {
 
         pickPoint = -1;
+
+        int selectionBoxX = 0;
+        int selectionBoxY = 0;
+        int selectionBoxWidth = 0;
+        int selectionBoxHeight = 0;
+
+        if(selectionBoxStart != null)
+        {
+            Cursors.setCursor((window.isKeyPressed(GLFW.GLFW_KEY_LEFT_CONTROL) || window.isKeyPressed(GLFW.GLFW_KEY_RIGHT_CONTROL)) ? ECursor.copy : (window.isKeyPressed(GLFW.GLFW_KEY_LEFT_ALT) || window.isKeyPressed(GLFW.GLFW_KEY_RIGHT_ALT)) ? ECursor.circle : ECursor.pointer_move);
+            boolean currentFirstX = mouseInput.currentPos.x < selectionBoxStart.x;
+            boolean currentFirstY = mouseInput.currentPos.y < selectionBoxStart.y;
+            selectionBoxX = (int)(currentFirstX ? mouseInput.currentPos.x : selectionBoxStart.x);
+            selectionBoxX = Math.clamp(3, window.width - 3, selectionBoxX);
+            selectionBoxY = (int)(currentFirstY ? mouseInput.currentPos.y : selectionBoxStart.y);
+            selectionBoxY = Math.clamp(getFontHeightHeader() + 4 + 3, window.height - 3, selectionBoxY);
+            selectionBoxWidth = (int)(currentFirstX ?
+                    Math.clamp(3, window.width - 3, selectionBoxStart.x) - selectionBoxX :
+                    Math.clamp(3, window.width - 3, mouseInput.currentPos.x) - selectionBoxX);
+            selectionBoxHeight = (int)(currentFirstY ?
+                    Math.clamp(getFontHeightHeader() + 4 + 3, window.height - 3, selectionBoxStart.y) - selectionBoxY :
+                    Math.clamp(getFontHeightHeader() + 4 + 3, window.height - 3, mouseInput.currentPos.y) - selectionBoxY);
+            renderer.drawRect(selectionBoxX, selectionBoxY, selectionBoxWidth, selectionBoxHeight, new Color(0f, 0f, 0f, 0.35f));
+        }
 
         for(Entity entity : mainView.things)
             if(entity.selected && ((Thing)entity).thing.hasPart(Part.SHAPE))
@@ -307,7 +334,7 @@ public class MaterialEditing extends GuiScreen {
                 if(bevelSize == -1)
                     bevelSize = shape.bevelSize;
 
-                HashMap<Vector3f, Integer> screenPositions = new HashMap<>();
+                screenPositions.clear();
                 Vector3f[][] lineVerts = new Vector3f[shape.polygon.loops.length][];
 
                 int seg = 0;
@@ -431,12 +458,14 @@ public class MaterialEditing extends GuiScreen {
                     Vector3f screenPoint = positions.get(i);
                     if(screenPoint.z == 0)
                     {
-                        if (mouseInput.currentPos.distance(screenPoint.x, screenPoint.y) < 15 && !overOther && !(vertexTool.isHovering() && selectedVertices != null && this.selectedVertices.size() > 0) && !(vertexTool.isSelected() && this.selectedVertices != null && this.selectedVertices.size() > 0))
+                        if (selectionBoxStart == null && mouseInput.currentPos.distance(screenPoint.x, screenPoint.y) < 15 && !overOther && !(vertexTool.isHovering() && selectedVertices != null && this.selectedVertices.size() > 0) && !(vertexTool.isSelected() && this.selectedVertices != null && this.selectedVertices.size() > 0))
                         {
                             closest = i;
                             overOther = true;
                         }
-                        else
+                        else if(selectionBoxStart == null ||
+                                !(screenPoint.x >= selectionBoxX && screenPoint.x <= selectionBoxX + selectionBoxWidth &&
+                                screenPoint.y >= selectionBoxY && screenPoint.y <= selectionBoxY + selectionBoxHeight))
                         {
                             if(selectedVertices.contains(screenPositions.get(positions.get(i))))
                                 renderer.drawImageStatic(ConstantTextures.getTexture(ConstantTextures.CORNER_EDIT, 20, 20, loader), (int)(screenPoint.x - 10), (int)(screenPoint.y - 10), 20, 20, Config.OUTLINE_COLOR, loader);
@@ -486,21 +515,40 @@ public class MaterialEditing extends GuiScreen {
                         }
                     }
 
-                    if(!overOther && point != null && point.distance(mousePoint) < 15 && !(vertexTool.isHovering() && selectedVertices != null && selectedVertices.size() > 0) && !(vertexTool.isSelected() && this.selectedVertices != null && this.selectedVertices.size() > 0))
+                    if(selectionBoxStart == null && !overOther && point != null && point.distance(mousePoint) < 15 && !(vertexTool.isHovering() && selectedVertices != null && selectedVertices.size() > 0) && !(vertexTool.isSelected() && this.selectedVertices != null && this.selectedVertices.size() > 0))
                     {
-                        renderer.drawImageStatic(ConstantTextures.getTexture(ConstantTextures.CORNER_EDIT_PICK, 30, 30, loader), (int)(point.x - 15), (int)(point.y - 15), 30, 30, Config.OUTLINE_COLOR, loader);
+                        renderer.drawImageStatic(ConstantTextures.getTexture(ConstantTextures.CORNER_EDIT_PICK, 30, 30, loader),
+                                (int)(point.x - 15),
+                                (int)(point.y - 15), 30, 30, Config.OUTLINE_COLOR, loader);
                         Cursors.setCursor(ECursor.copy);
                     }
                     else
                         pickPoint = -1;
                 }
 
-                if(closest != -1)
+                if(closest != -1 && selectionBoxStart == null)
                 {
                     int closest = screenPositions.get(positions.get(this.closest));
-                    renderer.drawImageStatic(this.selectedVertices.contains(closest) ? ConstantTextures.getTexture(ConstantTextures.CORNER_EDIT, 30, 30, loader) : ConstantTextures.getTexture(ConstantTextures.CORNER_EDIT_PICK, 30, 30, loader), (int) (positions.get(this.closest).x - 15), (int) (positions.get(this.closest).y - 15), 30, 30, Config.OUTLINE_COLOR, loader);
+                    renderer.drawImageStatic(this.selectedVertices.contains(closest) ? ConstantTextures.getTexture(ConstantTextures.CORNER_EDIT, 30, 30, loader) : ConstantTextures.getTexture(ConstantTextures.CORNER_EDIT_PICK, 30, 30, loader),
+                            (int) (positions.get(this.closest).x - 15),
+                            (int) (positions.get(this.closest).y - 15), 30, 30, Config.OUTLINE_COLOR, loader);
                     Cursors.setCursor(ECursor.hand2);
                     this.closest = closest;
+                }
+
+                if(selectionBoxStart != null)
+                {
+                    for(Vector3f sp : positions)
+                    {
+                        if(sp.z == 0)
+                        {
+                            if(sp.x >= selectionBoxX && sp.x <= selectionBoxX + selectionBoxWidth &&
+                            sp.y >= selectionBoxY && sp.y <= selectionBoxY + selectionBoxHeight)
+                                renderer.drawImageStatic(this.selectedVertices.contains(screenPositions.get(sp)) ? ConstantTextures.getTexture(ConstantTextures.CORNER_EDIT, 30, 30, loader) : ConstantTextures.getTexture(ConstantTextures.CORNER_EDIT_PICK, 30, 30, loader),
+                                        (int) (sp.x - 15),
+                                        (int) (sp.y - 15), 30, 30, Config.OUTLINE_COLOR, loader);
+                        }
+                    }
                 }
 
                 if(this.selectedVertices != null && this.selectedVertices.size() > 0)
@@ -723,6 +771,15 @@ public class MaterialEditing extends GuiScreen {
     public boolean onClick(MouseInput mouseInput, int button, int action, int mods) {
         boolean overOther = super.onClick(mouseInput, button, action, mods);
 
+        boolean shift = mods == 1;
+        boolean ctrl = mods == 2;
+        boolean ctrlShift = mods == 3;
+        boolean alt = mods == 4;
+        boolean shiftAlt = mods == 5;
+        boolean ctrlAlt = mods == 6;
+        boolean ctrlShiftAlt = mods == 7;
+        boolean winKey = mods == 8;
+
         for(Entity entity : mainView.things)
             if(entity.selected && ((Thing)entity).thing.hasPart(Part.SHAPE))
             {
@@ -789,8 +846,46 @@ public class MaterialEditing extends GuiScreen {
                         this.selectedVertices.clear();
                         this.selectedVertices.add(newPickPoint + 1);
                     }
-                    else if(action == GLFW.GLFW_PRESS && !overOther)
-                        this.selectedVertices.clear();
+                    else
+                    {
+                        if(action == GLFW.GLFW_PRESS && selectionBoxStart == null && !overOther)
+                            selectionBoxStart = new Vector2f((float) mouseInput.currentPos.x, (float) mouseInput.currentPos.y);
+
+                        if(action == GLFW.GLFW_RELEASE)
+                        {
+                            if(selectionBoxStart != null)
+                            {
+                                if(!ctrl && !alt)
+                                    this.selectedVertices.clear();
+
+                                boolean currentFirstX = mouseInput.currentPos.x < selectionBoxStart.x;
+                                boolean currentFirstY = mouseInput.currentPos.y < selectionBoxStart.y;
+                                int x = (int)(currentFirstX ? mouseInput.currentPos.x : selectionBoxStart.x);
+                                x = Math.clamp(3, window.width - 3, x);
+                                int y = (int)(currentFirstY ? mouseInput.currentPos.y : selectionBoxStart.y);
+                                y = Math.clamp(getFontHeightHeader() + 4 + 3, window.height - 3, y);
+                                int width = (int)(currentFirstX ?
+                                        Math.clamp(3, window.width - 3, selectionBoxStart.x) - x :
+                                        Math.clamp(3, window.width - 3, mouseInput.currentPos.x) - x);
+                                int height = (int)(currentFirstY ?
+                                        Math.clamp(getFontHeightHeader() + 4 + 3, window.height - 3, selectionBoxStart.y) - y :
+                                        Math.clamp(getFontHeightHeader() + 4 + 3, window.height - 3, mouseInput.currentPos.y) - y);
+
+                                for(Vector3f sp : screenPositions.keySet())
+                                    if(sp.z == 0)
+                                        if(sp.x >= x && sp.x <= x + width &&
+                                                sp.y >= y && sp.y <= y + height)
+                                        {
+                                            if(alt)
+                                                selectedVertices.remove(screenPositions.get(sp));
+                                            else
+                                                selectedVertices.add(screenPositions.get(sp));
+                                        }
+
+                                selectionBoxStart = null;
+                            }
+                        }
+                    }
 
                     if(action == GLFW.GLFW_RELEASE)
                         entity.reloadModel();

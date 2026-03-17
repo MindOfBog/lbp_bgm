@@ -9,7 +9,8 @@ import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
 import cwlib.types.data.Revision;
 
-public class NpcBehavior implements Serializable {
+public class NpcBehavior implements Serializable
+{
     public static final int BASE_ALLOCATION_SIZE = 0x100;
 
     public Thing npc, targetThing;
@@ -17,83 +18,80 @@ public class NpcBehavior implements Serializable {
     public float maxMoveSpeed;
     public int maxWaitTime;
 
-    @GsonRevision(min=0x2e6)
+    @GsonRevision(min = 0x2e6)
     public String waypointKeyName, poiKeyName;
 
-    @GsonRevision(min=0x2d5)
+    @GsonRevision(min = 0x2d5)
     public int waypointKeyColorIndex;
 
-    @GsonRevision(min=0x2e6)
+    @GsonRevision(min = 0x2e6)
     public int poiKeyColorIndex;
 
-    @GsonRevision(min=0x296)
+    @GsonRevision(min = 0x296)
     public ActingData actingData;
 
-    @GsonRevision(min=0x2ad)
+    @GsonRevision(min = 0x2ad)
     public float awarenessRadius;
 
-    @GsonRevision(min=0x2ad)
+    @GsonRevision(min = 0x2ad)
     public int sharedStateTimer;
 
-    @GsonRevision(min=0x2ad)
+    @GsonRevision(min = 0x2ad)
     public Vector3f idleLookAtPos;
-    
-    @GsonRevision(min=0x2d8)
+
+    @GsonRevision(min = 0x2d8)
     public Vector3f lastGoodPosition;
 
-    @GsonRevision(min=0x2d9)
+    @GsonRevision(min = 0x2d9)
     public boolean lastPositionValid;
 
-    @GsonRevision(min=0x2cf)
+    @GsonRevision(min = 0x2cf)
     public Vector3f patrolDirection;
 
-    @GsonRevision(min=0x2cf)
+    @GsonRevision(min = 0x2cf)
     public int lastPatrolGridX, lastPatrolGridZ;
 
-    @GsonRevision(min=0x2cf)
+    @GsonRevision(min = 0x2cf)
     public int targetPatrolGridX, targetPatrolGridZ;
 
-    @GsonRevision(min=0x2cf)
+    @GsonRevision(min = 0x2cf)
     public int gridDirectionX, gridDirectionZ;
 
-    @GsonRevision(min=0x2cf)
+    @GsonRevision(min = 0x2cf)
     public int patrolStationaryCounter, patrolUnblockedCounter;
 
-    @GsonRevision(min=0x2e7)
+    @GsonRevision(min = 0x2e7)
     public int animSet;
 
-    @GsonRevision(min=0x372)
+    @GsonRevision(min = 0x372)
     public byte expressionType, expressionLevel;
 
-    @GsonRevision(min=0x376)
+    @GsonRevision(min = 0x376)
     public boolean willRecordAudio;
 
-    @GsonRevision(branch=0x4c44, min=0x17)
-    public byte multiJumpLevel; // Vita 
+    @GsonRevision(branch = 0x4c44, min = 0x17)
+    public byte multiJumpLevel; // Vita
 
-    @GsonRevision(lbp3=true, min=0xc7)
+    @GsonRevision(lbp3 = true, min = 0xc7)
     public int awarenessRange;
 
-    @GsonRevision(lbp3=true, min=0x10f)
+    @GsonRevision(lbp3 = true, min = 0x10f)
     public float lookAtSpeed;
 
-    @GsonRevision(lbp3=true, min=0x176)
+    @GsonRevision(lbp3 = true, min = 0x176)
     public boolean showAdvancedOptions;
 
-
-
-    @SuppressWarnings("unchecked")
-    @Override public NpcBehavior serialize(Serializer serializer, Serializable structure) {
-        NpcBehavior behavior = (structure == null) ? new NpcBehavior() : (NpcBehavior) structure;
-
+    @Override
+    public void serialize(Serializer serializer)
+    {
         Revision revision = serializer.getRevision();
         int version = revision.getVersion();
         int subVersion = revision.getSubVersion();
 
-        if (version <= 0x293) return behavior;
+        if (version <= 0x293) return;
 
-        behavior.npc = serializer.thing(behavior.npc);
-        behavior.targetThing = serializer.thing(behavior.targetThing);
+        npc = serializer.thing(npc);
+        targetThing = serializer.thing(targetThing);
         // ENpcBehaviourType
         // 0 = PATROL
         // 1 = FOLLOW
@@ -101,9 +99,9 @@ public class NpcBehavior implements Serializable {
         // 3 = IDLE
         // 4 = ACT
         // 5 = WAYPOINT
-        behavior.type = serializer.s32(behavior.type);
+        type = serializer.s32(type);
 
-        behavior.attributes = serializer.i32(behavior.attributes);
+        attributes = serializer.i32(attributes);
         // ATTRIBUTES
         // 0x0 = NONE
         // 0x1 = CAN_CHANGE_HEIGHT
@@ -111,72 +109,76 @@ public class NpcBehavior implements Serializable {
         // 0x4 = CAN_CHANGE_LAYER
         // 0x8 = UNUSED
         // 0x10 = HOSTILE
-        
-        behavior.maxMoveSpeed = serializer.f32(behavior.maxMoveSpeed);
-        behavior.maxWaitTime = serializer.s32(behavior.maxWaitTime);
+
+        maxMoveSpeed = serializer.f32(maxMoveSpeed);
+        maxWaitTime = serializer.s32(maxWaitTime);
 
         if (version < 0x2cf) serializer.s32(0);
 
         if (version > 0x2e5)
-            behavior.waypointKeyName = serializer.wstr(behavior.waypointKeyName);
-        
+            waypointKeyName = serializer.wstr(waypointKeyName);
+
         if (version > 0x2d4)
-            behavior.waypointKeyColorIndex = serializer.s32(behavior.waypointKeyColorIndex);
-        
-        if (version > 0x2e5) {
-            behavior.poiKeyName = serializer.wstr(behavior.poiKeyName);
-            behavior.poiKeyColorIndex = serializer.s32(behavior.poiKeyColorIndex);
+            waypointKeyColorIndex = serializer.s32(waypointKeyColorIndex);
+
+        if (version > 0x2e5)
+        {
+            poiKeyName = serializer.wstr(poiKeyName);
+            poiKeyColorIndex = serializer.s32(poiKeyColorIndex);
         }
 
         if (version > 0x295)
-            behavior.actingData = serializer.reference(behavior.actingData, ActingData.class);
+            actingData = serializer.reference(actingData, ActingData.class);
 
-        if (version > 0x2ac) {
-            behavior.awarenessRadius = serializer.f32(behavior.awarenessRadius);
-            behavior.sharedStateTimer = serializer.i32(behavior.sharedStateTimer);
-            behavior.idleLookAtPos = serializer.v3(behavior.idleLookAtPos);
+        if (version > 0x2ac)
+        {
+            awarenessRadius = serializer.f32(awarenessRadius);
+            sharedStateTimer = serializer.i32(sharedStateTimer);
+            idleLookAtPos = serializer.v3(idleLookAtPos);
         }
 
         if (version > 0x2d7)
-            behavior.lastGoodPosition = serializer.v3(behavior.lastGoodPosition);
+            lastGoodPosition = serializer.v3(lastGoodPosition);
         if (version > 0x2d8)
-            behavior.lastPositionValid = serializer.bool(behavior.lastPositionValid);
-        if (version > 0x2ce) {
-            behavior.patrolDirection = serializer.v3(behavior.patrolDirection);
-            behavior.lastPatrolGridX = serializer.s32(behavior.lastPatrolGridX);
-            behavior.lastPatrolGridZ = serializer.s32(behavior.lastPatrolGridZ);
-            behavior.targetPatrolGridX = serializer.s32(behavior.targetPatrolGridX);
-            behavior.targetPatrolGridZ = serializer.s32(behavior.targetPatrolGridZ);
-            behavior.gridDirectionX = serializer.s32(behavior.gridDirectionX);
-            behavior.gridDirectionZ = serializer.s32(behavior.gridDirectionZ);
-            behavior.patrolStationaryCounter = serializer.s32(behavior.patrolStationaryCounter);
-            behavior.patrolUnblockedCounter = serializer.s32(behavior.patrolUnblockedCounter);
+            lastPositionValid = serializer.bool(lastPositionValid);
+        if (version > 0x2ce)
+        {
+            patrolDirection = serializer.v3(patrolDirection);
+            lastPatrolGridX = serializer.s32(lastPatrolGridX);
+            lastPatrolGridZ = serializer.s32(lastPatrolGridZ);
+            targetPatrolGridX = serializer.s32(targetPatrolGridX);
+            targetPatrolGridZ = serializer.s32(targetPatrolGridZ);
+            gridDirectionX = serializer.s32(gridDirectionX);
+            gridDirectionZ = serializer.s32(gridDirectionZ);
+            patrolStationaryCounter = serializer.s32(patrolStationaryCounter);
+            patrolUnblockedCounter = serializer.s32(patrolUnblockedCounter);
         }
 
         if (version > 0x2e6)
-            behavior.animSet = serializer.s32(behavior.animSet);
-        if (version > 0x371) {
-            behavior.expressionType = serializer.i8(behavior.expressionType);
-            behavior.expressionLevel = serializer.i8(behavior.expressionLevel);
+            animSet = serializer.s32(animSet);
+        if (version > 0x371)
+        {
+            expressionType = serializer.i8(expressionType);
+            expressionLevel = serializer.i8(expressionLevel);
         }
 
         if (version > 0x375)
-            behavior.willRecordAudio = serializer.bool(behavior.willRecordAudio);
-        
+            willRecordAudio = serializer.bool(willRecordAudio);
+
         if (revision.has(Branch.DOUBLE11, 0x16)) // 0x3d4
-            behavior.multiJumpLevel = serializer.i8(behavior.multiJumpLevel);
+            multiJumpLevel = serializer.i8(multiJumpLevel);
 
         if (subVersion > 0xc6)
-            behavior.awarenessRange = serializer.i32(behavior.awarenessRange);
+            awarenessRange = serializer.i32(awarenessRange);
         if (subVersion > 0x10e)
-            behavior.lookAtSpeed = serializer.f32(behavior.lookAtSpeed);
+            lookAtSpeed = serializer.f32(lookAtSpeed);
         if (subVersion > 0x175)
-            behavior.showAdvancedOptions = serializer.bool(behavior.showAdvancedOptions);
-        
-        return behavior;
+            showAdvancedOptions = serializer.bool(showAdvancedOptions);
     }
 
-    @Override public int getAllocatedSize() {
+    @Override
+    public int getAllocatedSize()
+    {
         int size = NpcBehavior.BASE_ALLOCATION_SIZE;
         if (this.waypointKeyName != null) size += (this.waypointKeyName.length() * 0x2);
         if (this.poiKeyName != null) size += (this.poiKeyName.length() * 0x2);

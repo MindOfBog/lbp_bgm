@@ -3,8 +3,7 @@ package cwlib.types.archives;
 import cwlib.enums.ArchiveType;
 import cwlib.io.Serializable;
 import cwlib.io.streams.MemoryOutputStream;
-import cwlib.types.Resource;
-import cwlib.types.data.ResourceDescriptor;
+import cwlib.types.SerializedResource;
 import cwlib.types.data.SHA1;
 
 import java.io.File;
@@ -18,7 +17,8 @@ import java.util.Iterator;
 /**
  * Base class for archive resources.
  */
-public abstract class Fart implements Iterable<Fat> {
+public abstract class Fart implements Iterable<Fat>
+{
     /**
      * Archive path on local disk.
      */
@@ -54,7 +54,8 @@ public abstract class Fart implements Iterable<Fat> {
      */
     protected HashMap<SHA1, Fat> lookup = new HashMap<>();
 
-    protected Fart(File file, ArchiveType type) {
+    protected Fart(File file, ArchiveType type)
+    {
         // Only save archives can have null paths
         if (file == null && type != ArchiveType.SAVE)
             throw new NullPointerException("Archive path cannot be null!");
@@ -68,26 +69,26 @@ public abstract class Fart implements Iterable<Fat> {
 
     /**
      * Extracts a resource from the archive via SHA1.
+     *
      * @param sha1 SHA1 signature of resource to extract
      * @return Extracted resource
      */
-    public byte[] extract(SHA1 sha1) { 
+    public byte[] extract(SHA1 sha1)
+    {
         if (sha1 == null)
             throw new NullPointerException("Can't search for null hash in archive!");
-        
+
         // Grab the resource from the queue if it exists
         if (this.queue.containsKey(sha1))
             return this.queue.get(sha1);
 
         if (this.lookup.containsKey(sha1))
             return this.extract(this.lookup.get(sha1));
-        
+
         return null;
     }
-
-    /** same as above but with custom read length */
-
-    public byte[] extract(SHA1 sha1, int length) {
+    public byte[] extract(SHA1 sha1, int length)
+    {
         if (sha1 == null)
             throw new NullPointerException("Can't search for null hash in archive!");
 
@@ -103,56 +104,63 @@ public abstract class Fart implements Iterable<Fat> {
 
     /**
      * Extracts a resource via a FAT entry.
+     *
      * @param fat FAT row to extract
      * @return Extracted resource
      */
-    public byte[] extract(Fat fat) {
+    public byte[] extract(Fat fat)
+    {
         if (fat == null)
             throw new NullPointerException("Can't search for null entry in archive!");
         if (fat.getFileArchive() != this)
             throw new IllegalArgumentException("This entry does not belong to this archive!");
-        try (RandomAccessFile archive = new RandomAccessFile(this.file.getAbsolutePath(), "r")) {
+        try (RandomAccessFile archive = new RandomAccessFile(this.file.getAbsolutePath(), "r"))
+        {
             byte[] buffer = new byte[fat.getSize()];
             archive.seek(fat.getOffset());
             archive.read(buffer);
             return buffer;
-        } catch (IOException ex) { return null; }
+        }
+        catch (IOException ex) { return null; }
     }
-
-    /** same as above but with custom read length */
-
-    public byte[] extract(Fat fat, int length) {
+    public byte[] extract(Fat fat, int length)
+    {
         if (fat == null)
             throw new NullPointerException("Can't search for null entry in archive!");
         if (fat.getFileArchive() != this)
             throw new IllegalArgumentException("This entry does not belong to this archive!");
-        try (RandomAccessFile archive = new RandomAccessFile(this.file.getAbsolutePath(), "r")) {
+        try (RandomAccessFile archive = new RandomAccessFile(this.file.getAbsolutePath(), "r"))
+        {
             byte[] buffer = new byte[length];
             archive.seek(fat.getOffset());
             archive.read(buffer);
             return buffer;
-        } catch (IOException ex) { return null; }
+        }
+        catch (IOException ex) { return null; }
     }
 
     /**
      * Checks if a hash exists in the archive.
+     *
      * @param sha1 Hash to query
      * @return Whether or not the hash exists
      */
-    public boolean exists(SHA1 sha1) { 
+    public boolean exists(SHA1 sha1)
+    {
         if (sha1 == null)
             throw new NullPointerException("Can't search for null hash in archive!");
-
         return this.lookup.containsKey(sha1) || this.queue.containsKey(sha1);
     }
 
     /**
      * Adds a buffer to the archive.
+     *
      * @param data Data to add
      * @return SHA1 hash of data added
      */
-    public SHA1 add(byte[] data) {
-        if (data == null) 
+    public SHA1 add(byte[] data)
+    {
+        if (data == null)
             throw new NullPointerException("Can't add null buffer to archive!");
         SHA1 sha1 = SHA1.fromBuffer(data);
 
@@ -166,12 +174,15 @@ public abstract class Fart implements Iterable<Fat> {
 
     /**
      * Adds the contents of another archive to this one.
+     *
      * @param fart Archive containing data to add
      * @return Hashes added
      */
-    public SHA1[] add(Fart fart) {
+    public SHA1[] add(Fart fart)
+    {
         ArrayList<SHA1> hashes = new ArrayList<>(fart.entries.length);
-        for (Fat fat : fart.entries) {
+        for (Fat fat : fart.entries)
+        {
             SHA1 sha1 = fat.getSHA1();
             if (this.exists(sha1))
                 continue;
@@ -184,18 +195,28 @@ public abstract class Fart implements Iterable<Fat> {
 
     /**
      * Flushes changes to the archive.
+     *
      * @return Whether or not the operation was successful.
      */
     public abstract boolean save();
 
-    public ArchiveType getArchiveType() { return this.type; }
-    public File getFile() { return this.file; }
+    public ArchiveType getArchiveType()
+    {
+        return this.type;
+    }
+
+    public File getFile()
+    {
+        return this.file;
+    }
 
     /**
      * Gets the accumulated size of the data in the queue.
+     *
      * @return Queue size
      */
-    public long getQueueSize() {
+    public long getQueueSize()
+    {
         return this.queue.values()
             .stream()
             .mapToLong(data -> data.length)
@@ -204,20 +225,25 @@ public abstract class Fart implements Iterable<Fat> {
 
     /**
      * Gets a list of all hashes queued to be saved.
+     *
      * @return All hashes currently in queue
      */
-    public ArrayList<SHA1> getQueueHashes() {
+    public ArrayList<SHA1> getQueueHashes()
+    {
         return new ArrayList<SHA1>(this.queue.keySet());
     }
 
     /**
      * Generates a FAT buffer.
+     *
      * @param fat Fat array
      * @return Generated buffer
      */
-    protected static byte[] generateFAT(Fat[] fat) {
+    protected static byte[] generateFAT(Fat[] fat)
+    {
         MemoryOutputStream stream = new MemoryOutputStream(fat.length * 0x1c);
-        for (Fat entry : fat) {
+        for (Fat entry : fat)
+        {
             stream.sha1(entry.getSHA1());
             stream.u32(entry.getOffset());
             stream.i32(entry.getSize());
@@ -227,24 +253,28 @@ public abstract class Fart implements Iterable<Fat> {
 
     /**
      * Deserializes a resource extracted from this archive.
-     * @param <T> Resource type that implements Serializable
-     * @param hash Hash of resource to extract
+     *
+     * @param <T>   Resource type that implements Serializable
+     * @param hash  Hash of resource to extract
      * @param clazz Resource class reference that implements Serializable
      * @return Deserialized resource
      */
-    public <T extends Serializable> T loadResource(SHA1 hash, Class<T> clazz) {
+    public <T extends Serializable> T loadResource(SHA1 hash, Class<T> clazz)
+    {
         byte[] data = this.extract(hash);
         if (data == null) return null;
-        Resource resource = new Resource(data);
+        SerializedResource resource = new SerializedResource(data);
         return resource.loadResource(clazz);
     }
 
     /**
      * Checks if the archive has been modified since
      * being loaded.
+     *
      * @return Whether or not the archive has been modified
      */
-    public boolean wasModified() {
+    public boolean wasModified()
+    {
         if (this.file == null) return true;
         if (!this.file.exists()) return true;
         return this.file.lastModified() != this.lastModified;
@@ -252,11 +282,14 @@ public abstract class Fart implements Iterable<Fat> {
 
     /**
      * Validates that all SHA1s match their corresponding buffers in FAT
+     *
      * @return Number of entries that failed validation
      */
-    public int validate() {
+    public int validate()
+    {
         ArrayList<Fat> entries = new ArrayList<>(this.entries.length);
-        for (Fat fat : this.entries) {
+        for (Fat fat : this.entries)
+        {
             SHA1 sha1 = SHA1.fromBuffer(fat.extract());
             if (sha1.equals(fat.getSHA1()))
                 entries.add(fat);
@@ -267,25 +300,32 @@ public abstract class Fart implements Iterable<Fat> {
     }
 
     /**
-     * Checks if the archive testForMouse data to save.
+     * Checks if the archive contains data to save.
+     *
      * @return Whether or not the archive should save.
      */
-    public boolean shouldSave() {
+    public boolean shouldSave()
+    {
         return this.queue.size() != 0;
     }
-    
+
     /**
      * Gets number of entries in FAT.
+     *
      * @return Number of entries.
      */
-    public int getEntryCount() { return this.entries.length; }
-
-    public Fat[] getEntries()
+    public int getEntryCount()
     {
-        return entries;
+        return this.entries.length;
     }
 
-    @Override public Iterator<Fat> iterator() {
+    @Override
+    public Iterator<Fat> iterator()
+    {
         return Arrays.stream(this.entries).iterator();
+    }
+
+    public Fat[] getEntries() {
+        return entries;
     }
 }

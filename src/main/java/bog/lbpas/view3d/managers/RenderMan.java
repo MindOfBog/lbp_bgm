@@ -20,6 +20,7 @@ import org.lwjgl.opengl.*;
 
 import java.awt.*;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 
 /**
  * @author Bog
@@ -30,6 +31,8 @@ public class RenderMan {
     public EntityRenderer entityRenderer;
     public GuiRenderer guiRenderer;
     private static boolean isCulling = false;
+
+    private ArrayList<Runnable> runInOglContextQueue;
 
     public RenderMan(WindowMan window)
     {
@@ -44,6 +47,7 @@ public class RenderMan {
 
     public void init(ObjectLoader loader) throws Exception
     {
+        runInOglContextQueue = new ArrayList<>();
         entityRenderer = new EntityRenderer(loader, this.window)
         {
             @Override
@@ -253,8 +257,21 @@ public class RenderMan {
     }
 
     int prevAASamples = Config.MSAA_SAMPLES;
+
     public void render(MouseInput mouseInput, View3D mainView)
     {
+        for(Runnable task : runInOglContextQueue)
+        {
+            try
+            {
+                task.run();
+            }catch (Exception e)
+            {
+                print.stackTrace(e);
+            }
+        }
+        runInOglContextQueue.clear();
+
         if(prevAASamples != Config.MSAA_SAMPLES)
         {
             resize();
@@ -306,6 +323,11 @@ public class RenderMan {
         GL30.glBindVertexArray(0);
 
         shader.unbind();
+    }
+
+    public void runInOglContext(Runnable task)
+    {
+        runInOglContextQueue.add(task);
     }
 
     public void loaderThread()
@@ -831,8 +853,8 @@ public class RenderMan {
         GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA8, window.width, window.height, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, (ByteBuffer) null);
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
-        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
-        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_REPEAT);
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_REPEAT);
         GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT0, GL11.GL_TEXTURE_2D, colorTexture, 0);
         return colorTexture;
     }
@@ -864,7 +886,10 @@ public class RenderMan {
         GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL30.GL_DEPTH_COMPONENT24, window.width, window.height, 0, GL11.GL_DEPTH_COMPONENT, GL11.GL_FLOAT, (ByteBuffer) null);
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
-        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL30.GL_DEPTH_TEXTURE_MODE, GL11.GL_LUMINANCE);
+
+        GL11.glTexParameteriv(GL11.GL_TEXTURE_2D, GL40.GL_TEXTURE_SWIZZLE_RGBA, new int[]{GL11.GL_RED, GL11.GL_RED, GL11.GL_RED, GL11.GL_ONE});
+//        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL30.GL_DEPTH_TEXTURE_MODE, GL11.GL_LUMINANCE);
+
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL30.GL_TEXTURE_COMPARE_MODE, GL11.GL_NONE);
         GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_DEPTH_ATTACHMENT, GL11.GL_TEXTURE_2D, depthTexture, 0);
         return depthTexture;

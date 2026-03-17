@@ -7,6 +7,9 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="asset studio" />
+        <module name="lbp_bgm-main" />
+        <module name="asset_studio" />
+        <module name="project_loader" />
       </profile>
     </annotationProcessing>
   </component>

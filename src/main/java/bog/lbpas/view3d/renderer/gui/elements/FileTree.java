@@ -56,6 +56,11 @@ public abstract class FileTree extends Element{
             public Texture getIcon() {
                 return getRootIcon(this.itemName.getText(), extended, this.size);
             }
+
+            @Override
+            protected void addOptions(ComboBoxImage optionsCombo) {
+                addOptionsRoot(optionsCombo, this);
+            }
         };
     }
 
@@ -197,6 +202,7 @@ public abstract class FileTree extends Element{
                 {
                     copy(treeItem);
                     delete(treeItem);
+                    treeItem.onDelete();
                 }
             }
         });
@@ -207,8 +213,36 @@ public abstract class FileTree extends Element{
                     replace(treeItem);
             }
         });
+        comboBox.addButton("Delete", new Button() {
+            @Override
+            public void clickedButton(int button, int action, int mods) {
+                if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
+                {
+                    delete(treeItem);
+                    treeItem.onDelete();
+                }
+            }
+        });
     }
     public void addOptionsFolder(ComboBox comboBox, TreeFolder folder)
+    {
+        comboBox.addButton("New Folder", new Button() {
+            @Override
+            public void clickedButton(int button, int action, int mods) {
+                if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_RELEASE)
+                    newFolder(folder);
+            }
+        });
+        comboBox.addButton("Paste", new Button() {
+            @Override
+            public void clickedButton(int button, int action, int mods) {
+                if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
+                    paste(folder);
+            }
+        });
+    }
+
+    public void addOptionsRoot(ComboBox comboBox, TreeFolder folder)
     {
         comboBox.addButton("New Folder", new Button() {
             @Override
@@ -251,8 +285,11 @@ public abstract class FileTree extends Element{
         private boolean hasRename = true;
         private boolean hasDelete = true;
 
+        public ArrayList<Runnable> onDeleteActions;
+
         public TreeItem(String id, Object item, String name, Vector2f pos, Vector2f size, RenderMan renderer, ObjectLoader loader, WindowMan window) {
             super(pos, size, renderer);
+            this.onDeleteActions = new ArrayList<>();
             this.renderer = renderer;
             this.loader = loader;
             this.window = window;
@@ -262,6 +299,7 @@ public abstract class FileTree extends Element{
 
         public TreeItem(String id, Object item, String name, RenderMan renderer, ObjectLoader loader, WindowMan window) {
             super(new Vector2f(), new Vector2f(), renderer);
+            this.onDeleteActions = new ArrayList<>();
             this.renderer = renderer;
             this.loader = loader;
             this.window = window;
@@ -271,6 +309,7 @@ public abstract class FileTree extends Element{
 
         public TreeItem(String id, Object item, String name, boolean hasRename, boolean hasDelete, Vector2f pos, Vector2f size, RenderMan renderer, ObjectLoader loader, WindowMan window) {
             super(pos, size, renderer);
+            this.onDeleteActions = new ArrayList<>();
             this.renderer = renderer;
             this.loader = loader;
             this.window = window;
@@ -282,6 +321,7 @@ public abstract class FileTree extends Element{
 
         public TreeItem(String id, Object item, String name, boolean hasRename, boolean hasDelete, RenderMan renderer, ObjectLoader loader, WindowMan window) {
             super(new Vector2f(), new Vector2f(), renderer);
+            this.onDeleteActions = new ArrayList<>();
             this.renderer = renderer;
             this.loader = loader;
             this.window = window;
@@ -293,6 +333,8 @@ public abstract class FileTree extends Element{
 
         private void setupElements(String name)
         {
+            TreeItem item = this;
+
             iconButton = getIconButton();
             if(hasRename)
                 renameButton = new ButtonImage("renameButton", renderer, loader, window) {
@@ -334,7 +376,10 @@ public abstract class FileTree extends Element{
                     @Override
                     public void clickedButton(int button, int action, int mods) {
                         if(action == GLFW.GLFW_PRESS)
+                        {
                             delete(object);
+                            onDelete();
+                        }
                     }
 
                     @Override
@@ -513,6 +558,14 @@ public abstract class FileTree extends Element{
 
                     super.onKey(key, scancode, action, mods);
                 }
+
+                @Override
+                public void setFocused(boolean focused) {
+                    if(isFocused() && !focused)
+                        rename(item);
+
+                    super.setFocused(focused);
+                }
             };
             itemName.setText(name);
 
@@ -568,11 +621,6 @@ public abstract class FileTree extends Element{
 
         @Override
         public void secondThread() {
-            if (itemName.isFocused())
-                try
-                {
-                    rename(this);
-                }catch(Exception e){print.stackTrace(e);}
 
             super.secondThread();
         }
@@ -627,11 +675,20 @@ public abstract class FileTree extends Element{
             super.onKey(key, scancode, action, mods);
 
             if(key == GLFW.GLFW_KEY_DELETE && action == GLFW.GLFW_PRESS && selected)
+            {
                 delete(this);
+                onDelete();
+            }
         }
 
         protected void addOptions(ComboBoxImage optionsCombo) {
             addOptionsItem(optionsCombo, this);
+        }
+
+        protected void onDelete()
+        {
+            for(Runnable action : onDeleteActions)
+                action.run();
         }
     }
 

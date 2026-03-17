@@ -16,64 +16,71 @@ import cwlib.structs.things.Thing;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 
-public class PCreature implements Serializable {
-    public static class WhipSim implements Serializable {
+public class PCreature implements Serializable
+{
+    public static class WhipSim implements Serializable
+    {
         public static final int BASE_ALLOCATION_SIZE = 0xB0;
 
         public Thing creatureThing;
-        @Deprecated public Matrix4f baseHandleMatrix;
+        @Deprecated
+        public Matrix4f baseHandleMatrix;
         public Vector3f prevDir, currDir;
-        public int stateTimer, state;
+        public int stateTimer;
+        public byte state;
         public Thing attachedThing;
         public Vector3f attachedLocalPos, attachedLocalNormal;
         public float attachedLocalAngle, attachedScale;
         public boolean playedFailToFireSound;
         public float attachedZOffset;
 
-        @SuppressWarnings("unchecked")
-        @Override public WhipSim serialize(Serializer serializer, Serializable structure) {
-            WhipSim sim = (structure == null) ? new WhipSim() : (WhipSim) structure;
-
-            sim.creatureThing = serializer.thing(sim.creatureThing);
-            sim.baseHandleMatrix = serializer.m44(sim.baseHandleMatrix);
-            sim.prevDir = serializer.v3(sim.prevDir);
-            sim.currDir = serializer.v3(sim.currDir);
-            sim.stateTimer = serializer.i32(sim.stateTimer);
-            sim.state = serializer.i32(sim.state);
-            sim.attachedThing = serializer.thing(sim.attachedThing);
-            sim.attachedLocalPos = serializer.v3(sim.attachedLocalPos);
-            sim.attachedLocalNormal = serializer.v3(sim.attachedLocalNormal);
-            sim.attachedLocalAngle = serializer.f32(sim.attachedLocalAngle);
-            sim.attachedScale = serializer.f32(sim.attachedScale);
-            sim.playedFailToFireSound = serializer.bool(sim.playedFailToFireSound);
-            sim.attachedZOffset = serializer.f32(sim.attachedZOffset);
-
-            return sim;
+        @Override
+        public void serialize(Serializer serializer)
+        {
+            creatureThing = serializer.thing(creatureThing);
+            baseHandleMatrix = serializer.m44(baseHandleMatrix);
+            prevDir = serializer.v3(prevDir);
+            currDir = serializer.v3(currDir);
+            stateTimer = serializer.i32(stateTimer);
+            state = serializer.i8(state);
+            attachedThing = serializer.thing(attachedThing);
+            attachedLocalPos = serializer.v3(attachedLocalPos);
+            attachedLocalNormal = serializer.v3(attachedLocalNormal);
+            attachedLocalAngle = serializer.f32(attachedLocalAngle);
+            attachedScale = serializer.f32(attachedScale);
+            playedFailToFireSound = serializer.bool(playedFailToFireSound);
+            attachedZOffset = serializer.f32(attachedZOffset);
         }
 
-        @Override public int getAllocatedSize() { return WhipSim.BASE_ALLOCATION_SIZE; }
+        @Override
+        public int getAllocatedSize()
+        {
+            return WhipSim.BASE_ALLOCATION_SIZE;
+        }
     }
 
-    public static class SpringData implements Serializable {
+    public static class SpringData implements Serializable
+    {
         public static final int BASE_ALLOCATION_SIZE = 0x30;
 
         public Thing springThing;
         public int springTimer;
         public Vector3f springDirection, springThingPosition;
 
-        @SuppressWarnings("unchecked")
-        @Override public SpringData serialize(Serializer serializer, Serializable structure) {
-            SpringData data = (structure == null) ? new SpringData() : (SpringData) structure;
-
-            data.springThing = serializer.thing(data.springThing);
-            data.springTimer = serializer.i32(data.springTimer);
-            data.springDirection = serializer.v3(data.springDirection);
-            data.springThingPosition = serializer.v3(data.springThingPosition);
-
-            return data;
+        @Override
+        public void serialize(Serializer serializer)
+        {
+            springThing = serializer.thing(springThing);
+            springTimer = serializer.i32(springTimer);
+            springDirection = serializer.v3(springDirection);
+            springThingPosition = serializer.v3(springThingPosition);
         }
 
-        @Override public int getAllocatedSize() { return SpringData.BASE_ALLOCATION_SIZE; }
+        @Override
+        public int getAllocatedSize()
+        {
+            return SpringData.BASE_ALLOCATION_SIZE;
+        }
     }
 
     // ECreatureGunType
@@ -90,7 +97,7 @@ public class PCreature implements Serializable {
     // EEnemyMoveDirection
     // LEFT_FIRST 0
     // RIGHT_FIRST 1
-    // LEFT_ONLY 2 
+    // LEFT_ONLY 2
     // RIGHT_ONLY 3
     // NONE 4
 
@@ -116,16 +123,15 @@ public class PCreature implements Serializable {
     // HYBRID 2
 
 
-
     @GsonResourceType(ResourceType.SETTINGS_CHARACTER)
     public ResourceDescriptor config;
-    
+
     public int jumpFrame;
     public float groundDistance;
     public Vector3f groundNormal;
     public Thing grabJoint, jumpingOff;
     public int state;
-    @GsonRevision(lbp3=true,min=0x132)
+    @GsonRevision(lbp3 = true, min = 0x132)
     public int subState;
     public int stateTimer;
     public float speedModifier, jumpModifier, strengthModifier;
@@ -134,216 +140,224 @@ public class PCreature implements Serializable {
     public int crushFrames;
     public float awarenessRadius;
 
-    @GsonRevision(min=0x1df)
+    @GsonRevision(min = 0x1df)
     public int airTime;
 
-    @GsonRevision(min=0x354)
+    @GsonRevision(min = 0x354)
     public int[] bouncepadThingUIDs, grabbedThingUIDs;
 
-    @GsonRevision(min=0x221)
+    @GsonRevision(min = 0x221)
     public boolean haveNotTouchedGroundSinceUsingJetpack;
 
-    @GsonRevision(min=0x15d)
+    @GsonRevision(min = 0x15d)
     public Thing[] legList, lifeSourceList;
-    @GsonRevision(min=0x15d)
+    @GsonRevision(min = 0x15d)
     public Thing lifeCreature, aiCreature;
 
-    @GsonRevision(min=0x163)
+    @GsonRevision(min = 0x163)
     public int jumpInterval, jumpIntervalPhase;
 
-    @GsonRevision(min=0x169)
+    @GsonRevision(min = 0x169)
     public boolean meshDirty;
 
-    @GsonRevision(min=0x166)
+    @GsonRevision(min = 0x166)
     public Thing[] eyeList, brainAiList, brainLifeList;
 
-    @GsonRevision(min=0x19c)
+    @GsonRevision(min = 0x19c)
     public boolean reactToLethal;
 
-    @GsonRevision(min=0x1a9)
+    @GsonRevision(min = 0x1a9)
     public Matrix4f oldAnimMatrix;
-    @GsonRevision(min=0x1a9)
+    @GsonRevision(min = 0x1a9)
     public float animOffset;
 
-    @GsonRevision(min=0x1fc)
+    @GsonRevision(min = 0x1fc)
     public Vector3f groundNormalRaw;
-    @GsonRevision(min=0x212)
+    @GsonRevision(min = 0x212)
     public Vector3f groundNormalSmooth;
 
-    @GsonRevision(min=0x212)
+    @GsonRevision(min = 0x212)
     public float bodyAdjustApplied;
 
-    @GsonRevision(min=0x240,max=0x2c3)
-    @Deprecated public float switchScale;
+    @GsonRevision(min = 0x240, max = 0x2c3)
+    @Deprecated
+    public float switchScale = 1.0f;
 
-    @GsonRevision(min=0x243)
+    @GsonRevision(min = 0x243)
     public Vector3f gunDirAndDashVec;
-    @GsonRevision(lbp3=true,min=0x19e)
+    @GsonRevision(lbp3 = true, min = 0x19e)
     public float gunDirAndDashVecW;
 
-    @GsonRevision(min=0x246)
+    @GsonRevision(min = 0x246)
     public Thing resourceThing;
 
-    @GsonRevision(min=0x247)
+    @GsonRevision(min = 0x247)
     public int gunFireFrame;
 
-    @GsonRevision(min=0x248)
+    @GsonRevision(min = 0x248)
     public int bulletCount;
 
-    @GsonRevision(min=0x24a)
+    @GsonRevision(min = 0x24a)
     public int bulletImmuneTimer;
 
-    @GsonRevision(min=0x24d)
+    @GsonRevision(min = 0x24d)
     public Thing bulletEmitter0;
 
-    @GsonRevision(min=0x3a2)
+    @GsonRevision(min = 0x3a2)
     public Thing bulletEmitter1;
 
-    @GsonRevision(min=0x24e)
+    @GsonRevision(min = 0x24e)
     public int bulletPosIndex;
 
-    @GsonRevision(min=0x24f)
+    @GsonRevision(min = 0x24f)
     public int maxBulletCount;
 
-    @GsonRevision(min=0x24f)
+    @GsonRevision(min = 0x24f)
     public float ammoFillFactor;
 
-    @GsonRevision(min=0x252)
+    @GsonRevision(min = 0x252)
     public boolean gunDirPrecisionMode;
 
 
-    @GsonRevision(min=0x320)
+    @GsonRevision(min = 0x320)
     public int fireRate;
-    @GsonRevision(min=0x320)
+    @GsonRevision(min = 0x320)
     public float gunAccuracy;
-    @GsonRevision(min=0x320)
+    @GsonRevision(min = 0x320)
     public Vector3f bulletEmitOffset;
-    @GsonRevision(min=0x320)
+    @GsonRevision(min = 0x320)
     public float bulletEmitRotation;
-    @GsonRevision(min=0x320)
+    @GsonRevision(min = 0x320)
     public Thing gunThing, gunTrigger;
-    @GsonRevision(min=0x320)
+    @GsonRevision(min = 0x320)
     public int lastGunTriggerUID;
 
-    @GsonRevision(min=0x272)
+    @GsonRevision(min = 0x272)
     public int airTimeLeft;
 
-    @GsonRevision(min=0x2c9)
-    @GsonRevision(branch=0x4c44,min=15)
+    @GsonRevision(min = 0x2c9)
+    @GsonRevision(branch = 0x4c44, min = 15)
     public float amountBodySubmerged, amountHeadSubmerged;
 
-    @GsonRevision(min=0x289)
-    @GsonRevision(branch=0x4c44,min=0)
+    @GsonRevision(min = 0x289)
+    @GsonRevision(branch = 0x4c44, min = 0)
     public boolean hasScubaGear;
 
-    @GsonRevision(min=0x289,max=0x2c7)
-    @GsonRevision(branch=0x4c44,max=11)
-    @Deprecated public ResourceDescriptor headPiece;
+    @GsonRevision(min = 0x289, max = 0x2c7)
+    @GsonRevision(branch = 0x4c44, max = 11)
+    @Deprecated
+    public ResourceDescriptor headPiece;
 
-    @GsonRevision(min=0x289)
-    @GsonRevision(branch=0x4c44,min=0)
+    @GsonRevision(min = 0x289)
+    @GsonRevision(branch = 0x4c44, min = 0)
     public boolean outOfWaterJumpBoost;
 
-    @GsonRevision(min=0x2a9)
+    @GsonRevision(min = 0x2a9)
     public ResourceDescriptor handPiece;
 
-    @GsonRevision(min=0x273)
+    @GsonRevision(min = 0x273)
     public Thing head, toolTetherJoint;
-    @GsonRevision(min=0x273)
+    @GsonRevision(min = 0x273)
     public float toolTetherWidth;
-    @GsonRevision(min=0x273)
+    @GsonRevision(min = 0x273)
     public Thing jetpack;
-    @GsonRevision(min=0x273)
+    @GsonRevision(min = 0x273)
     public int wallJumpDir;
-    @GsonRevision(min=0x273)
+    @GsonRevision(min = 0x273)
     public Vector3f wallJumpPos;
-    @GsonRevision(min=0x273)
+    @GsonRevision(min = 0x273)
     public Vector3f[] bootContactForceList;
-    @GsonRevision(min=0x273)
+    @GsonRevision(min = 0x273)
     public int gunType;
-    @GsonRevision(min=0x273)
+    @GsonRevision(min = 0x273)
     public boolean wallJumpMat;
 
-    @GsonRevision(min=0x29e,max=0x335)
-    @Deprecated public Thing lastDirectControlPrompt;
-    @GsonRevision(min=0x2e5)
+    @GsonRevision(min = 0x29e, max = 0x335)
+    @Deprecated
+    public Thing lastDirectControlPrompt;
+    @GsonRevision(min = 0x2e5)
     public Thing directControlPrompt;
 
-    @GsonRevision(min=0x29e,max=0x335)
-    @Deprecated public Vector3f smoothedDirectControlStick;
-    @GsonRevision(min=0x29e,max=0x335)
-    @Deprecated public short directControlAnimFrame;
-    @GsonRevision(min=0x29e,max=0x335)
-    @Deprecated public byte directControlAnimState;
-    @GsonRevision(min=0x29f,max=0x2c0)
-    @Deprecated public byte directControlMode;
+    @GsonRevision(min = 0x29e, max = 0x335)
+    @Deprecated
+    public Vector3f smoothedDirectControlStick;
+    @GsonRevision(min = 0x29e, max = 0x335)
+    @Deprecated
+    public short directControlAnimFrame;
+    @GsonRevision(min = 0x29e, max = 0x335)
+    @Deprecated
+    public byte directControlAnimState;
+    @GsonRevision(min = 0x29f, max = 0x2c0)
+    @Deprecated
+    public byte directControlMode;
 
-    @GsonRevision(min=0x2a5)
+    @GsonRevision(min = 0x2a5)
     public int responsiblePlayer, responsibleFramesLeft;
-    @GsonRevision(min=0x32c)
+    @GsonRevision(min = 0x32c)
     public boolean canDropPowerup;
 
-    @GsonRevision(min=0x3f0)
+    @GsonRevision(min = 0x3f0)
     public byte capeExtraMaxVelocityCap;
 
-    @GsonRevision(min=0x35a)
+    @GsonRevision(min = 0x35a)
     public int behavior;
 
-    @GsonRevision(min=0x373)
+    @GsonRevision(min = 0x373)
     public int effectDestroy = 6;
 
-    @GsonRevision(min=0x3c0)
+    @GsonRevision(min = 0x3c0)
     public WhipSim whipSim;
 
-    @GsonRevision(branch=0x4431,min=0x53)
+    @GsonRevision(branch = 0x4431, min = 0x53)
     public int shootAtTouch; // vita
 
-    @GsonRevision(lbp3=true,min=0xaa)
+    @GsonRevision(lbp3 = true, min = 0xaa)
     public Thing alternateFormWorld;
 
-    @GsonRevision(lbp3=true,min=0xd6)
+    @GsonRevision(lbp3 = true, min = 0xd6)
     public int hookHatState;
-    @GsonRevision(lbp3=true,min=0xdf)
+    @GsonRevision(lbp3 = true, min = 0xdf)
     public Thing hookHatBogey;
 
-    @GsonRevision(lbp3=true,min=0x196)
+    @GsonRevision(lbp3 = true, min = 0x196)
     public int flyingState, flyingTimer, flyingFlumpFrame,
-    flyingImpulseFrame, flyingFlapButtonTimer, flyingBrakeTimer,
-    flyingGrabFallTimer;
-    @GsonRevision(lbp3=true,min=0x196)
+        flyingImpulseFrame, flyingFlapButtonTimer, flyingBrakeTimer,
+        flyingGrabFallTimer;
+    @GsonRevision(lbp3 = true, min = 0x196)
     public float flyingLegScale;
-    @GsonRevision(lbp3=true,min=0x196)
+    @GsonRevision(lbp3 = true, min = 0x196)
     public Vector4f flyingVels;
-    @GsonRevision(lbp3=true,min=0x196)
+    @GsonRevision(lbp3 = true, min = 0x196)
     public boolean flyingFlapLockout, flyingFallLockout, flyingInWind, flyingThrustLatched;
-    @GsonRevision(lbp3=true,min=0x196)
+    @GsonRevision(lbp3 = true, min = 0x196)
     public short glidingTime;
 
-    @GsonRevision(lbp3=true,min=0x20c)
+    @GsonRevision(lbp3 = true, min = 0x20c)
     public byte springState;
-    @GsonRevision(lbp3=true,min=0x20c)
+    @GsonRevision(lbp3 = true, min = 0x20c)
     public boolean springHasSprung;
-    @GsonRevision(lbp3=true,min=0x20c)
+    @GsonRevision(lbp3 = true, min = 0x20c)
     public SpringData currentSpringData;
-    @GsonRevision(lbp3=true,min=0x20c)
+    @GsonRevision(lbp3 = true, min = 0x20c)
     public byte springPower;
-    @GsonRevision(lbp3=true,min=0x20c)
+    @GsonRevision(lbp3 = true, min = 0x20c)
     public boolean springSeparateForces;
-    @GsonRevision(lbp3=true,min=0x20c)
+    @GsonRevision(lbp3 = true, min = 0x20c)
     public byte springForce, springStateTimer;
 
-    @SuppressWarnings("unchecked")
-    @Override public PCreature serialize(Serializer serializer, Serializable structure) {
-        PCreature creature = (structure == null) ? new PCreature() : (PCreature) structure;
-        
+    @Override
+    public void serialize(Serializer serializer)
+    {
         Revision revision = serializer.getRevision();
         int version = revision.getVersion();
         int subVersion = revision.getSubVersion();
 
-        creature.config = serializer.resource(creature.config, ResourceType.SETTINGS_CHARACTER);
-        if (version < 0x155) {
+        config = serializer.resource(config, ResourceType.SETTINGS_CHARACTER);
+        if (version < 0x155)
+        {
             if (serializer.isWriting()) serializer.getOutput().i32(0);
-            else {
+            else
+            {
                 MemoryInputStream stream = serializer.getInput();
                 int count = stream.i32();
                 for (int i = 0; i < count; ++i)
@@ -351,30 +365,31 @@ public class PCreature implements Serializable {
             }
         }
 
-        creature.jumpFrame = serializer.s32(creature.jumpFrame);
+        jumpFrame = serializer.s32(jumpFrame);
 
-        creature.groundDistance = serializer.f32(creature.groundDistance);
-        creature.groundNormal = serializer.v3(creature.groundNormal);
+        groundDistance = serializer.f32(groundDistance);
+        groundNormal = serializer.v3(groundNormal);
 
-        creature.grabJoint = serializer.thing(creature.grabJoint);
+        grabJoint = serializer.thing(grabJoint);
         if (version < 0x13c) serializer.thing(null);
-        creature.jumpingOff = serializer.thing(creature.jumpingOff);
+        jumpingOff = serializer.thing(jumpingOff);
 
-        creature.state = serializer.i32(creature.state);
+        state = serializer.i32(state);
         if (subVersion >= 0x132)
-            creature.subState = serializer.i32(creature.subState);
-        creature.stateTimer = serializer.i32(creature.stateTimer);
+            subState = serializer.i32(subState);
+        stateTimer = serializer.i32(stateTimer);
 
-        creature.speedModifier = serializer.f32(creature.speedModifier);
-        creature.jumpModifier = serializer.f32(creature.jumpModifier);
-        creature.strengthModifier = serializer.f32(creature.strengthModifier);
+        speedModifier = serializer.f32(speedModifier);
+        jumpModifier = serializer.f32(jumpModifier);
+        strengthModifier = serializer.f32(strengthModifier);
 
         if (version < 0x142) serializer.v4(null);
 
-        creature.zMode = serializer.i32(creature.zMode);
+        zMode = serializer.i32(zMode);
 
         if (version < 0x146) serializer.i32(0);
-        if (version > 0x145 && version < 0x1f0) {
+        if (version > 0x145 && version < 0x1f0)
+        {
             serializer.i32(0);
             serializer.i32(0);
             serializer.bool(false);
@@ -382,252 +397,279 @@ public class PCreature implements Serializable {
             serializer.i32(0);
         }
 
-        creature.playerAwareness = serializer.s32(creature.playerAwareness);
-        creature.moveDirection = serializer.s32(creature.moveDirection);
+        playerAwareness = serializer.s32(playerAwareness);
+        moveDirection = serializer.s32(moveDirection);
 
         if (version < 0x15d) serializer.u8(0);
-        if (version < 0x1f0) {
+        if (version < 0x1f0)
+        {
             serializer.i32(0); // Some array of actual thing pointers, should be 0 length
             serializer.f32(0);
         }
 
-        creature.forceThatSmashedCreature = serializer.v3(creature.forceThatSmashedCreature);
-        creature.crushFrames = serializer.i32(creature.crushFrames);
+        forceThatSmashedCreature = serializer.v3(forceThatSmashedCreature);
+        crushFrames = serializer.i32(crushFrames);
 
-        creature.awarenessRadius = serializer.f32(creature.awarenessRadius);
+        awarenessRadius = serializer.f32(awarenessRadius);
 
         if (version >= 0x1df)
-            creature.airTime = serializer.i32(creature.airTime);
-        if (version >= 0x354) {
-            creature.bouncepadThingUIDs = serializer.intvector(creature.bouncepadThingUIDs);
-            creature.grabbedThingUIDs = serializer.intvector(creature.grabbedThingUIDs);
+            airTime = serializer.i32(airTime);
+        if (version >= 0x354)
+        {
+            bouncepadThingUIDs = serializer.intvector(bouncepadThingUIDs);
+            grabbedThingUIDs = serializer.intvector(grabbedThingUIDs);
         }
 
         if (version >= 0x221)
-            creature.haveNotTouchedGroundSinceUsingJetpack = serializer.bool(creature.haveNotTouchedGroundSinceUsingJetpack);
+            haveNotTouchedGroundSinceUsingJetpack =
+                serializer.bool(haveNotTouchedGroundSinceUsingJetpack);
 
-        if (version >= 0x15d) {
-            creature.legList = serializer.thingarray(creature.legList);
-            if (version < 0x166) {
+        if (version >= 0x15d)
+        {
+            legList = serializer.thingarray(legList);
+            if (version < 0x166)
+            {
                 serializer.thingarray(null);
                 serializer.thingarray(null);
             }
-            creature.lifeSourceList = serializer.thingarray(creature.lifeSourceList);
-            creature.lifeCreature = serializer.thing(creature.lifeCreature);
-            creature.aiCreature = serializer.thing(creature.aiCreature);
+            lifeSourceList = serializer.thingarray(lifeSourceList);
+            lifeCreature = serializer.thing(lifeCreature);
+            aiCreature = serializer.thing(aiCreature);
         }
 
-        if (version >= 0x163) {
-            creature.jumpInterval = serializer.i32(creature.jumpInterval);
-            creature.jumpIntervalPhase = serializer.i32(creature.jumpIntervalPhase);
+        if (version >= 0x163)
+        {
+            jumpInterval = serializer.i32(jumpInterval);
+            jumpIntervalPhase = serializer.i32(jumpIntervalPhase);
         }
 
         if (0x162 < version && version < 0x16d) serializer.bool(false);
 
-        if (version >= 0x169) creature.meshDirty = serializer.bool(creature.meshDirty);
+        if (version >= 0x169) meshDirty = serializer.bool(meshDirty);
 
-        if (version >= 0x166) {
-            creature.eyeList = serializer.thingarray(creature.eyeList);
-            creature.brainAiList = serializer.thingarray(creature.brainAiList);
-            creature.brainLifeList = serializer.thingarray(creature.brainLifeList);
+        if (version >= 0x166)
+        {
+            eyeList = serializer.thingarray(eyeList);
+            brainAiList = serializer.thingarray(brainAiList);
+            brainLifeList = serializer.thingarray(brainLifeList);
         }
 
         if (0x177 < version && version < 0x1e3) serializer.f32(0);
 
         if (version >= 0x19c)
-            creature.reactToLethal = serializer.bool(creature.reactToLethal);
+            reactToLethal = serializer.bool(reactToLethal);
 
-        if (version >= 0x1a9) {
-            creature.oldAnimMatrix = serializer.m44(creature.oldAnimMatrix);
-            creature.animOffset = serializer.f32(creature.animOffset);
+        if (version >= 0x1a9)
+        {
+            oldAnimMatrix = serializer.m44(oldAnimMatrix);
+            animOffset = serializer.f32(animOffset);
         }
 
         if (0x1ed < version && version < 0x225)
             serializer.s32(0);
-        
-        if (version >= 0x1fc) creature.groundNormalRaw = serializer.v3(creature.groundNormalRaw);
-        if (version >= 0x212) {
-            creature.groundNormalSmooth = serializer.v3(creature.groundNormalSmooth);
-            creature.bodyAdjustApplied = serializer.f32(creature.bodyAdjustApplied);
+
+        if (version >= 0x1fc) groundNormalRaw = serializer.v3(groundNormalRaw);
+        if (version >= 0x212)
+        {
+            groundNormalSmooth = serializer.v3(groundNormalSmooth);
+            bodyAdjustApplied = serializer.f32(bodyAdjustApplied);
         }
 
         if (version >= 0x240 && version < 0x2c4)
-            creature.switchScale = serializer.f32(creature.switchScale);
+            switchScale = serializer.f32(switchScale);
 
         if (version > 0x242 && version < 0x24d)
             serializer.resource(null, ResourceType.PLAN);
 
         if (version >= 0x243)
-            creature.gunDirAndDashVec = serializer.v3(creature.gunDirAndDashVec);
+            gunDirAndDashVec = serializer.v3(gunDirAndDashVec);
         if (subVersion >= 0x19e)
-            creature.gunDirAndDashVecW = serializer.f32(creature.gunDirAndDashVecW);
-        
-        if (version >= 0x246)
-            creature.resourceThing = serializer.thing(creature.resourceThing);
+            gunDirAndDashVecW = serializer.f32(gunDirAndDashVecW);
 
-        if (version >= 0x247) 
-            creature.gunFireFrame = serializer.i32(creature.gunFireFrame);
-        if (version >= 0x248) 
-            creature.bulletCount = serializer.i32(creature.bulletCount);
+        if (version >= 0x246)
+            resourceThing = serializer.thing(resourceThing);
+
+        if (version >= 0x247)
+            gunFireFrame = serializer.i32(gunFireFrame);
+        if (version >= 0x248)
+            bulletCount = serializer.i32(bulletCount);
         if (version >= 0x24a)
-            creature.bulletImmuneTimer = serializer.i32(creature.bulletImmuneTimer);
+            bulletImmuneTimer = serializer.i32(bulletImmuneTimer);
         if (version >= 0x24d)
-            creature.bulletEmitter0 = serializer.thing(creature.bulletEmitter0);
+            bulletEmitter0 = serializer.thing(bulletEmitter0);
         if (version >= 0x3a2)
-            creature.bulletEmitter1 = serializer.thing(creature.bulletEmitter1);
-        if (version >= 0x24e) 
-            creature.bulletPosIndex = serializer.i32(creature.bulletPosIndex); // game.bulletposindex_dashboots_hoverboard_unionval
-        if (version >= 0x24f) {
-            creature.maxBulletCount = serializer.i32(creature.maxBulletCount); 
-            creature.ammoFillFactor = serializer.f32(creature.ammoFillFactor);
+            bulletEmitter1 = serializer.thing(bulletEmitter1);
+        if (version >= 0x24e)
+            bulletPosIndex = serializer.i32(bulletPosIndex); // game
+        // .bulletposindex_dashboots_hoverboard_unionval
+        if (version >= 0x24f)
+        {
+            maxBulletCount = serializer.i32(maxBulletCount);
+            ammoFillFactor = serializer.f32(ammoFillFactor);
         }
         if (version >= 0x252)
-            creature.gunDirPrecisionMode = serializer.bool(creature.gunDirPrecisionMode);
+            gunDirPrecisionMode = serializer.bool(gunDirPrecisionMode);
 
-        if (version >= 0x320) {
-            creature.fireRate = serializer.i32(creature.fireRate);
-            creature.gunAccuracy = serializer.f32(creature.gunAccuracy);
-            creature.bulletEmitOffset = serializer.v3(creature.bulletEmitOffset);
-            creature.bulletEmitRotation = serializer.f32(creature.bulletEmitRotation);
-            creature.gunThing = serializer.thing(creature.gunThing);
-            creature.gunTrigger = serializer.thing(creature.gunTrigger);
-            creature.lastGunTriggerUID = serializer.i32(creature.lastGunTriggerUID);
+        if (version >= 0x320)
+        {
+            fireRate = serializer.i32(fireRate);
+            gunAccuracy = serializer.f32(gunAccuracy);
+            bulletEmitOffset = serializer.v3(bulletEmitOffset);
+            bulletEmitRotation = serializer.f32(bulletEmitRotation);
+            gunThing = serializer.thing(gunThing);
+            gunTrigger = serializer.thing(gunTrigger);
+            lastGunTriggerUID = serializer.i32(lastGunTriggerUID);
         }
 
         if (version >= 0x272)
-            creature.airTimeLeft = serializer.i32(creature.airTimeLeft);
+            airTimeLeft = serializer.i32(airTimeLeft);
 
-        if (version >= 0x2c9 || revision.has(Branch.LEERDAMMER, Revisions.LD_SUBMERGED)) {
-            creature.amountBodySubmerged = serializer.f32(creature.amountBodySubmerged);
-            creature.amountHeadSubmerged = serializer.f32(creature.amountHeadSubmerged);
+        if (version >= 0x2c9 || revision.has(Branch.LEERDAMMER, Revisions.LD_SUBMERGED))
+        {
+            amountBodySubmerged = serializer.f32(amountBodySubmerged);
+            amountHeadSubmerged = serializer.f32(amountHeadSubmerged);
         }
 
         if (version >= 0x289 || revision.isLeerdammer())
-            creature.hasScubaGear = serializer.bool(creature.hasScubaGear);
-        
-        if ((version >= 0x289 && version < 0x2c8) || revision.before(Branch.LEERDAMMER, Revisions.LD_REMOVED_HEAD_PIECE))
-            creature.headPiece = serializer.resource(creature.headPiece, ResourceType.PLAN);
+            hasScubaGear = serializer.bool(hasScubaGear);
+
+        if ((version >= 0x289 && version < 0x2c8) || revision.before(Branch.LEERDAMMER,
+            Revisions.LD_REMOVED_HEAD_PIECE))
+            headPiece = serializer.resource(headPiece, ResourceType.PLAN);
 
         if (version >= 0x289 || revision.isLeerdammer())
-            creature.outOfWaterJumpBoost = serializer.bool(creature.outOfWaterJumpBoost);
-        
-        if (version >= 0x2a9) 
-            creature.handPiece = serializer.resource(creature.handPiece, ResourceType.PLAN);
+            outOfWaterJumpBoost = serializer.bool(outOfWaterJumpBoost);
 
-        if (version >= 0x273) {
-            creature.head = serializer.thing(creature.head);
-            creature.toolTetherJoint = serializer.thing(creature.toolTetherJoint);
-            creature.toolTetherWidth = serializer.f32(creature.toolTetherWidth);
-            creature.jetpack = serializer.thing(creature.jetpack);
-            creature.wallJumpDir = serializer.i32(creature.wallJumpDir);
-            creature.wallJumpPos = serializer.v3(creature.wallJumpPos);
+        if (version >= 0x2a9)
+            handPiece = serializer.resource(handPiece, ResourceType.PLAN);
 
-            if (!serializer.isWriting()) creature.bootContactForceList = new Vector3f[serializer.getInput().i32()];
-            else {
-                if (creature.bootContactForceList == null)
-                    creature.bootContactForceList = new Vector3f[0];
-                serializer.getOutput().i32(creature.bootContactForceList.length);
+        if (version >= 0x273)
+        {
+            head = serializer.thing(head);
+            toolTetherJoint = serializer.thing(toolTetherJoint);
+            toolTetherWidth = serializer.f32(toolTetherWidth);
+            jetpack = serializer.thing(jetpack);
+            wallJumpDir = serializer.s32(wallJumpDir);
+            wallJumpPos = serializer.v3(wallJumpPos);
+
+            if (!serializer.isWriting())
+                bootContactForceList = new Vector3f[serializer.getInput().i32()];
+            else
+            {
+                if (bootContactForceList == null)
+                    bootContactForceList = new Vector3f[0];
+                serializer.getOutput().i32(bootContactForceList.length);
             }
-            for (int i = 0; i < creature.bootContactForceList.length; ++i)
-                creature.bootContactForceList[i] = serializer.v3(creature.bootContactForceList[i]);
-            
-            
-            creature.gunType = serializer.s32(creature.gunType);
-            creature.wallJumpMat = serializer.bool(creature.wallJumpMat);
+            for (int i = 0; i < bootContactForceList.length; ++i)
+                bootContactForceList[i] = serializer.v3(bootContactForceList[i]);
+
+
+            gunType = serializer.s32(gunType);
+            wallJumpMat = serializer.bool(wallJumpMat);
         }
-        
+
         if (version >= 0x29e && version < 0x336)
-            creature.lastDirectControlPrompt = serializer.thing(creature.lastDirectControlPrompt);
+            lastDirectControlPrompt = serializer.thing(lastDirectControlPrompt);
 
         if (version > 0x2e4)
-            creature.directControlPrompt = serializer.thing(creature.directControlPrompt);
-        
-        if (version >= 0x29e && version < 0x336) {
-            creature.smoothedDirectControlStick = serializer.v3(creature.smoothedDirectControlStick);
-            creature.directControlAnimFrame = serializer.i16(creature.directControlAnimFrame);
-            creature.directControlAnimState = serializer.i8(creature.directControlAnimState);
+            directControlPrompt = serializer.thing(directControlPrompt);
+
+        if (version >= 0x29e && version < 0x336)
+        {
+            smoothedDirectControlStick =
+                serializer.v3(smoothedDirectControlStick);
+            directControlAnimFrame = serializer.i16(directControlAnimFrame);
+            directControlAnimState = serializer.i8(directControlAnimState);
         }
 
         if (version >= 0x29f && version < 0x2c1)
-            creature.directControlMode = serializer.i8(creature.directControlMode);
+            directControlMode = serializer.i8(directControlMode);
 
         if (version >= 0x2c1 && version < 0x336)
             serializer.u8(0);
 
-        if (version >= 0x2a5) {
-            creature.responsiblePlayer = serializer.i32(creature.responsiblePlayer);
-            creature.responsibleFramesLeft = serializer.i32(creature.responsibleFramesLeft);
+        if (version >= 0x2a5)
+        {
+            responsiblePlayer = serializer.i32(responsiblePlayer);
+            responsibleFramesLeft = serializer.i32(responsibleFramesLeft);
         }
 
         if (version >= 0x32c)
-            creature.canDropPowerup = serializer.bool(creature.canDropPowerup);
+            canDropPowerup = serializer.bool(canDropPowerup);
 
         if (version >= 0x3f0)
-            creature.capeExtraMaxVelocityCap = serializer.i8(creature.capeExtraMaxVelocityCap);
-        
+            capeExtraMaxVelocityCap = serializer.i8(capeExtraMaxVelocityCap);
+
         if (version >= 0x35a)
-            creature.behavior = serializer.i32(creature.behavior);
+            behavior = serializer.i32(behavior);
 
         if (version >= 0x373)
-            creature.effectDestroy = serializer.i32(creature.effectDestroy);
+            effectDestroy = serializer.i32(effectDestroy);
 
         if (version >= 0x3c0)
-            creature.whipSim = serializer.reference(creature.whipSim, WhipSim.class);
+            whipSim = serializer.reference(whipSim, WhipSim.class);
 
-        if (revision.isVita()) {
+        if (revision.isVita())
+        {
             int vita = revision.getBranchRevision();
             if (vita < 0x53) serializer.u8(0);
             if (vita >= 0x53)
-                creature.shootAtTouch = serializer.i32(creature.shootAtTouch);
+                shootAtTouch = serializer.i32(shootAtTouch);
         }
 
         if (subVersion >= 0x88 && subVersion <= 0xa4)
             serializer.resource(null, ResourceType.PLAN);
 
         if (subVersion >= 0xaa)
-            creature.alternateFormWorld = serializer.thing(creature.alternateFormWorld);
+            alternateFormWorld = serializer.thing(alternateFormWorld);
 
         if (subVersion >= 0xd7)
-            creature.hookHatState = serializer.i32(creature.hookHatState);
+            hookHatState = serializer.i32(hookHatState);
 
-        if (subVersion >= 0xd7 && subVersion < 0xea) {
+        if (subVersion >= 0xd7 && subVersion < 0xea)
+        {
             serializer.thing(null);
             serializer.thing(null);
         }
 
         if (subVersion >= 0xdf)
-            creature.hookHatBogey = serializer.thing(creature.hookHatBogey);
-        
-        if (subVersion >= 0x196) {
-            creature.flyingState = serializer.i32(creature.flyingState);
-            creature.flyingTimer = serializer.i32(creature.flyingTimer);
-            creature.flyingFlumpFrame = serializer.i32(creature.flyingFlumpFrame);
-            creature.flyingImpulseFrame = serializer.i32(creature.flyingImpulseFrame);
-            creature.flyingFlapButtonTimer = serializer.i32(creature.flyingFlapButtonTimer);
-            creature.flyingBrakeTimer = serializer.i32(creature.flyingBrakeTimer);
-            creature.flyingGrabFallTimer = serializer.i32(creature.flyingGrabFallTimer);
-            creature.flyingLegScale = serializer.f32(creature.flyingLegScale);
-            creature.flyingVels = serializer.v4(creature.flyingVels);
-            creature.flyingFlapLockout = serializer.bool(creature.flyingFlapLockout);
-            creature.flyingFallLockout = serializer.bool(creature.flyingFallLockout);
-            creature.flyingInWind = serializer.bool(creature.flyingInWind);
-            creature.flyingThrustLatched = serializer.bool(creature.flyingThrustLatched);
-            creature.glidingTime = serializer.i16(creature.glidingTime);
+            hookHatBogey = serializer.thing(hookHatBogey);
+
+        if (subVersion >= 0x196)
+        {
+            flyingState = serializer.i32(flyingState);
+            flyingTimer = serializer.i32(flyingTimer);
+            flyingFlumpFrame = serializer.i32(flyingFlumpFrame);
+            flyingImpulseFrame = serializer.i32(flyingImpulseFrame);
+            flyingFlapButtonTimer = serializer.i32(flyingFlapButtonTimer);
+            flyingBrakeTimer = serializer.i32(flyingBrakeTimer);
+            flyingGrabFallTimer = serializer.i32(flyingGrabFallTimer);
+            flyingLegScale = serializer.f32(flyingLegScale);
+            flyingVels = serializer.v4(flyingVels);
+            flyingFlapLockout = serializer.bool(flyingFlapLockout);
+            flyingFallLockout = serializer.bool(flyingFallLockout);
+            flyingInWind = serializer.bool(flyingInWind);
+            flyingThrustLatched = serializer.bool(flyingThrustLatched);
+            glidingTime = serializer.i16(glidingTime);
         }
 
-        if (subVersion >= 0x20c) {
-            creature.springState = serializer.i8(creature.springState);
-            creature.springHasSprung = serializer.bool(creature.springHasSprung);
-            creature.currentSpringData = serializer.reference(creature.currentSpringData, SpringData.class);
-            creature.springPower = serializer.i8(creature.springPower);
-            creature.springSeparateForces = serializer.bool(creature.springSeparateForces);
-            creature.springForce = serializer.i8(creature.springForce);
-            creature.springStateTimer = serializer.i8(creature.springStateTimer);
+        if (subVersion >= 0x20c)
+        {
+            springState = serializer.i8(springState);
+            springHasSprung = serializer.bool(springHasSprung);
+            currentSpringData = serializer.reference(currentSpringData,
+                SpringData.class);
+            springPower = serializer.i8(springPower);
+            springSeparateForces = serializer.bool(springSeparateForces);
+            springForce = serializer.i8(springForce);
+            springStateTimer = serializer.i8(springStateTimer);
         }
-
-        return creature;
     }
-    
+
     // TODO: Actually implement
-    @Override public int getAllocatedSize() { return 0; }
+    @Override
+    public int getAllocatedSize()
+    {
+        return 0;
+    }
 }

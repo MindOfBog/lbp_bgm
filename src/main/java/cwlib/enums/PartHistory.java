@@ -3,7 +3,8 @@ package cwlib.enums;
 /**
  * Revisions for when parts were added to the game.
  */
-public class PartHistory {
+public class PartHistory
+{
     public static final int BODY = 0x1;
     public static final int JOINT = 0x2;
     public static final int WORLD = 0x3;

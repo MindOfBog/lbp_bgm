@@ -7,6 +7,7 @@ import bog.lbpas.view3d.renderer.gui.elements.Button;
 import bog.lbpas.view3d.renderer.gui.elements.Checkbox;
 import bog.lbpas.view3d.renderer.gui.elements.Panel;
 import bog.lbpas.view3d.utils.CWLibUtils.LevelSettingsUtils;
+import bog.lbpas.view3d.utils.FilePicker;
 import bog.lbpas.view3d.utils.Utils;
 import bog.lbpas.view3d.utils.print;
 import cwlib.enums.Part;
@@ -17,13 +18,13 @@ import cwlib.resources.RPlan;
 import cwlib.structs.things.Thing;
 import cwlib.structs.things.components.LevelSettings;
 import cwlib.structs.things.parts.PLevelSettings;
-import cwlib.types.Resource;
+import cwlib.types.SerializedResource;
 import cwlib.types.data.ResourceDescriptor;
 import org.joml.*;
 import org.joml.Math;
 import org.lwjgl.glfw.GLFW;
-import toolkit.utilities.FileChooser;
 
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
@@ -95,13 +96,17 @@ public abstract class PartLevelSettings extends iPart {
     public void init(View3D view) {
 
         Panel importPanel = partComboBox.addPanel("importPanel");
+
+        FileNameExtensionFilter[] planLevelExtensions = FilePicker.setupLBPExtensionFilter("Plans/Levels", new ResourceType[]{ResourceType.PLAN, ResourceType.LEVEL});
+
         ImportPlanBin = new Button("ImportPlanBin", "Import", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 File file = null;
                 try {
                     if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
-                        file = FileChooser.openFile(null, "plan,pln,bin", false, false)[0];
+
+                        file = FilePicker.openFiles(planLevelExtensions, false, false)[0];
                 }catch (Exception ex){}
 
                 if (file == null || !file.exists()) return;
@@ -113,7 +118,7 @@ public abstract class PartLevelSettings extends iPart {
                     case "plan":
                     case "pln":
                         try {
-                            RPlan plan = new Resource(file.getAbsolutePath()).loadResource(RPlan.class);
+                            RPlan plan = new SerializedResource(file.getAbsolutePath()).loadResource(RPlan.class);
                             if (plan == null) return;
 
                             Thing[] things = plan.getThings();
@@ -142,10 +147,10 @@ public abstract class PartLevelSettings extends iPart {
                         break;
                     case "bin":
                         try {
-                            RLevel level = new Resource(file.getAbsolutePath()).loadResource(RLevel.class);
+                            RLevel level = new SerializedResource(file.getAbsolutePath()).loadResource(RLevel.class);
                             if (level == null) return;
 
-                            PLevelSettings ls = level.world.getPart(Part.LEVEL_SETTINGS);
+                            PLevelSettings ls = level.worldThing.getPart(Part.LEVEL_SETTINGS);
                             presets.add(LevelSettingsUtils.translate(ls));
                         } catch (Exception ex) {
                             view.pushError("File Loading", ex.getLocalizedMessage());

@@ -14,6 +14,7 @@ import bog.lbpas.view3d.utils.Cursors;
 import org.joml.Vector2d;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
+import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 
 import java.awt.*;
@@ -99,14 +100,22 @@ public abstract class ButtonList<T> extends Element{
     }
 
     public ArrayList<Integer> indexes;
+    private int lastIndex = 0;
 
     public void updateSearch()
     {
+        lastIndex = 0;
+
         ArrayList<Integer> is = new ArrayList<>();
         if(this.list != null)
             for (int i = 0; i < this.list.size(); i++)
                 if (searchFilter(this.list.get(i), i))
+                {
                     is.add(i);
+
+                    if(i > lastIndex)
+                        lastIndex = i;
+                }
         indexes = is;
     }
 
@@ -155,46 +164,64 @@ public abstract class ButtonList<T> extends Element{
 
         renderer.startScissor((int) pos.x, (int) scrollY, (int) size.x, (int) Math.ceil(scrollHeight));
         int ind = 0;
+        int draggingInd = 0;
 
         for(int i : indexes)
         {
-            T object = null;
-
-            if(!(this.list.size() <= i))
-                object = this.list.get(i);
-
-            if(object == null)
-                continue;
-
-            int posY = (int) (yScroll + pos.y + 5 + (height + 2) * ind);
+            if(dragging != i)
+                setupButton(overElement, i, ind, height, scrollY, scrollHeight, mouseInput);
+            else
+                draggingInd = ind;
             ind++;
-
-            if(posY <= pos.y + size.y &&
-                    posY + height >= pos.y)
-            {
-                if(!overElement)
-                    if(mouseInput.currentPos.y <= scrollY + scrollHeight &&
-                            mouseInput.currentPos.y >= scrollY)
-                    {
-                        double posX = this.pos.x + 2d;
-                        double width = getWidth() + 2 - ((height + 2) * ((deletable ? 1 : 0) + (draggable ? 1 : 0)));
-                        if(mouseInput.currentPos.x >= posX && mouseInput.currentPos.x <= posX + width &&
-                                mouseInput.currentPos.y >= posY && mouseInput.currentPos.y <= posY + height)
-                        {
-                            hoveringCursor();
-                            hoveringButton(object, i);
-                        }
-                    }
-                drawButton(posY, scrollY, scrollHeight, height, object, i, mouseInput, overElement);
-            }
         }
+
+        if(dragging != -1)
+            setupButton(overElement, dragging, draggingInd, height, scrollY, scrollHeight, mouseInput);
+
         renderer.endScissor();
     }
+
+    private void setupButton(boolean overElement, int i, int ind, int height, float scrollY, float scrollHeight, MouseInput mouseInput)
+    {
+        T object = null;
+
+        if(!(this.list.size() <= i))
+            object = this.list.get(i);
+
+        if(object == null)
+            return;
+
+        int posY = (int) (yScroll + pos.y + 5 + (height + 2) * ind);
+
+        if(posY <= pos.y + size.y &&
+                posY + height >= pos.y)
+        {
+            if(!overElement)
+                if(mouseInput.currentPos.y <= scrollY + scrollHeight &&
+                        mouseInput.currentPos.y >= scrollY)
+                {
+                    double posX = this.pos.x + 2d;
+                    double width = getWidth() + 2 - ((height + 2) * ((deletable ? 1 : 0) + (draggable ? 1 : 0)));
+                    if(mouseInput.currentPos.x >= posX && mouseInput.currentPos.x <= posX + width &&
+                            mouseInput.currentPos.y >= posY && mouseInput.currentPos.y <= posY + height)
+                    {
+                        hoveringCursor();
+                        hoveringButton(object, i);
+                    }
+                }
+            drawButton(posY, scrollY, scrollHeight, height, object, i, mouseInput, overElement);
+        }
+    }
+
     @Override
     public void resize() {
         super.resize();
         refreshOutline(buttonHeight());
     }
+
+    private int dragging = -1;
+    private Vector2d draggingOffset;
+
     @Override
     public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement, boolean focusedOther) {
         super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
@@ -230,7 +257,13 @@ public abstract class ButtonList<T> extends Element{
                         clickedButton(object, i, button, action, mods);
                     }
 
-                    if(hoveringDelete == i && button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
+                    if(hoveringDrag == i && button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
+                    {
+                        draggingOffset = new Vector2d(pos);
+                        dragging = hoveringDrag;
+                        dragNewIndex = hoveringDrag;
+                    }
+                    else if(hoveringDelete == i && button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
                         delete(i);
                 }
             }
@@ -242,6 +275,17 @@ public abstract class ButtonList<T> extends Element{
 
             if(button == GLFW.GLFW_MOUSE_BUTTON_1 && hoveringScroll && action == GLFW.GLFW_PRESS)
                 scrolling = true;
+        }
+
+        if(dragging != -1 && button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_RELEASE)
+        {
+            if (dragging != dragNewIndex)
+            {
+                T item = list.remove(dragging);
+                list.add(dragNewIndex, item);
+            }
+
+            dragging = -1;
         }
 
         if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_RELEASE)
@@ -279,22 +323,59 @@ public abstract class ButtonList<T> extends Element{
     int hoveringDelete = -1;
     int hoveringDrag = -1;
 
+    int dragNewIndex = -1;
+
     public void drawButton(int posY, float scrollY, float scrollHeight, int height, T object, int i, MouseInput mouseInput, boolean overElement)
     {
+        if(dragging == i)
+        {
+            int lastY = ((int) (yScroll + pos.y + 5 + (height + 2) * lastIndex));
+
+            posY -= draggingOffset.y - mouseInput.currentPos.y;
+
+            posY = (int) org.joml.Math.clamp(pos.y - (height/2) + 2, lastY + (height/2) - 2, posY);
+
+            Cursors.setCursor(ECursor.grabbing);
+        }
+        else if(dragging != -1)
+        {
+            int draggedY = ((int) (yScroll + pos.y + 5 + (height + 2) * dragging));
+            int draggedYOffset = (int) (draggedY - (draggingOffset.y - mouseInput.currentPos.y));
+
+            if(draggedYOffset + (height/2) < posY + height && dragging > i)
+            {
+                posY += height + 2;
+
+                if(dragNewIndex == -1 || dragNewIndex > i)
+                    dragNewIndex = i;
+            }
+
+            if(draggedYOffset + (height/2) > posY && dragging < i)
+            {
+                posY -= height + 2;
+
+                if(dragNewIndex == -1 || dragNewIndex < i)
+                    dragNewIndex = i;
+            }
+        }
+
         float newWidthF = getWidth() - ((height + 2) * ((deletable ? 1 : 0) + (draggable ? 1 : 0)));
         int newWidth = Math.round(newWidthF);
         int newHeight = height;
+
+        boolean hoveringMain = dragging == -1 ? (isHighlighted(object, i) || isSelected(object, i)) : false;
+
         renderer.startScissor(Math.round(pos.x + 4), Math.round(posY), newWidth, newHeight);
-        renderer.drawRect(Math.round(pos.x + 4), Math.round(posY), newWidth, newHeight, !(isHighlighted(object, i) || isSelected(object, i)) ? buttonColor(object, i) : (isSelected(object, i) ? buttonColorSelected(object, i) : buttonColorHighlighted(object, i)));
+        renderer.drawRect(Math.round(pos.x + 4), Math.round(posY), newWidth, newHeight, !hoveringMain ? buttonColor(object, i) : (isSelected(object, i) ? buttonColorSelected(object, i) : buttonColorHighlighted(object, i)));
         renderer.drawString(buttonText(object, i), textColor(object, i), Math.round(pos.x + 6f + ((newWidthF / 2f) - (getStringWidth(buttonText(object, i)) / 2f))), Math.round(posY + height / 2 - getFontHeight() / 2));
-        renderer.drawRectOutline(new Vector2f(Math.round(pos.x + 4), Math.round(posY)), outlineButton, !(isHighlighted(object, i) || isSelected(object, i)) ? buttonColor2(object, i) : (isSelected(object, i) ? buttonColorSelected2(object, i) : buttonColorHighlighted2(object, i)), false);
+        renderer.drawRectOutline(new Vector2f(Math.round(pos.x + 4), Math.round(posY)), outlineButton, !hoveringMain ? buttonColor2(object, i) : (isSelected(object, i) ? buttonColorSelected2(object, i) : buttonColorHighlighted2(object, i)), false);
         renderer.endScissor();
 
         if(deletable)
         {
             int x = Math.round(pos.x + 4) + newWidth + 2 + (draggable ? height + 2 : 0);
             boolean hovering = false;
-            if(!overElement)
+            if(!overElement && dragging == -1)
                 if(mouseInput.currentPos.y <= scrollY + scrollHeight &&
                         mouseInput.currentPos.y >= scrollY)
                 {
@@ -315,7 +396,7 @@ public abstract class ButtonList<T> extends Element{
         if(draggable)
         {
             boolean hovering = false;
-            if(!overElement)
+            if(!overElement && dragging == -1)
                 if(mouseInput.currentPos.y <= scrollY + scrollHeight &&
                         mouseInput.currentPos.y >= scrollY)
                 {
@@ -328,6 +409,9 @@ public abstract class ButtonList<T> extends Element{
                         Cursors.setCursor(ECursor.hand2);
                     }
                 }
+
+            if(dragging == i)
+                hovering = true;
 
             renderer.drawRect(Math.round(pos.x + 4) + newWidth + 2, Math.round(posY), newHeight, newHeight, !hovering ? buttonColor(object, i) : buttonColorHighlighted(object, i));
             renderer.drawImageStatic(ConstantTextures.getTexture(ConstantTextures.DRAG, newHeight, newHeight, loader), Math.round(pos.x + 4) + newWidth + 2, Math.round(posY), newHeight, newHeight, loader);

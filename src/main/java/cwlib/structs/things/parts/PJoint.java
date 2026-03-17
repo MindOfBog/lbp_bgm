@@ -1,8 +1,5 @@
 package cwlib.structs.things.parts;
 
-import org.joml.Vector3f;
-import org.joml.Vector4f;
-
 import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
 import cwlib.io.gson.GsonRevision;
@@ -12,8 +9,11 @@ import cwlib.io.streams.MemoryOutputStream;
 import cwlib.structs.things.Thing;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
 
-public class PJoint implements Serializable {
+public class PJoint implements Serializable
+{
     public static final int BASE_ALLOCATION_SIZE = 0x100;
 
     public Thing a, b;
@@ -26,53 +26,56 @@ public class PJoint implements Serializable {
     public int type = 10;
     public float strength = 0.027f;
 
-    @GsonRevision(min=0x18d)
+    @GsonRevision(min = 0x18d)
     public boolean stiff;
-    @GsonRevision(min=0x18d)
+    @GsonRevision(min = 0x18d)
     public Vector3f slideDir;
-    
+
     public int animationPattern;
     public float animationRange = 1.0f, animationTime = 60.0f,
-    animationPhase, animationSpeed, animationPause;
+        animationPhase, animationSpeed, animationPause;
     public float aAngleOffset, bAngleOffset;
     public float modStartFrames = -1.0f, modDeltaFrames, modScale = 1.0f;
 
-    @GsonRevision(max=0x2c3)
-    @Deprecated public boolean modDriven;
+    @GsonRevision(max = 0x2c3)
+    @Deprecated
+    public boolean modDriven;
 
-    @GsonRevision(max=0x306)
-    @Deprecated public byte interactPlayMode, interactEditMode;
-    
+    @GsonRevision(max = 0x306)
+    @Deprecated
+    public byte interactPlayMode = 0, interactEditMode = 2;
+
     public float renderScale = 1.0f;
 
-    @GsonRevision(min=0x16a)
+    @GsonRevision(min = 0x16a)
     public int jointSoundEnum = 1;
-    
-    @GsonRevision(min=0x21d)
+
+    @GsonRevision(min = 0x21d)
     public float tweakTargetMaxLength, tweakTargetMinLength;
 
-    @GsonRevision(min=0x21f)
+    @GsonRevision(min = 0x21f)
     public boolean currentlyEditing;
 
-    @GsonRevision(min=0x230,max=0x2c3)
-    @Deprecated public boolean modScaleActive;
-    
-    @GsonRevision(min=0x25d)
+    @GsonRevision(min = 0x230, max = 0x2c3)
+    @Deprecated
+    public boolean modScaleActive;
+
+    @GsonRevision(min = 0x25d)
     public boolean hideInPlayMode;
 
-    @GsonRevision(min=0x2c4)
+    @GsonRevision(min = 0x2c4)
     public int behaviour;
 
-    @GsonRevision(lbp3=true,min=0xed)
+    @GsonRevision(lbp3 = true, min = 0xed)
     public Vector3f[] railKnotVector;
 
-    @GsonRevision(lbp3=true,min=0x197)
+    @GsonRevision(lbp3 = true, min = 0x197)
     public byte railInteractions;
 
-    @GsonRevision(lbp3=true,min=0x19f)
+    @GsonRevision(lbp3 = true, min = 0x19f)
     public boolean canBeTweakedByPoppetPowerup, createdByPoppetPowerup;
 
-    @GsonRevision(lbp3=true,min=0x1a4)
+    @GsonRevision(lbp3 = true, min = 0x1a4)
     public boolean oldJointOutputBehavior;
 
     // EJointPattern
@@ -94,123 +97,135 @@ public class PJoint implements Serializable {
     // MOTOR 9
     // QUANTIZED 10
 
-    public PJoint() {}
+    public PJoint() { }
 
-    public PJoint(Thing a, Thing b) {
+    public PJoint(Thing a, Thing b)
+    {
         this.a = a;
         this.b = b;
     }
 
-    @SuppressWarnings("unchecked")
-    @Override public PJoint serialize(Serializer serializer, Serializable structure) {
-        PJoint joint = (structure == null) ? new PJoint() : (PJoint) structure;
-
+    @Override
+    public void serialize(Serializer serializer)
+    {
         Revision revision = serializer.getRevision();
         int version = revision.getVersion();
         int subVersion = revision.getSubVersion();
 
-        joint.a = serializer.reference(joint.a, Thing.class);
-        joint.b = serializer.reference(joint.b, Thing.class);
-        joint.aContact = serializer.v3(joint.aContact);
-        joint.bContact = serializer.v3(joint.bContact);
-        joint.length = serializer.f32(joint.length);
-        joint.angle = serializer.f32(joint.angle);
-        joint.offsetTime = serializer.f32(joint.offsetTime);
-        joint.invertAngle = serializer.bool(joint.invertAngle);
-        joint.settings = serializer.resource(joint.settings, ResourceType.JOINT);
-        joint.boneIdx = serializer.intarray(joint.boneIdx);
-        joint.boneLengths = serializer.v4(joint.boneLengths);
-        joint.type = serializer.i32(joint.type);
-        joint.strength = serializer.f32(joint.strength);
+        a = serializer.reference(a, Thing.class);
+        b = serializer.reference(b, Thing.class);
+        aContact = serializer.v3(aContact);
+        bContact = serializer.v3(bContact);
+        length = serializer.f32(length);
+        angle = serializer.f32(angle);
+        offsetTime = serializer.f32(offsetTime);
+        invertAngle = serializer.bool(invertAngle);
+        settings = serializer.resource(settings, ResourceType.JOINT);
+        boneIdx = serializer.intarray(boneIdx);
+        boneLengths = serializer.v4(boneLengths);
+        type = serializer.i32(type);
+        strength = serializer.f32(strength);
 
         if (version < 0x18d)
             serializer.f32(0); // Unknown
-        else {
-            joint.stiff = serializer.bool(joint.stiff);
-            joint.slideDir = serializer.v3(joint.slideDir);
+        else
+        {
+            stiff = serializer.bool(stiff);
+            slideDir = serializer.v3(slideDir);
         }
 
-        joint.animationPattern = serializer.i32(joint.animationPattern);
-        joint.animationRange = serializer.f32(joint.animationRange);
-        joint.animationTime = serializer.f32(joint.animationTime);
-        joint.animationPhase = serializer.f32(joint.animationPhase);
-        joint.animationSpeed = serializer.f32(joint.animationSpeed);
-        joint.animationPause = serializer.f32(joint.animationPause);
+        animationPattern = serializer.i32(animationPattern);
+        animationRange = serializer.f32(animationRange);
+        animationTime = serializer.f32(animationTime);
+        animationPhase = serializer.f32(animationPhase);
+        animationSpeed = serializer.f32(animationSpeed);
+        animationPause = serializer.f32(animationPause);
 
-        joint.aAngleOffset = serializer.f32(joint.aAngleOffset);
-        joint.bAngleOffset = serializer.f32(joint.bAngleOffset);
+        aAngleOffset = serializer.f32(aAngleOffset);
+        bAngleOffset = serializer.f32(bAngleOffset);
 
-        joint.modStartFrames = serializer.f32(joint.modStartFrames);
-        joint.modDeltaFrames = serializer.f32(joint.modDeltaFrames);
-        joint.modScale = serializer.f32(joint.modScale);
+        modStartFrames = serializer.f32(modStartFrames);
+        modDeltaFrames = serializer.f32(modDeltaFrames);
+        modScale = serializer.f32(modScale);
 
         if (version < 0x2c4)
-            joint.modDriven = serializer.bool(joint.modDriven);
-        
-        if (version < 0x307) {
-            joint.interactPlayMode = serializer.i8(joint.interactPlayMode);
-            joint.interactEditMode = serializer.i8(joint.interactEditMode);
+            modDriven = serializer.bool(modDriven);
+
+        if (version < 0x307)
+        {
+            interactPlayMode = serializer.i8(interactPlayMode);
+            interactEditMode = serializer.i8(interactEditMode);
         }
 
-        joint.renderScale = serializer.f32(joint.renderScale);
+        renderScale = serializer.f32(renderScale);
 
         if (version > 0x169)
-            joint.jointSoundEnum = serializer.i32(joint.jointSoundEnum);
+            jointSoundEnum = serializer.i32(jointSoundEnum);
 
-        if (version > 0x280) {
-            joint.tweakTargetMaxLength = serializer.f32(joint.tweakTargetMaxLength);
-            joint.tweakTargetMinLength = serializer.f32(joint.tweakTargetMinLength);
-        } else if (version > 0x21c) {
-            joint.tweakTargetMaxLength = serializer.i32(Math.round(joint.tweakTargetMaxLength));
-            joint.tweakTargetMinLength = serializer.i32(Math.round(joint.tweakTargetMinLength));
+        if (version > 0x280)
+        {
+            tweakTargetMaxLength = serializer.f32(tweakTargetMaxLength);
+            tweakTargetMinLength = serializer.f32(tweakTargetMinLength);
+        }
+        else if (version > 0x21c)
+        {
+            tweakTargetMaxLength = serializer.i32(Math.round(tweakTargetMaxLength));
+            tweakTargetMinLength = serializer.i32(Math.round(tweakTargetMinLength));
         }
 
         if (version > 0x21e)
-            joint.currentlyEditing = serializer.bool(joint.currentlyEditing);
+            currentlyEditing = serializer.bool(currentlyEditing);
 
         if (version > 0x22f && version < 0x2c4)
-            joint.modScaleActive = serializer.bool(joint.modScaleActive);
+            modScaleActive = serializer.bool(modScaleActive);
 
         if (version > 0x25c)
-            joint.hideInPlayMode = serializer.bool(joint.hideInPlayMode);
+            hideInPlayMode = serializer.bool(hideInPlayMode);
 
         if (version > 0x2c3)
-            joint.behaviour = serializer.i32(joint.behaviour);
+            behaviour = serializer.i32(behaviour);
 
-        if (subVersion >= 0xed) {
-            if (serializer.isWriting()) {
+        if (subVersion >= 0xed)
+        {
+            if (serializer.isWriting())
+            {
                 MemoryOutputStream stream = serializer.getOutput();
-                if (joint.railKnotVector != null) {
-                    stream.i32(joint.railKnotVector.length);
-                    for (Vector3f vector : joint.railKnotVector)
+                if (railKnotVector != null)
+                {
+                    stream.i32(railKnotVector.length);
+                    for (Vector3f vector : railKnotVector)
                         serializer.v3(vector);
-                } else stream.i32(0);
-            } else {
+                }
+                else stream.i32(0);
+            }
+            else
+            {
                 MemoryInputStream stream = serializer.getInput();
-                joint.railKnotVector = new Vector3f[stream.i32()];
-                for (int i = 0; i < joint.railKnotVector.length; ++i)
-                    joint.railKnotVector[i] = stream.v3();
+                railKnotVector = new Vector3f[stream.i32()];
+                for (int i = 0; i < railKnotVector.length; ++i)
+                    railKnotVector[i] = stream.v3();
             }
         }
 
         if (subVersion >= 0x197)
-            joint.railInteractions = serializer.i8(joint.railInteractions);
+            railInteractions = serializer.i8(railInteractions);
 
-        if (subVersion >= 0x19f) {
-            joint.canBeTweakedByPoppetPowerup = serializer.bool(joint.canBeTweakedByPoppetPowerup);
-            joint.createdByPoppetPowerup = serializer.bool(joint.createdByPoppetPowerup);
+        if (subVersion >= 0x19f)
+        {
+            canBeTweakedByPoppetPowerup = serializer.bool(canBeTweakedByPoppetPowerup);
+            createdByPoppetPowerup = serializer.bool(createdByPoppetPowerup);
         }
 
         if (subVersion >= 0x1a4)
-            joint.oldJointOutputBehavior = serializer.bool(joint.oldJointOutputBehavior);
-
-        return joint;
+            oldJointOutputBehavior = serializer.bool(oldJointOutputBehavior);
     }
-    
-    @Override public int getAllocatedSize() {
+
+    @Override
+    public int getAllocatedSize()
+    {
         int size = PJoint.BASE_ALLOCATION_SIZE;
         if (this.railKnotVector != null) size += (this.railKnotVector.length * 0xC);
         if (this.boneIdx != null) size += (this.boneIdx.length * 0x4);
-        return size; 
+        return size;
     }
 }

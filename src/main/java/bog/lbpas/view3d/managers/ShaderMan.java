@@ -11,6 +11,7 @@ import cwlib.structs.things.parts.PPos;
 import org.joml.*;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL32;
+import org.lwjgl.opengl.GL45;
 import org.lwjgl.system.MemoryStack;
 
 import java.util.ArrayList;
@@ -268,8 +269,12 @@ public class ShaderMan {
     public void setUniform(String uniformName, int value)
     {
         Integer uniform = uniforms.get(uniformName);
+
         if(uniform != null)
             GL20.glUniform1i(uniform, value);
+//        else
+//            return;
+//        print.warning("setting uniform " + uniformName + "(" + uniform + ") -> " + value);
     }
 
     public void setUniform(String uniformName, float value)
@@ -310,8 +315,12 @@ public class ShaderMan {
     public void setUniform(String uniformName, boolean value)
     {
         Integer uniform = uniforms.get(uniformName);
+
         if(uniform != null)
             GL20.glUniform1i(uniform, value ? 1 : 0);
+//        else
+//            return;
+//        print.warning("setting uniform " + uniformName + "(" + uniform + ") -> " + value);
     }
 
     public void setUniform(String uniformName, DirectionalLight directionalLight)

@@ -4,23 +4,25 @@ import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
 
-public class BehaviourBase implements Serializable {
+public class BehaviourBase implements Serializable
+{
     public static final int BASE_ALLOCATION_SIZE = 0x10;
 
     public Thing npc;
     public int type;
     public int attributes;
 
-    @SuppressWarnings("unchecked")
-    @Override public BehaviourBase serialize(Serializer serializer, Serializable structure) {
-        BehaviourBase base = (structure == null) ? new BehaviourBase() : (BehaviourBase) structure;
-
-        base.npc = serializer.thing(base.npc);
-        base.type = serializer.s32(base.type);
-        base.attributes = serializer.i32(base.attributes);
-        
-        return base;
+    @Override
+    public void serialize(Serializer serializer)
+    {
+        npc = serializer.thing(npc);
+        type = serializer.s32(type);
+        attributes = serializer.i32(attributes);
     }
-    
-    @Override public int getAllocatedSize() { return BehaviourBase.BASE_ALLOCATION_SIZE; }
+
+    @Override
+    public int getAllocatedSize()
+    {
+        return BehaviourBase.BASE_ALLOCATION_SIZE;
+    }
 }

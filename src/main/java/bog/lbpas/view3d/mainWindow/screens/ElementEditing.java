@@ -15,33 +15,39 @@ import bog.lbpas.view3d.renderer.gui.elements.Checkbox;
 import bog.lbpas.view3d.renderer.gui.elements.Panel;
 import bog.lbpas.view3d.renderer.gui.ingredients.Line;
 import bog.lbpas.view3d.renderer.gui.ingredients.LineStrip;
+import bog.lbpas.view3d.utils.*;
 import bog.lbpas.view3d.utils.CWLibUtils.SkeletonUtils;
-import bog.lbpas.view3d.utils.Config;
-import bog.lbpas.view3d.utils.Consts;
-import bog.lbpas.view3d.utils.Utils;
-import bog.lbpas.view3d.utils.print;
-import common.FileChooser;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import cwlib.enums.Part;
 import cwlib.enums.ResourceType;
+import cwlib.io.Resource;
 import cwlib.resources.*;
+import cwlib.structs.inventory.UserCreatedDetails;
 import cwlib.structs.slot.Pack;
 import cwlib.structs.slot.Slot;
 import cwlib.structs.things.Thing;
 import cwlib.structs.things.parts.*;
-import cwlib.types.Resource;
+import cwlib.types.SerializedResource;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.databases.FileDBRow;
 import cwlib.types.databases.FileEntry;
 import cwlib.types.save.SaveEntry;
+import cwlib.util.GsonUtils;
 import org.joml.Math;
 import org.joml.*;
 import org.lwjgl.glfw.GLFW;
 
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
+import java.io.FileReader;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * @author Bog
@@ -107,7 +113,7 @@ public class ElementEditing extends GuiScreen {
     public void init() {
         elementTool = new Transformation3D.Tool(loader);
 
-        camPos = new DropDownTab("camPosition", "Camera position", new Vector2f(10, getFontHeightHeader() + 7 + 7), new Vector2f(160f * (getFontHeight() / 12f), getFontHeight() + 4), renderer, loader, window) {
+        camPos = new DropDownTab("camPosition", "Camera position", new Vector2f(10, getFontHeightHeader() + 7 + 7), new Vector2f(160f * (getFontHeight() / 12f), getFontHeightHeader() + 4), renderer, loader, window) {
             @Override
             public void secondThread() {
                 super.secondThread();
@@ -139,7 +145,7 @@ public class ElementEditing extends GuiScreen {
         positionZ.noLetters().noOthers();
         zPos.elements.add(new Panel.PanelElement(positionZ, 0.9f));
 
-        helpers = new DropDownTab("helpers", "Helpers", new Vector2f(10, getFontHeightHeader() + 7 + 7 + camPos.getFullHeight() + 7), new Vector2f(160f * (getFontHeight() / 12f), getFontHeight() + 4), renderer, loader, window).closed();
+        helpers = new DropDownTab("helpers", "Helpers", new Vector2f(10, getFontHeightHeader() + 7 + 7 + camPos.getFullHeight() + 7), new Vector2f(160f * (getFontHeight() / 12f), getFontHeightHeader() + 4), renderer, loader, window).closed();
         levelBorders = helpers.addCheckbox("levelBorders", "Level borders", Config.LEVEL_BORDERS);
         ComboBox podHelpers = helpers.addComboBox("podHelpers", "Pod helpers", 100);
 
@@ -270,7 +276,7 @@ public class ElementEditing extends GuiScreen {
             public void clickedButton(int button, int action, int mods) {
                 if(action == GLFW.GLFW_PRESS && button == GLFW.GLFW_MOUSE_BUTTON_1)
                     try {
-                        RPlan plan = new Resource(ElementEditing.class.getResourceAsStream("/other/level_bg_template.plan").readAllBytes()).loadResource(RPlan.class);
+                        RPlan plan = new SerializedResource(ElementEditing.class.getResourceAsStream("/other/level_bg_template.plan").readAllBytes()).loadResource(RPlan.class);
                         if (plan == null) return;
                         Thing[] things = plan.getThings();
 
@@ -285,18 +291,18 @@ public class ElementEditing extends GuiScreen {
                 if(action == GLFW.GLFW_PRESS && button == GLFW.GLFW_MOUSE_BUTTON_1)
                     try
                     {
-                        RLevel level = new Resource(ElementEditing.class.getResourceAsStream("/other/lbp1_pod_template.bin").readAllBytes()).loadResource(RLevel.class);
+                        RLevel level = new SerializedResource(ElementEditing.class.getResourceAsStream("/other/lbp1_pod_template.bin").readAllBytes()).loadResource(RLevel.class);
                         if (level == null)
                             return;
-                        ArrayList<Thing> things = ((PWorld)level.world.getPart(Part.WORLD)).things;
-                        things.remove(level.world);
+                        ArrayList<Thing> things = ((PWorld)level.worldThing.getPart(Part.WORLD)).things;
+                        things.remove(level.worldThing);
 
                         mainView.addThings(things, null);
                     }catch (Exception ex) {print.stackTrace(ex);}
             }
         });
 
-        availableAssets = new DropDownTab("availableModels", "Available assets", new Vector2f(10 + camPos.size.x + 7, getFontHeightHeader() + 7 + 7), new Vector2f(300f * (getFontHeight() / 12f), getFontHeight() + 4), renderer, loader, window);
+        availableAssets = new DropDownTab("availableModels", "Available assets", new Vector2f(10 + camPos.size.x + 7, getFontHeightHeader() + 7 + 7), new Vector2f(300f * (getFontHeight() / 12f), getFontHeightHeader() + 4), renderer, loader, window);
         Panel assetsPanel = availableAssets.addPanel("assetsPanel");
         assetsPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("", "Search:", renderer), 0.25f));
         availableAssetsSearch = new Textbox("availableAssetsSearch", new Vector2f(), new Vector2f(), renderer, loader, window);
@@ -453,7 +459,7 @@ public class ElementEditing extends GuiScreen {
                             RLevel level = LoadedData.loadLevel(descriptor);
                             if (level == null)
                                 return;
-                            ArrayList<Thing> things = ((PWorld)level.world.getPart(Part.WORLD)).things;
+                            ArrayList<Thing> things = ((PWorld)level.worldThing.getPart(Part.WORLD)).things;
 
                             mainView.addThings(things, null);
                         }
@@ -655,7 +661,7 @@ public class ElementEditing extends GuiScreen {
 
         availableAssets.addList("availableModelsList", assetList, (int) (400f * (getFontHeight() / 12f)));
 
-        currentSelection = new DropDownTab("currentSelection", "Current Selection", new Vector2f(10 + camPos.size.x + 7 + availableAssets.size.x + 7, getFontHeightHeader() + 7 + 7), new Vector2f(200f * (getFontHeight() / 12f), getFontHeight() + 4), renderer, loader, window) {
+        currentSelection = new DropDownTab("currentSelection", "Current Selection", new Vector2f(10 + camPos.size.x + 7 + availableAssets.size.x + 7, getFontHeightHeader() + 7 + 7), new Vector2f(200f * (getFontHeight() / 12f), getFontHeightHeader() + 4), renderer, loader, window) {
 
             @Override
             public void draw(MouseInput mouseInput, boolean overOther) {
@@ -1042,55 +1048,59 @@ public class ElementEditing extends GuiScreen {
         int gap = Math.round(2f * (getFontHeight() / 12f));
         int height = Math.round(getFontHeight() * 2f);
 
-        loadPlanElements = new Button("loadPlanElements", "Load elements from PLAN/LEVEL", new Vector2f(window.width - 3 - loadedEntitiesHitbox.size.x - 1 + (loadedEntitiesHitbox.size.x / 2 - (350f * (getFontHeight() / 12f)) / 2), titleBar + gap), new Vector2f(350f * (getFontHeight() / 12f), height), renderer, loader, window) {
+        FileNameExtensionFilter[] planLevelExtensions = FilePicker.setupLBPExtensionFilter("Plans/Levels", new ResourceType[]{ResourceType.PLAN, ResourceType.LEVEL});
+        loadPlanElements = new Button("loadPlanElements", "Load elements from PLAN/LEVEL", new Vector2f(window.width - 3 - loadedEntitiesHitbox.size.x - 1 + (loadedEntitiesHitbox.size.x / 2 - (350f * (getFontHeight() / 12f)) / 2), titleBar + gap), new Vector2f(246f * (getFontHeight() / 12f), height), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
+
                 if (button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS) {
-                    File file = null;
-                    try {
-                        file = FileChooser.openFile(null, "plan,pln,bin,lvl", false, false)[0];
-                    } catch (Exception e) {}
+                    CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+                        File file = null;
+                        try {
+                            file = FilePicker.openFiles(planLevelExtensions, false, false)[0];
+                        } catch (Exception e) {}
 
-                    if (file == null || !file.exists()) return;
+                        if (file == null || !file.exists()) return;
 
-                    for (Entity e : mainView.things)
-                    {
-                        e.selected = false;
-                        currentSelectionParts.selectionChange();
-                    }
+                        for (Entity e : mainView.things)
+                        {
+                            e.selected = false;
+                            currentSelectionParts.selectionChange();
+                        }
 
-                    String ext = file.getAbsolutePath();
-                    ext = ext.substring(ext.lastIndexOf(".") + 1);
+                        String ext = file.getAbsolutePath();
+                        ext = ext.substring(ext.lastIndexOf(".") + 1);
 
-                    switch(ext)
-                    {
-                        case "plan":
-                        case "pln":
-                            try {
-                                RPlan plan = new Resource(file.getAbsolutePath()).loadResource(RPlan.class);
-                                if (plan == null) return;
-                                Thing[] things = plan.getThings();
+                        switch(ext)
+                        {
+                            case "plan":
+                            case "pln":
+                                try {
+                                    RPlan plan = new SerializedResource(file.getAbsolutePath()).loadResource(RPlan.class);
+                                    if (plan == null) return;
+                                    Thing[] things = plan.getThings();
 
-                                mainView.addThings(things, null);
-                            } catch (Exception ex) {print.stackTrace(ex);}
-                            break;
-                        case "bin":
-                            try
-                            {
-                                RLevel level = new Resource(file.getAbsolutePath()).loadResource(RLevel.class);
-                                if (level == null)
-                                    return;
-                                ArrayList<Thing> things = ((PWorld)level.world.getPart(Part.WORLD)).things;
-                                things.remove(level.world);
+                                    mainView.addThings(things, null);
+                                } catch (Exception ex) {print.stackTrace(ex);}
+                                break;
+                            case "bin":
+                                try
+                                {
+                                    RLevel level = new SerializedResource(file.getAbsolutePath()).loadResource(RLevel.class);
+                                    if (level == null)
+                                        return;
+                                    ArrayList<Thing> things = ((PWorld)level.worldThing.getPart(Part.WORLD)).things;
+                                    things.remove(level.worldThing);
 
-                                mainView.addThings(things, null);
-                            }catch (Exception ex) {print.stackTrace(ex);}
-                            break;
-                        default:
-                            System.err.println("Unknown file type.");
-                            mainView.pushError("File Error", "Unknown file type.");
-                            break;
-                    }
+                                    mainView.addThings(things, null);
+                                }catch (Exception ex) {print.stackTrace(ex);}
+                                break;
+                            default:
+                                System.err.println("Unknown file type.");
+                                mainView.pushError("File Error", "Unknown file type.");
+                                break;
+                        }
+                    });
                 }
             }
 
@@ -1562,7 +1572,6 @@ public class ElementEditing extends GuiScreen {
         this.guiElements.add(currentSelection);
         this.guiElements.add(helpers);
         this.guiElements.add(availableAssets);
-
     }
 
     @Override

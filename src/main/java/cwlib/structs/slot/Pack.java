@@ -13,7 +13,8 @@ import java.util.Date;
  * Represents additional content that can be
  * purchased from the store.
  */
-public class Pack implements Serializable {
+public class Pack implements Serializable
+{
     public static final int BASE_ALLOCATION_SIZE = 0x40 + Slot.BASE_ALLOCATION_SIZE;
 
     /**
@@ -27,7 +28,7 @@ public class Pack implements Serializable {
     public ResourceDescriptor mesh = ContentsType.LEVEL.getBadgeMesh();
 
     /**
-     * The underlying slot for this pack, testForMouse the information about the DLC,
+     * The underlying slot for this pack, contains the information about the DLC,
      * including icon/name, as well as the playable level if it is one.
      */
     public Slot slot = new Slot();
@@ -46,30 +47,29 @@ public class Pack implements Serializable {
     /**
      * Whether or not this pack is compatible with Vita/LBP2 cross-buy.
      */
-    @GsonRevision(branch=0x4431)
+    @GsonRevision(branch = 0x4431)
     public boolean crossBuyCompatible = false;
 
-    @SuppressWarnings("unchecked")
-    @Override public Pack serialize(Serializer serializer, Serializable structure) {
-        Pack pack = (structure == null) ? new Pack() : (Pack) structure;
-
-        pack.contentsType = serializer.enum32(pack.contentsType);
-        pack.mesh = serializer.resource(pack.mesh, ResourceType.MESH, true);
-        pack.slot = serializer.struct(pack.slot, Slot.class);
-        pack.contentID = serializer.str(pack.contentID);
-        pack.timestamp = serializer.i64(pack.timestamp);
+    @Override
+    public void serialize(Serializer serializer)
+    {
+        contentsType = serializer.enum32(contentsType);
+        mesh = serializer.resource(mesh, ResourceType.MESH, true);
+        slot = serializer.struct(slot, Slot.class);
+        contentID = serializer.str(contentID);
+        timestamp = serializer.s64(timestamp);
         if (serializer.getRevision().isVita())
-            pack.crossBuyCompatible = serializer.bool(pack.crossBuyCompatible);
-
-        return pack;
+            crossBuyCompatible = serializer.bool(crossBuyCompatible);
     }
 
-    @Override public int getAllocatedSize() {
+    @Override
+    public int getAllocatedSize()
+    {
         int size = BASE_ALLOCATION_SIZE;
         if (this.slot != null)
             size += this.slot.getAllocatedSize();
         if (this.contentID != null)
             size += this.contentID.length();
-        return size; 
+        return size;
     }
 }

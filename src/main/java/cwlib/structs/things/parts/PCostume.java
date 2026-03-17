@@ -12,73 +12,94 @@ import cwlib.structs.things.components.CostumePiece;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 
-public class PCostume implements Serializable {
+import java.util.ArrayList;
+
+public class PCostume implements Serializable
+{
     public static final int BASE_ALLOCATION_SIZE = 0x80;
 
     public ResourceDescriptor mesh;
     public ResourceDescriptor material;
 
-    @GsonRevision(min=0x19a)
+    @GsonRevision(min = 0x19a)
     public ResourceDescriptor materialPlan;
 
-    public int[] meshPartsHidden;
+    public ArrayList<Integer> meshPartsHidden = new ArrayList<>();
     public Primitive[] primitives;
 
-    @GsonRevision(lbp3=true, min=0xdb)
-    public byte creatureFilter;
+    @GsonRevision(lbp3 = true, min = 0xdb)
+    public int creatureFilter; // why did i have this as a byte? double check later
 
     public CostumePiece[] costumePieces;
 
-    @GsonRevision(branch=0x4c44, min=Revisions.LD_TEMP_COSTUME)
-    @GsonRevision(min=0x2c5)
+    @GsonRevision(branch = 0x4c44, min = Revisions.LD_TEMP_COSTUME)
+    @GsonRevision(min = 0x2c5)
     public CostumePiece[] temporaryCostumePiece;
 
-    public PCostume() {
+    public PCostume()
+    {
+        this.mesh = new ResourceDescriptor(1087, ResourceType.MESH);
         this.costumePieces = new CostumePiece[14];
         for (int i = 0; i < this.costumePieces.length; ++i)
             this.costumePieces[i] = new CostumePiece();
-        this.costumePieces[CostumePieceCategory.HEAD.getIndex()].mesh = 
+        this.costumePieces[CostumePieceCategory.HEAD.getIndex()].mesh =
             new ResourceDescriptor(9876, ResourceType.MESH);
-        this.costumePieces[CostumePieceCategory.TORSO.getIndex()].mesh = 
+        this.costumePieces[CostumePieceCategory.TORSO.getIndex()].mesh =
             new ResourceDescriptor(9877, ResourceType.MESH);
         this.temporaryCostumePiece = new CostumePiece[] { new CostumePiece() };
     }
 
-    @SuppressWarnings("unchecked")
-    @Override public PCostume serialize(Serializer serializer, Serializable structure) {
-        PCostume costume = (structure == null) ? new PCostume() : (PCostume) structure;
-
+    @Override
+    public void serialize(Serializer serializer)
+    {
         Revision revision = serializer.getRevision();
         int version = revision.getVersion();
         int subVersion = revision.getSubVersion();
 
-        costume.mesh = serializer.resource(costume.mesh, ResourceType.MESH);
-        costume.material = serializer.resource(costume.material, ResourceType.GFX_MATERIAL);
+        mesh = serializer.resource(mesh, ResourceType.MESH);
+        material = serializer.resource(material, ResourceType.GFX_MATERIAL);
 
         if (version >= 0x19a)
-            costume.materialPlan = serializer.resource(costume.materialPlan, ResourceType.PLAN, true);
-    
-        costume.meshPartsHidden = serializer.intvector(costume.meshPartsHidden);
-        costume.primitives = serializer.array(costume.primitives, Primitive.class);
-        
-        if (subVersion >= 0xdb)
-            costume.creatureFilter = serializer.i8(costume.creatureFilter);
+            materialPlan = serializer.resource(materialPlan, ResourceType.PLAN,
+                true);
 
-        costume.costumePieces = serializer.array(costume.costumePieces, CostumePiece.class);
+        if (serializer.isWriting())
+        {
+            int[] vec = meshPartsHidden.stream().mapToInt(Integer::valueOf).toArray();
+            serializer.intvector(vec);
+        }
+        else
+        {
+            int[] vec = serializer.intvector(null);
+            if (vec != null)
+            {
+                for (int v : vec)
+                    meshPartsHidden.add(v);
+            }
+        }
+
+        primitives = serializer.array(primitives, Primitive.class);
+
+        if (subVersion >= 0xdb)
+            creatureFilter = serializer.i32(creatureFilter);
+
+        costumePieces = serializer.array(costumePieces, CostumePiece.class);
 
         if (version >= 0x2c5 || revision.has(Branch.LEERDAMMER, Revisions.LD_TEMP_COSTUME))
-            costume.temporaryCostumePiece = serializer.array(costume.temporaryCostumePiece, CostumePiece.class);
-
-        return costume;
+            temporaryCostumePiece = serializer.array(temporaryCostumePiece,
+                CostumePiece.class);
     }
 
-    @Override public int getAllocatedSize() { 
+    @Override
+    public int getAllocatedSize()
+    {
         int size = PCostume.BASE_ALLOCATION_SIZE;
         if (this.costumePieces != null)
             for (CostumePiece piece : this.costumePieces)
                 size += piece.getAllocatedSize();
-        if (this.primitives != null) size += (this.primitives.length * Primitive.BASE_ALLOCATION_SIZE);
-        if (this.meshPartsHidden != null) size += (this.meshPartsHidden.length * 4);
+        if (this.primitives != null)
+            size += (this.primitives.length * Primitive.BASE_ALLOCATION_SIZE);
+        if (this.meshPartsHidden != null) size += (this.meshPartsHidden.size() * 4);
         return size;
     }
 }

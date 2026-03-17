@@ -6,14 +6,15 @@ import cwlib.io.ValueEnum;
  * UV mapping modes for bevel vertices,
  * Thanks to DokkeFyxen for figuring out what each do.
  */
-public enum MappingMode implements ValueEnum<Byte> {
+public enum MappingMode implements ValueEnum<Byte>
+{
     HIDDEN(0),
 
     /**
      * Standard XYZ UV Mapping.
      */
     DAVE(1),
-    
+
     /**
      * Wraps vertically; separate faces.
      */
@@ -35,15 +36,22 @@ public enum MappingMode implements ValueEnum<Byte> {
     PLANARXZ(5);
 
     private final byte value;
-    MappingMode(int value) {
+
+    MappingMode(int value)
+    {
         this.value = (byte) value;
     }
 
-    public Byte getValue() { return this.value; }
+    public Byte getValue()
+    {
+        return this.value;
+    }
 
-    public static MappingMode fromValue(int value) {
-        for (MappingMode mode : MappingMode.values()) {
-            if (mode.value == value) 
+    public static MappingMode fromValue(int value)
+    {
+        for (MappingMode mode : MappingMode.values())
+        {
+            if (mode.value == value)
                 return mode;
         }
         return null;

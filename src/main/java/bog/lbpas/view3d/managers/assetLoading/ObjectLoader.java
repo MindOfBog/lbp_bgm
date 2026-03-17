@@ -7,7 +7,6 @@ import bog.lbpas.view3d.mainWindow.View3D;
 import bog.lbpas.view3d.utils.FilePicker;
 import bog.lbpas.view3d.utils.Utils;
 import bog.lbpas.view3d.utils.print;
-import common.FileChooser;
 import cwlib.resources.RBevel;
 import cwlib.resources.RMesh;
 import cwlib.resources.RStaticMesh;
@@ -395,7 +394,7 @@ public class ObjectLoader {
 
     public int loadTextureFilePicker() throws Exception
     {
-        File[] file = FileChooser.openFile(null, null, false, false);
+        File[] file = FilePicker.openFiles(null, false, false);
         if(file.length < 1)
             return -1;
 

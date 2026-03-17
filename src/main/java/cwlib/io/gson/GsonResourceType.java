@@ -1,11 +1,12 @@
 package cwlib.io.gson;
 
+import cwlib.enums.ResourceType;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-import cwlib.enums.ResourceType;
-
 @Retention(RetentionPolicy.RUNTIME)
-public @interface GsonResourceType {
+public @interface GsonResourceType
+{
     ResourceType value();
 }

@@ -299,7 +299,7 @@ public abstract class PartShape extends iPart {
                         Thing selected = getThings().get(i);
                         if (!selected.selected)
                             continue;
-                        ((PShape) selected.thing.getPart(cwlib.enums.Part.SHAPE)).soundEnumOverride = (AudioMaterial) object;
+                        ((PShape) selected.thing.getPart(cwlib.enums.Part.SHAPE)).soundEnumOverride = ((AudioMaterial) object).getValue();
                     }
                     SoundOverride.tabTitle = name;
                 }
@@ -884,7 +884,7 @@ public abstract class PartShape extends iPart {
             else if(lethal != let)
                 lethal = Float.NaN;
 
-            float aud = shape.soundEnumOverride.getValue();
+            float aud = shape.soundEnumOverride;
             if(Float.isInfinite(sound))
                 sound = aud;
             else if(sound != aud)

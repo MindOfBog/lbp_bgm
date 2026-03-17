@@ -4,7 +4,8 @@ import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 import cwlib.types.data.NetworkOnlineID;
 
-public class ViewedPlayerData implements Serializable {
+public class ViewedPlayerData implements Serializable
+{
     public static final int BASE_ALLOCATION_SIZE = 0x50;
 
     public NetworkOnlineID onlineID;
@@ -17,22 +18,23 @@ public class ViewedPlayerData implements Serializable {
     public long lastStreamEventTimestamp;
     public long lastViewedTimestamp;
 
-    @SuppressWarnings("unchecked")
-    @Override public ViewedPlayerData serialize(Serializer serializer, Serializable structure) {
-        ViewedPlayerData data = (structure == null) ? new ViewedPlayerData() : (ViewedPlayerData) structure;
-
-        data.onlineID = serializer.struct(data.onlineID, NetworkOnlineID.class);
-        data.lastReviewCount = serializer.i32(data.lastReviewCount);
-        data.lastCommentCount = serializer.i32(data.lastCommentCount);
-        data.lastPhotosByMeCount = serializer.i32(data.lastPhotosByMeCount);
-        data.lastPhotosWithMeCount = serializer.i32(data.lastPhotosWithMeCount);
-        data.lastFavouriteSlotsCount = serializer.i32(data.lastFavouriteSlotsCount);
-        data.lastFavouriteUsersCount = serializer.i32(data.lastFavouriteUsersCount);
-        data.lastStreamEventTimestamp = serializer.i64(data.lastStreamEventTimestamp);
-        data.lastViewedTimestamp = serializer.i64(data.lastViewedTimestamp);
-
-        return data;
+    @Override
+    public void serialize(Serializer serializer)
+    {
+        onlineID = serializer.struct(onlineID, NetworkOnlineID.class);
+        lastReviewCount = serializer.s32(lastReviewCount);
+        lastCommentCount = serializer.s32(lastCommentCount);
+        lastPhotosByMeCount = serializer.s32(lastPhotosByMeCount);
+        lastPhotosWithMeCount = serializer.s32(lastPhotosWithMeCount);
+        lastFavouriteSlotsCount = serializer.s32(lastFavouriteSlotsCount);
+        lastFavouriteUsersCount = serializer.s32(lastFavouriteUsersCount);
+        lastStreamEventTimestamp = serializer.s64(lastStreamEventTimestamp);
+        lastViewedTimestamp = serializer.s64(lastViewedTimestamp);
     }
 
-    @Override public int getAllocatedSize() { return ViewedPlayerData.BASE_ALLOCATION_SIZE; }
+    @Override
+    public int getAllocatedSize()
+    {
+        return ViewedPlayerData.BASE_ALLOCATION_SIZE;
+    }
 }

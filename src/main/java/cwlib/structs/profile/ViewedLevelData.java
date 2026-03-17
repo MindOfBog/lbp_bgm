@@ -4,7 +4,8 @@ import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.slot.SlotID;
 
-public class ViewedLevelData implements Serializable {
+public class ViewedLevelData implements Serializable
+{
     public static final int BASE_ALLOCATION_SIZE = 0x30;
 
     public SlotID slotID;
@@ -15,20 +16,21 @@ public class ViewedLevelData implements Serializable {
     public long lastStreamEventTimestamp;
     public long lastViewedTimestamp;
 
-    @SuppressWarnings("unchecked")
-    @Override public ViewedLevelData serialize(Serializer serializer, Serializable structure) {
-        ViewedLevelData data = (structure == null) ? new ViewedLevelData() : (ViewedLevelData) structure;
-
-        data.slotID = serializer.struct(data.slotID, SlotID.class);
-        data.lastReviewCount = serializer.i32(data.lastReviewCount);
-        data.lastCommentCount = serializer.i32(data.lastCommentCount);
-        data.lastPhotoCount = serializer.i32(data.lastPhotoCount);
-        data.lastAuthorPhotoCount = serializer.i32(data.lastAuthorPhotoCount);
-        data.lastStreamEventTimestamp = serializer.i64(data.lastStreamEventTimestamp);
-        data.lastViewedTimestamp = serializer.i64(data.lastViewedTimestamp);
-
-        return data;
+    @Override
+    public void serialize(Serializer serializer)
+    {
+        slotID = serializer.struct(slotID, SlotID.class);
+        lastReviewCount = serializer.s32(lastReviewCount);
+        lastCommentCount = serializer.s32(lastCommentCount);
+        lastPhotoCount = serializer.s32(lastPhotoCount);
+        lastAuthorPhotoCount = serializer.s32(lastAuthorPhotoCount);
+        lastStreamEventTimestamp = serializer.s64(lastStreamEventTimestamp);
+        lastViewedTimestamp = serializer.s64(lastViewedTimestamp);
     }
 
-    @Override public int getAllocatedSize() { return ViewedLevelData.BASE_ALLOCATION_SIZE; }
+    @Override
+    public int getAllocatedSize()
+    {
+        return ViewedLevelData.BASE_ALLOCATION_SIZE;
+    }
 }

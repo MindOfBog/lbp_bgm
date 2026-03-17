@@ -6,7 +6,8 @@ import java.util.ArrayList;
  * Flags used during serialization to determine if any
  * data types should be compressed.
  */
-public final class CompressionFlags {
+public final class CompressionFlags
+{
     /**
      * No compression is used at all.
      */
@@ -33,7 +34,8 @@ public final class CompressionFlags {
      */
     public static final byte USE_ALL_COMPRESSION = 7;
 
-    public static final String toString(int flags) {
+    public static String toString(int flags)
+    {
         ArrayList<String> components = new ArrayList<>(3);
         if ((flags & USE_COMPRESSED_INTEGERS) != 0)
             components.add("COMPRESSED_INTEGERS");

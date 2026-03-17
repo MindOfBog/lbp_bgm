@@ -7,45 +7,45 @@ import cwlib.io.Serializable;
 import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 
-public class PoppetShapeOverride implements Serializable {
+public class PoppetShapeOverride implements Serializable
+{
     public static final int BASE_ALLOCATION_SIZE = 0x60;
 
     public Vector3f[] polygon;
     public int[] loops;
 
-    @GsonRevision(min=0x1b6)
+    @GsonRevision(min = 0x1b6)
     public int back, front;
-    @GsonRevision(min=0x1b6)
+    @GsonRevision(min = 0x1b6)
     public float scale, angle;
 
-    @GsonRevision(min=0x318)
+    @GsonRevision(min = 0x318)
     public Matrix4f worldMatrix;
 
-    @SuppressWarnings("unchecked")
-    @Override public PoppetShapeOverride serialize(Serializer serializer, Serializable structure) {
-        PoppetShapeOverride override = 
-            (structure == null) ? new PoppetShapeOverride() : (PoppetShapeOverride) structure;
-
-        if (!serializer.isWriting()) override.polygon = new Vector3f[serializer.getInput().i32()];
-        else {
-            if (override.polygon == null)
-                override.polygon = new Vector3f[0];
-            serializer.getOutput().i32(override.polygon.length);
+    @Override
+    public void serialize(Serializer serializer)
+    {
+        if (!serializer.isWriting()) polygon = new Vector3f[serializer.getInput().i32()];
+        else
+        {
+            if (polygon == null)
+                polygon = new Vector3f[0];
+            serializer.getOutput().i32(polygon.length);
         }
-        for (int i = 0; i < override.polygon.length; ++i)
-            override.polygon[i] = serializer.v3(override.polygon[i]);
-        override.loops = serializer.intvector(override.loops);
-        override.back = serializer.s32(override.back);
-        override.front = serializer.s32(override.front);
-        override.scale = serializer.f32(override.scale);
-        override.angle = serializer.f32(override.angle);
+        for (int i = 0; i < polygon.length; ++i)
+            polygon[i] = serializer.v3(polygon[i]);
+        loops = serializer.intvector(loops);
+        back = serializer.s32(back);
+        front = serializer.s32(front);
+        scale = serializer.f32(scale);
+        angle = serializer.f32(angle);
         if (serializer.getRevision().getVersion() > 0x317)
-            override.worldMatrix = serializer.m44(override.worldMatrix);
-
-        return override;
+            worldMatrix = serializer.m44(worldMatrix);
     }
 
-    @Override public int getAllocatedSize() {
+    @Override
+    public int getAllocatedSize()
+    {
         int size = PoppetShapeOverride.BASE_ALLOCATION_SIZE;
         if (this.polygon != null)
             size += (this.polygon.length * 0xC);

@@ -6,7 +6,8 @@ import cwlib.io.serializer.Serializer;
 /**
  * Stores information about bone relations for animation.
  */
-public class AnimBone implements Serializable {
+public class AnimBone implements Serializable
+{
     public static final int BASE_ALLOCATION_SIZE = 0x20;
 
     /**
@@ -29,27 +30,28 @@ public class AnimBone implements Serializable {
      */
     public int nextSibling = -1;
 
-    public AnimBone() {}
+    public AnimBone() { }
 
-    public AnimBone(int animHash, int parent, int firstChild, int nextSibling) {
+    public AnimBone(int animHash, int parent, int firstChild, int nextSibling)
+    {
         this.animHash = animHash;
         this.parent = parent;
         this.firstChild = firstChild;
         this.nextSibling = nextSibling;
     }
 
-
-    @SuppressWarnings("unchecked")
-    @Override public AnimBone serialize(Serializer serializer, Serializable structure) {
-        AnimBone bone = (structure == null) ? new AnimBone() : (AnimBone) structure;
-        
-        bone.animHash = serializer.i32(bone.animHash);
-        bone.parent = serializer.s32(bone.parent);
-        bone.firstChild = serializer.s32(bone.firstChild);
-        bone.nextSibling = serializer.s32(bone.nextSibling);
-
-        return bone;
+    @Override
+    public void serialize(Serializer serializer)
+    {
+        animHash = serializer.i32(animHash);
+        parent = serializer.s32(parent);
+        firstChild = serializer.s32(firstChild);
+        nextSibling = serializer.s32(nextSibling);
     }
 
-    @Override public int getAllocatedSize() { return AnimBone.BASE_ALLOCATION_SIZE; }
+    @Override
+    public int getAllocatedSize()
+    {
+        return AnimBone.BASE_ALLOCATION_SIZE;
+    }
 }

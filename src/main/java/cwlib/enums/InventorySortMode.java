@@ -2,7 +2,8 @@ package cwlib.enums;
 
 import cwlib.io.ValueEnum;
 
-public enum InventorySortMode implements ValueEnum<Integer> {
+public enum InventorySortMode implements ValueEnum<Integer>
+{
     INVALID(-1),
     DATE_OLDEST(1),
     DATE_NEWEST(2),
@@ -16,15 +17,22 @@ public enum InventorySortMode implements ValueEnum<Integer> {
     CREATOR(10);
 
     private final int value;
-    InventorySortMode(int value) {
+
+    InventorySortMode(int value)
+    {
         this.value = value;
     }
 
-    public Integer getValue() { return this.value; }
+    public Integer getValue()
+    {
+        return this.value;
+    }
 
-    public static InventorySortMode fromValue(int value) {
-        for (InventorySortMode mode : InventorySortMode.values()) {
-            if (mode.value == value) 
+    public static InventorySortMode fromValue(int value)
+    {
+        for (InventorySortMode mode : InventorySortMode.values())
+        {
+            if (mode.value == value)
                 return mode;
         }
         return InventorySortMode.INVALID;

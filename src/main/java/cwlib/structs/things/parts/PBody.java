@@ -1,19 +1,19 @@
 package cwlib.structs.things.parts;
 
-import org.joml.Vector3f;
-
 import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
 import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.io.streams.MemoryInputStream;
 import cwlib.structs.things.Thing;
+import org.joml.Vector3f;
 
 /**
  * Part that essentially works as a
  * physics rigidbody in the world.
  */
-public class PBody implements Serializable {
+public class PBody implements Serializable
+{
     public static final int BASE_ALLOCATION_SIZE = 0x100;
 
     /**
@@ -29,19 +29,18 @@ public class PBody implements Serializable {
     /**
      * The state of this object
      */
-    @GsonRevision(min=0x147)
+    @GsonRevision(min = 0x147)
     public int frozen;
 
     /**
      * The player that's currently editing this thing(?)
      */
-    @GsonRevision(min=0x22c)
+    @GsonRevision(min = 0x22c)
     public Thing editingPlayer;
 
-    @SuppressWarnings("unchecked")
-    @Override public PBody serialize(Serializer serializer, Serializable structure) {
-        PBody body = (structure == null) ? new PBody() : (PBody) structure;
-
+    @Override
+    public void serialize(Serializer serializer)
+    {
         int version = serializer.getRevision().getVersion();
         int subVersion = serializer.getRevision().getSubVersion();
 
@@ -52,21 +51,24 @@ public class PBody implements Serializable {
         if (version < 0x13c)
             serializer.v3(null);
 
-        body.posVel = serializer.v3(body.posVel);
+        posVel = serializer.v3(posVel);
 
-        if (version < 0x13c) {
+        if (version < 0x13c)
+        {
             serializer.f32(0.0f);
             serializer.f32(0.0f);
         }
 
-        body.angVel = serializer.f32(body.angVel);
+        angVel = serializer.f32(angVel);
 
-        if (version < 0x13c) {
+        if (version < 0x13c)
+        {
             serializer.f32(0.0f);
             serializer.v3(null);
 
             if (serializer.isWriting()) serializer.getOutput().i32(0);
-            else {
+            else
+            {
                 MemoryInputStream stream = serializer.getInput();
                 int count = stream.i32();
                 for (int i = 0; i < count; ++i)
@@ -91,15 +93,17 @@ public class PBody implements Serializable {
         }
 
         if (version >= 0x147)
-            body.frozen = serializer.i32(body.frozen);
+            frozen = serializer.i32(frozen);
         else
             serializer.bool(false);
-        
-        if ((version >= 0x22c && subVersion < 0x84) || subVersion >= 0x8b)
-            body.editingPlayer = serializer.reference(body.editingPlayer, Thing.class);
 
-        return body;
+        if ((version >= 0x22c && subVersion < 0x84) || subVersion >= 0x8b)
+            editingPlayer = serializer.reference(editingPlayer, Thing.class);
     }
 
-    @Override public int getAllocatedSize() { return PBody.BASE_ALLOCATION_SIZE; }
+    @Override
+    public int getAllocatedSize()
+    {
+        return PBody.BASE_ALLOCATION_SIZE;
+    }
 }

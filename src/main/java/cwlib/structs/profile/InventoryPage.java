@@ -4,21 +4,23 @@ import cwlib.enums.InventorySortMode;
 import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 
-public class InventoryPage implements Serializable {
+public class InventoryPage implements Serializable
+{
     public static final int BASE_ALLOCATION_SIZE = 0x10;
 
     public int inventoryPageTitleKey;
     public InventorySortMode desiredSortMode = InventorySortMode.INVALID;
 
-    @SuppressWarnings("unchecked")
-    @Override public InventoryPage serialize(Serializer serializer, Serializable structure) {
-        InventoryPage page = (structure == null) ? new InventoryPage() : (InventoryPage) structure;
-
-        page.inventoryPageTitleKey = serializer.i32(page.inventoryPageTitleKey);
-        page.desiredSortMode = serializer.enum32(page.desiredSortMode);
-
-        return page;
+    @Override
+    public void serialize(Serializer serializer)
+    {
+        inventoryPageTitleKey = serializer.i32(inventoryPageTitleKey);
+        desiredSortMode = serializer.enum32(desiredSortMode);
     }
 
-    @Override public int getAllocatedSize() { return InventoryPage.BASE_ALLOCATION_SIZE; }
+    @Override
+    public int getAllocatedSize()
+    {
+        return InventoryPage.BASE_ALLOCATION_SIZE;
+    }
 }

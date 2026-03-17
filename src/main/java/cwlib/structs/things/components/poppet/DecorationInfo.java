@@ -7,7 +7,8 @@ import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
 import cwlib.types.data.ResourceDescriptor;
 
-public class DecorationInfo implements Serializable {
+public class DecorationInfo implements Serializable
+{
     public static int BASE_ALLOCATION_SIZE = 0x150;
 
     public float angle;
@@ -16,35 +17,36 @@ public class DecorationInfo implements Serializable {
     public ResourceDescriptor decoration;
     public float scale;
     public boolean reversed;
-    
-    @GsonRevision(min=0x148)
+
+    @GsonRevision(min = 0x148)
     public boolean stamping;
 
-    @GsonRevision(min=0x178)
+    @GsonRevision(min = 0x178)
     public ResourceDescriptor plan;
 
-    @SuppressWarnings("unchecked")
-    @Override public DecorationInfo serialize(Serializer serializer, Serializable structure) {
-        DecorationInfo info = (structure == null) ? new DecorationInfo() : (DecorationInfo) structure;
-
+    @Override
+    public void serialize(Serializer serializer)
+    {
         int version = serializer.getRevision().getVersion();
 
-        info.angle = serializer.f32(info.angle);
-        info.lastDecoration = serializer.i32(info.lastDecoration);
-        info.lastDecoratedThing = serializer.thing(info.lastDecoratedThing);
-        info.decoration = serializer.resource(info.decoration, ResourceType.MESH);
-        info.scale = serializer.f32(info.scale);
-        info.reversed = serializer.bool(info.reversed);
+        angle = serializer.f32(angle);
+        lastDecoration = serializer.i32(lastDecoration);
+        lastDecoratedThing = serializer.thing(lastDecoratedThing);
+        decoration = serializer.resource(decoration, ResourceType.MESH);
+        scale = serializer.f32(scale);
+        reversed = serializer.bool(reversed);
         if (version > 0x147)
-            info.stamping = serializer.bool(info.stamping);
+            stamping = serializer.bool(stamping);
         if (version > 0x177)
-            info.plan = serializer.resource(info.plan, ResourceType.PLAN, true);
-        
-        return info;
+            plan = serializer.resource(plan, ResourceType.PLAN, true);
     }
 
 
-    @Override public int getAllocatedSize() { return DecorationInfo.BASE_ALLOCATION_SIZE; }
-    
+    @Override
+    public int getAllocatedSize()
+    {
+        return DecorationInfo.BASE_ALLOCATION_SIZE;
+    }
+
 
 }

@@ -3,8 +3,8 @@ package bog.lbpas.view3d.managers;
 import bog.lbpas.view3d.renderer.ILogic;
 import bog.lbpas.view3d.mainWindow.View3D;
 import bog.lbpas.view3d.utils.Consts;
+import bog.lbpas.view3d.utils.FilePicker;
 import bog.lbpas.view3d.utils.MousePicker;
-import common.FileChooser;
 import org.joml.Vector2d;
 import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
@@ -41,7 +41,7 @@ public class MouseInput {
 
         GLFW.glfwSetCursorPosCallback(windowMan.window, (window, xpos, ypos) ->
         {
-            if(FileChooser.isLegacyFDopen)
+            if(FilePicker.dialogOpen)
                 return;
 
             currentPos.set(xpos, ypos);
@@ -55,7 +55,7 @@ public class MouseInput {
 
         GLFW.glfwSetMouseButtonCallback(windowMan.window, (window, button, action, mods) ->
         {
-            if(FileChooser.isLegacyFDopen)
+            if(FilePicker.dialogOpen)
                 return;
             if(action == GLFW.GLFW_PRESS)
             {

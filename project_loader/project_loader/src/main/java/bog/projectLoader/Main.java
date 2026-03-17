@@ -2,10 +2,6 @@ package bog.projectLoader;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import org.lwjgl.PointerBuffer;
-import org.lwjgl.glfw.GLFW;
-import org.lwjgl.system.Configuration;
-import org.lwjgl.system.MemoryStack;
 
 import javax.swing.*;
 import java.io.*;
@@ -16,8 +12,6 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.lwjgl.system.MemoryStack.stackPush;
 
 /**
  * @author Bog
@@ -99,22 +93,22 @@ public class Main{
         if(selection == 0) {
             String result = null;
 
-            try (MemoryStack stack = stackPush()) {
-
-                PointerBuffer patterns = stack.mallocPointer(1);
-                patterns.put(stack.UTF8("*.jar"));
-                patterns.flip();
-
-                result = org.lwjgl.util.tinyfd.TinyFileDialogs.tinyfd_openFileDialog(
-                        "Locate Asset Studio JAR",
-                        Paths.get(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI()).toString(),
-                        patterns,
-                        null,
-                        false
-                );
-            } catch (URISyntaxException e) {
-                throw new RuntimeException(e);
-            }
+//            try (MemoryStack stack = stackPush()) {
+//
+//                PointerBuffer patterns = stack.mallocPointer(1);
+//                patterns.put(stack.UTF8("*.jar"));
+//                patterns.flip();
+////
+////                result = org.lwjgl.util.tinyfd.TinyFileDialogs.tinyfd_openFileDialog(
+////                        "Locate Asset Studio JAR",
+////                        Paths.get(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI()).toString(),
+////                        patterns,
+////                        null,
+////                        false
+////                );
+//            } catch (URISyntaxException e) {
+//                throw new RuntimeException(e);
+//            }
 
             if (result == null)
                 System.exit(0);

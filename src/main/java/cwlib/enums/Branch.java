@@ -1,6 +1,7 @@
 package cwlib.enums;
 
-public enum Branch {
+public enum Branch
+{
     /**
      * Dummy branch.
      */
@@ -30,17 +31,30 @@ public enum Branch {
     private final short id;
     private final short revision;
 
-    Branch(int head, int id, int revision) {
+    Branch(int head, int id, int revision)
+    {
         this.head = head;
         this.id = (short) id;
         this.revision = (short) revision;
     }
 
-    public int getHead() { return this.head; }
-    public short getID() { return this.id; }
-    public short getRevision() { return this.revision; }
+    public int getHead()
+    {
+        return this.head;
+    }
 
-    public static Branch fromID(short ID) {
+    public short getID()
+    {
+        return this.id;
+    }
+
+    public short getRevision()
+    {
+        return this.revision;
+    }
+
+    public static Branch fromID(short ID)
+    {
         for (Branch branch : Branch.values())
             if (branch.getID() == ID) return branch;
         return null;

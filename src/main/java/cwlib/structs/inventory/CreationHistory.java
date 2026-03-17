@@ -13,39 +13,56 @@ import cwlib.io.streams.MemoryOutputStream;
  * some form of contribution to this resource.
  */
 @JsonAdapter(CreationHistorySerializer.class)
-public class CreationHistory implements Serializable {
+public class CreationHistory implements Serializable
+{
     public static final int BASE_ALLOCATION_SIZE = 0x4;
 
     public String[] creators;
 
-    @SuppressWarnings("unchecked")
-    @Override public CreationHistory serialize(Serializer serializer, Serializable structure) {
-        CreationHistory history = (structure == null) ? new CreationHistory() : (CreationHistory) structure;
+    public CreationHistory() { }
 
+    public CreationHistory(String creator)
+    {
+        this.creators = new String[] { creator };
+    }
+
+    public CreationHistory(String[] creators)
+    {
+        this.creators = creators;
+    }
+
+    @Override
+    public void serialize(Serializer serializer)
+    {
         boolean isFixed = serializer.getRevision().getVersion() > 0x37c;
-        if (serializer.isWriting()) {
+        if (serializer.isWriting())
+        {
             MemoryOutputStream stream = serializer.getOutput();
-            if (history.creators != null) {
-                stream.i32(history.creators.length);
-                for (String editor : history.creators) {
+            if (creators != null)
+            {
+                stream.i32(creators.length);
+                for (String editor : creators)
+                {
                     if (isFixed) stream.str(editor, 0x14);
                     else stream.wstr(editor);
                 }
             }
             else stream.i32(0);
-            return history;
-        } 
+            return;
+        }
 
         MemoryInputStream stream = serializer.getInput();
-        history.creators = new String[stream.i32()];
-        for (int i = 0; i < history.creators.length; ++i) {
-            if (isFixed) history.creators[i] = stream.str(0x14);
-            else history.creators[i] = stream.wstr();
+        creators = new String[stream.i32()];
+        for (int i = 0; i < creators.length; ++i)
+        {
+            if (isFixed) creators[i] = stream.str(0x14);
+            else creators[i] = stream.wstr();
         }
-        return history;
     }
 
-    @Override public int getAllocatedSize() { 
+    @Override
+    public int getAllocatedSize()
+    {
         int size = BASE_ALLOCATION_SIZE;
         if (this.creators != null)
             for (String editor : this.creators)

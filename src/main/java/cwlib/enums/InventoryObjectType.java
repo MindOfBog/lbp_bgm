@@ -2,9 +2,11 @@ package cwlib.enums;
 
 import bog.lbpas.view3d.utils.Utils;
 import cwlib.types.data.Revision;
+
 import java.util.EnumSet;
 
-public enum InventoryObjectType {
+public enum InventoryObjectType
+{
     NONE(0),
     PRIMITIVE_MATERIAL(1 << 0),
     READYMADE(1 << 1),
@@ -38,7 +40,7 @@ public enum InventoryObjectType {
     INSTRUMENT(1 << 29, GameVersion.LBP2 | GameVersion.LBP3),
     USER_POD(1 << 30, GameVersion.LBP2 | GameVersion.LBP3),
     COSTUME_TWEAKER_TOOL(1 << 31, GameVersion.LBP3),
-    
+
     /* These are all exclusive to LBP1, and are replaced with
        different types in LBP2 onward. */
     PAINT(1 << 12, GameVersion.LBP1),
@@ -52,22 +54,61 @@ public enum InventoryObjectType {
     COM_OBJECT_TOOLS(1 << 29, GameVersion.LBP1),
     USER_POD_LBP1(1 << 30, GameVersion.LBP1),
     POD_TOOL_LBP1(1 << 31, GameVersion.LBP1),
-    
+
     /* These are exclusive to LBP2 */
     EDIT_MODE_TOOL(1 << 17, GameVersion.LBP2),
     POD_TOOL_LBP2(1 << 18, GameVersion.LBP2),
     EARTH_TOOL(1 << 31, GameVersion.LBP2);
-    
-    private final int value, flags;
-    
-    InventoryObjectType(int value) {
+
+    public final int value, flags;
+
+    InventoryObjectType(int value)
+    {
         this.value = value;
         this.flags = GameVersion.LBP1 | GameVersion.LBP2 | GameVersion.LBP3;
     }
-    
-    InventoryObjectType(int value, int flags) {
+
+    InventoryObjectType(int value, int flags)
+    {
         this.value = value;
         this.flags = flags;
+    }
+
+    public static int getFlags(EnumSet<InventoryObjectType> set)
+    {
+        int flags = 0;
+        for (InventoryObjectType type : set)
+            flags |= type.value;
+        return flags;
+    }
+
+    public static EnumSet<InventoryObjectType> fromFlags(int flags, Revision revision)
+    {
+        int version = GameVersion.getFlag(revision);
+        EnumSet<InventoryObjectType> set = EnumSet.noneOf(InventoryObjectType.class);
+        for (InventoryObjectType type : InventoryObjectType.values())
+        {
+            if ((type.flags & version) == 0) continue;
+            if ((type.value & flags) != 0)
+                set.add(type);
+        }
+        return set;
+    }
+
+    public static boolean has(int flags, InventoryObjectType type)
+    {
+        return (flags & type.value) != 0;
+    }
+
+    public boolean has(int flags)
+    {
+        return (flags & this.value) != 0;
+    }
+
+    public static String getPrimaryName(EnumSet<InventoryObjectType> set)
+    {
+        if (set == null || set.isEmpty()) return "none";
+        return set.iterator().next().name().toLowerCase();
     }
 
     public byte getGameVersion()
@@ -81,36 +122,5 @@ public enum InventoryObjectType {
         else if(isLBP3 && !isLBP1 && !isLBP2)
             return 3;
         return 1;
-    }
-    
-    public static int getFlags(EnumSet<InventoryObjectType> set) {
-        int flags = 0;
-        for (InventoryObjectType type : set)
-            flags |= type.value;
-        return flags;
-    }
-    
-    public static EnumSet<InventoryObjectType> fromFlags(int flags, Revision revision) {
-        int version = GameVersion.getFlag(revision);
-        EnumSet<InventoryObjectType> set = EnumSet.noneOf(InventoryObjectType.class);
-        for (InventoryObjectType type : InventoryObjectType.values()) {
-            if ((type.flags & version) == 0) continue;
-            if ((type.value & flags) != 0)
-                set.add(type);
-        }
-        return set;
-    }
-    
-    public static boolean has(int flags, InventoryObjectType type) {
-        return (flags & type.value) != 0;
-    }
-    
-    public boolean has(int flags) {
-        return (flags & this.value) != 0;
-    }
-    
-    public static String getPrimaryName(EnumSet<InventoryObjectType> set) {
-        if (set == null || set.isEmpty()) return "none";
-        return set.iterator().next().name().toLowerCase();
     }
 }

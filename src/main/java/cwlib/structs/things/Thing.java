@@ -1,6 +1,5 @@
 package cwlib.structs.things;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.joml.Matrix4f;
@@ -9,43 +8,39 @@ import org.joml.Vector4f;
 import com.google.gson.annotations.JsonAdapter;
 
 import cwlib.enums.Branch;
+import cwlib.enums.GameplayPartType;
 import cwlib.enums.Part;
 import cwlib.enums.PartHistory;
-import cwlib.enums.ResourceType;
 import cwlib.enums.Revisions;
 import cwlib.ex.SerializationException;
 import cwlib.io.Serializable;
 import cwlib.io.gson.ThingSerializer;
 import cwlib.io.serializer.Serializer;
 import cwlib.singleton.ResourceSystem;
-import cwlib.structs.things.components.CostumePiece;
-import cwlib.structs.things.parts.PCostume;
-import cwlib.structs.things.parts.PGeneratedMesh;
-import cwlib.structs.things.parts.PInstrument;
+import cwlib.structs.things.parts.PEmitter;
+import cwlib.structs.things.parts.PGameplayData;
+import cwlib.structs.things.parts.PGroup;
 import cwlib.structs.things.parts.PJoint;
-import cwlib.structs.things.parts.PLevelSettings;
 import cwlib.structs.things.parts.PPos;
 import cwlib.structs.things.parts.PRenderMesh;
 import cwlib.structs.things.parts.PShape;
+import cwlib.structs.things.parts.PWorld;
 import cwlib.types.data.GUID;
-import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 import cwlib.util.Bytes;
-import cwlib.util.Colors;
-import editor.gl.MeshInstance;
-import editor.gl.objects.Mesh;
 
 /**
  * Represents an object in the game world.
  */
 @JsonAdapter(ThingSerializer.class)
-public class Thing implements Serializable {
+public class Thing implements Serializable
+{
     public static boolean SERIALIZE_WORLD_THING = true;
 
     public static final int BASE_ALLOCATION_SIZE = 0x100;
 
     public String name;
-    
+
     public int UID = 1;
     public Thing world;
     public Thing parent;
@@ -61,15 +56,16 @@ public class Thing implements Serializable {
 
     private final Serializable[] parts = new Serializable[0x3f];
 
-    public Thing(){}
+    public Thing() { }
 
-    public Thing(int UID) {
-        this.UID = UID; 
+    public Thing(int UID)
+    {
+        this.UID = UID;
     }
 
-    @SuppressWarnings("unchecked")
-    @Override public Thing serialize(Serializer serializer, Serializable structure) {
-        Thing thing = (structure == null) ? new Thing() : (Thing) structure;
+    @Override
+    public void serialize(Serializer serializer)
+    {
         Revision revision = serializer.getRevision();
         int version = revision.getVersion();
         int subVersion = revision.getSubVersion();
@@ -85,88 +81,109 @@ public class Thing implements Serializable {
             maxPartsRevision = PartHistory.GROUP;
 
         // Test serialization marker.
-        if (revision.has(Branch.MIZUKI, Revisions.MZ_SCENE_GRAPH)) thing.name = serializer.wstr(thing.name);
-        else if (version >= Revisions.THING_TEST_MARKER || revision.has(Branch.LEERDAMMER, Revisions.LD_TEST_MARKER)) {
+        if (revision.has(Branch.MIZUKI, Revisions.MZ_SCENE_GRAPH))
+            name = serializer.wstr(name);
+        else if (version >= Revisions.THING_TEST_MARKER || revision.has(Branch.LEERDAMMER,
+            Revisions.LD_TEST_MARKER))
+        {
             serializer.log("TEST_SERIALISATION_MARKER");
             if (serializer.u8(0xAA) != 0xaa)
-                throw new SerializationException("Test serialization marker is invalid, something has gone terribly wrong!");
+                throw new SerializationException("Test serialization marker is invalid, " +
+                                                 "something" +
+                                                 " has gone terribly wrong!");
         }
 
-        if (version < 0x1fd) {
+        if (version < 0x1fd)
+        {
             if (serializer.isWriting())
-                serializer.reference(SERIALIZE_WORLD_THING ? thing.world : null, Thing.class);
+                serializer.reference(SERIALIZE_WORLD_THING ? world : null, Thing.class);
             else
-                thing.world = serializer.reference(thing.world, Thing.class);
+                world = serializer.reference(world, Thing.class);
         }
-        if (version < 0x27f) {
-            thing.parent = serializer.reference(thing.parent, Thing.class);
-            thing.UID = serializer.i32(thing.UID);
-        } else {
-            thing.UID = serializer.i32(thing.UID);
-            thing.parent = serializer.reference(thing.parent, Thing.class);
+        if (version < 0x27f)
+        {
+            parent = serializer.reference(parent, Thing.class);
+            UID = serializer.i32(UID);
+        }
+        else
+        {
+            UID = serializer.i32(UID);
+            parent = serializer.reference(parent, Thing.class);
         }
 
-        thing.groupHead = serializer.reference(thing.groupHead, Thing.class);
+        groupHead = serializer.reference(groupHead, Thing.class);
 
         if (version >= 0x1c7)
-            thing.oldEmitter = serializer.reference(thing.oldEmitter, Thing.class);
+            oldEmitter = serializer.reference(oldEmitter, Thing.class);
 
         if (version >= 0x1a6 && version < 0x1bc)
             serializer.array(null, PJoint.class, true);
-        
-        if ((version >= 0x214 && !revision.isToolkit()) || revision.before(Branch.MIZUKI, Revisions.MZ_SCENE_GRAPH)) {
-            thing.createdBy = serializer.i16(thing.createdBy);
-            thing.changedBy = serializer.i16(thing.changedBy);
+
+        if ((version >= 0x214 && !revision.isToolkit()) || revision.before(Branch.MIZUKI,
+            Revisions.MZ_SCENE_GRAPH))
+        {
+            createdBy = serializer.i16(createdBy);
+            changedBy = serializer.i16(changedBy);
         }
 
-        if (version < 0x341) {
-            if (version > 0x21a) 
-                thing.isStamping = serializer.bool(thing.isStamping);
+        if (version < 0x341)
+        {
+            if (version > 0x21a)
+                isStamping = serializer.bool(isStamping);
             if (version >= 0x254)
-                thing.planGUID = serializer.guid(thing.planGUID);
+                planGUID = serializer.guid(planGUID);
             if (version >= 0x2f2)
-                thing.hidden = serializer.bool(thing.hidden);
-        } else {
+                hidden = serializer.bool(hidden);
+        }
+        else
+        {
             if (version >= 0x254)
-                thing.planGUID = serializer.guid(thing.planGUID);
+                planGUID = serializer.guid(planGUID);
 
-            if (version >= 0x341) {
+            if (version >= 0x341)
+            {
                 if (revision.has(Branch.DOUBLE11, 0x62))
-                    thing.flags = serializer.i16(thing.flags);
+                    flags = serializer.i16(flags);
                 else
-                    thing.flags = serializer.i8((byte) thing.flags);
+                    flags = serializer.i8((byte) flags);
             }
             if (subVersion >= 0x110)
-                thing.extraFlags = serializer.i8(thing.extraFlags);
+                extraFlags = serializer.i8(extraFlags);
         }
 
-        boolean isCompressed = (version >= 0x297 || revision.has(Branch.LEERDAMMER, Revisions.LD_RESOURCES));
-        
+        boolean isCompressed = (version >= 0x297 || revision.has(Branch.LEERDAMMER,
+            Revisions.LD_RESOURCES));
+
         int partsRevision = PartHistory.STREAMING_HINT;
         long flags = -1;
 
-        if (serializer.isWriting()) {
+        if (serializer.isWriting())
+        {
             serializer.log("GENERATING FLAGS");
             Part lastPart = null;
             if (isCompressed) flags = 0;
-            for (Part part : Part.values()) {
+            for (Part part : Part.values())
+            {
                 int index = part.getIndex();
                 if (version >= 0x13c && (index >= 0x36 && index <= 0x3c)) continue;
                 if (version >= 0x18c && index == 0x3d) continue;
                 if (subVersion >= 0x107 && index == 0x3e) continue;
-                else if (index == 0x3e) {
-                    if (thing.parts[index] != null) {
-                        flags |= (1l << 0x29);
+                else if (index == 0x3e)
+                {
+                    if (parts[index] != null)
+                    {
+                        flags |= (1L << 0x29);
                         lastPart = part;
                     }
                     continue;
                 }
 
-                if (thing.parts[index] != null) {
+                if (parts[index] != null)
+                {
                     // Offset due to PCreatorAnim
-                    if (subVersion < 0x107 && index > 0x28) index++; 
+                    if (subVersion < 0x107 && index > 0x28) index++;
 
-                    flags |= (1l << index);
+                    flags |= (1L << index);
 
                     lastPart = part;
                 }
@@ -174,104 +191,234 @@ public class Thing implements Serializable {
             partsRevision = (lastPart == null) ? 0 : lastPart.getVersion();
         }
 
-        if (serializer.isWriting()) {
+        if (serializer.isWriting())
+        {
             if (partsRevision > maxPartsRevision)
                 partsRevision = maxPartsRevision;
         }
-        
+
         partsRevision = serializer.s32(partsRevision);
-        if (isCompressed) {
+        if (isCompressed)
+        {
             // serializer.log("FLAGS");
-            flags = serializer.i64(flags);
+            flags = serializer.u64(flags);
         }
 
         // I have no idea why they did this
         if (version == 0x13c) partsRevision += 7;
-        
-        Part[] parts = Part.fromFlags(revision.getHead(), flags, partsRevision);
-        if (!ResourceSystem.DISABLE_LOGS)
-            serializer.log(Arrays.toString(parts));
 
-        for (Part part : parts) {
+        Part[] partsToSerialize = Part.fromFlags(revision.getHead(), flags, partsRevision);
+        serializer.log(Arrays.toString(partsToSerialize));
+
+        for (Part part : partsToSerialize)
+        {
             serializer.log(part.name() + " [START]");
-            if (!part.serialize(thing.parts, partsRevision, flags, serializer)) {
+            if (!part.serialize(this.parts, partsRevision, flags, serializer))
+            {
                 serializer.log(part.name() + " FAILED");
                 throw new SerializationException(part.name() + " failed to serialize!");
             }
             serializer.log(part.name() + " [END]");
         }
 
-        // if (subVersion >= 0x83 && subVersion < 0x8b)
-            // serializer.u8(0);
-        
-        serializer.log("THING " + Bytes.toHex(thing.UID) + " [END]");
-        
-        return thing;
+        serializer.log("THING " + Bytes.toHex(UID) + " [END]");
     }
 
-    public void render() {
-        PPos pos = this.getPart(Part.POS);
-        if (pos == null) return;
+    public void fixup(Revision revision)
+    {
+        PWorld world;
+        PPos pos;
+        PEmitter emitter;
 
-        PRenderMesh mesh = this.getPart(Part.RENDER_MESH);
-        PCostume costume = this.getPart(Part.COSTUME);
-
-        int[] regionIDsToHide = null;
-        if (costume != null) regionIDsToHide = costume.meshPartsHidden;
-        if (mesh != null) mesh.update(this, pos.getWorldPosition(), regionIDsToHide);
-
-        PShape shape = this.getPart(Part.SHAPE);
-        PGeneratedMesh generatedMesh = this.getPart(Part.GENERATED_MESH);
-        if (shape != null && generatedMesh != null) {
-            if (generatedMesh.instance == null)
-                generatedMesh.instance = new MeshInstance(Mesh.getProceduralMesh(generatedMesh, shape));
-            generatedMesh.instance.draw(new Matrix4f[] { pos.getWorldPosition() }, Colors.RGBA32.fromARGB(shape.color));
-        }
-
-        PLevelSettings settings = this.getPart(Part.LEVEL_SETTINGS);
-        if (settings != null && settings.backdropMesh != null) {
-            if (settings.backdropInstance == null) {
-                Mesh glMesh = Mesh.getStaticMesh(settings.backdropMesh);
-                if (glMesh != null)
-                    settings.backdropInstance = new MeshInstance(glMesh);
-            }
-            else settings.backdropInstance.draw(new Matrix4f[] { new Matrix4f().identity().invert() }, new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
-        }
-
-        PInstrument instrument = this.getPart(Part.INSTRUMENT);
-        if (instrument != null && mesh != null && mesh.instance != null)
-            mesh.instance.texture = instrument.icon;
-
-
-        ResourceDescriptor base = new ResourceDescriptor(9698, ResourceType.GFX_MATERIAL);
-        if (costume != null && mesh != null && mesh.instance != null) {
-            mesh.instance.override(base, costume.material);
-            for (CostumePiece piece : costume.costumePieces) {
-                if (piece == null || piece.mesh == null) continue;
-                if (piece.mesh.isGUID()) {
-                    long guid = piece.mesh.getGUID().getValue();
-                    if (guid == 9876 || guid == 9877) continue;
-                }
-                if (piece.instance == null) {
-                    Mesh glMesh = Mesh.getSkinnedMesh(piece.mesh);
-                    if (glMesh != null)
-                        piece.instance = new MeshInstance(glMesh);
-                } else {
-                    piece.instance.override(base, costume.material);
-                    piece.instance.draw(mesh.boneModels, Colors.RGBA32.fromARGB(mesh.editorColor));
-                }
-            }
-        }
+        if ((world = getPart(Part.WORLD)) != null) world.fixup(this, revision);
+        if ((pos = getPart(Part.POS)) != null) pos.fixup(this, revision);
+        if ((emitter = getPart(Part.EMITTER)) != null) emitter.fixup(this, revision);
     }
+
+    public Vector4f getBestGameplayPos()
+    {
+        if (!hasPart(Part.POS)) return new Vector4f().zero();
+
+        Matrix4f matrix = this.<PPos>getPart(Part.POS).worldPosition;
+        if (hasPart(Part.SHAPE))
+        {
+            Matrix4f posCom = this.<PShape>getPart(Part.SHAPE).COM;
+            return posCom.getColumn(3, new Vector4f()).mul(matrix);
+        }
+
+        return matrix.getColumn(3, new Vector4f());
+    }
+
+    public boolean isEnemyWard()
+    {
+        GUID enemyWardMeshKey = new GUID(43456);
+        GUID enemyWardPlanKey = new GUID(53114);
+
+        if (enemyWardPlanKey.equals(planGUID)) return true;
+        if (hasPart(Part.GROUP))
+        {
+            PGroup group = getPart(Part.GROUP);
+            if (group.planDescriptor != null && group.planDescriptor.isGUID() && enemyWardPlanKey.equals(group.planDescriptor.getGUID()))
+                return true;
+        }
+
+        if (hasPart(Part.RENDER_MESH))
+        {
+            PRenderMesh mesh = getPart(Part.RENDER_MESH);
+            if (mesh.mesh != null && mesh.mesh.isGUID())
+                return enemyWardMeshKey.equals(mesh.mesh.getGUID());
+        }
+
+        return false;
+    }
+
+    public boolean isNewKey()
+    {
+        if (!isKey()) return false;
+        GUID newKeyMeshGuid = new GUID(44679);
+        if (hasPart(Part.RENDER_MESH))
+        {
+            PRenderMesh mesh = getPart(Part.RENDER_MESH);
+            if (mesh.mesh != null && mesh.mesh.isGUID())
+                return newKeyMeshGuid.equals(mesh.mesh.getGUID());
+        }
+        
+        return false;
+    }
+
+    public boolean isOldKey()
+    {
+        if (!isKey()) return false;
+        GUID oldKeyMeshGuid = new GUID(3763);
+        if (hasPart(Part.RENDER_MESH))
+        {
+            PRenderMesh mesh = getPart(Part.RENDER_MESH);
+            if (mesh.mesh != null && mesh.mesh.isGUID())
+                return oldKeyMeshGuid.equals(mesh.mesh.getGUID());
+        }
+
+        return false;
+    }
+
+    public boolean isKey()
+    {
+        PGameplayData data = getPart(Part.GAMEPLAY_DATA);
+        if (data == null) return false;
+
+        if (data.gameplayType == GameplayPartType.LEVEL_KEY) return true;
+        if (data.keyLink != null) return true;
+
+        GUID keyPlanGuid = new GUID(31738);
+        GUID oldKeyMeshGuid = new GUID(3763);
+        GUID newKeyMeshGuid = new GUID(44679);
+
+        if (keyPlanGuid.equals(planGUID)) return true;
+        if (hasPart(Part.GROUP))
+        {
+            PGroup group = getPart(Part.GROUP);
+            if (group.planDescriptor != null && group.planDescriptor.isGUID() && keyPlanGuid.equals(group.planDescriptor.getGUID()))
+                return true;
+        }
+
+        // Not entirely sure if having the mesh is entirely just criteria, but it's probably fine
+        if (hasPart(Part.RENDER_MESH))
+        {
+            PRenderMesh mesh = getPart(Part.RENDER_MESH);
+            if (mesh.mesh != null && mesh.mesh.isGUID())
+                return oldKeyMeshGuid.equals(mesh.mesh.getGUID()) || newKeyMeshGuid.equals(mesh.mesh.getGUID());
+        }
+
+        return false;
+    }
+
+    public boolean isScoreBubble()
+    {
+        PGameplayData data = getPart(Part.GAMEPLAY_DATA);
+        if (data == null) return false;
+
+        // This is only relevant in LBP2 onwards
+        if (data.gameplayType == GameplayPartType.SCORE_BUBBLE) return true;
+        if (data.eggLink != null) return false;
+
+        GUID scoreBubblePlanGuid = new GUID(31733);
+        GUID scoreBubbleMeshGuid = new GUID(3753);
+
+        if (scoreBubblePlanGuid.equals(planGUID)) return true;
+        if (hasPart(Part.GROUP))
+        {
+            PGroup group = getPart(Part.GROUP);
+            if (group.planDescriptor != null && group.planDescriptor.isGUID() && scoreBubblePlanGuid.equals(group.planDescriptor.getGUID()))
+                return true;
+        }
+
+        // Not entirely sure if having the mesh is entirely just criteria, but it's probably fine
+        if (hasPart(Part.RENDER_MESH))
+        {
+            PRenderMesh mesh = getPart(Part.RENDER_MESH);
+            if (mesh.mesh != null && mesh.mesh.isGUID())
+                return scoreBubbleMeshGuid.equals(mesh.mesh.getGUID());
+        }
+
+        return false;
+    }
+
+    public boolean isPrizeBubble()
+    {
+        PGameplayData data = getPart(Part.GAMEPLAY_DATA);
+        if (data == null) return false;
+
+        // This is only relevant in LBP2 onwards
+        if (data.gameplayType == GameplayPartType.PRIZE_BUBBLE) return true;
+        if (data.eggLink != null) return true;
+
+        GUID prizePlanGuid = new GUID(31743);
+        GUID prizeMeshGuid = new GUID(21180);
+
+        if (prizePlanGuid.equals(planGUID)) return true;
+        if (hasPart(Part.GROUP))
+        {
+            PGroup group = getPart(Part.GROUP);
+            if (group.planDescriptor != null && group.planDescriptor.isGUID() && prizePlanGuid.equals(group.planDescriptor.getGUID()))
+                return true;
+        }
+
+        // Not entirely sure if having the mesh is entirely just criteria, but it's probably fine
+        if (hasPart(Part.RENDER_MESH))
+        {
+            PRenderMesh mesh = getPart(Part.RENDER_MESH);
+            if (mesh.mesh != null && mesh.mesh.isGUID())
+                return prizeMeshGuid.equals(mesh.mesh.getGUID());
+        }
+
+        return false;
+    }
+
 
     @SuppressWarnings("unchecked")
-    public <T extends Serializable> T getPart(Part part) { return (T) this.parts[part.getIndex()]; }
-    public <T extends Serializable> Thing setPart(Part part, T value) { this.parts[part.getIndex()] = value; return this;}
-    public boolean hasPart(Part part) { return this.parts[part.getIndex()] != null; }
+    public <T extends Serializable> T getPart(Part part)
+    {
+        return (T) this.parts[part.getIndex()];
+    }
 
-    @Override public int getAllocatedSize() {  return BASE_ALLOCATION_SIZE;  }
+    public <T extends Serializable> void setPart(Part part, T value)
+    {
+        this.parts[part.getIndex()] = value;
+    }
 
-    @Override public String toString() {
+    public boolean hasPart(Part part)
+    {
+        return this.parts[part.getIndex()] != null;
+    }
+
+    @Override
+    public int getAllocatedSize()
+    {
+        return BASE_ALLOCATION_SIZE;
+    }
+
+    @Override
+    public String toString()
+    {
         if (this.name != null) return this.name;
         return String.format("New Thing (%d)", this.UID);
     }

@@ -405,11 +405,40 @@ public abstract class ComboBox extends Element{
                 p.size.y = getFontHeight() + 4;
             if(p.id == null)
                 p.id = "";
+            if(p.renderer == null)
+                p.renderer = this.renderer;
             comboElements.add(p);
             return p;
         }
         else
             return (Panel) getElementByID(p.id);
+    }
+
+    public AudioPlayer addAudioPlayer(AudioPlayer player)
+    {
+        if(!containsElementByID(player.id))
+        {
+            if(player.pos == null)
+                player.pos = new Vector2f();
+            if(player.size == null)
+                player.size = new Vector2f(0, getFontHeight() + 4);
+            player.size.x = tabWidth() - 4;
+            if(player.size.y == 0)
+                player.size.y = getFontHeight() + 4;
+            if(player.id == null)
+                player.id = "";
+            if(player.renderer == null)
+            {
+                player.renderer = this.renderer;
+                player.loader = this.loader;
+                player.window = this.window;
+                player.init();
+            }
+            comboElements.add(player);
+            return player;
+        }
+        else
+            return (AudioPlayer) getElementByID(player.id);
     }
     public void addString(String id, String string)
     {

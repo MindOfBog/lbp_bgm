@@ -32,7 +32,16 @@ public class print {
             byte[] byteArray = (byte[]) message;
             String build = "byte[]{";
             for(int i = 0; i < byteArray.length; i++)
-                build += byteArray[i] + (i == byteArray.length - 1 ? "" : ", ");
+            {
+                String hex = Integer.toHexString(byteArray[i]);
+                if(hex.length() > 2)
+                    hex = hex.substring(6);
+                if(hex.length() == 0)
+                    hex = "00";
+                if(hex.length() == 1)
+                    hex = "0" + hex;
+                build += "0x" + hex.toUpperCase() + (i == byteArray.length - 1 ? "" : ", ");
+            }
             build += "}";
             return build;
         }
@@ -83,6 +92,17 @@ public class print {
         {
             Vector2i vector = (Vector2i) message;
             return "Vector2i(" + vector.x + ", " + vector.y + ")";
+        }
+        else if(message instanceof Byte)
+        {
+            String hex = Integer.toHexString((byte)message);
+            if(hex.length() > 2)
+                hex = hex.substring(6);
+            if(hex.length() == 0)
+                hex = "00";
+            if(hex.length() == 1)
+                hex = "0" + hex;
+            return "0x" + hex.toUpperCase();
         }
 
         return String.valueOf(message);

@@ -6,23 +6,23 @@ import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
 
-public class EditorSelection implements Serializable {
+public class EditorSelection implements Serializable
+{
     public static final int BASE_ALLOCATION_SIZE = 0x8;
-    
+
     public String name;
     public ArrayList<Thing> things = new ArrayList<>();
 
-    @SuppressWarnings("unchecked")
-    @Override public EditorSelection serialize(Serializer serializer, Serializable structure) {
-        EditorSelection selection = (structure == null) ? new EditorSelection() : (EditorSelection) structure;
-
-        selection.name = serializer.str(selection.name);
-        selection.things = serializer.arraylist(selection.things, Thing.class, true);
-        
-        return selection;
+    @Override
+    public void serialize(Serializer serializer)
+    {
+        name = serializer.str(name);
+        things = serializer.arraylist(things, Thing.class, true);
     }
 
-    @Override public int getAllocatedSize() {
+    @Override
+    public int getAllocatedSize()
+    {
         int size = EditorSelection.BASE_ALLOCATION_SIZE;
         if (this.name != null) size += (this.name.length());
         return size;

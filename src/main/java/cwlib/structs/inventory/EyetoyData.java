@@ -8,32 +8,35 @@ import cwlib.io.gson.GsonRevision;
 import cwlib.io.serializer.Serializer;
 import cwlib.types.data.ResourceDescriptor;
 
-public class EyetoyData implements Serializable {
+public class EyetoyData implements Serializable
+{
     public static final int BASE_ALLOCATION_SIZE = 0x100 + ColorCorrection.BASE_ALLOCATION_SIZE;
 
     public ResourceDescriptor frame, alphaMask;
     public Matrix4f colorCorrection = new Matrix4f().identity();
     public ColorCorrection colorCorrectionSrc = new ColorCorrection();
 
-    @GsonRevision(min=0x3a0)
+    @GsonRevision(min = 0x3a0)
     public ResourceDescriptor outline;
 
-    @SuppressWarnings("unchecked")
-    @Override public EyetoyData serialize(Serializer serializer, Serializable structure) {
-        EyetoyData eyetoy = (structure == null) ? new EyetoyData() : (EyetoyData) structure;
-        
+    @Override
+    public void serialize(Serializer serializer)
+    {
         if (serializer.getRevision().getVersion() < 0x15e)
-            return eyetoy;
+            return;
 
-        eyetoy.frame = serializer.resource(eyetoy.frame, ResourceType.TEXTURE);
-        eyetoy.alphaMask = serializer.resource(eyetoy.alphaMask, ResourceType.TEXTURE);
-        eyetoy.colorCorrection = serializer.m44(eyetoy.colorCorrection);
-        eyetoy.colorCorrectionSrc = serializer.struct(eyetoy.colorCorrectionSrc, ColorCorrection.class);
+        frame = serializer.resource(frame, ResourceType.TEXTURE);
+        alphaMask = serializer.resource(alphaMask, ResourceType.TEXTURE);
+        colorCorrection = serializer.m44(colorCorrection);
+        colorCorrectionSrc = serializer.struct(colorCorrectionSrc,
+            ColorCorrection.class);
         if (serializer.getRevision().getVersion() > 0x39f)
-            eyetoy.outline = serializer.resource(eyetoy.outline, ResourceType.TEXTURE);
-
-        return eyetoy;
+            outline = serializer.resource(outline, ResourceType.TEXTURE);
     }
 
-    @Override public int getAllocatedSize() { return BASE_ALLOCATION_SIZE; }
+    @Override
+    public int getAllocatedSize()
+    {
+        return BASE_ALLOCATION_SIZE;
+    }
 }

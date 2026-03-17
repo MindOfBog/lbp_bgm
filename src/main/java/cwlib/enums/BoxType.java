@@ -3,7 +3,8 @@ package cwlib.enums;
 /**
  * Types of material box nodes, incomplete list.
  */
-public class BoxType {
+public class BoxType
+{
     public static final int OUTPUT = 0;
     public static final int TEXTURE_SAMPLE = 1;
     public static final int THING_COLOR = 2; // u32 (8)?
@@ -22,8 +23,6 @@ public class BoxType {
     public static final int MAKE_FLOAT4 = 15;
     public static final int BLEND = 16;
     // 17, something with fur
-    // 18 ??? 
+    // 18 ???
     public static final int EXPONENT = 19;
-
-
 }

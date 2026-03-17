@@ -66,6 +66,7 @@ public class ConstantTextures {
     public static HashMap<String, Texture> FILE_SCRIPT;
     public static HashMap<String, Texture> FILE_SOFTBODY;
     public static HashMap<String, Texture> FILE_TEXTURE;
+    public static HashMap<String, Texture> FILE_AUDIO;
     public static HashMap<String, Texture> FILE_UNKNOWN;
     public static HashMap<String, Texture> PLAN;
     public static HashMap<String, Texture> TEXTURE;
@@ -181,6 +182,8 @@ public class ConstantTextures {
         FILE_SOFTBODY.put("/textures/ui/file_softbody.svg", new Texture());
         FILE_TEXTURE = new HashMap<>();
         FILE_TEXTURE.put("/textures/ui/file_texture.svg", new Texture());
+        FILE_AUDIO = new HashMap<>();
+        FILE_AUDIO.put("/textures/ui/file_audio.svg", new Texture());
         FILE_UNKNOWN = new HashMap<>();
         FILE_UNKNOWN.put("/textures/ui/file_unknown.svg", new Texture());
         PLAN = new HashMap<>();

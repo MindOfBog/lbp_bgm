@@ -4,10 +4,7 @@ import bog.lbpas.Main;
 import bog.lbpas.view3d.managers.assetLoading.ObjectLoader;
 import bog.lbpas.view3d.renderer.Camera;
 import bog.lbpas.view3d.renderer.gui.cursor.ECursor;
-import bog.lbpas.view3d.utils.Config;
-import bog.lbpas.view3d.utils.Cursors;
-import bog.lbpas.view3d.utils.Utils;
-import bog.lbpas.view3d.utils.print;
+import bog.lbpas.view3d.utils.*;
 import org.joml.*;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.*;
@@ -15,10 +12,13 @@ import org.lwjgl.opengl.*;
 import org.lwjgl.system.MemoryUtil;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.awt.image.ImageObserver;
 import java.lang.Math;
 import java.nio.LongBuffer;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Bog
@@ -47,6 +47,8 @@ public class WindowMan {
 
     public long hWnd;
 
+    public AudioMan audio;
+
     public WindowMan(String title, int width, int height, int minWidth, int minHeight)
     {
         this.title = title;
@@ -74,6 +76,9 @@ public class WindowMan {
         GLFW.glfwWindowHint(GLFW.GLFW_DECORATED, GLFW.GLFW_FALSE);
         GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GLFW.GLFW_TRUE);
 
+        if(Main.debug)
+            GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_DEBUG_CONTEXT, GLFW.GLFW_TRUE);
+
         boolean maximised = false;
 
         if(width == 0 || height == 0)
@@ -88,7 +93,7 @@ public class WindowMan {
         }
 
         window = GLFW.glfwCreateWindow(width, height, title, MemoryUtil.NULL, MemoryUtil.NULL);
-        setIcon("/textures/icon_tree_only.svg");
+        setIcons(Main.iconList);
 
         Cursors.updateCursors();
 
@@ -141,6 +146,7 @@ public class WindowMan {
         GLFW.glfwSetWindowFocusCallback(window, (window, focused) ->
         {
             isFocused = focused;
+            FilePicker.onWindowFocus(focused);
         });
 
         GLFW.glfwMakeContextCurrent(window);
@@ -157,6 +163,9 @@ public class WindowMan {
         GL11.glEnable(GL11.GL_DEPTH_TEST);
         GL11.glEnable(GL11.GL_STENCIL_TEST);
         GL11.glStencilOp(GL11.GL_KEEP, GL11.GL_KEEP, GL11.GL_REPLACE);
+
+        this.audio = new AudioMan();
+        this.audio.init();
     }
 
     public int prevX = 0;
@@ -380,6 +389,7 @@ public class WindowMan {
 
     public void cleanup()
     {
+        this.audio.cleanup();
         GLFW.glfwDestroyWindow(window);
     }
 
@@ -479,7 +489,25 @@ public class WindowMan {
             iconImage.set(icon.getWidth(), icon.getHeight(), ObjectLoader.loadTextureBuffer(icon));
             iconBuffer.put(0, iconImage);
             GLFW.glfwSetWindowIcon(window, iconBuffer);
-        } catch (Exception e) {e.printStackTrace();}
+        } catch (Exception e) {print.stackTrace(e);}
+    }
+
+    public void setIcons(List<Image> icons)
+    {
+        GLFWImage.Buffer iconBuffer = GLFWImage.malloc(icons.size());
+
+        for(int i = 0; i < icons.size(); i++)
+        {
+            BufferedImage icon = (BufferedImage) icons.get(i);
+            GLFWImage iconImage = GLFWImage.malloc();
+
+            try {
+                iconImage.set(icon.getWidth(), icon.getHeight(), ObjectLoader.loadTextureBuffer(icon));
+                iconBuffer.put(i, iconImage);
+            } catch (Exception e) {print.stackTrace(e);}
+        }
+
+        GLFW.glfwSetWindowIcon(window, iconBuffer);
     }
 
     public void maximize()

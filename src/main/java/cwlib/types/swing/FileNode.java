@@ -1,14 +1,13 @@
 package cwlib.types.swing;
 
 import cwlib.types.databases.FileEntry;
-import cwlib.util.Nodes;
-import cwlib.util.Strings;
 
-import java.util.Enumeration;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
+import java.util.Enumeration;
 
-public class FileNode extends DefaultMutableTreeNode {
+public class FileNode extends DefaultMutableTreeNode
+{
     /**
      * Associated file database.
      */
@@ -29,14 +28,16 @@ public class FileNode extends DefaultMutableTreeNode {
      */
     private boolean visible = true;
 
-    public FileNode(String name, String path, FileEntry entry, FileData source) {
+    public FileNode(String name, String path, FileEntry entry, FileData source)
+    {
         super(name);
         this.entry = entry;
         this.path = path;
         this.source = source;
     }
 
-    public FileNode getChildAt(int index, boolean isFiltered) {
+    public FileNode getChildAt(int index, boolean isFiltered)
+    {
         if (!isFiltered)
             return (FileNode) super.getChildAt(index);
         if (this.children == null)
@@ -44,7 +45,8 @@ public class FileNode extends DefaultMutableTreeNode {
         int realIndex = -1;
         int visibleIndex = -1;
         Enumeration<TreeNode> e = this.children.elements();
-        while (e.hasMoreElements()) {
+        while (e.hasMoreElements())
+        {
             FileNode node = (FileNode) e.nextElement();
             if (node.visible) visibleIndex++;
             realIndex++;
@@ -53,8 +55,9 @@ public class FileNode extends DefaultMutableTreeNode {
         }
         throw new ArrayIndexOutOfBoundsException("Index unmatched!");
     }
-    
-    public void removeAnyEmptyNodes() {
+
+    public void removeAnyEmptyNodes()
+    {
         if (this.entry != null) return;
         FileNode[] nodes = this.children.toArray(FileNode[]::new);
         for (FileNode node : nodes)
@@ -63,12 +66,14 @@ public class FileNode extends DefaultMutableTreeNode {
             this.removeFromParent();
     }
 
-    public int getChildCount(boolean isFiltered, boolean noFolders) {
+    public int getChildCount(boolean isFiltered, boolean noFolders)
+    {
         if (!isFiltered) return getChildCount();
         if (this.children == null) return 0;
         int count = 0;
         Enumeration<TreeNode> e = this.children.elements();
-        while (e.hasMoreElements()) {
+        while (e.hasMoreElements())
+        {
             FileNode node = (FileNode) e.nextElement();
             if (node.visible && (!noFolders || (noFolders && node.entry != null)))
                 count++;
@@ -76,17 +81,44 @@ public class FileNode extends DefaultMutableTreeNode {
         return count;
     }
 
-    public void delete() {
-        if (this.parent != null) 
-            this.removeFromParent();
+    public void delete()
+    {
+        if (this.parent != null)
+            this.parent.remove(this);
     }
 
-    public FileData getSource() { return this.source; }
-    public FileEntry getEntry() { return this.entry; }
-    public String getFilePath() { return this.path; }
-    public String getName() { return (String) this.userObject; }
-    public void setName(String name) { this.userObject = name; }
-    public boolean isVisible() { return this.visible; }
+    public FileData getSource()
+    {
+        return this.source;
+    }
 
-    public void setVisible(boolean visible) { this.visible = visible; }
+    public FileEntry getEntry()
+    {
+        return this.entry;
+    }
+
+    public String getFilePath()
+    {
+        return this.path;
+    }
+
+    public String getName()
+    {
+        return (String) this.userObject;
+    }
+
+    public void setName(String name)
+    {
+        this.userObject = name;
+    }
+
+    public boolean isVisible()
+    {
+        return this.visible;
+    }
+
+    public void setVisible(boolean visible)
+    {
+        this.visible = visible;
+    }
 }

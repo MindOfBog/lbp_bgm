@@ -1,34 +1,36 @@
 package cwlib.types.archives;
 
-import java.io.File;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-
 import cwlib.enums.ArchiveType;
 import cwlib.enums.ResourceType;
 import cwlib.enums.SerializationType;
 import cwlib.ex.SerializationException;
 import cwlib.io.streams.MemoryInputStream;
-import cwlib.io.streams.MemoryOutputStream;
 import cwlib.io.streams.MemoryInputStream.SeekMode;
+import cwlib.io.streams.MemoryOutputStream;
 import cwlib.types.data.Revision;
 import cwlib.types.data.SHA1;
 import cwlib.util.Bytes;
 import cwlib.util.Crypto;
 import cwlib.util.FileIO;
 
+import java.io.File;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+
 /**
  * The archive used for save files
  * and also streaming chunks in LBP3.
  */
-public class SaveArchive extends Fart {
+public class SaveArchive extends Fart
+{
     /**
      * The game revision this archive was
      * compiled on.
      */
     private Revision gameRevision = new Revision(0x272, 0x4c44, 0x0017);
-    
+
     /**
      * Local user index that owns this save.
      */
@@ -86,11 +88,12 @@ public class SaveArchive extends Fart {
 
     /**
      * Creates empty save archive.
-     * @param file Where this file will get saved
+     *
      * @param gameRevision Game revision this archive is built for
-     * @param revision Save archive revision
+     * @param revision     Save archive revision
      */
-    public SaveArchive(Revision gameRevision, int revision) {
+    public SaveArchive(Revision gameRevision, int revision)
+    {
         super(null, ArchiveType.SAVE);
         // FAR1 is considered FARC
         if (revision < 2 || revision > 5)
@@ -102,16 +105,19 @@ public class SaveArchive extends Fart {
         this.entries = new Fat[0];
     }
 
-    public SaveArchive(byte[] data) {
+    public SaveArchive(byte[] data)
+    {
         this(data, null);
     }
 
-    public SaveArchive(File file) {
+    public SaveArchive(File file)
+    {
         this(FileIO.read(file.getAbsolutePath()), file);
     }
 
 
-    private SaveArchive(byte[] data, File file) {
+    private SaveArchive(byte[] data, File file)
+    {
         super(file, ArchiveType.SAVE);
 
         if (file != null && !file.exists())
@@ -119,7 +125,9 @@ public class SaveArchive extends Fart {
 
         MemoryInputStream stream = new MemoryInputStream(data);
         if (stream.getLength() < 0x8)
-            throw new SerializationException("Invalid SaveArchive, size is less than minimum of 8 bytes!");
+            throw new SerializationException("Invalid SaveArchive, size is less than " +
+                                             "minimum of 8" +
+                                             " bytes!");
 
         stream.seek(0x8, SeekMode.End);
         int entryCount = stream.i32();
@@ -127,13 +135,19 @@ public class SaveArchive extends Fart {
 
         if ((magic >> 8) != 0x464152)
             throw new SerializationException("Invalid SaveArchive, magic does not match!");
-        try { this.archiveRevision = Integer.parseInt(Character.toString((char) magic & 0xFF)); }
-        catch (NumberFormatException ex) {
+        try
+        {
+            this.archiveRevision =
+                Integer.parseInt(Character.toString((char) magic & 0xFF));
+        }
+        catch (NumberFormatException ex)
+        {
             throw new SerializationException("Invalid SaveArchive revision!");
         }
 
         int fragments = 0;
-        if (this.archiveRevision == 5) {
+        if (this.archiveRevision == 5)
+        {
             // Only the Vita uses FAR revision 5, so it's always little endian as a result.
             this.isLittleEndian = true;
 
@@ -148,7 +162,8 @@ public class SaveArchive extends Fart {
         }
 
         // FAR3 added HASHINATE
-        if (this.archiveRevision > 2) {
+        if (this.archiveRevision > 2)
+        {
             if (this.archiveRevision == 5)
                 stream.seek(0x20, SeekMode.End);
             else
@@ -156,7 +171,7 @@ public class SaveArchive extends Fart {
             this.hashinate = stream.sha1();
         }
 
-        this.fatOffset = stream.getLength() - 0x8 - (entryCount * 0x1c);
+        this.fatOffset = stream.getLength() - 0x8 - (entryCount * 0x1cL);
         if (this.archiveRevision > 2) this.fatOffset -= 0x14;
         if (this.archiveRevision == 5) this.fatOffset -= 4;
 
@@ -182,7 +197,8 @@ public class SaveArchive extends Fart {
         else
             this.gameRevision = new Revision(stream.i32());
 
-        if (this.archiveRevision == 5) {
+        if (this.archiveRevision == 5)
+        {
             this.ID = stream.i32();
             this.backupID = stream.i32();
             this.fragmentIDs = new int[fragments];
@@ -200,12 +216,14 @@ public class SaveArchive extends Fart {
         stream.seek(0x4 * 0xA); // deprecated3 int[10]
 
         // Only certain parts are little endian because they were directly written to memory,
-        // whereas most other data structures are made to use the same endian across architectures.
+        // whereas most other data structures are made to use the same endian across
+        // architectures.
         stream.setLittleEndian(false);
 
         this.entries = new Fat[entryCount];
         this.lookup = new HashMap<>(entryCount);
-        for (int i = 0; i < entryCount; ++i) {
+        for (int i = 0; i < entryCount; ++i)
+        {
             Fat fat = new Fat(this, stream.sha1(), stream.u32(), stream.i32());
             this.entries[i] = fat;
             this.lookup.put(fat.getSHA1(), fat);
@@ -214,27 +232,35 @@ public class SaveArchive extends Fart {
         // Store all the resources in-memory, saves
         // are small enough that this will rarely be an issue.
         this.buffers = new HashMap<>(entryCount);
-        for (Fat fat : this.entries) {
+        for (Fat fat : this.entries)
+        {
             stream.seek((int) fat.getOffset(), SeekMode.Begin);
             this.buffers.put(fat, stream.bytes(fat.getSize()));
         }
     }
 
-    public SaveArchive(String path) { this(new File(path)); }
+    public SaveArchive(String path)
+    {
+        this(new File(path));
+    }
 
-    @Override public byte[] extract(Fat fat) {
+    @Override
+    public byte[] extract(Fat fat)
+    {
         if (fat == null)
             throw new NullPointerException("Can't search for null entry in archive!");
         if (fat.getFileArchive() != this)
             throw new IllegalArgumentException("This entry does not belong to this archive!");
         return this.buffers.get(fat);
     }
-    
+
     /**
      * Generates a save key buffer from the current state of the archive.
+     *
      * @return Save key buffer
      */
-    private byte[] generateSaveKey() {
+    private byte[] generateSaveKey()
+    {
         int saveKeySize = 0x80;
         if (this.archiveRevision > 3)
             saveKeySize += 0x4;
@@ -245,15 +271,16 @@ public class SaveArchive extends Fart {
         MemoryOutputStream keyStream = new MemoryOutputStream(saveKeySize);
         if (this.isLittleEndian) keyStream.setLittleEndian(true);
 
-        int branch = 
-            ((int)this.gameRevision.getBranchID() << 16) |
-            ((int)this.gameRevision.getBranchRevision());
-        
+        int branch =
+            ((int) this.gameRevision.getBranchID() << 16) |
+            ((int) this.gameRevision.getBranchRevision());
+
         keyStream.i32(this.gameRevision.getHead());
         if (this.archiveRevision > 3)
             keyStream.i32(branch);
-        
-        if (this.archiveRevision == 5) {
+
+        if (this.archiveRevision == 5)
+        {
             keyStream.i32(this.ID);
             keyStream.i32(this.backupID);
             for (int fragment : this.fragmentIDs)
@@ -274,10 +301,12 @@ public class SaveArchive extends Fart {
     /**
      * Gets a list of all resource hashes that are depended on by
      * at least one other resource.
+     *
      * @param resource Resource to dependinate
-     * @param hashes List of hashes that are depended on
+     * @param hashes   List of hashes that are depended on
      */
-    public void getFilterList(byte[] resource, HashSet<SHA1> hashes) {
+    public void getFilterList(byte[] resource, HashSet<SHA1> hashes)
+    {
         MemoryInputStream stream = new MemoryInputStream(resource);
 
         // Parsing the resource again here because the main class will
@@ -296,12 +325,15 @@ public class SaveArchive extends Fart {
 
         stream.seek(stream.i32(), SeekMode.Begin);
         int count = stream.i32();
-        for (int i = 0; i < count; ++i) {
+        for (int i = 0; i < count; ++i)
+        {
             byte flags = stream.i8();
             if ((flags & 2) != 0) stream.guid();
-            if ((flags & 1) != 0) {
+            if ((flags & 1) != 0)
+            {
                 SHA1 sha1 = stream.sha1();
-                if (this.exists(sha1) && !hashes.contains(sha1)) {
+                if (this.exists(sha1) && !hashes.contains(sha1))
+                {
                     hashes.add(sha1);
                     byte[] data = this.extract(sha1);
                     if (data != null)
@@ -314,34 +346,39 @@ public class SaveArchive extends Fart {
 
     /**
      * Builds this archive and returns the resulting byte array.
+     *
      * @return Built archive
      */
-    public byte[] build(boolean hashinate) {
+    public byte[] build(boolean hashinate)
+    {
         // If the root exists, use it to filter what
         // resources are actually necessary.
         SHA1 rootHash = this.key.getRootHash();
         byte[] root = this.extract(rootHash);
         HashSet<SHA1> resources = new HashSet<>(this.entries.length + this.queue.size());
-        if (root != null) {
+        if (root != null)
+        {
             resources.add(rootHash);
             this.getFilterList(root, resources);
-        } else {
+        }
+        else
+        {
             // If the root doesn't exist, or there just is no root,
             // just serialize everything.
             for (Fat fat : this.entries)
                 resources.add(fat.getSHA1());
-            for (SHA1 hash : this.queue.keySet())
-                resources.add(hash);
+            resources.addAll(this.queue.keySet());
         }
 
         SHA1[] hashes = resources.toArray(SHA1[]::new);
-        Arrays.sort(hashes, (e1, e2) -> e1.toString().compareTo(e2.toString()));
-        
+        Arrays.sort(hashes, Comparator.comparing(SHA1::toString));
+
         byte[][] buffers = new byte[hashes.length][];
         Fat[] entries = new Fat[hashes.length];
 
         int size = 0;
-        for (int i = 0; i < hashes.length; ++i) {
+        for (int i = 0; i < hashes.length; ++i)
+        {
             byte[] buffer = this.extract(hashes[i]);
             entries[i] = new Fat(this, hashes[i], size, buffer.length);
             buffers[i] = buffer;
@@ -355,7 +392,7 @@ public class SaveArchive extends Fart {
         int modulo = size % 4, pad = 0;
         if (modulo != 0)
             pad = 4 - modulo;
-        
+
         // Some additional padding in case of alignment issues.
         size += (saveKey.length + fat.length + 0x8 + pad);
         if (this.archiveRevision > 2) size += 0x14;
@@ -366,7 +403,7 @@ public class SaveArchive extends Fart {
         MemoryOutputStream stream = new MemoryOutputStream(size);
         for (byte[] buffer : buffers)
             stream.bytes(buffer);
-        
+
         stream.pad(pad);
 
         stream.bytes(saveKey);
@@ -374,7 +411,8 @@ public class SaveArchive extends Fart {
         stream.bytes(fat);
 
         int hashinateOffset = stream.getOffset();
-        if (this.archiveRevision > 2) {
+        if (this.archiveRevision > 2)
+        {
             // Pad out the hashinate, we need to actually generate it.
             stream.pad(0x14);
         }
@@ -388,11 +426,13 @@ public class SaveArchive extends Fart {
         byte[] archive = stream.getBuffer();
 
         // Compute hash and write it to the buffer
-        if (hashinate && this.archiveRevision > 2) {
+        if (hashinate && this.archiveRevision > 2)
+        {
             this.hashinate = Crypto.HMAC(archive, Crypto.HASHINATE_KEY);
             System.arraycopy(this.hashinate.getHash(), 0, archive, hashinateOffset, 0x14);
-        } else this.hashinate = SHA1.EMPTY;
-        
+        }
+        else this.hashinate = SHA1.EMPTY;
+
         // Update state of the archive in memory.
         this.entries = entries;
         this.queue.clear();
@@ -403,7 +443,8 @@ public class SaveArchive extends Fart {
         // Reset the lookup tables
         this.lookup = new HashMap<>(entries.length);
         this.buffers = new HashMap<>(entries.length);
-        for (int i = 0; i < entries.length; ++i) {
+        for (int i = 0; i < entries.length; ++i)
+        {
             Fat entry = entries[i];
             byte[] buffer = buffers[i];
 
@@ -416,37 +457,76 @@ public class SaveArchive extends Fart {
 
     /**
      * Save archive at specified location
+     *
      * @param path Location to save
-     * @return Whether or not the save was successful
+     * @return Whether the save was successful
      */
-    public boolean save(String path) {
-        if (path == null) 
+    public boolean save(String path)
+    {
+        if (path == null)
             throw new IllegalArgumentException("Can't save archive to null path!");
         byte[] archive = this.build(false);
         return FileIO.write(archive, path);
     }
 
-    @Override public boolean save() {
+    @Override
+    public boolean save()
+    {
         if (this.file == null)
             throw new IllegalStateException("Can't save archive with no associated file!");
         byte[] archive = this.build(false);
         return FileIO.write(archive, this.file.getAbsolutePath());
     }
 
-    public Revision getGameRevision() { return this.gameRevision; }
-    public SaveKey getKey() { return this.key; }
-    public SHA1 getHashinate() { return this.hashinate; }
-    public int getArchiveRevision() { return this.archiveRevision; }
-    public int getID() { return this.ID; }
-    public int getBackupID() { return this.backupID; }
-    public int[] getFragmentIDs() { return this.fragmentIDs; }
-    public boolean isLittleEndian() { return this.isLittleEndian; }
+    public Revision getGameRevision()
+    {
+        return this.gameRevision;
+    }
 
-    public void setGameRevision(Revision value) {
+    public SaveKey getKey()
+    {
+        return this.key;
+    }
+
+    public SHA1 getHashinate()
+    {
+        return this.hashinate;
+    }
+
+    public int getArchiveRevision()
+    {
+        return this.archiveRevision;
+    }
+
+    public int getID()
+    {
+        return this.ID;
+    }
+
+    public int getBackupID()
+    {
+        return this.backupID;
+    }
+
+    public int[] getFragmentIDs()
+    {
+        return this.fragmentIDs;
+    }
+
+    public boolean isLittleEndian()
+    {
+        return this.isLittleEndian;
+    }
+
+    public void setGameRevision(Revision value)
+    {
         if (value == null)
             throw new NullPointerException("Game revision cannot be null!");
         this.gameRevision = value;
     }
 
-    public void setLittleEndian(boolean value) { this.isLittleEndian = value; }
+    public void setLittleEndian(boolean value)
+    {
+        this.isLittleEndian = value;
+    }
 }

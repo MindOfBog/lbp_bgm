@@ -8,7 +8,8 @@ import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
 import cwlib.types.data.ResourceDescriptor;
 
-public class PlanetArea implements Serializable {
+public class PlanetArea implements Serializable
+{
     public static final int BASE_ALLOCATION_SIZE = 0x60;
 
     public int areaID;
@@ -20,45 +21,53 @@ public class PlanetArea implements Serializable {
     public Vector3f[] spritelightPositions;
     public Thing area;
 
-    @SuppressWarnings("unchecked")
-    @Override public PlanetArea serialize(Serializer serializer, Serializable structure) {
-        PlanetArea area = (structure == null) ? new PlanetArea() : (PlanetArea) structure;
+    @Override
+    public void serialize(Serializer serializer)
+    {
         int subVersion = serializer.getRevision().getSubVersion();
 
-        if (subVersion > 0x109) 
-            area.areaID = serializer.s32(area.areaID);
-        
-        if (subVersion < 0x187) {
+        if (subVersion > 0x109)
+            areaID = serializer.s32(areaID);
+
+        if (subVersion < 0x187)
+        {
             if (subVersion > 0x109)
-                area.area = serializer.thing(area.area);
-        } else {
+                area = serializer.thing(area);
+        }
+        else
+        {
             if (subVersion > 0x186)
-                area.mainAreaDescriptor = serializer.resource(area.mainAreaDescriptor, ResourceType.PLAN, true);
+                mainAreaDescriptor = serializer.resource(mainAreaDescriptor,
+                    ResourceType.PLAN, true);
             if (subVersion > 0x18b)
-                area.shadowAreaDescriptor = serializer.resource(area.shadowAreaDescriptor, ResourceType.PLAN, true);
+                shadowAreaDescriptor = serializer.resource(shadowAreaDescriptor,
+                    ResourceType.PLAN, true);
         }
 
-        if (subVersion > 0x178) {
-            area.ambienceTrack = serializer.s32(area.ambienceTrack);
-            area.ambienceVolume = serializer.f32(area.ambienceVolume);
+        if (subVersion > 0x178)
+        {
+            ambienceTrack = serializer.s32(ambienceTrack);
+            ambienceVolume = serializer.f32(ambienceVolume);
         }
 
-        if (subVersion > 0x179) {
-            area.spritelights = serializer.thingarray(area.spritelights);
-        
-            int numPositions = serializer.i32(area.spritelightPositions != null ? area.spritelightPositions.length : 0);
-            if (!serializer.isWriting()) 
-                area.spritelightPositions = new Vector3f[numPositions];
+        if (subVersion > 0x179)
+        {
+            spritelights = serializer.thingarray(spritelights);
+
+            int numPositions = serializer.i32(spritelightPositions != null ?
+                spritelightPositions.length : 0);
+            if (!serializer.isWriting())
+                spritelightPositions = new Vector3f[numPositions];
             for (int i = 0; i < numPositions; ++i)
-                area.spritelightPositions[i] = serializer.v3(area.spritelightPositions[i]);
+                spritelightPositions[i] = serializer.v3(spritelightPositions[i]);
 
-            area.area = serializer.thing(area.area);
+            area = serializer.thing(area);
         }
-
-        return area;
     }
 
-    @Override public int getAllocatedSize() {
+    @Override
+    public int getAllocatedSize()
+    {
         int size = PlanetArea.BASE_ALLOCATION_SIZE;
         if (this.spritelights != null)
             size += (this.spritelights.length * 0x4);

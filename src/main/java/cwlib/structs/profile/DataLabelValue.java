@@ -7,7 +7,8 @@ import cwlib.io.serializer.Serializer;
 import cwlib.types.data.NetworkOnlineID;
 import cwlib.types.data.Revision;
 
-public class DataLabelValue implements Serializable {
+public class DataLabelValue implements Serializable
+{
     public static final int BASE_ALLOCATION_SIZE = 0x30;
 
     public NetworkOnlineID creatorID;
@@ -16,38 +17,44 @@ public class DataLabelValue implements Serializable {
     public float[] analogue;
     public byte[] ternary;
 
-    @SuppressWarnings("unchecked")
-    @Override public DataLabelValue serialize(Serializer serializer, Serializable structure) {
-        DataLabelValue value = (structure == null) ? new DataLabelValue() : (DataLabelValue) structure;
-
+    @Override
+    public void serialize(Serializer serializer)
+    {
         Revision revision = serializer.getRevision();
         int head = revision.getVersion();
 
-        value.creatorID = serializer.struct(value.creatorID, NetworkOnlineID.class);
-        value.labelIndex = serializer.i32(value.labelIndex);
+        creatorID = serializer.struct(creatorID, NetworkOnlineID.class);
+        labelIndex = serializer.i32(labelIndex);
 
-        if (revision.isVita()) {
-            
+        if (revision.isVita())
+        {
+
             if (revision.has(Branch.DOUBLE11, Revisions.D1_LABEL_ANALOGUE_ARRAY))
-                value.analogue = serializer.floatarray(value.analogue);
-            else if (revision.has(Branch.DOUBLE11, Revisions.D1_DATALABELS)) {
-                if (value.analogue != null && value.analogue.length != 0)
-                    serializer.getOutput().f32(value.analogue[0]);
+                analogue = serializer.floatarray(analogue);
+            else if (revision.has(Branch.DOUBLE11, Revisions.D1_DATALABELS))
+            {
+                if (serializer.isWriting())
+                {
+                    float value = analogue != null && analogue.length != 0 ? analogue[0] : 0.0f;
+                    serializer.getOutput().f32(value);
+                }
                 else
-                    value.analogue = new float[] { serializer.getInput().f32() };
+                    analogue = new float[] { serializer.getInput().f32() };
             }
 
             if (revision.has(Branch.DOUBLE11, Revisions.D1_LABEL_TERNARY))
-                value.ternary = serializer.bytearray(value.ternary);
-        } else if (head >= Revisions.DATALABELS) {
-            value.analogue = serializer.floatarray(value.analogue);
-            value.ternary = serializer.bytearray(value.ternary);
+                ternary = serializer.bytearray(ternary);
         }
-        
-        return value;
+        else if (head >= Revisions.DATALABELS)
+        {
+            analogue = serializer.floatarray(analogue);
+            ternary = serializer.bytearray(ternary);
+        }
     }
 
-    @Override public int getAllocatedSize() {
+    @Override
+    public int getAllocatedSize()
+    {
         int size = DataLabelValue.BASE_ALLOCATION_SIZE;
         if (this.analogue != null)
             size += (this.analogue.length * 4);

@@ -105,17 +105,22 @@ public class Slider extends Element{
         if(button == GLFW.GLFW_MOUSE_BUTTON_1)
         {
             if(action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
+            {
+                if(!isSliding)
+                    onGrabSlider();
                 isSliding = true;
+            }
             else if(action == GLFW.GLFW_RELEASE)
             {
                 if(isSliding)
-                    onValueSet();
+                    onReleaseSlider();
                 isSliding = false;
             }
         }
     }
 
-    public void onValueSet(){}
+    public void onGrabSlider(){}
+    public void onReleaseSlider(){}
 
     public float getCurrentValue()
     {
@@ -143,7 +148,7 @@ public class Slider extends Element{
         if(!focused)
         {
             if(isSliding)
-                onValueSet();
+                onReleaseSlider();
             isSliding = false;
         }
     }

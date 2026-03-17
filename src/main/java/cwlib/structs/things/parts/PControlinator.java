@@ -8,7 +8,8 @@ import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
 import cwlib.types.data.Revision;
 
-public class PControlinator implements Serializable {
+public class PControlinator implements Serializable
+{
     public static final int BASE_ALLOCATION_SIZE = 0x80;
 
     public Thing attachedPlayer, lastAttachedPlayer, prompt, promptPlayer;
@@ -17,73 +18,85 @@ public class PControlinator implements Serializable {
     public boolean sideMode;
     public int remoteControlState;
     public boolean disablePoppetControls, autoDock, overrideSackbot;
-    @GsonRevision(lbp3=true,min=0x6f) public boolean killRiderOnCreatureDeath;
+    @GsonRevision(lbp3 = true, min = 0x6f)
+    public boolean killRiderOnCreatureDeath;
     public Thing padSwitch;
 
-    @GsonRevision(lbp3=true,min=0x4c) public int parentBoneIndex;
-    @GsonRevision(lbp3=true,min=0x4c) public Matrix4f parentBoneOffset;
+    @GsonRevision(lbp3 = true, min = 0x4c)
+    public byte parentBoneIndex;
+    @GsonRevision(lbp3 = true, min = 0x4c)
+    public Matrix4f parentBoneOffset;
 
-    @GsonRevision(min=0x3ed) public byte playerMode;
-    @GsonRevision(lbp3=true,min=0x18a) public byte layerRange;
+    @GsonRevision(min = 0x3ed)
+    public byte playerMode;
+    @GsonRevision(lbp3 = true, min = 0x18a)
+    public byte layerRange;
 
     /* Vita */
-    @GsonRevision(min=0xd, branch=0x4431) public float tiltMax;
-    @GsonRevision(min=0xe, branch=0x4431) public float tiltMin;
-    @GsonRevision(min=0x1d, branch=0x4431) public int remotePlayer;
-    @GsonRevision(min=0x51, branch=0x4431) public boolean playAudio;
+    @GsonRevision(min = 0xd, branch = 0x4431)
+    public float tiltMax;
+    @GsonRevision(min = 0xe, branch = 0x4431)
+    public float tiltMin;
+    @GsonRevision(min = 0x1d, branch = 0x4431)
+    public int remotePlayer;
+    @GsonRevision(min = 0x51, branch = 0x4431)
+    public boolean playAudio;
 
-    @SuppressWarnings("unchecked")
-    @Override public PControlinator serialize(Serializer serializer, Serializable structure) {
-        PControlinator dc = (structure == null) ? new PControlinator() : (PControlinator) structure;
-
+    @Override
+    public void serialize(Serializer serializer)
+    {
         Revision revision = serializer.getRevision();
         int version = revision.getVersion();
         int subVersion = revision.getSubVersion();
-        
-        dc.attachedPlayer = serializer.thing(dc.attachedPlayer);
-        dc.lastAttachedPlayer = serializer.thing(dc.lastAttachedPlayer);
-        dc.prompt = serializer.thing(dc.prompt);
-        dc.promptPlayer = serializer.thing(dc.promptPlayer);
 
-        dc.colorIndex = serializer.i32(dc.colorIndex);
+        attachedPlayer = serializer.thing(attachedPlayer);
+        lastAttachedPlayer = serializer.thing(lastAttachedPlayer);
+        prompt = serializer.thing(prompt);
+        promptPlayer = serializer.thing(promptPlayer);
 
-        dc.radius = serializer.f32(dc.radius);
-        dc.sideMode = serializer.bool(dc.sideMode);
+        colorIndex = serializer.i32(colorIndex);
 
-        dc.remoteControlState = serializer.i32(dc.remoteControlState);
+        radius = serializer.f32(radius);
+        sideMode = serializer.bool(sideMode);
 
-        dc.disablePoppetControls = serializer.bool(dc.disablePoppetControls);
-        dc.autoDock = serializer.bool(dc.autoDock);
-        dc.overrideSackbot = serializer.bool(dc.overrideSackbot);
+        remoteControlState = serializer.i32(remoteControlState);
+
+        disablePoppetControls = serializer.bool(disablePoppetControls);
+        autoDock = serializer.bool(autoDock);
+        overrideSackbot = serializer.bool(overrideSackbot);
         if (subVersion > 0x6e)
-            dc.killRiderOnCreatureDeath = serializer.bool(dc.killRiderOnCreatureDeath);
-        
-        dc.padSwitch = serializer.thing(dc.padSwitch);
+            killRiderOnCreatureDeath = serializer.bool(killRiderOnCreatureDeath);
 
-        if (revision.isVita()) {
+        padSwitch = serializer.thing(padSwitch);
+
+        if (revision.isVita())
+        {
             int vita = revision.getBranchRevision();
             if (vita >= 0xd) // 0x3c0
-                dc.tiltMax = serializer.f32(dc.tiltMax);
+                tiltMax = serializer.f32(tiltMax);
             if (vita >= 0xe) // 0x3c0
-                dc.tiltMin = serializer.f32(dc.tiltMin);
+                tiltMin = serializer.f32(tiltMin);
             if (vita >= 0x1d) // 0x3d4
-                dc.remotePlayer = serializer.i32(dc.remotePlayer);
+                remotePlayer = serializer.i32(remotePlayer);
             if (vita >= 0x51) // 0x3e1
-                dc.playAudio = serializer.bool(dc.playAudio);
+                playAudio = serializer.bool(playAudio);
         }
 
-        if (subVersion > 0x4b) {
-            dc.parentBoneIndex = serializer.i32(dc.parentBoneIndex);
-            dc.parentBoneOffset = serializer.m44(dc.parentBoneOffset);
+        if (subVersion > 0x4b)
+        {
+            parentBoneIndex = serializer.i8(parentBoneIndex);
+            parentBoneOffset = serializer.m44(parentBoneOffset);
         }
 
         if (version > 0x3ec)
-            dc.playerMode = serializer.i8(dc.playerMode);
+            playerMode = serializer.i8(playerMode);
         if (subVersion > 0x189)
-            dc.layerRange = serializer.i8(dc.layerRange);
-        
-        return dc;
+            layerRange = serializer.i8(layerRange);
     }
 
-    @Override public int getAllocatedSize() { return PControlinator.BASE_ALLOCATION_SIZE; }
+    @Override
+    public int getAllocatedSize()
+    {
+        return PControlinator.BASE_ALLOCATION_SIZE;
+    }
 }

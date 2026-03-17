@@ -9,7 +9,8 @@ import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
 import cwlib.types.data.ResourceDescriptor;
 
-public class StreamingManager implements Serializable { 
+public class StreamingManager implements Serializable
+{
     public static final int BASE_ALLOCATION_SIZE = 0x30;
 
     public Thing[] editingThingsList;
@@ -23,72 +24,79 @@ public class StreamingManager implements Serializable {
     public int numInUsePlans;
     public int maintainIslandsCount;
     public Thing[][] maintainIslandList;
-    
-    @SuppressWarnings("unchecked")
-    @Override public StreamingManager serialize(Serializer serializer, Serializable structure) {
-        StreamingManager manager = (structure == null) ? new StreamingManager() : (StreamingManager) structure;
+
+    @Override
+    public void serialize(Serializer serializer)
+    {
         int subVersion = serializer.getRevision().getSubVersion();
 
         if (subVersion < 0xa1)
             throw new SerializationException("Streaming manager below 0xa1 not supported!");
-        
-        if (subVersion >= 0x46)
-            manager.editingThingsList = serializer.thingarray(manager.editingThingsList);
 
-        if (subVersion < 0x4d) {
+        if (subVersion >= 0x46)
+            editingThingsList = serializer.thingarray(editingThingsList);
+
+        if (subVersion < 0x4d)
+        {
             // 00c57988 - islands
         }
 
-        if (subVersion >= 0x4d && subVersion < 0x73) {
+        if (subVersion >= 0x4d && subVersion < 0x73)
+        {
             serializer.i32(0); // numChunks
             serializer.i32(0); // numChunks
         }
 
-        if (subVersion >= 0x73 && subVersion < 0x93) {
+        if (subVersion >= 0x73 && subVersion < 0x93)
+        {
             // serializer.array(null, ChunkFile.class, true);
         }
 
-        if (subVersion >= 0x93 && subVersion < 0xa1) {
-            if (serializer.isWriting()) {
+        if (subVersion >= 0x93 && subVersion < 0xa1)
+        {
+            if (serializer.isWriting())
+            {
                 LevelData data = null;
-                if (manager.levelData != null && manager.levelData.length != 0)
-                    data = manager.levelData[0];
+                if (levelData != null && levelData.length != 0)
+                    data = levelData[0];
                 serializer.struct(data, LevelData.class);
-            } else
-                manager.levelData = new LevelData[] { serializer.struct(null, LevelData.class) };
+            }
+            else
+                levelData = new LevelData[] { serializer.struct(null, LevelData.class) };
         }
 
         if (subVersion > 0xa0)
-            manager.levelData = serializer.array(manager.levelData, LevelData.class, true);
+            levelData = serializer.array(levelData, LevelData.class, true);
 
         if (subVersion > 0x76)
-            manager.numIslands = serializer.i32(manager.numIslands);
+            numIslands = serializer.i32(numIslands);
         if (subVersion > 0x1ff)
-            manager.numPendingIslands = serializer.i32(manager.numPendingIslands);
+            numPendingIslands = serializer.i32(numPendingIslands);
 
         if (subVersion >= 0x4e && subVersion <= 0x7e)
             serializer.v3(null);
 
         if (subVersion >= 0x89)
-            manager.fartDesc = serializer.resource(manager.fartDesc, ResourceType.FILE_OF_BYTES, true);
+            fartDesc = serializer.resource(fartDesc, ResourceType.FILE_OF_BYTES,
+                true);
 
         if (subVersion >= 0x8f)
-            manager.startingPointPosition = serializer.v3(manager.startingPointPosition);
+            startingPointPosition = serializer.v3(startingPointPosition);
 
-        if (subVersion >= 0x160) {
-            manager.streamingZoneShape = serializer.i32(manager.streamingZoneShape);
-            manager.streamingZoneSize = serializer.i32(manager.streamingZoneSize);
+        if (subVersion >= 0x160)
+        {
+            streamingZoneShape = serializer.i32(streamingZoneShape);
+            streamingZoneSize = serializer.i32(streamingZoneSize);
 
-            manager.numInUsePlans = serializer.i32(manager.numInUsePlans);
+            numInUsePlans = serializer.i32(numInUsePlans);
             if (subVersion >= 0x1a9)
-                manager.maintainIslandsCount = serializer.i32(manager.maintainIslandsCount);
+                maintainIslandsCount = serializer.i32(maintainIslandsCount);
         }
-        
-
-        return manager;
     }
 
-    @Override public int getAllocatedSize() {
+    @Override
+    public int getAllocatedSize()
+    {
         int size = StreamingManager.BASE_ALLOCATION_SIZE;
         return size;
     }

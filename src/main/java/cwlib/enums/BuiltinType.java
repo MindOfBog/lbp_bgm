@@ -5,13 +5,14 @@ import cwlib.io.ValueEnum;
 /**
  * Virtual types used in the Fish scripting environments.
  */
-public enum BuiltinType implements ValueEnum<Integer> {
+public enum BuiltinType implements ValueEnum<Integer>
+{
     /**
      * If a type doesn't exist, or if it's associated
      * machine type is a reference, this type will be used.
      */
     VOID(0x0),
-    
+
     BOOL(0x1),
     CHAR(0x2),
     S32(0x3),
@@ -34,15 +35,22 @@ public enum BuiltinType implements ValueEnum<Integer> {
     F64(0xb);
 
     private final int value;
-    BuiltinType(int value) {
+
+    BuiltinType(int value)
+    {
         this.value = value;
     }
 
-    public Integer getValue() { return this.value; }
+    public Integer getValue()
+    {
+        return this.value;
+    }
 
-    public static BuiltinType fromValue(int value) {
-        for (BuiltinType type : BuiltinType.values()) {
-            if (type.value == value) 
+    public static BuiltinType fromValue(int value)
+    {
+        for (BuiltinType type : BuiltinType.values())
+        {
+            if (type.value == value)
                 return type;
         }
         return null;

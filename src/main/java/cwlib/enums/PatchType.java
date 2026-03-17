@@ -1,5 +1,6 @@
 package cwlib.enums;
 
-public enum PatchType {
+public enum PatchType
+{
     TRANSLATION
 }

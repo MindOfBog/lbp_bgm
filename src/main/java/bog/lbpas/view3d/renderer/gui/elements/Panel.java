@@ -15,6 +15,11 @@ public class Panel extends Element{
     public ArrayList<PanelElement> elements;
     float prevSizeX = -1;
 
+    public Panel()
+    {
+        this.pos = new Vector2f();
+        this.elements = new ArrayList<>();
+    }
     public Panel(Vector2f size, RenderMan renderer) {
         this.pos = new Vector2f();
         this.size = size;

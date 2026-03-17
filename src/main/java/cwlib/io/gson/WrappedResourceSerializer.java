@@ -1,33 +1,34 @@
 package cwlib.io.gson;
 
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
+import com.google.gson.*;
 import cwlib.enums.CompressionFlags;
 import cwlib.enums.ResourceType;
+import cwlib.resources.RLevel;
 import cwlib.resources.RPlan;
 import cwlib.structs.inventory.InventoryItemDetails;
 import cwlib.structs.things.Thing;
 import cwlib.types.data.Revision;
 import cwlib.types.data.WrappedResource;
 import cwlib.util.GsonUtils;
+
 import java.lang.reflect.Type;
 
-public class WrappedResourceSerializer implements JsonSerializer<WrappedResource>, JsonDeserializer<WrappedResource> {
-    public static class PlanWrapper {
-        @GsonRevision(lbp3=true,min=204)
+public class WrappedResourceSerializer implements JsonSerializer<WrappedResource>,
+    JsonDeserializer<WrappedResource>
+{
+    public static class PlanWrapper
+    {
+        @GsonRevision(lbp3 = true, min = 204)
         public boolean isUsedForStreaming;
         public Thing[] things;
-        @GsonRevision(min=407)
+        @GsonRevision(min = 407)
         public InventoryItemDetails inventoryData;
     }
 
-    @Override public WrappedResource deserialize(JsonElement je, Type type, JsonDeserializationContext jdc) throws JsonParseException {
+    @Override
+    public WrappedResource deserialize(JsonElement je, Type type, JsonDeserializationContext jdc)
+    throws JsonParseException
+    {
         JsonObject object = je.getAsJsonObject();
 
         WrappedResource resource = new WrappedResource();
@@ -35,11 +36,14 @@ public class WrappedResourceSerializer implements JsonSerializer<WrappedResource
         int head = object.get("revision").getAsInt();
         short branchID = 0;
         short branchRevision = 0;
-        if (object.has("branch") && !object.get("branch").isJsonNull()) {
+        if (object.has("branch") && !object.get("branch").isJsonNull())
+        {
             JsonObject branch = object.get("branch").getAsJsonObject();
-            if (branch.has("id") && !branch.get("id").isJsonNull()) {
+            if (branch.has("id") && !branch.get("id").isJsonNull())
+            {
                 String text = branch.get("id").getAsString();
-                branchID = (short) (((short) text.charAt(1)) | (((short) text.charAt(0)) << 8));
+                branchID =
+                    (short) (((short) text.charAt(1)) | (((short) text.charAt(0)) << 8));
             }
             if (branch.has("revision"))
                 branchRevision = branch.get("revision").getAsShort();
@@ -56,8 +60,17 @@ public class WrappedResourceSerializer implements JsonSerializer<WrappedResource
         ResourceType resourceType = jdc.deserialize(object.get("type"), ResourceType.class);
         resource.type = resourceType;
 
-        if (resource.type.equals(ResourceType.PLAN)) {
+        if (resource.type.equals(ResourceType.PLAN))
+        {
             PlanWrapper wrapper = jdc.deserialize(object.get("resource"), PlanWrapper.class);
+
+            // Fixup any fields that may have been lost during serialization.
+            for (Thing thing : wrapper.things)
+            {
+                if (thing != null) 
+                    thing.fixup(revision);
+            }
+            
             RPlan plan = new RPlan();
 
             plan.revision = resource.revision;
@@ -71,33 +84,50 @@ public class WrappedResourceSerializer implements JsonSerializer<WrappedResource
             return resource;
         }
 
-        resource.resource = jdc.deserialize(object.get("resource"), resourceType.getCompressable());
+        resource.resource = jdc.deserialize(object.get("resource"),
+            resourceType.getCompressable());
 
+        // Make sure to run fixup on the level to restore any fields
+        // that may have been lost during serialization.
+        if (resource.type.equals(ResourceType.LEVEL) && resource.resource != null)
+        {
+            RLevel level = (RLevel)resource.resource;
+            level.fixup(revision);
+        }
+        
         return resource;
     }
 
-    @Override public JsonElement serialize(WrappedResource resource, Type type, JsonSerializationContext jsc) {
+    @Override
+    public JsonElement serialize(WrappedResource resource, Type type,
+                                 JsonSerializationContext jsc)
+    {
         JsonObject object = new JsonObject();
 
+        GsonUtils.REVISION = resource.revision;
         object.add("revision", new JsonPrimitive(resource.revision.getHead()));
         short id = resource.revision.getBranchID();
-        if (id != 0) {
+        if (id != 0)
+        {
             JsonObject branch = new JsonObject();
-            branch.add("id", new JsonPrimitive(new String(new byte[] { (byte) (id >> 8), (byte) (id & 0xff) })));
+            branch.add("id", new JsonPrimitive(new String(new byte[] { (byte) (id >> 8),
+                (byte) (id & 0xff) })));
             branch.add("revision", new JsonPrimitive(resource.revision.getBranchRevision()));
             object.add("branch", branch);
         }
 
         object.add("type", jsc.serialize(resource.type));
 
-        if (resource.type.equals(ResourceType.PLAN)) {
+        if (resource.type.equals(ResourceType.PLAN))
+        {
             PlanWrapper wrapper = new PlanWrapper();
             RPlan plan = (RPlan) resource.resource;
             wrapper.isUsedForStreaming = plan.isUsedForStreaming;
             wrapper.things = plan.getThings();
             wrapper.inventoryData = plan.inventoryData;
             object.add("resource", jsc.serialize(wrapper));
-        } else object.add("resource", jsc.serialize(resource.resource));
+        }
+        else object.add("resource", jsc.serialize(resource.resource));
 
         return object;
     }

@@ -1,7 +1,5 @@
 package cwlib.structs.dlc;
 
-import java.util.ArrayList;
-
 import cwlib.enums.Branch;
 import cwlib.enums.DLCFileFlags;
 import cwlib.io.Serializable;
@@ -10,7 +8,10 @@ import cwlib.io.serializer.Serializer;
 import cwlib.types.data.GUID;
 import cwlib.types.data.Revision;
 
-public class DLCFile implements Serializable {
+import java.util.ArrayList;
+
+public class DLCFile implements Serializable
+{
     public static final int BASE_ALLOCATION_SIZE = 0x30;
 
     public String directory;
@@ -18,73 +19,84 @@ public class DLCFile implements Serializable {
     public String contentID;
     public String inGameCommerceID;
 
-    @GsonRevision(min=0x264)
+    @GsonRevision(min = 0x264)
     public String categoryID;
 
     public ArrayList<GUID> guids = new ArrayList<>();
 
-    @GsonRevision(lbp3=true, min=0x7fff)
+    @GsonRevision(lbp3 = true, min = 0x7fff)
     public ArrayList<GUID> nonPlanGuids = new ArrayList<>();
 
     public int flags = DLCFileFlags.NONE;
 
-    @GsonRevision(branch=0x4431, min=0x85)
+    @GsonRevision(branch = 0x4431, min = 0x85)
     public int typeMask;
 
-    @SuppressWarnings("unchecked")
-    @Override public DLCFile serialize(Serializer serializer, Serializable structure) {
-        DLCFile file = (structure == null) ? new DLCFile() : (DLCFile)  structure;
+    @Override
+    public void serialize(Serializer serializer)
+    {
         Revision revision = serializer.getRevision();
-        
-        file.directory = serializer.str(file.directory);
-        file.file = serializer.str(file.file);
-        file.contentID = serializer.str(file.contentID);
-        file.inGameCommerceID = serializer.str(file.inGameCommerceID);
-        if (revision.getVersion() >= 0x264)
-            file.categoryID = serializer.str(file.categoryID);
-        file.flags = serializer.i32(file.flags);
 
-        if (revision.getSubVersion() > 0x20c) {
-            if (serializer.isWriting()) {
-                int[] output = new int[file.nonPlanGuids.size()];
-                for (int i = 0; i < output.length; ++i) {
-                    GUID guid = file.nonPlanGuids.get(i);
-                    output[i] = guid == null ? 0 : ((int)guid.getValue());
+        directory = serializer.str(directory);
+        file = serializer.str(file);
+        contentID = serializer.str(contentID);
+        inGameCommerceID = serializer.str(inGameCommerceID);
+        if (revision.getVersion() >= 0x264)
+            categoryID = serializer.str(categoryID);
+        flags = serializer.i32(flags);
+
+        if (revision.getSubVersion() > 0x20c)
+        {
+            if (serializer.isWriting())
+            {
+                int[] output = new int[nonPlanGuids.size()];
+                for (int i = 0; i < output.length; ++i)
+                {
+                    GUID guid = nonPlanGuids.get(i);
+                    output[i] = guid == null ? 0 : ((int) guid.getValue());
                 }
                 serializer.intvector(output);
-            } else {
+            }
+            else
+            {
                 int[] guids = serializer.intvector(null);
-                if (guids != null) {
-                    file.nonPlanGuids = new ArrayList<>(guids.length);
+                if (guids != null)
+                {
+                    nonPlanGuids = new ArrayList<>(guids.length);
                     for (int i = 0; i < guids.length; ++i)
-                        file.nonPlanGuids.add(new GUID(guids[i]));
+                        nonPlanGuids.add(new GUID(guids[i]));
                 }
             }
         }
 
-        if (serializer.isWriting()) {
-            int[] output = new int[file.guids.size()];
-            for (int i = 0; i < output.length; ++i) {
-                GUID guid = file.guids.get(i);
-                output[i] = guid == null ? 0 : ((int)guid.getValue());
+        if (serializer.isWriting())
+        {
+            int[] output = new int[guids.size()];
+            for (int i = 0; i < output.length; ++i)
+            {
+                GUID guid = guids.get(i);
+                output[i] = guid == null ? 0 : ((int) guid.getValue());
             }
             serializer.intvector(output);
-        } else {
+        }
+        else
+        {
             int[] guids = serializer.intvector(null);
-            if (guids != null) {
-                file.guids = new ArrayList<>(guids.length);
+            if (guids != null)
+            {
+                this.guids = new ArrayList<>(guids.length);
                 for (int i = 0; i < guids.length; ++i)
-                    file.guids.add(new GUID(guids[i]));
+                    this.guids.add(new GUID(guids[i]));
             }
         }
 
         if (revision.has(Branch.DOUBLE11, 0x85))
-            file.typeMask = serializer.i32(file.typeMask);
-
-        return file;
+            typeMask = serializer.i32(typeMask);
     }
 
-    @Override public int getAllocatedSize() {
+    @Override
+    public int getAllocatedSize()
+    {
         int size = DLCFile.BASE_ALLOCATION_SIZE;
         if (this.directory != null) size += this.directory.length();
         if (this.file != null) size += this.file.length();

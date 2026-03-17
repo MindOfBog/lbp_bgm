@@ -1,23 +1,21 @@
 package cwlib.io.gson;
 
-import java.lang.reflect.Type;
-
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
-
+import com.google.gson.*;
 import cwlib.enums.ResourceType;
 import cwlib.types.data.GUID;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.SHA1;
 
-public class ResourceSerializer implements JsonSerializer<ResourceDescriptor>, JsonDeserializer<ResourceDescriptor> {
-    @Override public ResourceDescriptor deserialize(JsonElement je, Type type, JsonDeserializationContext jdc) throws JsonParseException {
+import java.lang.reflect.Type;
+
+public class ResourceSerializer implements JsonSerializer<ResourceDescriptor>,
+    JsonDeserializer<ResourceDescriptor>
+{
+    @Override
+    public ResourceDescriptor deserialize(JsonElement je, Type type,
+                                          JsonDeserializationContext jdc)
+    throws JsonParseException
+    {
         JsonObject object = je.getAsJsonObject();
         ResourceType resType = ResourceType.INVALID;
         if (object.has("type"))
@@ -31,8 +29,11 @@ public class ResourceSerializer implements JsonSerializer<ResourceDescriptor>, J
             return new ResourceDescriptor(new GUID(primitive.getAsLong()), resType);
         return null;
     }
-    
-    @Override public JsonElement serialize(ResourceDescriptor resource, Type type, JsonSerializationContext jsc) {
+
+    @Override
+    public JsonElement serialize(ResourceDescriptor resource, Type type,
+                                 JsonSerializationContext jsc)
+    {
         JsonElement value = null;
         if (resource == null) return null;
         if (resource.isGUID())

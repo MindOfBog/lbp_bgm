@@ -1,6 +1,7 @@
 package cwlib.enums;
 
-public enum GameShader {
+public enum GameShader
+{
     LBP1,
     LBP2_PRE_ALPHA,
     LBP2,

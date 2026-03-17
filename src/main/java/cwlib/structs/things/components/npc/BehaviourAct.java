@@ -1,29 +1,30 @@
 package cwlib.structs.things.components.npc;
 
-import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.things.Thing;
 
-public class BehaviourAct extends BehaviourBase {
+public class BehaviourAct extends BehaviourBase
+{
     public static final int BASE_ALLOCATION_SIZE = 0x20;
 
     public Thing recordingPlayer;
     public InputRecording recording = new InputRecording();
     public int currentFrame;
 
-    @SuppressWarnings("unchecked")
-    @Override public BehaviourAct serialize(Serializer serializer, Serializable structure) {
-        BehaviourAct act = (structure == null) ? new BehaviourAct() : (BehaviourAct) structure;
+    @Override
+    public void serialize(Serializer serializer)
+    {
+        super.serialize(serializer);
+        if (serializer.getRevision().getVersion() <= 0x28f) return;
 
-        super.serialize(serializer, act);
-        if (serializer.getRevision().getVersion() <= 0x28f) return act;
-
-        act.recordingPlayer = serializer.thing(act.recordingPlayer);
-        act.recording = serializer.struct(act.recording, InputRecording.class);
-        act.currentFrame = serializer.i32(act.currentFrame);
-
-        return act;
+        recordingPlayer = serializer.thing(recordingPlayer);
+        recording = serializer.struct(recording, InputRecording.class);
+        currentFrame = serializer.i32(currentFrame);
     }
-    
-    @Override public int getAllocatedSize() { return BehaviourAct.BASE_ALLOCATION_SIZE; }
+
+    @Override
+    public int getAllocatedSize()
+    {
+        return BehaviourAct.BASE_ALLOCATION_SIZE;
+    }
 }

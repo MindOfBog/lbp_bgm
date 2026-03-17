@@ -2,8 +2,7 @@ package cwlib.resources;
 
 import cwlib.enums.ResourceType;
 import cwlib.enums.SerializationType;
-import cwlib.io.Compressable;
-import cwlib.io.Serializable;
+import cwlib.io.Resource;
 import cwlib.io.serializer.SerializationData;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.joint.FCurve;
@@ -11,10 +10,11 @@ import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 
 /**
- * Resource that stores behaviour of joints, 
+ * Resource that stores behaviour of joints,
  * like bolts and strings.
  */
-public class RJoint implements Compressable, Serializable {
+public class RJoint implements Resource
+{
     public static final int BASE_ALLOCATION_SIZE = 0x80 + (FCurve.BASE_ALLOCATION_SIZE * 0x2);
 
     public boolean allowExpand, allowContract, contractFreely;
@@ -30,57 +30,59 @@ public class RJoint implements Compressable, Serializable {
     public String eventNameAngle, eventNameLength;
     public ResourceDescriptor mesh;
 
-    @SuppressWarnings("unchecked")
-    @Override public RJoint serialize(Serializer serializer, Serializable structure) {
-        RJoint joint = (structure == null) ? new RJoint() : (RJoint) structure;
+    @Override
+    public void serialize(Serializer serializer)
+    {
+        allowExpand = serializer.bool(allowExpand);
+        allowContract = serializer.bool(allowContract);
+        contractFreely = serializer.bool(contractFreely);
 
-        joint.allowExpand = serializer.bool(joint.allowExpand);
-        joint.allowContract = serializer.bool(joint.allowContract);
-        joint.contractFreely = serializer.bool(joint.contractFreely);
+        lengthElasticity = serializer.f32(lengthElasticity);
+        lengthPlasticity = serializer.f32(lengthPlasticity);
 
-        joint.lengthElasticity = serializer.f32(joint.lengthElasticity);
-        joint.lengthPlasticity = serializer.f32(joint.lengthPlasticity);
+        lengthFunc = serializer.struct(lengthFunc, FCurve.class);
 
-        joint.lengthFunc = serializer.struct(joint.lengthFunc, FCurve.class);
+        angleDeviation = serializer.f32(angleDeviation);
+        angleElasticity = serializer.f32(angleElasticity);
+        anglePlasticity = serializer.f32(anglePlasticity);
+        angleVelocity = serializer.f32(angleVelocity);
 
-        joint.angleDeviation = serializer.f32(joint.angleDeviation);
-        joint.angleElasticity = serializer.f32(joint.angleElasticity);
-        joint.anglePlasticity = serializer.f32(joint.anglePlasticity);
-        joint.angleVelocity = serializer.f32(joint.angleVelocity);
+        angleFunc = serializer.struct(angleFunc, FCurve.class);
 
-        joint.angleFunc = serializer.struct(joint.angleFunc, FCurve.class);
+        normalizedForces = serializer.bool(normalizedForces);
+        dontRotateA = serializer.bool(dontRotateA);
+        dontRotateB = serializer.bool(dontRotateB);
 
-        joint.normalizedForces = serializer.bool(joint.normalizedForces);
-        joint.dontRotateA = serializer.bool(joint.dontRotateA);
-        joint.dontRotateB = serializer.bool(joint.dontRotateB);
+        breakResistance = serializer.f32(breakResistance);
 
-        joint.breakResistance = serializer.f32(joint.breakResistance);
+        gfxMaterial = serializer.resource(gfxMaterial, ResourceType.GFX_MATERIAL);
 
-        joint.gfxMaterial = serializer.resource(joint.gfxMaterial, ResourceType.GFX_MATERIAL);
+        gfxWidth = serializer.f32(gfxWidth);
 
-        joint.gfxWidth = serializer.f32(joint.gfxWidth);
+        eventNameAngle = serializer.str(eventNameAngle);
+        eventNameLength = serializer.str(eventNameLength);
 
-        joint.eventNameAngle = serializer.str(joint.eventNameAngle);
-        joint.eventNameLength = serializer.str(joint.eventNameLength);
-
-        joint.mesh = serializer.resource(joint.mesh, ResourceType.MESH);
-        
-        return joint;
+        mesh = serializer.resource(mesh, ResourceType.MESH);
     }
 
-    @Override public int getAllocatedSize() { 
+    @Override
+    public int getAllocatedSize()
+    {
         return BASE_ALLOCATION_SIZE + eventNameAngle.length() + eventNameLength.length();
     }
 
-    @Override public SerializationData build(Revision revision, byte compressionFlags) {
-        Serializer serializer = new Serializer(this.getAllocatedSize(), revision, compressionFlags);
+    @Override
+    public SerializationData build(Revision revision, byte compressionFlags)
+    {
+        Serializer serializer = new Serializer(this.getAllocatedSize(), revision,
+            compressionFlags);
         serializer.struct(this, RJoint.class);
         return new SerializationData(
-            serializer.getBuffer(), 
-            revision, 
-            compressionFlags, 
+            serializer.getBuffer(),
+            revision,
+            compressionFlags,
             ResourceType.JOINT,
-            SerializationType.BINARY, 
+            SerializationType.BINARY,
             serializer.getDependencies()
         );
     }

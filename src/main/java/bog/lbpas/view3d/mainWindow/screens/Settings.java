@@ -1,6 +1,5 @@
 package bog.lbpas.view3d.mainWindow.screens;
 
-import bog.lbpas.Main;
 import bog.lbpas.view3d.core.Texture;
 import bog.lbpas.view3d.mainWindow.View3D;
 import bog.lbpas.view3d.managers.InputMan;
@@ -17,11 +16,8 @@ import bog.lbpas.view3d.renderer.gui.font.FontRenderer;
 import bog.lbpas.view3d.utils.Config;
 import bog.lbpas.view3d.utils.Cursors;
 import bog.lbpas.view3d.utils.Utils;
-import bog.lbpas.view3d.utils.print;
-import org.joml.Vector2d;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
-import org.joml.Vector3d;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 
@@ -74,7 +70,7 @@ public class Settings extends GuiScreen{
     public Slider fov;
     public Checkbox culling;
     public Checkbox showFPS;
-    public Checkbox legacyFD;
+    //public Checkbox legacyFD;
     public Slider outlineSize;
 
     public Checkbox debugScissorTest;
@@ -287,8 +283,8 @@ public class Settings extends GuiScreen{
         guiSizeSlider = new Slider("guiSizeSlider", new Vector2f(), new Vector2f(), renderer, loader, window, 16, 12, 24)
         {
             @Override
-            public void onValueSet() {
-                super.onValueSet();
+            public void onReleaseSlider() {
+                super.onReleaseSlider();
 
                 Vector2f guiSize = setSliderValue(Config.GUI_SCALE);
                 if(guiSize.y == 1)
@@ -686,7 +682,7 @@ public class Settings extends GuiScreen{
         otherSep.size.y = 5;
 
         showFPS = guiSettings.addCheckbox("showFPS", "Show FPS", Config.SHOW_FPS);
-        legacyFD = guiSettings.addCheckbox("legacyFD", "Native File Dialogue", Config.LEGACY_FD);
+        //legacyFD = guiSettings.addCheckbox("legacyFD", "Native File Dialogue", Config.LEGACY_FD);
 
         controls = new DropDownTab("controls", "Controls", new Vector2f(10, getFontHeightHeader() + 7 * 4 + rendererSettings.getFullHeight() + guiSettings.getFullHeight()), new Vector2f(200f * (getFontHeight() / 12f), getFontHeightHeader() + 7f), renderer, loader, window).closed();
 
@@ -1027,7 +1023,7 @@ public class Settings extends GuiScreen{
 
         Config.NO_CULLING = culling.isChecked;
         Config.SHOW_FPS = showFPS.isChecked;
-        Config.LEGACY_FD = legacyFD.isChecked;
+        //Config.LEGACY_FD = legacyFD.isChecked;
         Config.DISABLE_BLUR = disableBlur.isChecked;
         Config.DISABLE_SSAO = disableSSAO.isChecked;
 

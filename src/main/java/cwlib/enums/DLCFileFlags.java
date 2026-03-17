@@ -1,6 +1,7 @@
 package cwlib.enums;
 
-public class DLCFileFlags {
+public class DLCFileFlags
+{
     public static final int NONE = 0x0;
     public static final int OWNED = 0x1;
     public static final int AUTO_ADD_DISABLED = 0x2;

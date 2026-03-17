@@ -4,7 +4,8 @@ package cwlib.enums;
  * Commonly used resource keys in
  * File Entrys.
  */
-public class ResourceKeys {
+public class ResourceKeys
+{
     public static final int RESOURCE_TYPE = 0;
     public static final int RESOURCE_REVISION = 1;
     public static final int COMPRESSION_FLAGS = 2;

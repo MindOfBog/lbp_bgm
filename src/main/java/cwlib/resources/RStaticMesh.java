@@ -1,8 +1,8 @@
 package cwlib.resources;
 
 import cwlib.structs.staticmesh.StaticMeshInfo;
-import cwlib.types.Resource;
-import cwlib.enums.PrimitiveType;
+import cwlib.types.SerializedResource;
+import cwlib.enums.CellGcmPrimitive;
 import cwlib.io.streams.MemoryInputStream;
 import cwlib.util.Bytes;
 
@@ -14,12 +14,13 @@ import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
-public class RStaticMesh {
+public class RStaticMesh
+{
     private final int numVerts;
     private final int numIndices;
-    
+
     private final StaticMeshInfo info;
-    
+
     private final Vector3f[] vertices;
 
     private final Vector3f[] normals;
@@ -30,8 +31,9 @@ public class RStaticMesh {
     private final Vector2f[] uv1;
 
     private final int[] indices;
-    
-    public RStaticMesh(Resource resource) {
+
+    public RStaticMesh(SerializedResource resource)
+    {
         this.info = resource.getMeshInfo();
 
         MemoryInputStream stream = resource.getStream();
@@ -43,10 +45,10 @@ public class RStaticMesh {
         this.indices = new int[indexCount];
         for (int i = 0; i < indexCount; ++i)
             this.indices[i] = stream.u16();
-        
+
         this.numVerts = vertexCount;
         this.numIndices = indexCount;
-        
+
         this.vertices = new Vector3f[vertexCount];
 
         this.normals = new Vector3f[vertexCount];
@@ -55,9 +57,10 @@ public class RStaticMesh {
 
         this.uv0 = new Vector2f[vertexCount];
         this.uv1 = new Vector2f[vertexCount];
-        
+
         MemoryInputStream vertexStream = new MemoryInputStream(vertexBuffer);
-        for (int i = 0; i < vertexCount; ++i) {
+        for (int i = 0; i < vertexCount; ++i)
+        {
             this.vertices[i] = vertexStream.v3();
             this.normals[i] = Bytes.unpackNormal32(vertexStream.u32());
             this.uv0[i] = new Vector2f(vertexStream.f16(), vertexStream.f16());
@@ -67,28 +70,64 @@ public class RStaticMesh {
         }
     }
 
-    public int getNumVerts() { return this.numVerts; }
-    public int getNumIndices() { return this.numIndices; }
+    public int getNumVerts()
+    {
+        return this.numVerts;
+    }
 
-    public StaticMeshInfo getMeshInfo() { return this.info; }
+    public int getNumIndices()
+    {
+        return this.numIndices;
+    }
 
-    public Vector3f[] getVertices() { return this.vertices; }
-    public Vector3f[] getNormals() { return this.normals; }
-    public Vector4f[] getTangents() { return this.tangents; }
-    public Vector3f[] getSmoothNormals() { return this.smoothNormals; }
-    
-    public Vector2f[] getUV0() { return this.uv0; }
-    public Vector2f[] getUV1() { return this.uv1; }
+    public StaticMeshInfo getMeshInfo()
+    {
+        return this.info;
+    }
 
-    public int[] getIndices() { return this.indices; }
+    public Vector3f[] getVertices()
+    {
+        return this.vertices;
+    }
+
+    public Vector3f[] getNormals()
+    {
+        return this.normals;
+    }
+
+    public Vector4f[] getTangents()
+    {
+        return this.tangents;
+    }
+
+    public Vector3f[] getSmoothNormals()
+    {
+        return this.smoothNormals;
+    }
+
+    public Vector2f[] getUV0()
+    {
+        return this.uv0;
+    }
+
+    public Vector2f[] getUV1()
+    {
+        return this.uv1;
+    }
+
+    public int[] getIndices()
+    {
+        return this.indices;
+    }
 
     /**
      * Calculates a triangle list from a given range in the index buffer.
+     *
      * @param start First face to include in list
      * @param count Number of faces from start
      * @return Mesh's triangle list
      */
-    public int[] getTriangles(int start, int count, PrimitiveType type) {
+    public int[] getTriangles(int start, int count, CellGcmPrimitive type) {
         if (this.indices == null)
             throw new IllegalStateException("Can't get triangles from mesh without index buffer!");
 
@@ -96,9 +135,9 @@ public class RStaticMesh {
 
         switch (type)
         {
-            case GL_TRIANGLES:
+            case TRIANGLES:
                 return Arrays.copyOfRange(this.indices, start, start + count);
-            case GL_TRIANGLE_STRIP:
+            case TRIANGLE_STRIP:
             {
                 ArrayList<Integer> triangles = new ArrayList<>(this.numVerts * 0x3);
                 Collections.addAll(triangles, faces[start + 0], faces[start + 1], faces[start + 2]);

@@ -4,7 +4,8 @@ import cwlib.io.Serializable;
 import cwlib.io.serializer.Serializer;
 import cwlib.structs.slot.SlotID;
 
-public class GoPlayCache implements Serializable {
+public class GoPlayCache implements Serializable
+{
     public static final int BASE_ALLOCATION_SIZE = 0x20;
 
     public SlotID levelID;
@@ -14,20 +15,21 @@ public class GoPlayCache implements Serializable {
     public byte awardCollectAll;
     public byte awardAcedLevel;
 
-    @SuppressWarnings("unchecked")
-    @Override public GoPlayCache serialize(Serializer serializer, Serializable structure) {
-        GoPlayCache cache = (structure == null) ? new GoPlayCache() : (GoPlayCache) structure;
+    @Override
+    public void serialize(Serializer serializer)
+    {
+        levelID = serializer.struct(levelID, SlotID.class);
+        planetID = serializer.struct(planetID, SlotID.class);
 
-        cache.levelID = serializer.struct(cache.levelID, SlotID.class);
-        cache.planetID = serializer.struct(cache.planetID, SlotID.class);
-
-        cache.numBubbleCollected = serializer.i8(cache.numBubbleCollected);
-        cache.awardLevelComplete = serializer.i8(cache.awardLevelComplete);
-        cache.awardCollectAll = serializer.i8(cache.awardCollectAll);
-        cache.awardAcedLevel = serializer.i8(cache.awardAcedLevel);
-        
-        return cache;
+        numBubbleCollected = serializer.i8(numBubbleCollected);
+        awardLevelComplete = serializer.i8(awardLevelComplete);
+        awardCollectAll = serializer.i8(awardCollectAll);
+        awardAcedLevel = serializer.i8(awardAcedLevel);
     }
 
-    @Override public int getAllocatedSize() { return GoPlayCache.BASE_ALLOCATION_SIZE; }
+    @Override
+    public int getAllocatedSize()
+    {
+        return GoPlayCache.BASE_ALLOCATION_SIZE;
+    }
 }

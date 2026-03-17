@@ -6,7 +6,8 @@ import cwlib.io.ValueEnum;
  * Sound effects played when interacting
  * with materials.
  */
-public enum AudioMaterial implements ValueEnum<Integer> {
+public enum AudioMaterial implements ValueEnum<Integer>
+{
     NONE(0),
     STONE(1),
     METAL(2),
@@ -58,20 +59,28 @@ public enum AudioMaterial implements ValueEnum<Integer> {
     COLLECTABELL(48);
 
     private final int value;
-    AudioMaterial(int value) {
+
+    AudioMaterial(int value)
+    {
         this.value = value;
     }
 
-    public Integer getValue() { return this.value; }
+    public Integer getValue()
+    {
+        return this.value;
+    }
 
     /**
      * Attempts to get an audio material from value.
+     *
      * @param value Sound enum value
      * @return Audio material
      */
-    public static AudioMaterial fromValue(int value) {
-        for (AudioMaterial type : AudioMaterial.values()) {
-            if (type.value == value) 
+    public static AudioMaterial fromValue(int value)
+    {
+        for (AudioMaterial type : AudioMaterial.values())
+        {
+            if (type.value == value)
                 return type;
         }
         return null;

@@ -5,7 +5,8 @@ import cwlib.io.ValueEnum;
 /**
  * Refers to how a mirrored bone gets flipped.
  */
-public enum FlipType implements ValueEnum<Byte> {
+public enum FlipType implements ValueEnum<Byte>
+{
     /**
      * X.pos, X.rot
      */
@@ -42,15 +43,22 @@ public enum FlipType implements ValueEnum<Byte> {
     COPY(6);
 
     private final byte value;
-    FlipType(int value) {
+
+    FlipType(int value)
+    {
         this.value = (byte) (value & 0xFF);
     }
 
-    public Byte getValue() { return this.value; }
+    public Byte getValue()
+    {
+        return this.value;
+    }
 
-    public static FlipType fromValue(int value) {
-        for (FlipType type : FlipType.values()) {
-            if (type.value == value) 
+    public static FlipType fromValue(int value)
+    {
+        for (FlipType type : FlipType.values())
+        {
+            if (type.value == value)
                 return type;
         }
         return null;

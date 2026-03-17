@@ -1,6 +1,7 @@
 package cwlib.enums;
 
-public final class CollideType {
+public final class CollideType
+{
     public static final int NONE = 0x0;
     public static final int NORMAL = 0x1;
     public static final int COLLECTABLE = 0x2;

@@ -9,7 +9,6 @@ import bog.lbpas.view3d.mainWindow.View3D;
 import bog.lbpas.view3d.utils.Utils;
 import bog.lbpas.view3d.utils.print;
 import cwlib.enums.MappingMode;
-import cwlib.enums.PrimitiveType;
 import cwlib.resources.RBevel;
 import cwlib.resources.RGfxMaterial;
 import cwlib.resources.RMesh;
@@ -24,6 +23,7 @@ import cwlib.structs.things.parts.PGeneratedMesh;
 import cwlib.structs.things.parts.PShape;
 import cwlib.types.data.ResourceDescriptor;
 import io.github.earcut4j.Earcut;
+import org.apache.commons.lang3.ArrayUtils;
 import org.joml.*;
 import org.lwjgl.opengl.GL11;
 
@@ -460,9 +460,10 @@ public class AsyncModelMan {
     {
         for(int p = toDigestStaticMesh.size() - 1; p >= 0; p--)
         {
+            ModelDataStaticMesh staticMesh = toDigestStaticMesh.get(p);
             try
             {
-                RStaticMesh mesh = toDigestStaticMesh.get(p).mesh;
+                RStaticMesh mesh = staticMesh.mesh;
 
                 if(mesh == null) {
                     toDigestStaticMesh.remove(p);
@@ -478,6 +479,109 @@ public class AsyncModelMan {
 
                 StaticMeshInfo info = mesh.getMeshInfo();
                 StaticPrimitive[] primitives = info.primitives;
+
+//                for(StaticPrimitive primitive : primitives)
+//                {
+//                    Model model = new Model();
+//
+//                    Texture[] textures = new Texture[32];
+//
+//                    Vector2i[] gmatMAP = new Vector2i[100];
+//                    for(int i = 0; i < gmatMAP.length; i++)
+//                        gmatMAP[i] = new Vector2i(-1);
+//
+//                    int material = LoadedData.getMaterial(primitive.gmat, loader, textures, gmatMAP);
+//                    int[] faces = mesh.getTriangles(primitive.indexStart, primitive.numIndices, primitive.type);
+//
+//                    ArrayList<Float> newVertices = new ArrayList<>();
+//                    ArrayList<Float> newNormals = new ArrayList<>();
+//                    ArrayList<Float> newTexCoords = new ArrayList<>();
+//                    ArrayList<Integer> newMaterials = new ArrayList<>();
+//                    ArrayList<Integer> newIndices = new ArrayList<>();
+//
+//                    int index = 0;
+//
+//                    for(int i = 0; i < faces.length / 3; i++)
+//                    {
+//                        for(int o = 0; o < 3; o++)
+//                        {
+//                            int indexRelative = faces[i * 3 + o];
+//                            int indexAbsolute = primitive.vertexStart + indexRelative;
+//
+//                            Vector3f vert = vertices[indexAbsolute];
+//
+//                            newVertices.add(vert == null ? 0.0f : vert.x);
+//                            newVertices.add(vert == null ? 0.0f : vert.y);
+//                            newVertices.add(vert == null ? 0.0f : vert.z);
+//
+//                            Vector3f normal = normals[indexAbsolute];
+//
+//                            newNormals.add(normal == null ? 0.0f : normal.x);
+//                            newNormals.add(normal == null ? 0.0f : normal.y);
+//                            newNormals.add(normal == null ? 0.0f : normal.z);
+//
+//                            Vector2f uv0 = UV0[indexAbsolute];
+//                            Vector2f uv1 = UV1[indexAbsolute];
+//
+//                            if(uv0 == null)
+//                            {
+//                                if(uv1 != null)
+//                                    uv0 = uv1;
+//                                else
+//                                    uv0 = new Vector2f(0f);
+//                            }
+//                            if(uv1 == null)
+//                            {
+//                                if(uv0 != null)
+//                                    uv1 = uv0;
+//                                else
+//                                    uv1 = new Vector2f(0f);
+//                            }
+//
+//                            newTexCoords.add(uv0.x);
+//                            newTexCoords.add(uv0.y);
+//                            newTexCoords.add(uv1.x);
+//                            newTexCoords.add(uv1.y);
+//
+//                            newMaterials.add(material);
+//
+//                            newIndices.add(index);
+//                            index++;
+//                        }
+//                    }
+//
+//                    int texCount = 0;
+//                    for(Texture t : textures)
+//                        if(t != null)
+//                            texCount++;
+//                        else
+//                            break;
+//                    int gmatCount = 0;
+//                    for(Vector2i v : gmatMAP)
+//                        if(v.x != -1)
+//                            gmatCount++;
+//                        else
+//                            break;
+//
+//                    model.vertices = ArrayUtils.toPrimitive(newVertices.toArray(Float[]::new));
+//                    model.normals = ArrayUtils.toPrimitive(newNormals.toArray(Float[]::new));
+//                    model.textureCoords = ArrayUtils.toPrimitive(newTexCoords.toArray(Float[]::new));
+//
+//                    model.indices = newIndices.stream().mapToInt((Integer v) -> v).toArray();
+//                    model.hasBones = false;
+//                    model.staticMesh = mesh;
+//
+//                    model.gmats = newMaterials.stream().mapToInt((Integer v) -> v).toArray();
+//                    model.material.textures = textures;
+//                    model.material.texCount = texCount;
+//                    model.material.gmatMAP = gmatMAP;
+//                    model.material.gmatCount = gmatCount;
+//
+//                    toLoad.add(model);
+//                    toDigestStaticMesh.get(p).models.add(model);
+//                }
+//
+//                toDigestStaticMesh.get(p).thing.reloadModel();
 
                 Model model = new Model();
 
@@ -506,6 +610,12 @@ public class AsyncModelMan {
                         {
                             int indexRelative = faces[i * 3 + o];
                             int indexAbsolute = primitive.vertexStart + indexRelative;
+
+                            if(indexAbsolute >= vertices.length)
+                            {
+                                print.error("[SMH loader] index out of vertex array");
+                                continue;
+                            }
 
                             Vector3f vert = vertices[indexAbsolute];
 
@@ -548,9 +658,9 @@ public class AsyncModelMan {
 
                         if(texCount >= 25 || gmatCount >= 75)
                         {
-                            model.vertices = Utils.toPrimitive(newVertices);
-                            model.normals = Utils.toPrimitive(newNormals);
-                            model.textureCoords = Utils.toPrimitive(newTexCoords);
+                            model.vertices = ArrayUtils.toPrimitive(newVertices.toArray(Float[]::new));
+                            model.normals = ArrayUtils.toPrimitive(newNormals.toArray(Float[]::new));
+                            model.textureCoords = ArrayUtils.toPrimitive(newTexCoords.toArray(Float[]::new));
 
                             model.indices = newIndices.stream().mapToInt((Integer v) -> v).toArray();
                             model.hasBones = false;
@@ -597,9 +707,9 @@ public class AsyncModelMan {
                         else
                             break;
 
-                    model.vertices = Utils.toPrimitive(newVertices);
-                    model.normals = Utils.toPrimitive(newNormals);
-                    model.textureCoords = Utils.toPrimitive(newTexCoords);
+                    model.vertices = ArrayUtils.toPrimitive(newVertices.toArray(Float[]::new));
+                    model.normals = ArrayUtils.toPrimitive(newNormals.toArray(Float[]::new));
+                    model.textureCoords = ArrayUtils.toPrimitive(newTexCoords.toArray(Float[]::new));
 
                     model.indices = newIndices.stream().mapToInt((Integer v) -> v).toArray();
                     model.hasBones = false;

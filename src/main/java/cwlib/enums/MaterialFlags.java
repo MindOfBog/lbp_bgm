@@ -1,6 +1,7 @@
 package cwlib.enums;
 
-public class MaterialFlags {
+public class MaterialFlags
+{
     public static final int HAS_DIFFUSE = (1 << 0);
     public static final int HAS_SPECULAR = (1 << 1);
     public static final int HAS_BUMP = (1 << 2);

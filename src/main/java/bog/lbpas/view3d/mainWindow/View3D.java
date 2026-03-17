@@ -561,6 +561,11 @@ public class View3D implements ILogic {
         if(!introPlayed)
             return;
 
+        if(key == GLFW.GLFW_KEY_O && action == GLFW.GLFW_PRESS)
+            for(bog.lbpas.view3d.core.types.Thing t : things)
+                if(t.selected)
+                    t.exportModelOBJ();
+
         boolean elementFocused = currentScreen.onKey(key, scancode, action, mods);
         if(!elementFocused)
             elementFocused = overrideScreen.onKey(key, scancode, action, mods);
@@ -906,7 +911,7 @@ public class View3D implements ILogic {
 
         ProjectManager = new ProjectManager(this);
 
-//        ProjectManager.guiElements.add(notificationFeed);
+        ProjectManager.guiElements.add(notificationFeed);
         ProjectManager.guiElements.add(titleBar);
         ProjectManager.guiElements.add(minimizeButton);
         ProjectManager.guiElements.add(restMaxButton);
@@ -1162,20 +1167,20 @@ public class View3D implements ILogic {
 
             if (vao)
             {
-                renderer.drawRect(10 - 3, 20 - 3 + ((getFontHeight(Config.GUI_SCALE) + 2) + 3) * l, getStringWidth("VAOs: " + loader.vaos.size(), Config.GUI_SCALE) + 6, (getFontHeight(10) + 2) + 3, new Color(0f, 0f, 0f, 0.5f));
-                renderer.drawString("VAOs: " + loader.vaos.size(), Config.FONT_COLOR, 20 + ((getFontHeight(Config.GUI_SCALE) + 2) + 3) * l, Config.GUI_SCALE);
+                renderer.drawRect(20 - 3, 20 - 3 + ((getFontHeight(Config.GUI_SCALE) + 2) + 3) * l, getStringWidth("VAOs: " + loader.vaos.size(), Config.GUI_SCALE) + 6, (getFontHeight(Config.GUI_SCALE) + 2) + 3, new Color(0f, 0f, 0f, 0.5f));
+                renderer.drawString("VAOs: " + loader.vaos.size(), Config.FONT_COLOR, 20, 20 + ((getFontHeight(Config.GUI_SCALE) + 2) + 3) * l);
                 l++;
             }
             if (vbo)
             {
-                renderer.drawRect(10 - 3, 20 - 3 + ((getFontHeight(Config.GUI_SCALE) + 2) + 3) * l, getStringWidth("VBOs: " + loader.vbos.size(), Config.GUI_SCALE) + 6, (getFontHeight(10) + 2) + 3, new Color(0f, 0f, 0f, 0.5f));
-                renderer.drawString("VBOs: " + loader.vbos.size(), Config.FONT_COLOR, 20 + ((getFontHeight(Config.GUI_SCALE) + 2) + 3) * l, Config.GUI_SCALE);
+                renderer.drawRect(20 - 3, 20 - 3 + ((getFontHeight(Config.GUI_SCALE) + 2) + 3) * l, getStringWidth("VBOs: " + loader.vbos.size(), Config.GUI_SCALE) + 6, (getFontHeight(Config.GUI_SCALE) + 2) + 3, new Color(0f, 0f, 0f, 0.5f));
+                renderer.drawString("VBOs: " + loader.vbos.size(), Config.FONT_COLOR, 20, 20 + ((getFontHeight(Config.GUI_SCALE) + 2) + 3) * l);
                 l++;
             }
             if (tex)
             {
-                renderer.drawRect(10 - 3, 20 - 3 + ((getFontHeight(Config.GUI_SCALE) + 2) + 3) * l, getStringWidth("Textures: " + loader.textures.size(), Config.GUI_SCALE) + 6, (getFontHeight(10) + 2) + 3, new Color(0f, 0f, 0f, 0.5f));
-                renderer.drawString("Textures: " + loader.textures.size(), Config.FONT_COLOR, 20 + ((getFontHeight(Config.GUI_SCALE) + 2) + 3) * l, Config.GUI_SCALE);
+                renderer.drawRect(20 - 3, 20 - 3 + ((getFontHeight(Config.GUI_SCALE) + 2) + 3) * l, getStringWidth("Textures: " + loader.textures.size(), Config.GUI_SCALE) + 6, (getFontHeight(Config.GUI_SCALE) + 2) + 3, new Color(0f, 0f, 0f, 0.5f));
+                renderer.drawString("Textures: " + loader.textures.size(), Config.FONT_COLOR, 20, 20 + ((getFontHeight(Config.GUI_SCALE) + 2) + 3) * l);
                 l++;
             }
             if(thread)
@@ -1185,8 +1190,8 @@ public class View3D implements ILogic {
                 for (long id : threadIds) {
                     long cpuTime = threadMXBean.getThreadCpuTime(id) / 1000000l;
                     String s = "Thread ID: " + id + " CPU Time: " + cpuTime + " ms";
-                    renderer.drawRect(10 - 3, 20 - 3 + ((getFontHeight(10) + 2) + 3) * l, getStringWidth(s, Config.GUI_SCALE) + 6, (getFontHeight(Config.GUI_SCALE) + 2) + 3, new Color(0f, 0f, 0f, 0.5f));
-                    renderer.drawString(s, Config.FONT_COLOR, 20 + ((getFontHeight(Config.GUI_SCALE) + 2) + 3) * l, Config.GUI_SCALE);
+                    renderer.drawRect(20 - 3, 20 - 3 + ((getFontHeight(Config.GUI_SCALE) + 2) + 3) * l, getStringWidth(s, Config.GUI_SCALE) + 6, (getFontHeight(Config.GUI_SCALE) + 2) + 3, new Color(0f, 0f, 0f, 0.5f));
+                    renderer.drawString(s, Config.FONT_COLOR, 20, 20 + ((getFontHeight(Config.GUI_SCALE) + 2) + 3) * l);
                     l++;
                 }
             }
@@ -1261,6 +1266,11 @@ public class View3D implements ILogic {
 
                 renderer.drawRect(0, 0, window.width, window.height, new Color(1f, 0f, 0f, 0f));
             } else introPlayed = true;
+        }
+
+        if(FilePicker.dialogOpen)
+        {
+            renderer.doBlur(Consts.GAUSSIAN_RADIUS, Consts.GAUSSIAN_KERNEL);
         }
     }
 
@@ -1402,7 +1412,7 @@ public class View3D implements ILogic {
             if(json == "")
                 continue;
 
-            things.add(GsonUtils.GSON.fromJson(json, Thing.class));
+            things.add(GsonUtils.fromJSON(json, Thing.class));
         }
 
         addThings(things, null);
@@ -1986,22 +1996,7 @@ public class View3D implements ILogic {
             if (thing != null)
             {
                 if(thing.name == null)
-                    buildThingName(thing);
-
-                if(thing.hasPart(Part.RENDER_MESH) && ((PRenderMesh)thing.getPart(Part.RENDER_MESH)).mesh != null)
-                {
-                    RMesh msh = LoadedData.loadMesh(((PRenderMesh)thing.getPart(Part.RENDER_MESH)).mesh);
-                    if(msh != null)
-                        for(int i = 0; i < ((PRenderMesh)thing.getPart(Part.RENDER_MESH)).boneThings.length; i++)
-                        {
-                            Thing th = ((PRenderMesh)thing.getPart(Part.RENDER_MESH)).boneThings[i];
-
-                            Bone[] bonearray = msh.getBones();
-                            if(th!= null && th.name == null && i < bonearray.length && bonearray[i] != null)
-                                th.name = msh.getBones()[i].getName();
-
-                        }
-                }
+                    bog.lbpas.view3d.core.types.Thing.buildName(thing);
 
                 boolean selected = false;
                 if(selectedUIDs != null)
@@ -2020,99 +2015,6 @@ public class View3D implements ILogic {
                 th.selected = selected;
                 this.things.add(th);
             }
-    }
-
-    public void buildThingName(Thing thing)
-    {
-        ResourceDescriptor ent = null;
-
-        if(thing.hasPart(Part.RENDER_MESH) && ((PRenderMesh)thing.getPart(Part.RENDER_MESH)).mesh != null)
-        {
-            ent = ((PRenderMesh)thing.getPart(Part.RENDER_MESH)).mesh;
-        }
-        else if(thing.hasPart(Part.GENERATED_MESH) && ((PGeneratedMesh)thing.getPart(Part.GENERATED_MESH)).gfxMaterial != null)
-        {
-            ent = ((PGeneratedMesh)thing.getPart(Part.GENERATED_MESH)).gfxMaterial;
-        }
-        else if(thing.hasPart(Part.SCRIPT_NAME) && ((PScriptName)thing.getPart(Part.SCRIPT_NAME)).name != null)
-        {
-            thing.name = ((PScriptName)thing.getPart(Part.SCRIPT_NAME)).name;
-        }
-        else if(thing.hasPart(Part.SCRIPT) && ((PScript)thing.getPart(Part.SCRIPT)).instance.script != null)
-        {
-            ent = ((PScript)thing.getPart(Part.SCRIPT)).instance.script;
-        }
-        else if(thing.hasPart(Part.EFFECTOR))
-        {
-            thing.name = "Effector";
-        }
-        else if(thing.hasPart(Part.LEVEL_SETTINGS))
-        {
-            thing.name = "Level Settings";
-        }
-        else if(thing.hasPart(Part.SHAPE))
-        {
-            thing.name = "Shape";
-        }
-        else if(thing.hasPart(Part.CHECKPOINT))
-        {
-            thing.name = "Checkpoint";
-        }
-        else if(thing.hasPart(Part.TRIGGER) && ((PTrigger)thing.getPart(Part.TRIGGER)).triggerType != null)
-        {
-            thing.name = ((PTrigger)thing.getPart(Part.TRIGGER)).triggerType.name();
-            thing.name = "Trigger " + thing.name.substring(0, 1).toUpperCase() + thing.name.substring(1).toLowerCase();
-        }
-        else if(thing.hasPart(Part.EMITTER))
-        {
-            thing.name = "Emitter";
-        }
-        else if(thing.hasPart(Part.GROUP))
-        {
-            thing.name = "Group";
-        }
-        else if(thing.hasPart(Part.AUDIO_WORLD))
-        {
-            thing.name = "Audio";
-        }
-        else if(thing.hasPart(Part.SPRITE_LIGHT))
-        {
-            thing.name = "Light";
-        }
-        else if(thing.hasPart(Part.SWITCH_INPUT))
-        {
-            thing.name = "Switch Input";
-        }
-        else if(thing.hasPart(Part.SWITCH))
-        {
-            thing.name = "Switch";
-        }
-        else if(thing.hasPart(Part.JOINT))
-        {
-            thing.name = "Joint";
-        }
-        else if(thing.hasPart(Part.SWITCH_KEY))
-        {
-            thing.name = "Tag";
-        }
-
-        if(ent != null)
-        {
-            FileEntry e = LoadedData.getDigestedEntry(ent);
-
-            if(e != null)
-            {
-                String name = e.getName();
-
-                int extInd = name.lastIndexOf(".");
-                boolean nameIsHash = name.substring(0, extInd != -1 ? extInd : name.length()).equalsIgnoreCase(e.getSHA1().toString());
-
-                if (!(e instanceof FileDBRow) && nameIsHash)
-                    name = name.substring(name.length() - 12);
-
-                thing.name = name.substring(0, name.lastIndexOf("."));
-            }
-        }
     }
 
     public void addThings(Thing[] things, List<Number> selectedUIDs)
