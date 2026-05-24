@@ -20,6 +20,13 @@ public class Panel extends Element{
         this.pos = new Vector2f();
         this.elements = new ArrayList<>();
     }
+
+    public Panel(String id)
+    {
+        this.id = id;
+        this.pos = new Vector2f();
+        this.elements = new ArrayList<>();
+    }
     public Panel(Vector2f size, RenderMan renderer) {
         this.pos = new Vector2f();
         this.size = size;

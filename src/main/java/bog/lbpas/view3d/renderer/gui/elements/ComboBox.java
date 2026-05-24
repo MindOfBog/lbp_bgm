@@ -535,7 +535,7 @@ public abstract class ComboBox extends Element{
         int xSize = Math.round(tabWidth());
         int ySize = Math.round((extended ? 2f : 0f) + yOffset);
 
-        if(x + xSize > window.width)
+        if(x + xSize > window.getWidth())
             x = Math.round((parentTransform == null ? pos.x : parentTransform[0]) - size.y / 2 - xSize);
 
         renderer.doBlur(Consts.GAUSSIAN_RADIUS, Consts.GAUSSIAN_KERNEL, x, y, xSize, ySize);
@@ -555,7 +555,7 @@ public abstract class ComboBox extends Element{
         int y = Math.round(ypos);
         int xSize = Math.round(tabWidth());
 
-        if(x + xSize > window.width)
+        if(x + xSize > window.getWidth())
             x = Math.round((parentTransform == null ? pos.x : parentTransform[0]) - (size == null ? 0 : size.y) / 2 - xSize);
 
         return new int[]{x, y, xSize};
@@ -582,7 +582,7 @@ public abstract class ComboBox extends Element{
             int y = Math.round(pos.y);
             int xSize = Math.round(tabWidth());
 
-            if(x + xSize > window.width)
+            if(x + xSize > window.getWidth())
                 x = Math.round((parentTransform == null ? pos.x : parentTransform[0]) - xSize - size.y / 2);
 
             element.pos = new Vector2f(x + (element instanceof ButtonList ? 0 : 2), y + 2 + yOffset);
@@ -590,12 +590,12 @@ public abstract class ComboBox extends Element{
             yOffset += element.size.y + 2;
         }
 
-        if(this.pos.y + yOffset + 2 > this.window.height)
+        if(this.pos.y + yOffset + 2 > this.window.getHeight())
         {
             for (int i = 0; i < comboElements.size(); i++)
             {
                 Element element = comboElements.get(i);
-                element.pos.y -= (this.pos.y + yOffset + 2) - this.window.height;
+                element.pos.y -= (this.pos.y + yOffset + 2) - this.window.getHeight();
             }
         }
 
@@ -673,7 +673,7 @@ public abstract class ComboBox extends Element{
         int xSize = Math.round(tabWidth());
         int ySize = Math.round((extended ? 2f : 0f) + yOffset);
 
-        if(x + xSize > window.width)
+        if(x + xSize > window.getWidth())
             x = Math.round((parentTransform == null ? pos.x : parentTransform[0]) - size.y / 2 - xSize);
 
         boolean overElement = (mousePos.x > x && mousePos.y > y && mousePos.x < x + xSize && mousePos.y < y + ySize) || isMouseOverTab(mousePos);

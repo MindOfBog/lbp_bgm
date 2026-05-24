@@ -1,5 +1,6 @@
 package bog.lbpas.view3d.managers;
 
+import bog.lbpas.view3d.utils.print;
 import cwlib.util.Audio;
 import org.joml.Vector3f;
 import org.lwjgl.openal.*;
@@ -12,15 +13,41 @@ public class AudioMan {
     public long device;
     public long context;
 
+    private String lastKnownDefault = "placeholder";
+
     public void init() {
         device = ALC10.alcOpenDevice((java.nio.ByteBuffer) null);
-        if (device == 0)
-            throw new IllegalStateException("Failed to open OpenAL device");
+        if(device == 0)
+            device = ALC10.alcOpenDevice("placeholder");
 
-        context = ALC10.alcCreateContext(device, (int[]) null);
-        ALC10.alcMakeContextCurrent(context);
+        if (device != 0)
+        {
+            context = ALC10.alcCreateContext(device, (int[]) null);
 
-        AL.createCapabilities(ALC.createCapabilities(device));
+            ALC10.alcMakeContextCurrent(context);
+            AL.createCapabilities(ALC.createCapabilities(device));
+        }
+        else
+            print.error("Error occurred during audio device initialization.");
+    }
+
+    public void secondaryThread()
+    {
+        int[] connected = {0};
+        ALC10.alcGetIntegerv(device, EXTDisconnect.ALC_CONNECTED, connected);
+
+        if (connected[0] == ALC10.ALC_FALSE)
+        {
+            SOFTReopenDevice.alcReopenDeviceSOFT(device, "placeholder", (int[]) null);
+            lastKnownDefault = "placeholder";
+        }
+
+        String currentDefault = ALC10.alcGetString(0, ALC10.ALC_DEFAULT_DEVICE_SPECIFIER);
+
+        if (!currentDefault.equals(lastKnownDefault)) {
+            if(SOFTReopenDevice.alcReopenDeviceSOFT(device, (java.nio.ByteBuffer) null, (int[]) null))
+                lastKnownDefault = currentDefault;
+        }
     }
 
     public void cleanup() {

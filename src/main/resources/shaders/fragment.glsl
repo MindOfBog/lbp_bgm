@@ -71,7 +71,7 @@ uniform float fogFar;
 uniform vec3 camPos;
 uniform vec3 sunPos;
 
-uniform bool noCulling;
+uniform int culling;
 
 const mat4 thresholdMatrix = mat4(
     1, 9, 3, 11,
@@ -85,7 +85,7 @@ vec4 specularC;
 
 void cullBackFace()
 {
-    if(!gl_FrontFacing && !noCulling)
+    if((gl_FrontFacing && culling == 1) || (!gl_FrontFacing && culling == 2))
         discard;
 }
 
@@ -202,6 +202,14 @@ void setupColors()
 
 void main()
 {
+    float camToPixelDist = length(fragPos - camPos);
+    float fogRange = fogFar - fogNear;
+    float fogDist = fogFar - camToPixelDist;
+    float fogFactor = clamp(fogDist / fogRange, 0.0f, 1.0f);
+
+    if(fogFactor == 0.0f && !((fogFar == -1 && fogNear == -1) || !preview || frontView))
+        discard;
+
     setupColors();
 
     vec3 translation = vec3(transformationMatrix[0][3], transformationMatrix[1][3], transformationMatrix[2][3]);
@@ -238,11 +246,6 @@ void main()
 
     vec3 rimFinal1 = clamp(vec3(rimColor.rgb * rim1 * rimColor.a), 0.0, 1.0);
     vec3 rimFinal2 = clamp(vec3(rimColor2.rgb * rim2 * rimColor2.a), 0.0, 1.0);
-
-    float camToPixelDist = length(fragPos - camPos);
-    float fogRange = fogFar - fogNear;
-    float fogDist = fogFar - camToPixelDist;
-    float fogFactor = clamp(fogDist / fogRange, 0.0f, 1.0f);
 
     fragmentColor = ambientC * vec4(ambientLight, 1.0f) + diffuseSpecularComp;
     fragmentColor.r = fragmentColor.r + rimFinal1.r + rimFinal2.r;

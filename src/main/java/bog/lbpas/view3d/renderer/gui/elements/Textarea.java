@@ -190,7 +190,6 @@ public class Textarea extends Element{
 
                 if(System.currentTimeMillis() - mouseInput.lastLeftDownMS <= 500 && currentSelection == cpos)
                 {
-                    mouseInput.leftButtonPress = false;
                     for(int i = cpos; i >= 0; i--)
                         if(i - 1 <= 0)
                         {

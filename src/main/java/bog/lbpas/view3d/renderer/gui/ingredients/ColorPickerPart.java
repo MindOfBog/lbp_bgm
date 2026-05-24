@@ -19,7 +19,7 @@ public class ColorPickerPart extends Drawable{
     public static ColorPickerPart hueRamp(int x, int y, int width, int height, WindowMan window)
     {
         ColorPickerPart part = new ColorPickerPart();
-        part.pos = new Vector2i(x, window.height - y);
+        part.pos = new Vector2i(x, window.getHeight() - y);
         part.size =  new Vector2i(width, height);
         part.part = 0;
         return part;
@@ -28,7 +28,7 @@ public class ColorPickerPart extends Drawable{
     public static ColorPickerPart saturationLuminancePicker(int x, int y, int width, int height, Vector4f color, WindowMan window)
     {
         ColorPickerPart part = new ColorPickerPart();
-        part.pos = new Vector2i(x, window.height - y);
+        part.pos = new Vector2i(x, window.getHeight() - y);
         part.size =  new Vector2i(width, height);
         part.part = 1;
         part.color = color;
@@ -38,7 +38,7 @@ public class ColorPickerPart extends Drawable{
     public static ColorPickerPart transparencyCheckerBoard(int x, int y, int width, int height, WindowMan window)
     {
         ColorPickerPart part = new ColorPickerPart();
-        part.pos = new Vector2i(x, window.height - y);
+        part.pos = new Vector2i(x, window.getHeight() - y);
         part.size =  new Vector2i(width, height);
         part.part = 2;
         return part;
@@ -47,7 +47,7 @@ public class ColorPickerPart extends Drawable{
     public static ColorPickerPart alphaRamp(int x, int y, int width, int height, Vector4f color, WindowMan window)
     {
         ColorPickerPart part = new ColorPickerPart();
-        part.pos = new Vector2i(x, window.height - y);
+        part.pos = new Vector2i(x, window.getHeight() - y);
         part.size =  new Vector2i(width, height);
         part.part = 3;
         part.color = color;

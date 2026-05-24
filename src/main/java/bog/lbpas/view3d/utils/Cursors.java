@@ -1,7 +1,9 @@
 package bog.lbpas.view3d.utils;
 
+import bog.lbpas.Main;
 import bog.lbpas.view3d.managers.WindowMan;
 import bog.lbpas.view3d.renderer.gui.cursor.Cursor;
+import bog.lbpas.view3d.renderer.gui.cursor.CursorDetails;
 import bog.lbpas.view3d.renderer.gui.cursor.ECursor;
 import org.lwjgl.glfw.GLFW;
 
@@ -26,11 +28,13 @@ public class Cursors {
 
     public static void updateCursor(WindowMan window)
     {
-        currentCursor = loadedCursors.get(activeCursor).getCursor(ECursor.fromID(currentCursorType)).cursor;
+        ECursor type = ECursor.fromID(currentCursorType);
+        CursorDetails cursor = loadedCursors.get(activeCursor).getCursor(type);
+        currentCursor = cursor.cursor;
 
         if(currentCursor != previousCursor)
         {
-            GLFW.glfwSetCursor(window.window, currentCursor);
+            Main.RunOnGLFWThread(() -> GLFW.glfwSetCursor(window.window, currentCursor));
             previousCursor = currentCursor;
         }
     }

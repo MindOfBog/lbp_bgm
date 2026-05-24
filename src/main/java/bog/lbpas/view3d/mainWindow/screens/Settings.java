@@ -16,6 +16,7 @@ import bog.lbpas.view3d.renderer.gui.font.FontRenderer;
 import bog.lbpas.view3d.utils.Config;
 import bog.lbpas.view3d.utils.Cursors;
 import bog.lbpas.view3d.utils.Utils;
+import org.joml.Vector2d;
 import org.joml.Vector2f;
 import org.joml.Vector2i;
 import org.lwjgl.glfw.GLFW;
@@ -83,6 +84,8 @@ public class Settings extends GuiScreen{
     public Textbox entryDigestThreadTicks;
 
     public Slider guiSizeSlider;
+
+    public Checkbox navideWindowHandler;
 
     public void init() {
         rendererSettings = new DropDownTab("rendererSettings", "Renderer Settings", new Vector2f(10, getFontHeightHeader() + 7 * 2), new Vector2f(200f * (getFontHeight() / 12f), getFontHeightHeader() + 7f), renderer, loader, window).closed();
@@ -682,6 +685,27 @@ public class Settings extends GuiScreen{
         otherSep.size.y = 5;
 
         showFPS = guiSettings.addCheckbox("showFPS", "Show FPS", Config.SHOW_FPS);
+        navideWindowHandler = guiSettings.addCheckbox("navideWindowHandler", "Use Native Window Handler", Config.USE_NATIVE_WINDOW_HANDLER, new Checkbox()
+        {
+            @Override
+            public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement, boolean focusedOther) {
+                super.onClick(mouseInput, pos, button, action, mods, overElement, focusedOther);
+
+                if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
+                {
+                    if(isChecked)
+                    {
+                        this.window.setupNativeWindowHandler();
+                    }
+                    else
+                    {
+                        this.window.releaseNativeWindowHandler();
+                    }
+                    Config.USE_NATIVE_WINDOW_HANDLER = isChecked;
+                }
+            }
+        });
+
         //legacyFD = guiSettings.addCheckbox("legacyFD", "Native File Dialogue", Config.LEGACY_FD);
 
         controls = new DropDownTab("controls", "Controls", new Vector2f(10, getFontHeightHeader() + 7 * 4 + rendererSettings.getFullHeight() + guiSettings.getFullHeight()), new Vector2f(200f * (getFontHeight() / 12f), getFontHeightHeader() + 7f), renderer, loader, window).closed();

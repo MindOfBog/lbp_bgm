@@ -185,7 +185,6 @@ public class Textbox extends Element{
 
                     if(System.currentTimeMillis() - mouseInput.lastLeftDownMS <= 500 && currentSelection == cpos && this.isFocused())
                     {
-                        mouseInput.leftButtonPress = false;
                         for(int i = cpos; i >= 0; i--)
                             if(i - 1 <= 0)
                             {

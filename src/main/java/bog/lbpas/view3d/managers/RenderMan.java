@@ -43,6 +43,9 @@ public class RenderMan {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        viewPortWidth = window.getWidth();
+        viewPortHeight = window.getHeight();
+        GL11.glViewport(0, 0, viewPortWidth, viewPortHeight);
     }
 
     public void init(ObjectLoader loader) throws Exception
@@ -243,10 +246,14 @@ public class RenderMan {
 
     ShaderMan shaderSSAO;
 
+    public int viewPortWidth, viewPortHeight;
+
     public void resize()
     {
+        viewPortWidth = window.getWidth();
+        viewPortHeight = window.getHeight();
+        GL11.glViewport(0, 0, viewPortWidth, viewPortHeight);
         entityRenderer.resize();
-        GL11.glViewport(0, 0, window.width, window.height);
         screenBuffer.resize();
         screenBuffer2.resize();
         blurBuffer.resize();
@@ -288,8 +295,8 @@ public class RenderMan {
         entityRenderer.renderAfterPP(mainView);
 
         screenBuffer.blit(screenBuffer2,
-                new int[]{0, 0, window.width, window.height},
-                new int[]{0, 0, window.width, window.height},
+                new int[]{0, 0, viewPortWidth, viewPortHeight},
+                new int[]{0, 0, viewPortWidth, viewPortHeight},
                 GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 
         screenBuffer2.bind();
@@ -341,8 +348,8 @@ public class RenderMan {
         RenderMan.disableCulling();
 
         screenBuffer.blit(screenBuffer2,
-                new int[]{0, 0, window.width, window.height},
-                new int[]{0, 0, window.width, window.height},
+                new int[]{0, 0, viewPortWidth, viewPortHeight},
+                new int[]{0, 0, viewPortWidth, viewPortHeight},
                 GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 
         shaderSSAO.bind();
@@ -368,7 +375,7 @@ public class RenderMan {
                 new Vector2f(1f, -1f)
         ));
         shaderSSAO.setUniform("camerarange", new Vector2f(Config.Z_NEAR, Config.Z_FAR));
-        shaderSSAO.setUniform("screensize", new Vector2f(window.width, window.height));
+        shaderSSAO.setUniform("screensize", new Vector2f(window.getWidth(), window.getHeight()));
         //ssao pass
         GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, GuiRenderer.defaultQuad.vertexCount);
 
@@ -391,7 +398,7 @@ public class RenderMan {
 
         shader.setUniform("isBlur", true);
         shader.setUniform("isGaussian", true);
-        shader.setUniform("pixelSize", 1.0f/window.height);
+        shader.setUniform("pixelSize", 1.0f/window.getHeight());
         shader.setUniform("radius", Consts.GAUSSIAN_RADIUS_SSAO);
         shader.setUniform("gaussKernel", Consts.GAUSSIAN_KERNEL_SSAO);
         shader.setUniform("vertical", true);
@@ -411,7 +418,7 @@ public class RenderMan {
         GL13.glActiveTexture(GL13.GL_TEXTURE0);
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, ssaoBuffer2.colorTexture);
 
-        shader.setUniform("pixelSize", 1.0f/window.width);
+        shader.setUniform("pixelSize", 1.0f/window.getWidth());
         shader.setUniform("vertical", false);
         //horizontal blur pass
         GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, GuiRenderer.defaultQuad.vertexCount);
@@ -432,7 +439,7 @@ public class RenderMan {
         shaderSSAO.setUniform("hasColor", 0);
         shaderSSAO.setUniform("smoothst", false);
         shaderSSAO.setUniform("start", false);
-        shaderSSAO.setUniform("fogColor", mainView.fogColor);
+        shaderSSAO.setUniform("fogColor", mainView.lighting.fogColor);
 
         GL30.glBindVertexArray(GuiRenderer.defaultQuad.vao);
         GL13.glActiveTexture(GL13.GL_TEXTURE0);
@@ -465,13 +472,13 @@ public class RenderMan {
 
         shaderOutline.bind();
 
-        drawOutline(outlineBuffer1.colorTexture, -1, shaderOutline, window.width, radius, false, Config.OUTLINE_COLOR);
+        drawOutline(outlineBuffer1.colorTexture, -1, shaderOutline, window.getWidth(), radius, false, Config.OUTLINE_COLOR);
 
         screenBuffer.bind();
 
         GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
 
-        drawOutline(outlineBuffer2.colorTexture, outlineBuffer1.colorTexture, shaderOutline, window.height, radius, true, Config.OUTLINE_COLOR);
+        drawOutline(outlineBuffer2.colorTexture, outlineBuffer1.colorTexture, shaderOutline, window.getHeight(), radius, true, Config.OUTLINE_COLOR);
 
         outlineBuffer1.bind();
 
@@ -799,6 +806,15 @@ public class RenderMan {
         this.processGuiElement(ColorPickerPart.alphaRamp(pos.x, pos.y, size.x, size.y, color, window));
     }
 
+    public void drawNodeLine(Vector2i start, Vector2i end, Color color)
+    {
+        processGuiElement(new NodeLine(start, end, color));
+    }
+
+    public void drawNodeLine(Vector2i start, Vector2i end)
+    {
+        drawNodeLine(start, end, Color.BLACK);
+    }
     public static int initFrameBuffer()
     {
         int frameBuffer = GL30.glGenFramebuffers();
@@ -850,7 +866,7 @@ public class RenderMan {
     {
         int colorTexture = GL11.glGenTextures();
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, colorTexture);
-        GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA8, window.width, window.height, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, (ByteBuffer) null);
+        GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA8, window.getWidth(), window.getHeight(), 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, (ByteBuffer) null);
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_REPEAT);
@@ -872,7 +888,7 @@ public class RenderMan {
     {
         int colorTexture = GL11.glGenTextures();
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, colorTexture);
-        GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL30.GL_RGB32I, window.width, window.height, 0, GL30.GL_RGB_INTEGER, GL11.GL_INT, (ByteBuffer) null);
+        GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL30.GL_RGB32I, window.getWidth(), window.getHeight(), 0, GL30.GL_RGB_INTEGER, GL11.GL_INT, (ByteBuffer) null);
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
         GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT0, GL11.GL_TEXTURE_2D, colorTexture, 0);
@@ -883,7 +899,7 @@ public class RenderMan {
     {
         int depthTexture = GL11.glGenTextures();
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, depthTexture);
-        GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL30.GL_DEPTH_COMPONENT24, window.width, window.height, 0, GL11.GL_DEPTH_COMPONENT, GL11.GL_FLOAT, (ByteBuffer) null);
+        GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL30.GL_DEPTH_COMPONENT24, window.getWidth(), window.getHeight(), 0, GL11.GL_DEPTH_COMPONENT, GL11.GL_FLOAT, (ByteBuffer) null);
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
 
@@ -907,7 +923,7 @@ public class RenderMan {
     public static int initMultiSampleColorTexture(WindowMan window) {
         int colorTexture = GL30.glGenTextures();
         GL30.glBindTexture(GL32.GL_TEXTURE_2D_MULTISAMPLE, colorTexture);
-        GL32.glTexImage2DMultisample(GL32.GL_TEXTURE_2D_MULTISAMPLE, Config.MSAA_SAMPLES, GL11.GL_RGBA8, window.width, window.height, true);
+        GL32.glTexImage2DMultisample(GL32.GL_TEXTURE_2D_MULTISAMPLE, Config.MSAA_SAMPLES, GL11.GL_RGBA8, window.getWidth(), window.getHeight(), false);
         GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT0, GL32.GL_TEXTURE_2D_MULTISAMPLE, colorTexture, 0);
         return colorTexture;
     }
@@ -915,7 +931,7 @@ public class RenderMan {
     public static int initMultiSampleDepthTexture(WindowMan window) {
         int depthTexture = GL30.glGenTextures();
         GL30.glBindTexture(GL32.GL_TEXTURE_2D_MULTISAMPLE, depthTexture);
-        GL32.glTexImage2DMultisample(GL32.GL_TEXTURE_2D_MULTISAMPLE, Config.MSAA_SAMPLES, GL30.GL_DEPTH_COMPONENT24, window.width, window.height, true);
+        GL32.glTexImage2DMultisample(GL32.GL_TEXTURE_2D_MULTISAMPLE, Config.MSAA_SAMPLES, GL30.GL_DEPTH_COMPONENT24, window.getWidth(), window.getHeight(), false);
         GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_DEPTH_ATTACHMENT, GL32.GL_TEXTURE_2D_MULTISAMPLE, depthTexture, 0);
         return depthTexture;
     }

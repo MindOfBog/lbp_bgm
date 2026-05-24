@@ -20,7 +20,7 @@ public class Config {
     public static float FOV = (float) Math.toRadians(63);
     public static float Z_NEAR = 10f;
     public static float Z_FAR = 100000f;
-    public static boolean NO_CULLING = true;
+    public static boolean NO_CULLING = false;
     public static float MOUSE_SENS = 0.2f;
     public static float CAMERA_MOVE_SPEED = 1500f;
     public static Vector4f DEFAULT_COLOR = new Vector4f(1f, 1f, 1f, 1f);
@@ -78,6 +78,7 @@ public class Config {
     public static int LOADER_THREAD = 50;
     public static int ENTRY_DIGEST_THREAD = 1000;
     public static int GUI_SCALE = 12;
+    public static boolean USE_NATIVE_WINDOW_HANDLER = true;
 
     private static String buildSettings()
     {
@@ -138,6 +139,7 @@ public class Config {
         builtString += "LOADER_THREAD:" + LOADER_THREAD + ";";
         builtString += "ENTRY_DIGEST_THREAD:" + ENTRY_DIGEST_THREAD + ";";
         builtString += "GUI_SCALE:" + GUI_SCALE + ";";
+        builtString += "USE_NATIVE_WINDOW_HANDLER:" + USE_NATIVE_WINDOW_HANDLER + ";";
 
         return builtString;
     }
@@ -240,6 +242,7 @@ public class Config {
                         case "LOADER_THREAD" : LOADER_THREAD = Integer.parseInt(data); break;
                         case "ENTRY_DIGEST_THREAD" : ENTRY_DIGEST_THREAD = Integer.parseInt(data); break;
                         case "GUI_SCALE" : GUI_SCALE = Integer.parseInt(data); break;
+                        case "USE_NATIVE_WINDOW_HANDLER" : USE_NATIVE_WINDOW_HANDLER = Boolean.parseBoolean(data); break;
                     }
                 }
 
@@ -705,6 +708,14 @@ public class Config {
                         break loop;
                     }
                     break;
+                case 54:
+                    if(!o.equals(USE_NATIVE_WINDOW_HANDLER))
+                    {
+                        hasChanged = true;
+                        updateVariables();
+                        break loop;
+                    }
+                    break;
             }
         }
         if(variables.size() == 0)
@@ -769,5 +780,6 @@ public class Config {
         variables.add(LOADER_THREAD);
         variables.add(ENTRY_DIGEST_THREAD);
         variables.add(GUI_SCALE);
+        variables.add(USE_NATIVE_WINDOW_HANDLER);
     }
 }

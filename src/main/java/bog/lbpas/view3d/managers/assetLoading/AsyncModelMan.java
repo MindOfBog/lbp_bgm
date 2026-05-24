@@ -9,6 +9,7 @@ import bog.lbpas.view3d.mainWindow.View3D;
 import bog.lbpas.view3d.utils.Utils;
 import bog.lbpas.view3d.utils.print;
 import cwlib.enums.MappingMode;
+import cwlib.io.exports.MeshExporter;
 import cwlib.resources.RBevel;
 import cwlib.resources.RGfxMaterial;
 import cwlib.resources.RMesh;
@@ -342,16 +343,20 @@ public class AsyncModelMan {
                         }
 
                         for (int i = 0; i < indices.length; i += 3) {
-                            Vector3f v2 = new Vector3f(verticesArr[indices[i] * 3], verticesArr[indices[i] * 3 + 1], verticesArr[indices[i] * 3 + 2]);
-                            Vector3f v1 = new Vector3f(verticesArr[indices[i + 1] * 3], verticesArr[indices[i + 1] * 3 + 1], verticesArr[indices[i + 1] * 3 + 2]);
-                            Vector3f v3 = new Vector3f(verticesArr[indices[i + 2] * 3], verticesArr[indices[i + 2] * 3 + 1], verticesArr[indices[i + 2] * 3 + 2]);
+                            int idx0 = indices[i];
+                            int idx1 = indices[i + 1];
+                            int idx2 = indices[i + 2];
 
-                            Vector3f deltaPos1 = new Vector3f(v1).sub(v2, new Vector3f());
-                            Vector3f deltaPos2 = new Vector3f(v3).sub(v2, new Vector3f());
+                            Vector3f v0 = new Vector3f(verticesArr[idx0 * 3], verticesArr[idx0 * 3 + 1], verticesArr[idx0 * 3 + 2]);
+                            Vector3f v1 = new Vector3f(verticesArr[idx1 * 3], verticesArr[idx1 * 3 + 1], verticesArr[idx1 * 3 + 2]);
+                            Vector3f v2 = new Vector3f(verticesArr[idx2 * 3], verticesArr[idx2 * 3 + 1], verticesArr[idx2 * 3 + 2]);
 
-                            Vector4f uv0 = new Vector4f(texCoordArr[indices[i] * 4], texCoordArr[indices[i] * 4 + 1], texCoordArr[indices[i] * 4 + 2], texCoordArr[indices[i] * 4 + 3]);
-                            Vector4f uv1 = new Vector4f(texCoordArr[indices[i + 1] * 4], texCoordArr[indices[i + 1] * 4 + 1], texCoordArr[indices[i + 1] * 4 + 2], texCoordArr[indices[i + 1] * 4 + 3]);
-                            Vector4f uv2 = new Vector4f(texCoordArr[indices[i + 2] * 4], texCoordArr[indices[i + 2] * 4 + 1], texCoordArr[indices[i + 2] * 4 + 2], texCoordArr[indices[i + 2] * 4 + 3]);
+                            Vector3f deltaPos1 = new Vector3f(v1).sub(v0, new Vector3f());
+                            Vector3f deltaPos2 = new Vector3f(v2).sub(v0, new Vector3f());
+
+                            Vector4f uv0 = new Vector4f(texCoordArr[idx0 * 4], texCoordArr[idx0 * 4 + 1], texCoordArr[idx0 * 4 + 2], texCoordArr[idx0 * 4 + 3]);
+                            Vector4f uv1 = new Vector4f(texCoordArr[idx1 * 4], texCoordArr[idx1 * 4 + 1], texCoordArr[idx1 * 4 + 2], texCoordArr[idx1 * 4 + 3]);
+                            Vector4f uv2 = new Vector4f(texCoordArr[idx2 * 4], texCoordArr[idx2 * 4 + 1], texCoordArr[idx2 * 4 + 2], texCoordArr[idx2 * 4 + 3]);
 
                             Vector4f deltaUv1 = new Vector4f(uv1).sub(uv0, new Vector4f());
                             Vector4f deltaUv2 = new Vector4f(uv2).sub(uv0, new Vector4f());
@@ -362,17 +367,17 @@ public class AsyncModelMan {
                             Vector3f tangent = new Vector3f(deltaPos1).sub(deltaPos2, new Vector3f());
                             tangent.mul(r);
 
-                            tangentsArr[indices[i] * 3] += tangent.x;
-                            tangentsArr[indices[i] * 3 + 1] += tangent.y;
-                            tangentsArr[indices[i] * 3 + 2] += tangent.z;
+                            tangentsArr[idx0 * 3] += tangent.x;
+                            tangentsArr[idx0 * 3 + 1] += tangent.y;
+                            tangentsArr[idx0 * 3 + 2] += tangent.z;
 
-                            tangentsArr[indices[i + 1] * 3] += tangent.x;
-                            tangentsArr[indices[i + 1] * 3 + 1] += tangent.y;
-                            tangentsArr[indices[i + 1] * 3 + 2] += tangent.z;
+                            tangentsArr[idx1 * 3] += tangent.x;
+                            tangentsArr[idx1 * 3 + 1] += tangent.y;
+                            tangentsArr[idx1 * 3 + 2] += tangent.z;
 
-                            tangentsArr[indices[i + 2] * 3] += tangent.x;
-                            tangentsArr[indices[i + 2] * 3 + 1] += tangent.y;
-                            tangentsArr[indices[i + 2] * 3 + 2] += tangent.z;
+                            tangentsArr[idx2 * 3] += tangent.x;
+                            tangentsArr[idx2 * 3 + 1] += tangent.y;
+                            tangentsArr[idx2 * 3 + 2] += tangent.z;
                         }
                     }
 
@@ -410,27 +415,10 @@ public class AsyncModelMan {
 
                 Model model = toDigestRMesh.get(p).model;
 
-                int[] tris = mesh.getTriangles();
-                ArrayList<Integer> indices = new ArrayList<>();
-
-                for(int i = 0; i < tris.length / 3; i++)
-                {
-                    int v1 = tris[i * 3];
-                    int v2 = tris[i * 3 + 1];
-                    int v3 = tris[i * 3 + 2];
-
-                    if(v1 < 65535 && v2 < 65535 && v3 < 65535)
-                    {
-                        indices.add(v1);
-                        indices.add(v2);
-                        indices.add(v3);
-                    }
-                }
-
                 model.vertices = verticesArr;
                 model.textureCoords = texCoordArr;
                 model.normals = normalsArr;
-                model.indices = indices.stream().mapToInt((Integer v) -> v).toArray();
+                model.indices = mesh.getTriangles();
                 model.joints = joints;
                 model.weights = weights;
                 model.tangents = tangentsArr;
@@ -811,8 +799,6 @@ public class AsyncModelMan {
                     Vector3f nextVert = new Vector3f(polygonVertices[n]);
                     nextVert.mulProject(transformation, nextVert);
 
-
-
                     l++;
                 }
             }
@@ -1065,6 +1051,7 @@ public class AsyncModelMan {
                     float r = 1.0F / (deltaUv1.x * deltaUv2.y - deltaUv1.y * deltaUv2.x);
                     deltaPos1.mul(deltaUv2.y);
                     deltaPos2.mul(deltaUv1.y);
+
                     Vector3f tangent = (new Vector3f(deltaPos1)).sub(deltaPos2, new Vector3f());
                     tangent.mul(r).normalize();
                     tanges[indices[l * 6] * 3] = tangent.x;

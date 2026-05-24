@@ -1,5 +1,7 @@
 package bog.lbpas.view3d.mainWindow.screens;
 
+import bog.lbpas.Main;
+import bog.lbpas.swing.CodeEditor;
 import bog.lbpas.view3d.core.Texture;
 import bog.lbpas.view3d.core.Transformation3D;
 import bog.lbpas.view3d.core.types.Entity;
@@ -17,14 +19,10 @@ import bog.lbpas.view3d.renderer.gui.ingredients.Line;
 import bog.lbpas.view3d.renderer.gui.ingredients.LineStrip;
 import bog.lbpas.view3d.utils.*;
 import bog.lbpas.view3d.utils.CWLibUtils.SkeletonUtils;
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
+import com.formdev.flatlaf.util.SystemFileChooser;
 import cwlib.enums.Part;
 import cwlib.enums.ResourceType;
-import cwlib.io.Resource;
 import cwlib.resources.*;
-import cwlib.structs.inventory.UserCreatedDetails;
 import cwlib.structs.slot.Pack;
 import cwlib.structs.slot.Slot;
 import cwlib.structs.things.Thing;
@@ -35,26 +33,27 @@ import cwlib.types.databases.FileDBRow;
 import cwlib.types.databases.FileEntry;
 import cwlib.types.save.SaveEntry;
 import cwlib.util.GsonUtils;
+import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.joml.Math;
 import org.joml.*;
 import org.lwjgl.glfw.GLFW;
+import org.lwjgl.opengl.GL11;
 
-import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
-import java.io.FileReader;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 
 /**
  * @author Bog
  */
 public class ElementEditing extends GuiScreen {
 
-    public Transformation3D.Tool elementTool;
+    public Transformation3D.Tool transformTool;
+    public Transformation3D.Tool sunTool;
     View3D mainView;
 
     public ElementEditing(View3D mainView)
@@ -111,7 +110,8 @@ public class ElementEditing extends GuiScreen {
     public ThingPart currentSelectionParts;
 
     public void init() {
-        elementTool = new Transformation3D.Tool(loader);
+        transformTool = new Transformation3D.Tool(loader);
+        sunTool = new Transformation3D.Tool(loader);
 
         camPos = new DropDownTab("camPosition", "Camera position", new Vector2f(10, getFontHeightHeader() + 7 + 7), new Vector2f(160f * (getFontHeight() / 12f), getFontHeightHeader() + 4), renderer, loader, window) {
             @Override
@@ -882,6 +882,27 @@ public class ElementEditing extends GuiScreen {
         }, 295);
         groupPanel.elements.add(new Panel.PanelElement(addGroupCombo, 0.65f));
 
+        currentSelection.addButton("Edit JSON of Thing(s)", new Button() {
+            @Override
+            public void clickedButton(int button, int action, int mods) {
+                if(action != GLFW.GLFW_PRESS)
+                    return;
+                for(bog.lbpas.view3d.core.types.Thing thing : mainView.things)
+                {
+                    if(!thing.selected)
+                        continue;
+
+                    new CodeEditor("Thing: \"" + thing.thing.name + "\"", GsonUtils.toJSON(thing.thing),  SyntaxConstants.SYNTAX_STYLE_JSON)
+                    {
+                        @Override
+                        public boolean onSaveChanges() {
+                            return true;
+                        }
+                    };
+                }
+            }
+        });
+
         Panel partsLabelAdd = currentSelection.addPanel("partsLabelAdd");
         partsLabelAdd.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("partsstr", "Parts:", mainView.renderer), 0.6f));
         ComboBox addPartCombo = new ComboBox("addPartCombo", "Add", new Vector2f(), new Vector2f(), mainView.renderer, mainView.loader, mainView.window)
@@ -1031,25 +1052,25 @@ public class ElementEditing extends GuiScreen {
                 int titleBar = getFontHeightHeader() + 7;
                 int width = Math.round(250f * (getFontHeight() / 12f));
 
-                this.pos.x = window.width - width - 3;
+                this.pos.x = window.getWidth() - width - 3;
                 this.pos.y = titleBar + 3;
-                this.size.y = window.height - 6 - titleBar;
+                this.size.y = window.getHeight() - 6 - titleBar;
                 this.size.x = width;
             }
         };
 
         int titleBar = getFontHeightHeader() + 7;
 
-        loadedEntitiesHitbox.pos = new Vector2f(window.width - width - 3, getFontHeightHeader() + 7);
-        loadedEntitiesHitbox.size = new Vector2f(width, window.height - 6 - titleBar);
+        loadedEntitiesHitbox.pos = new Vector2f(window.getWidth() - width - 3, getFontHeightHeader() + 7);
+        loadedEntitiesHitbox.size = new Vector2f(width, window.getHeight() - 6 - titleBar);
         loadedEntitiesHitbox.id = "loadedEntitiesHitbox";
         loadedEntitiesHitbox.window = window;
 
         int gap = Math.round(2f * (getFontHeight() / 12f));
         int height = Math.round(getFontHeight() * 2f);
 
-        FileNameExtensionFilter[] planLevelExtensions = FilePicker.setupLBPExtensionFilter("Plans/Levels", new ResourceType[]{ResourceType.PLAN, ResourceType.LEVEL});
-        loadPlanElements = new Button("loadPlanElements", "Load elements from PLAN/LEVEL", new Vector2f(window.width - 3 - loadedEntitiesHitbox.size.x - 1 + (loadedEntitiesHitbox.size.x / 2 - (350f * (getFontHeight() / 12f)) / 2), titleBar + gap), new Vector2f(246f * (getFontHeight() / 12f), height), renderer, loader, window) {
+        SystemFileChooser.FileNameExtensionFilter[] planLevelExtensions = FilePicker.setupLBPExtensionFilter("Plans/Levels", new ResourceType[]{ResourceType.PLAN, ResourceType.LEVEL});
+        loadPlanElements = new Button("loadPlanElements", "Load elements from PLAN/LEVEL", new Vector2f(window.getWidth() - 3 - loadedEntitiesHitbox.size.x - 1 + (loadedEntitiesHitbox.size.x / 2 - (350f * (getFontHeight() / 12f)) / 2), titleBar + gap), new Vector2f(246f * (getFontHeight() / 12f), height), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
 
@@ -1096,7 +1117,7 @@ public class ElementEditing extends GuiScreen {
                                 }catch (Exception ex) {print.stackTrace(ex);}
                                 break;
                             default:
-                                System.err.println("Unknown file type.");
+                                print.error("Unknown file type.");
                                 mainView.pushError("File Error", "Unknown file type.");
                                 break;
                         }
@@ -1113,7 +1134,7 @@ public class ElementEditing extends GuiScreen {
                 int height = Math.round(getFontHeight() * 2f);
                 this.pos.y = titleBar + gap;
                 this.size = new Vector2f(246f * (getFontHeight() / 12f), height);
-                this.pos.x = window.width - 3 - loadedEntitiesHitbox.size.x - 1 + (loadedEntitiesHitbox.size.x / 2 - this.size.x / 2);
+                this.pos.x = window.getWidth() - 3 - loadedEntitiesHitbox.size.x - 1 + (loadedEntitiesHitbox.size.x / 2 - this.size.x / 2);
             }
         };
         Panel loadedSearchPanel = new Panel(
@@ -1287,7 +1308,7 @@ public class ElementEditing extends GuiScreen {
                 int gap = Math.round(2f * (fontHeight / 12f));
                 int height = Math.round(fontHeight * 2f);
                 this.pos.y = titleBar + gap + loadPlanElements.size.y + gap + loadedSearchPanel.size.y + gap;
-                this.size.y = window.height - 3 - titleBar - gap - loadPlanElements.size.y - gap - loadedSearchPanel.size.y - gap - height - gap - gap;
+                this.size.y = window.getHeight() - 3 - titleBar - gap - loadPlanElements.size.y - gap - loadedSearchPanel.size.y - gap - height - gap - gap;
                 this.size.x = loadPlanElements.size.x - (fontHeight + 8);
                 this.pos.x = loadPlanElements.pos.x + (fontHeight + 8);
             }
@@ -1335,7 +1356,7 @@ public class ElementEditing extends GuiScreen {
         }.deletable().draggable();
 
         Panel listEditPanel = new Panel(
-                new Vector2f(loadPlanElements.pos.x, Math.round(window.height - 3 - gap - height)),
+                new Vector2f(loadPlanElements.pos.x, Math.round(window.getHeight() - 3 - gap - height)),
                 new Vector2f(loadPlanElements.size),
                 renderer)
         {
@@ -1345,7 +1366,7 @@ public class ElementEditing extends GuiScreen {
 
                 int gap = Math.round(2f * (getFontHeight() / 12f));
                 int height = Math.round(getFontHeight() * 2f);
-                this.pos.y = Math.round(window.height - 3 - gap - height);
+                this.pos.y = Math.round(window.getHeight() - 3 - gap - height);
                 this.size = new Vector2f(loadPlanElements.size);
                 this.pos.x = loadPlanElements.pos.x;
             }
@@ -1412,7 +1433,7 @@ public class ElementEditing extends GuiScreen {
         float btnSize = 30f * (getFontHeight() / 12f);
         int imgSize = Math.round(btnSize * 0.8f);
 
-        move = (new ButtonImage("move", new Vector2f(window.width - 3 - width - btnSize - 7, getFontHeightHeader() + 7 * 2), new Vector2f(btnSize), new Vector2f(imgSize), renderer, loader, window) {
+        move = (new ButtonImage("move", new Vector2f(window.getWidth() - 3 - width - btnSize - 7, getFontHeightHeader() + 7 * 2), new Vector2f(btnSize), new Vector2f(imgSize), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
             }
@@ -1436,7 +1457,7 @@ public class ElementEditing extends GuiScreen {
 
                 int width = Math.round(250f * (getFontHeight() / 12f));
                 float btnSize = 30f * (getFontHeight() / 12f);
-                this.pos.x = window.width - 3 - width - btnSize - 7;
+                this.pos.x = window.getWidth() - 3 - width - btnSize - 7;
             }
 
             @Override
@@ -1444,7 +1465,7 @@ public class ElementEditing extends GuiScreen {
                 return getTexture(ConstantTextures.TRANSFORMATION_MOVE);
             }
         }).clicked();
-        rotate = new ButtonImage("rotate", new Vector2f(window.width - 3 - width - btnSize - 7, getFontHeightHeader() + 7 * 3 + btnSize), new Vector2f(btnSize), new Vector2f(imgSize), renderer, loader, window) {
+        rotate = new ButtonImage("rotate", new Vector2f(window.getWidth() - 3 - width - btnSize - 7, getFontHeightHeader() + 7 * 3 + btnSize), new Vector2f(btnSize), new Vector2f(imgSize), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
             }
@@ -1468,7 +1489,7 @@ public class ElementEditing extends GuiScreen {
 
                 int width = Math.round(250f * (getFontHeight() / 12f));
                 float btnSize = 30f * (getFontHeight() / 12f);
-                this.pos.x = window.width - 3 - width - btnSize - 7;
+                this.pos.x = window.getWidth() - 3 - width - btnSize - 7;
             }
 
             @Override
@@ -1476,7 +1497,7 @@ public class ElementEditing extends GuiScreen {
                 return getTexture(ConstantTextures.TRANSFORMATION_ROTATE);
             }
         };
-        scale = new ButtonImage("scale", new Vector2f(window.width - 3 - width - btnSize - 7, getFontHeightHeader() + 7 * 4 + btnSize * 2), new Vector2f(btnSize), new Vector2f(imgSize), renderer, loader, window) {
+        scale = new ButtonImage("scale", new Vector2f(window.getWidth() - 3 - width - btnSize - 7, getFontHeightHeader() + 7 * 4 + btnSize * 2), new Vector2f(btnSize), new Vector2f(imgSize), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
             }
@@ -1500,7 +1521,7 @@ public class ElementEditing extends GuiScreen {
 
                 int width = Math.round(250f * (getFontHeight() / 12f));
                 float btnSize = 30f * (getFontHeight() / 12f);
-                this.pos.x = window.width - 3 - width - btnSize - 7;
+                this.pos.x = window.getWidth() - 3 - width - btnSize - 7;
             }
 
             @Override
@@ -1509,7 +1530,7 @@ public class ElementEditing extends GuiScreen {
             }
         };
 
-        preview = new ButtonImage("preview", new Vector2f(window.width - 3 - width - btnSize - 7, getFontHeightHeader() + 7 * 5 + btnSize * 3), new Vector2f(btnSize), new Vector2f(imgSize), renderer, loader, window) {
+        preview = new ButtonImage("preview", new Vector2f(window.getWidth() - 3 - width - btnSize - 7, getFontHeightHeader() + 7 * 5 + btnSize * 3), new Vector2f(btnSize), new Vector2f(imgSize), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if(action == GLFW.GLFW_PRESS)
@@ -1524,7 +1545,7 @@ public class ElementEditing extends GuiScreen {
 
                 int width = Math.round(250f * (getFontHeight() / 12f));
                 float btnSize = 30f * (getFontHeight() / 12f);
-                this.pos.x = window.width - 3 - width - btnSize - 7;
+                this.pos.x = window.getWidth() - 3 - width - btnSize - 7;
             }
 
             @Override
@@ -1533,7 +1554,7 @@ public class ElementEditing extends GuiScreen {
             }
         };
 
-        frontView = new ButtonImage("frontView", new Vector2f(window.width - 3 - width - btnSize - 7, getFontHeightHeader() + 7 * 6 + btnSize * 4), new Vector2f(btnSize), new Vector2f(imgSize), renderer, loader, window) {
+        frontView = new ButtonImage("frontView", new Vector2f(window.getWidth() - 3 - width - btnSize - 7, getFontHeightHeader() + 7 * 6 + btnSize * 4), new Vector2f(btnSize), new Vector2f(imgSize), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if(action == GLFW.GLFW_PRESS)
@@ -1548,7 +1569,7 @@ public class ElementEditing extends GuiScreen {
 
                 int width = Math.round(250f * (getFontHeight() / 12f));
                 float btnSize = 30f * (getFontHeight() / 12f);
-                this.pos.x = window.width - 3 - width - btnSize - 7;
+                this.pos.x = window.getWidth() - 3 - width - btnSize - 7;
             }
 
             @Override
@@ -1586,6 +1607,7 @@ public class ElementEditing extends GuiScreen {
                 overElement = true;
 
         boolean hasPPos = false;
+        int hasPLevelSettings = 0;
 
         for(Entity entity : mainView.things)
             if(entity.selected)
@@ -1594,42 +1616,77 @@ public class ElementEditing extends GuiScreen {
                 selectedAmount++;
                 if(((bog.lbpas.view3d.core.types.Thing)entity).thing.hasPart(Part.POS))
                     hasPPos = true;
+                if(((bog.lbpas.view3d.core.types.Thing)entity).thing.hasPart(Part.LEVEL_SETTINGS) == hasPLevelSettings >= 0)
+                    hasPLevelSettings++;
+                if(!((bog.lbpas.view3d.core.types.Thing)entity).thing.hasPart(Part.LEVEL_SETTINGS))
+                    hasPLevelSettings = -1;
             }
 
-        if(hasSelection && hasPPos)
-            elementTool.updateModels(mainView, mainView.getSelectedPosition());
+        Vector3f ppos = mainView.getSelectedPosition();
+        Vector3f sunPos = new Vector3f(mainView.lighting.sunPosition).mul(mainView.lighting.sunPositionScale);
+
+        if(hasSelection)
+        {
+            if(hasPPos)
+                transformTool.updateModels(mainView, ppos);
+            if(hasPLevelSettings == 1)
+                sunTool.updateModels(mainView, sunPos);
+        }
 
         if(mouseInput.inWindow)
         {
             for(Entity entity : mainView.things)
                 entity.highlighted = false;
 
-            elementTool.testForMouse(hasSelection && hasPPos, mainView.camera, mouseInput.mousePicker,
+            transformTool.testForMouse(hasSelection && hasPPos, mainView.camera, mouseInput.mousePicker,
                     move.isClicked,
                     rotate.isClicked,
                     scale.isClicked);
+
+            sunTool.testForMouse(hasSelection && hasPLevelSettings == 1, mainView.camera, mouseInput.mousePicker,
+                    true,
+                    false,
+                    false);
+        }
+
+        if(hasSelection && hasPPos)
+        {
+            Vector3f pos = mainView.camera.worldToScreen(Transformation3D.getPseudoRenderPos(mainView, ppos), window);
+            if(pos.z == 0)
+            {
+                int size = Math.round(Config.GUI_SCALE * 1.5f);
+                renderer.drawImageStatic(ConstantTextures.getTexture(ConstantTextures.CORNER_EDIT_PICK, size, size, loader).id, pos.x - Math.ceil(size/2f), pos.y - Math.ceil(size/2f), size, size);
+            }
+        }
+
+        if(hasSelection && hasPLevelSettings == 1)
+        {
+            Vector3f pos = mainView.camera.worldToScreen(Transformation3D.getPseudoRenderPos(mainView, sunPos), window);
+            if(pos.z == 0)
+            {
+                int size = Math.round(Config.GUI_SCALE * 2f);
+                renderer.drawImageStatic(ConstantTextures.getTexture(ConstantTextures.SUN, size, size, loader).id, pos.x - Math.ceil(size/2f), pos.y - Math.ceil(size/2f), size, size);
+            }
         }
 
         if(!mouseInput.inWindow || overElement)
             for(int i = 0; i < mainView.things.size(); i++)
                 mainView.things.get(i).highlighted = false;
 
-        if(elementTool.isSelected() && hasPPos)
+        if(transformTool.isSelected() && hasPPos)
         {
-            switch (Transformation3D.ToolType.fromValue(elementTool.selected))
+            switch (Transformation3D.ToolType.fromValue(transformTool.selected))
             {
                 case POSITION_X:
                 {
-                    Vector3f ppos = mainView.getSelectedPosition();
-
                     if(Config.FRONT_VIEW)
                     {
                         Vector3f currentPosOnZ = mouseInput.mousePicker.getPointOnPlaneZ(ppos.z);
 
                         if(currentPosOnZ != null)
                         {
-                            mainView.setSelectedPosition(new Vector3f(ppos.x + (currentPosOnZ.x - elementTool.initPosXY.x), ppos.y, ppos.z));
-                            elementTool.initPosXY = currentPosOnZ;
+                            mainView.setSelectedPosition(new Vector3f(ppos.x + (currentPosOnZ.x - transformTool.initPosXY.x), ppos.y, ppos.z));
+                            transformTool.initPosXY = currentPosOnZ;
                         }
                     }
                     else
@@ -1643,24 +1700,22 @@ public class ElementEditing extends GuiScreen {
                         if (intersection != null) {
                             Vector3f pos = Utils.getClosestPointOnLine(ppos, new Vector3f(1, 0, 0), intersection);
 
-                            mainView.setSelectedPosition(new Vector3f(ppos.x + (pos.x - elementTool.initPosX.x), ppos.y, ppos.z));
-                            elementTool.initPosX = pos;
+                            mainView.setSelectedPosition(new Vector3f(ppos.x + (pos.x - transformTool.initPosX.x), ppos.y, ppos.z));
+                            transformTool.initPosX = pos;
                         }
                     }
                 }
                 break;
                 case POSITION_Y:
                 {
-                    Vector3f ppos = mainView.getSelectedPosition();
-
                     if(Config.FRONT_VIEW)
                     {
                         Vector3f currentPosOnZ = mouseInput.mousePicker.getPointOnPlaneZ(ppos.z);
 
                         if(currentPosOnZ != null)
                         {
-                            mainView.setSelectedPosition(new Vector3f(ppos.x, ppos.y + (currentPosOnZ.y - elementTool.initPosXY.y), ppos.z));
-                            elementTool.initPosXY = currentPosOnZ;
+                            mainView.setSelectedPosition(new Vector3f(ppos.x, ppos.y + (currentPosOnZ.y - transformTool.initPosXY.y), ppos.z));
+                            transformTool.initPosXY = currentPosOnZ;
                         }
                     }
                     else
@@ -1674,16 +1729,14 @@ public class ElementEditing extends GuiScreen {
                         if (intersection != null) {
                             Vector3f pos = Utils.getClosestPointOnLine(ppos, new Vector3f(0, 1, 0), intersection);
 
-                            mainView.setSelectedPosition(new Vector3f(ppos.x, ppos.y + (pos.y - elementTool.initPosY.y), ppos.z));
-                            elementTool.initPosY = pos;
+                            mainView.setSelectedPosition(new Vector3f(ppos.x, ppos.y + (pos.y - transformTool.initPosY.y), ppos.z));
+                            transformTool.initPosY = pos;
                         }
                     }
                 }
                 break;
                 case POSITION_Z:
                 {
-                    Vector3f ppos = mainView.getSelectedPosition();
-
                     Vector3f normal = new Vector3f(new Vector3f(mainView.camera.getPos().x, mainView.camera.getPos().y, 0)).sub(new Vector3f(ppos.x, ppos.y, 0)).normalize();//new Vector3f(0, 0, 1);
 //                    Matrix3f rotationMatrix = new Matrix3f().rotateXYZ(-mainView.camera.getRotation().x, Math.toRadians(90), 0);
 //                    normal.mul(rotationMatrix).normalize();
@@ -1693,56 +1746,53 @@ public class ElementEditing extends GuiScreen {
                     if(intersection != null)
                     {
                         Vector3f pos = Utils.getClosestPointOnLine(ppos, new Vector3f(0, 0, 1), intersection);
-                        mainView.setSelectedPosition(new Vector3f(ppos.x, ppos.y, ppos.z - (elementTool.initPosZ.z - pos.z)));
-                        elementTool.initPosZ = pos;
+                        mainView.setSelectedPosition(new Vector3f(ppos.x, ppos.y, ppos.z - (transformTool.initPosZ.z - pos.z)));
+                        transformTool.initPosZ = pos;
                     }
                 }
                 break;
                 case POSITION_YZ:
                 {
-                    Vector3f ppos = mainView.getSelectedPosition();
                     Vector3f currentPosOnX = mouseInput.mousePicker.getPointOnPlaneX(ppos.x);
 
-                    if(currentPosOnX != null && ppos != null && elementTool.initPosYZ != null)
+                    if(currentPosOnX != null && ppos != null && transformTool.initPosYZ != null)
                     {
-                        mainView.setSelectedPosition(new Vector3f(ppos.x, ppos.y + (currentPosOnX.y - elementTool.initPosYZ.y), ppos.z + (currentPosOnX.z - elementTool.initPosYZ.z)));
-                        elementTool.initPosYZ = currentPosOnX;
+                        mainView.setSelectedPosition(new Vector3f(ppos.x, ppos.y + (currentPosOnX.y - transformTool.initPosYZ.y), ppos.z + (currentPosOnX.z - transformTool.initPosYZ.z)));
+                        transformTool.initPosYZ = currentPosOnX;
                     }
                 }
                 break;
                 case POSITION_ZX:
                 {
-                    Vector3f ppos = mainView.getSelectedPosition();
                     Vector3f currentPosOnY = mouseInput.mousePicker.getPointOnPlaneY(ppos.y);
 
-                    if(currentPosOnY != null && ppos != null && elementTool.initPosZX != null)
+                    if(currentPosOnY != null && ppos != null && transformTool.initPosZX != null)
                     {
-                        mainView.setSelectedPosition(new Vector3f(ppos.x + (currentPosOnY.x - elementTool.initPosZX.x), ppos.y, ppos.z + (currentPosOnY.z - elementTool.initPosZX.z)));
-                        elementTool.initPosZX = currentPosOnY;
+                        mainView.setSelectedPosition(new Vector3f(ppos.x + (currentPosOnY.x - transformTool.initPosZX.x), ppos.y, ppos.z + (currentPosOnY.z - transformTool.initPosZX.z)));
+                        transformTool.initPosZX = currentPosOnY;
                     }
                 }
                 break;
                 case POSITION_XY:
                 {
-                    Vector3f ppos = mainView.getSelectedPosition();
                     Vector3f currentPosOnZ = mouseInput.mousePicker.getPointOnPlaneZ(ppos.z);
 
-                    if(currentPosOnZ != null && ppos != null && elementTool.initPosXY != null)
+                    if(currentPosOnZ != null && ppos != null && transformTool.initPosXY != null)
                     {
-                        mainView.setSelectedPosition(new Vector3f(ppos.x + (currentPosOnZ.x - elementTool.initPosXY.x), ppos.y + (currentPosOnZ.y - elementTool.initPosXY.y), ppos.z));
-                        elementTool.initPosXY = currentPosOnZ;
+                        mainView.setSelectedPosition(new Vector3f(ppos.x + (currentPosOnZ.x - transformTool.initPosXY.x), ppos.y + (currentPosOnZ.y - transformTool.initPosXY.y), ppos.z));
+                        transformTool.initPosXY = currentPosOnZ;
                     }
                 }
                 break;
                 case ROTATION_X:
                 {
-                    double y = mouseInput.currentPos.y - elementTool.screenPos.y;
-                    double x = mouseInput.currentPos.x - elementTool.screenPos.x;
+                    double y = mouseInput.currentPos.y - transformTool.screenPos.y;
+                    double x = mouseInput.currentPos.x - transformTool.screenPos.x;
                     float ang = (float) Math.atan2(y, x);
-                    float diff = ang - elementTool.lastAng;
+                    float diff = ang - transformTool.lastAng;
                     if(mainView.camera.getWrappedRotation().y < 0)
                         diff *= -1;
-                    elementTool.lastAng = ang;
+                    transformTool.lastAng = ang;
                     Vector3f centerPoint = new Vector3f(mainView.getSelectedPosition());
 
                     for (bog.lbpas.view3d.core.types.Thing ent : mainView.things)
@@ -1756,13 +1806,13 @@ public class ElementEditing extends GuiScreen {
                 break;
                 case ROTATION_Y:
                 {
-                    double y = mouseInput.currentPos.y - elementTool.screenPos.y;
-                    double x = mouseInput.currentPos.x - elementTool.screenPos.x;
+                    double y = mouseInput.currentPos.y - transformTool.screenPos.y;
+                    double x = mouseInput.currentPos.x - transformTool.screenPos.x;
                     float ang = (float) Math.atan2(y, x);
-                    float diff = ang - elementTool.lastAng;
+                    float diff = ang - transformTool.lastAng;
                     if(mainView.camera.getWrappedRotation().x > 0)
                         diff *= -1;
-                    elementTool.lastAng = ang;
+                    transformTool.lastAng = ang;
                     Vector3f centerPoint = mainView.getSelectedPosition();
 
                     for (bog.lbpas.view3d.core.types.Thing ent : mainView.things)
@@ -1775,13 +1825,13 @@ public class ElementEditing extends GuiScreen {
                 break;
                 case ROTATION_Z:
                 {
-                    double y = mouseInput.currentPos.y - elementTool.screenPos.y;
-                    double x = mouseInput.currentPos.x - elementTool.screenPos.x;
+                    double y = mouseInput.currentPos.y - transformTool.screenPos.y;
+                    double x = mouseInput.currentPos.x - transformTool.screenPos.x;
                     float ang = (float) Math.atan2(y, x);
-                    float diff = ang - elementTool.lastAng;
+                    float diff = ang - transformTool.lastAng;
                     if(mainView.camera.getWrappedRotation().y < 90 && mainView.camera.getWrappedRotation().y > -90)
                         diff *= -1;
-                    elementTool.lastAng = ang;
+                    transformTool.lastAng = ang;
                     Vector3f centerPoint = mainView.getSelectedPosition();
 
                     for (bog.lbpas.view3d.core.types.Thing ent : mainView.things)
@@ -1795,8 +1845,6 @@ public class ElementEditing extends GuiScreen {
                 break;
                 case SCALE_X:
                 {
-                    Vector3f ppos = mainView.getSelectedPosition();
-
                     Vector3f normal = new Vector3f(0, 0, 1);
                     Matrix3f rotationMatrix = new Matrix3f().rotateX(-mainView.camera.getRotation().x);
                     normal.mul(rotationMatrix).normalize();
@@ -1810,19 +1858,17 @@ public class ElementEditing extends GuiScreen {
                         for (bog.lbpas.view3d.core.types.Thing ent : mainView.things)
                             if (ent.selected)
                             {
-                                Vector3f difference = new Vector3f(pos).sub(elementTool.initPosX).div(ent.forceOrtho ? ppos.distance(mainView.camera.getPos())/15 : ppos.distance(mainView.camera.getPos())).mul(2);
+                                Vector3f difference = new Vector3f(pos).sub(transformTool.initPosX).div(ent.forceOrtho ? ppos.distance(mainView.camera.getPos())/15 : ppos.distance(mainView.camera.getPos())).mul(2);
                                 ent.setTransformation(ent.getTransformation().scaleAroundLocal(1 + difference.x, 1, 1, ppos.x, ppos.y, ppos.z));
                                 if(ent.forceOrtho)
                                     ent.scale.x += difference.x;
                             }
-                        elementTool.initPosX = pos;
+                        transformTool.initPosX = pos;
                     }
                 }
                 break;
                 case SCALE_Y:
                 {
-                    Vector3f ppos = mainView.getSelectedPosition();
-
                     Vector3f normal = new Vector3f(0, 0, 1);
                     Matrix3f rotationMatrix = new Matrix3f().rotateY(-mainView.camera.getRotation().y);
                     normal.mul(rotationMatrix).normalize();
@@ -1836,19 +1882,17 @@ public class ElementEditing extends GuiScreen {
                         for (bog.lbpas.view3d.core.types.Thing ent : mainView.things)
                             if (ent.selected)
                             {
-                                Vector3f difference = new Vector3f(pos).sub(elementTool.initPosY).div(ent.forceOrtho ? ppos.distance(mainView.camera.getPos())/15 : ppos.distance(mainView.camera.getPos())).mul(2);
+                                Vector3f difference = new Vector3f(pos).sub(transformTool.initPosY).div(ent.forceOrtho ? ppos.distance(mainView.camera.getPos())/15 : ppos.distance(mainView.camera.getPos())).mul(2);
                                 ent.setTransformation(ent.getTransformation().scaleAroundLocal(1, 1 + difference.y, 1, ppos.x, ppos.y, ppos.z));
                                 if(ent.forceOrtho)
                                     ent.scale.y += difference.y;
                             }
-                        elementTool.initPosY = pos;
+                        transformTool.initPosY = pos;
                     }
                 }
                 break;
                 case SCALE_Z:
                 {
-                    Vector3f ppos = mainView.getSelectedPosition();
-
                     Vector3f normal = new Vector3f(0, 0, 1);
                     Matrix3f rotationMatrix = new Matrix3f().rotateXYZ(-mainView.camera.getRotation().x, Math.toRadians(90), 0);
                     normal.mul(rotationMatrix).normalize();
@@ -1869,7 +1913,7 @@ public class ElementEditing extends GuiScreen {
                                     scaleZ = ent.getTransformation().getScale(new Vector3f()).z;
                                     ratio = shape.thickness / scaleZ;
                                 }
-                                Vector3f difference = new Vector3f(pos).sub(elementTool.initPosZ).div(ent.forceOrtho ? ppos.distance(mainView.camera.getPos())/15 : ppos.distance(mainView.camera.getPos())).mul(2);
+                                Vector3f difference = new Vector3f(pos).sub(transformTool.initPosZ).div(ent.forceOrtho ? ppos.distance(mainView.camera.getPos())/15 : ppos.distance(mainView.camera.getPos())).mul(2);
                                 ent.setTransformation(ent.getTransformation().scaleAroundLocal(1, 1, 1 + difference.z, ppos.x, ppos.y, ppos.z));
                                 if(ent.forceOrtho)
                                     ent.scale.z += difference.z;
@@ -1881,16 +1925,16 @@ public class ElementEditing extends GuiScreen {
                                     shape.thickness = scaleZ * ratio;
                                 }
                             }
-                        elementTool.initPosZ = pos;
+                        transformTool.initPosZ = pos;
                     }
                 }
                 break;
                 case SCALE_UNIFORM:
                 {
-                    float mousediff = (float) (mouseInput.currentPos.x - elementTool.initPos.x);
+                    float mousediff = (float) (mouseInput.currentPos.x - transformTool.initPos.x);
 
-                    elementTool.initPos.x = (float) mouseInput.currentPos.x;
-                    elementTool.initPos.y = (float) mouseInput.currentPos.y;
+                    transformTool.initPos.x = (float) mouseInput.currentPos.x;
+                    transformTool.initPos.y = (float) mouseInput.currentPos.y;
 
                     Vector3f centerPoint = mainView.getSelectedPosition();
 
@@ -1921,21 +1965,155 @@ public class ElementEditing extends GuiScreen {
             }
         }
 
+        if(sunTool.isSelected() && hasPLevelSettings == 1)
+        {
+            Function<Float, Void> setX = (x) ->
+            {
+                mainView.lighting.sunPosition.set(x / mainView.lighting.sunPositionScale, mainView.lighting.sunPosition.y, mainView.lighting.sunPosition.z);
+                return null;
+            };
+            Function<Float, Void> setY = (y) ->
+            {
+                mainView.lighting.sunPosition.set(mainView.lighting.sunPosition.x, y / mainView.lighting.sunPositionScale, mainView.lighting.sunPosition.z);
+                return null;
+            };
+            Function<Float, Void> setZ = (z) ->
+            {
+                mainView.lighting.sunPosition.set(mainView.lighting.sunPosition.x, mainView.lighting.sunPosition.y, z / mainView.lighting.sunPositionScale);
+                return null;
+            };
+
+            switch (Transformation3D.ToolType.fromValue(sunTool.selected))
+            {
+                case POSITION_X:
+                {
+                    if(Config.FRONT_VIEW)
+                    {
+                        Vector3f currentPosOnZ = mouseInput.mousePicker.getPointOnPlaneZ(sunPos.z);
+
+                        if(currentPosOnZ != null)
+                        {
+                            setX.apply(sunPos.x  + (currentPosOnZ.x - sunTool.initPosXY.x));
+                            sunTool.initPosXY = currentPosOnZ;
+                        }
+                    }
+                    else
+                    {
+                        Vector3f normal = new Vector3f(new Vector3f(0, mainView.camera.getPos().y, mainView.camera.getPos().z)).sub(new Vector3f(0, sunPos.y, sunPos.z)).normalize();
+
+                        Vector3f intersection = mouseInput.mousePicker.getPointOnPlaneAbstract(sunPos, normal);
+
+                        if (intersection != null) {
+                            Vector3f newpos = Utils.getClosestPointOnLine(sunPos, new Vector3f(1, 0, 0), intersection);
+
+                            setX.apply(sunPos.x  + (newpos.x - sunTool.initPosX.x));
+                            sunTool.initPosX = newpos;
+                        }
+                    }
+                }
+                break;
+                case POSITION_Y:
+                {
+                    if(Config.FRONT_VIEW)
+                    {
+                        Vector3f currentPosOnZ = mouseInput.mousePicker.getPointOnPlaneZ(sunPos.z);
+
+                        if(currentPosOnZ != null)
+                        {
+                            setY.apply(sunPos.y +  + (currentPosOnZ.y - sunTool.initPosXY.y));
+                            sunTool.initPosXY = currentPosOnZ;
+                        }
+                    }
+                    else
+                    {
+                        Vector3f normal = new Vector3f(new Vector3f(mainView.camera.getPos().x, 0, mainView.camera.getPos().z)).sub(new Vector3f(sunPos.x, 0, sunPos.z)).normalize();
+
+                        Vector3f intersection = mouseInput.mousePicker.getPointOnPlaneAbstract(sunPos, normal);
+
+                        if (intersection != null) {
+                            Vector3f newPos = Utils.getClosestPointOnLine(sunPos, new Vector3f(0, 1, 0), intersection);
+
+                            setY.apply(sunPos.y + (newPos.y - sunTool.initPosY.y));
+                            sunTool.initPosY = newPos;
+                        }
+                    }
+                }
+                break;
+                case POSITION_Z:
+                {
+                    Vector3f normal = new Vector3f(new Vector3f(mainView.camera.getPos().x, mainView.camera.getPos().y, 0)).sub(new Vector3f(sunPos.x, sunPos.y, 0)).normalize();
+
+                    Vector3f intersection = mouseInput.mousePicker.getPointOnPlaneAbstract(sunPos, normal);
+
+                    if(intersection != null)
+                    {
+                        Vector3f newPos = Utils.getClosestPointOnLine(sunPos, new Vector3f(0, 0, 1), intersection);
+                        setZ.apply(sunPos.z - (sunTool.initPosZ.z - newPos.z));
+                        sunTool.initPosZ = newPos;
+                    }
+                }
+                break;
+                case POSITION_YZ:
+                {
+                    Vector3f currentPosOnX = mouseInput.mousePicker.getPointOnPlaneX(sunPos.x);
+
+                    if(currentPosOnX != null && sunPos != null && sunTool.initPosYZ != null)
+                    {
+                        setY.apply(sunPos.y + (currentPosOnX.y - sunTool.initPosYZ.y));
+                        setZ.apply(sunPos.z + (currentPosOnX.z - sunTool.initPosYZ.z));
+                        sunTool.initPosYZ = currentPosOnX;
+                    }
+                }
+                break;
+                case POSITION_ZX:
+                {
+                    Vector3f currentPosOnY = mouseInput.mousePicker.getPointOnPlaneY(sunPos.y);
+
+                    if(currentPosOnY != null && sunPos != null && sunTool.initPosZX != null)
+                    {
+                        setX.apply(sunPos.x + (currentPosOnY.x - sunTool.initPosZX.x));
+                        setZ.apply(sunPos.z + (currentPosOnY.z - sunTool.initPosZX.z));
+                        sunTool.initPosZX = currentPosOnY;
+                    }
+                }
+                break;
+                case POSITION_XY:
+                {
+                    Vector3f currentPosOnZ = mouseInput.mousePicker.getPointOnPlaneZ(sunPos.z);
+
+                    if(currentPosOnZ != null && sunPos != null && sunTool.initPosXY != null)
+                    {
+                        setX.apply(sunPos.x + (currentPosOnZ.x - sunTool.initPosXY.x));
+                        setY.apply(sunPos.y + (currentPosOnZ.y - sunTool.initPosXY.y));
+                        sunTool.initPosXY = currentPosOnZ;
+                    }
+                }
+                break;
+                default:
+                break;
+            }
+        }
+
         if(hasPPos)
-            elementTool.render(hasSelection,
+            transformTool.render(hasSelection,
                     move.isClicked,
                     rotate.isClicked,
                     scale.isClicked, window, loader, renderer, mouseInput);
+        if(hasPLevelSettings == 1)
+            sunTool.render(hasSelection,
+                    true,
+                    false,
+                    false, window, loader, renderer, mouseInput);
 
         int fontHeightHeader = getFontHeightHeader();
 
         int y = fontHeightHeader + 7;
-        int height = window.height - (fontHeightHeader + 7) - 3;
+        int height = window.getHeight() - (fontHeightHeader + 7) - 3;
         int width = Math.round(250f * (getFontHeight() / 12f));
 
-        renderer.doBlur(Consts.GAUSSIAN_RADIUS, Consts.GAUSSIAN_KERNEL, window.width - width - 3, y, width, height);
-        renderer.drawRect(window.width - width - 3, y, width, height, Config.PRIMARY_COLOR);
-        renderer.drawLine(loader, new Vector2i(window.width - width - 3, y), new Vector2i(window.width - width - 3, y + height), Config.SECONDARY_COLOR, false);
+        renderer.doBlur(Consts.GAUSSIAN_RADIUS, Consts.GAUSSIAN_KERNEL, window.getWidth() - width - 3, y, width, height);
+        renderer.drawRect(window.getWidth() - width - 3, y, width, height, Config.PRIMARY_COLOR);
+        renderer.drawLine(loader, new Vector2i(window.getWidth() - width - 3, y), new Vector2i(window.getWidth() - width - 3, y + height), Config.SECONDARY_COLOR, false);
 
         super.draw(mouseInput);
     }
@@ -1992,9 +2170,10 @@ public class ElementEditing extends GuiScreen {
             if (element.isMouseOverElement(mouseInput.currentPos))
                 overElement = true;
 
-        elementTool.onClick(mouseInput, button, action, mods, window, mainView.camera);
+        transformTool.onClick(mouseInput, button, action, mods, window, mainView.camera);
+        sunTool.onClick(mouseInput, button, action, mods, window, mainView.camera);
 
-        if(!overElement && button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && !elementTool.isSelected())
+        if(!overElement && button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && !transformTool.isSelected() && !sunTool.isSelected())
         {
             for (int i = 0; i < mainView.things.size(); i++)
                 mainView.things.get(i).testForMouse = true;
@@ -2010,12 +2189,28 @@ public class ElementEditing extends GuiScreen {
 
         Config.LEVEL_BORDERS = levelBorders.isChecked;
 
-        currentSelectionParts.addParts(mainView.things);
+        currentSelectionParts.addParts(mainView.things, mainView);
     }
 
     @Override
     public boolean onKey(int key, int scancode, int action, int mods) {
         boolean elementFocused = super.onKey(key, scancode, action, mods);
+
+        boolean shift = mods == 1;
+        boolean ctrl = mods == 2;
+        boolean ctrlShift = mods == 3;
+        boolean alt = mods == 4;
+        boolean shiftAlt = mods == 5;
+        boolean ctrlAlt = mods == 6;
+        boolean ctrlShiftAlt = mods == 7;
+        boolean winKey = mods == 8;
+
+        if(Main.debug && key == GLFW.GLFW_KEY_O && ctrlShiftAlt)
+        {
+            for(bog.lbpas.view3d.core.types.Thing t : mainView.things)
+                if(t.selected)
+                    t.exportModelOBJ();
+        }
 
         if((key == GLFW.GLFW_KEY_DELETE || key == GLFW.GLFW_KEY_BACKSPACE) && !elementFocused)
         {

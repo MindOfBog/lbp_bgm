@@ -124,7 +124,7 @@ public class OverrideScreen extends GuiScreen {
                     shadingMenu = false;
             }
         };
-        hitbox.size = new Vector2f(window.width, window.height);
+        hitbox.size = new Vector2f(window.getWidth(), window.getHeight());
         hitbox.pos = new Vector2f(0);
 
         guiElements.add(hitbox);
@@ -153,8 +153,8 @@ public class OverrideScreen extends GuiScreen {
             normalShading.pos.x = shadingPos.x - materialShading.size.x / 2;
             normalShading.pos.y = shadingPos.y - size - solidShading.size.y;
 
-            hitbox.size.x = window.width;
-            hitbox.size.y = window.height;
+            hitbox.size.x = window.getWidth();
+            hitbox.size.y = window.getHeight();
             hitbox.pos.x = 0;
             hitbox.pos.y = 0;
         }

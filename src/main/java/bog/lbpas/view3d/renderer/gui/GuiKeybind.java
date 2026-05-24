@@ -35,23 +35,23 @@ public abstract class GuiKeybind extends GuiScreen{
 
             @Override
             public void draw(MouseInput mouseInput, boolean overElement) {
-                this.size = new Vector2f(window1.width, window1.height);
+                this.size = new Vector2f(window1.getWidth(), window1.getHeight());
                 super.draw(mouseInput, overElement);
             }
 
         };
         backHitbox.pos = new Vector2f(0, 0);
-        backHitbox.size = new Vector2f(window1.width, window1.height);
+        backHitbox.size = new Vector2f(window1.getWidth(), window1.getHeight());
         backHitbox.id = "backHitbox";
 
         this.currentKey = new InputMan(key.key, key.mouse);
 
         this.guiElements.add(backHitbox);
-        this.guiElements.add(new Button("save", "Save", new Vector2f(window1.width/2 - 95, window1.height / 2 - getFontHeight() / 2 + 15), new Vector2f(90, 20), renderer, loader, window1) {
+        this.guiElements.add(new Button("save", "Save", new Vector2f(window1.getWidth()/2 - 95, window1.getHeight() / 2 - getFontHeight() / 2 + 15), new Vector2f(90, 20), renderer, loader, window1) {
 
             @Override
             public void draw(MouseInput mouseInput, boolean overOther) {
-                this.pos = new Vector2f(window.width/2 - 95, window.height / 2 - getFontHeight() / 2 + 15);
+                this.pos = new Vector2f(window.getWidth()/2 - 95, window.getHeight() / 2 - getFontHeight() / 2 + 15);
                 super.draw(mouseInput, overOther);
             }
 
@@ -64,11 +64,11 @@ public abstract class GuiKeybind extends GuiScreen{
                 }
             }
         });
-        this.guiElements.add(new Button("cancel", "Cancel", new Vector2f(window1.width/2 + 5, window1.height / 2 - getFontHeight() / 2 + 15), new Vector2f(90, 20), renderer, loader, window1) {
+        this.guiElements.add(new Button("cancel", "Cancel", new Vector2f(window1.getWidth()/2 + 5, window1.getHeight() / 2 - getFontHeight() / 2 + 15), new Vector2f(90, 20), renderer, loader, window1) {
 
             @Override
             public void draw(MouseInput mouseInput, boolean overOther) {
-                this.pos = new Vector2f(window.width/2 + 5, window.height / 2 - getFontHeight() / 2 + 15);
+                this.pos = new Vector2f(window.getWidth()/2 + 5, window.getHeight() / 2 - getFontHeight() / 2 + 15);
                 super.draw(mouseInput, overOther);
             }
 
@@ -84,14 +84,14 @@ public abstract class GuiKeybind extends GuiScreen{
     public void draw(MouseInput mouseInput) {
         this.previousScreen.draw(new MouseInput(null));
 
-        renderer.doBlur(Consts.GAUSSIAN_RADIUS, Consts.GAUSSIAN_KERNEL, 3 , getFontHeightHeader() + 7, window.width - 6, window.height - getFontHeightHeader() - 10);
+        renderer.doBlur(Consts.GAUSSIAN_RADIUS, Consts.GAUSSIAN_KERNEL, 3 , getFontHeightHeader() + 7, window.getWidth() - 6, window.getHeight() - getFontHeightHeader() - 10);
 
-        renderer.drawRect(window.width/2 - 100, window.height/2 + (getFontHeight() / 2 - 10 - 45), 200, (getFontHeight() / 2 + 33) * 2, Config.PRIMARY_COLOR);
-        renderer.drawRect(window.width / 2 - 95, window.height / 2 - getFontHeight() / 2 - 10, 190, 20, Config.INTERFACE_PRIMARY_COLOR);
-        renderer.drawRectOutline(new Vector2f(window.width/2 - 100, window.height/2 + (getFontHeight() / 2 - 10 - 45)), outlineRect, Config.SECONDARY_COLOR, false);
-        renderer.drawRectOutline(new Vector2f(window.width / 2 - 95, window.height / 2 - getFontHeight() / 2 - 10), outlineRect1, Config.INTERFACE_PRIMARY_COLOR2, false);
-        renderer.drawString(currentKey.inputName(), Config.FONT_COLOR, window.width / 2 - getStringWidth(currentKey.inputName()) / 2, window.height / 2 - getFontHeight());
-        renderer.drawString("Select any key:", Config.FONT_COLOR, window.width / 2 - 94, window.height / 2 + (getFontHeight() / 2 - 5 - 42));
+        renderer.drawRect(window.getWidth()/2 - 100, window.getHeight()/2 + (getFontHeight() / 2 - 10 - 45), 200, (getFontHeight() / 2 + 33) * 2, Config.PRIMARY_COLOR);
+        renderer.drawRect(window.getWidth() / 2 - 95, window.getHeight() / 2 - getFontHeight() / 2 - 10, 190, 20, Config.INTERFACE_PRIMARY_COLOR);
+        renderer.drawRectOutline(new Vector2f(window.getWidth()/2 - 100, window.getHeight()/2 + (getFontHeight() / 2 - 10 - 45)), outlineRect, Config.SECONDARY_COLOR, false);
+        renderer.drawRectOutline(new Vector2f(window.getWidth() / 2 - 95, window.getHeight() / 2 - getFontHeight() / 2 - 10), outlineRect1, Config.INTERFACE_PRIMARY_COLOR2, false);
+        renderer.drawString(currentKey.inputName(), Config.FONT_COLOR, window.getWidth() / 2 - getStringWidth(currentKey.inputName()) / 2, window.getHeight() / 2 - getFontHeight());
+        renderer.drawString("Select any key:", Config.FONT_COLOR, window.getWidth() / 2 - 94, window.getHeight() / 2 + (getFontHeight() / 2 - 5 - 42));
 
         super.draw(mouseInput);
     }

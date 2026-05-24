@@ -1,12 +1,18 @@
 package bog.lbpas;
 
+import bog.lbpas.swing.CodeEditor;
 import bog.lbpas.view3d.mainWindow.LoadedData;
 import bog.lbpas.view3d.mainWindow.View3D;
 import bog.lbpas.view3d.mainWindow.screens.ProjectManager;
+import bog.lbpas.view3d.managers.AudioMan;
 import bog.lbpas.view3d.managers.EngineMan;
 import bog.lbpas.view3d.managers.WindowMan;
 import bog.lbpas.view3d.renderer.gui.elements.FileTree;
 import bog.lbpas.view3d.utils.*;
+import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.FlatLaf;
+import com.formdev.flatlaf.FlatLightLaf;
+import com.formdev.flatlaf.extras.FlatDesktop;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -25,6 +31,7 @@ import cwlib.types.databases.FileDB;
 import cwlib.types.databases.FileDBRow;
 import cwlib.types.mods.Mod;
 import cwlib.types.save.BigSave;
+import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.*;
 
@@ -32,10 +39,12 @@ import javax.sound.sampled.AudioSystem;
 import javax.swing.*;
 import java.awt.*;
 import java.io.*;
+import java.lang.reflect.Array;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -55,7 +64,13 @@ public class Main {
 
     public static List<Image> iconList;
 
+
+    private static ArrayList<Runnable> toRunGL;
+    private static ArrayList<Runnable> toRunGLFW;
     public static void main(String[] args){
+        toRunGL = new ArrayList<>();
+        toRunGLFW = new ArrayList<>();
+
         if(args.length > 0)
             for(String arg : args)
             {
@@ -82,13 +97,21 @@ public class Main {
                     switch (name)
                     {
                         case "projectPath":
-                            loadProject(value);
+                            CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+                                while(view == null) {
+                                    try {
+                                        Thread.sleep(100);
+                                    } catch (InterruptedException e) {}
+                                }
+                                loadProject(value);
+                            });
                             break;
                     }
                 }
             }
 
-        try { UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName()); } catch (Exception e) {print.stackTrace(e);}
+        FlatDarkLaf.setup();
+//        try { UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName()); } catch (Exception e) {print.stackTrace(e);}
 
         try {
             iconList = List.of
@@ -103,14 +126,14 @@ public class Main {
         } catch (IOException e) {print.stackTrace(e);}
 
         Config.init();
-        window = new WindowMan(Consts.TITLE, Config.WINDOW_WIDTH, Config.WINDOW_HEIGHT, 1050,650);
+        engine = new EngineMan();
+        window = engine.initWindowMan(Consts.TITLE, Config.WINDOW_WIDTH, Config.WINDOW_HEIGHT, 1050,650);
         Cursors.loadCursors();
         window.init();
         if(Config.WINDOW_MAXIMIZED)
             window.maximize();
 
         view = new View3D(window);
-        engine = new EngineMan();
 
         FilePicker.init();
 
@@ -130,6 +153,7 @@ public class Main {
                     while (true)
                     {
                         view.secondaryThread();
+                        window.audio.secondaryThread();
                         if(Config.hasConfigChanged())
                             Config.updateFile();
                         Thread.sleep(Config.SECONDARY_THREAD);
@@ -767,5 +791,49 @@ public class Main {
         } catch (Exception e) {
             print.stackTrace(e);
         }
+    }
+
+    public static void RunOnGraphicsThread(Runnable runnable)
+    {
+        toRunGL.add(runnable);
+    }
+
+    public static void ExecuteGraphicsThreadQueue()
+    {
+        ArrayList<Runnable> toRun = new ArrayList<>();
+        toRun.addAll(toRunGL);
+        toRunGL.clear();
+
+        try {
+            for(Runnable r : toRun)
+                if(r != null)
+                    r.run();
+        }catch (Exception e)
+        {
+            print.stackTrace(e);
+        }
+
+    }
+
+    public static void RunOnGLFWThread(Runnable runnable)
+    {
+        toRunGL.add(runnable);
+    }
+
+    public static void ExecuteGLFWThreadQueue()
+    {
+        ArrayList<Runnable> toRun = new ArrayList<>();
+        toRun.addAll(toRunGL);
+        toRunGL.clear();
+
+        try {
+            for(Runnable r : toRun)
+                if(r != null)
+                    r.run();
+        }catch (Exception e)
+        {
+            print.stackTrace(e);
+        }
+
     }
 }

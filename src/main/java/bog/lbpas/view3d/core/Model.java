@@ -4,6 +4,8 @@ import bog.lbpas.view3d.managers.assetLoading.ObjectLoader;
 import cwlib.resources.RMesh;
 import cwlib.resources.RStaticMesh;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL20;
+import org.lwjgl.opengl.GL21;
 import org.lwjgl.opengl.GL30;
 
 import java.util.ArrayList;

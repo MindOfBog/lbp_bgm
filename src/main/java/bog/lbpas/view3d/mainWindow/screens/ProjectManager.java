@@ -991,7 +991,14 @@ public class ProjectManager extends GuiScreen {
         userCreatedNamePlan.setText("Some kind of object");
         userCreatedNamePlanPanel.elements.add(new Panel.PanelElement(userCreatedNamePlan, 0.6f));
 
-        Panel userCreatedDescriptionPlanPanel = planExport.addPanel("userCreatedDescriptionPlanPanel");
+        Panel userCreatedDescriptionPlanPanel = planExport.addPanel(new Panel("userCreatedDescriptionPlanPanel")
+        {
+            @Override
+            public void resize() {
+                this.size.y = Config.GUI_SCALE * 10.0f;
+                super.resize();
+            }
+        });
         userCreatedDescriptionPlanPanel.size.y = 100;
         userCreatedDescriptionPlanPanel.elements.add(new Panel.PanelElement(
                 new DropDownTab.StringElement("userCreatedDescriptionPlanStr", "User Created Desc.:", mainView.renderer),
@@ -2493,7 +2500,7 @@ public class ProjectManager extends GuiScreen {
 
     @Override
     public void secondaryThread() {
-        thingPart.addParts(worldThingA);
+        thingPart.addParts(worldThingA, mainView);
         super.secondaryThread();
     }
 

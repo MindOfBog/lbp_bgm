@@ -27,17 +27,6 @@ public class Main{
         try { UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName()); } catch (Exception e) {}
         
         System.out.println("starting project launcher");
-
-//        Configuration.GLFW_CHECK_THREAD0.set(false);
-//        try{
-//            if (!GLFW.glfwInit()){
-//                throw new IllegalStateException("Unable to initialize GLFW");
-//            }
-//        } catch (UnsatisfiedLinkError e){
-//            showErrorDialog("GLFW native libraries not found. Check your setup.");
-//            return;
-//        }
-
         System.out.println("getting config");
 
         try(InputStream is = Main.class.getResourceAsStream(CONFIG_PATH)) {

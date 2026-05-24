@@ -9,6 +9,7 @@ import bog.lbpas.view3d.renderer.gui.elements.*;
 import bog.lbpas.view3d.renderer.gui.elements.Button;
 import bog.lbpas.view3d.renderer.gui.elements.Image;
 import bog.lbpas.view3d.renderer.gui.elements.Panel;
+import com.formdev.flatlaf.util.SystemFileChooser;
 import com.googlecode.jfilechooserbookmarks.*;
 import cwlib.enums.ResourceType;
 import cwlib.types.archives.FileArchive;
@@ -22,7 +23,7 @@ import org.lwjgl.glfw.GLFW;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
+import com.formdev.flatlaf.util.SystemFileChooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
@@ -55,8 +56,8 @@ public class FilePicker {
 
     private static final Preferences prefs = Preferences.userNodeForPackage(FilePicker.class);
     public static boolean dialogOpen = false;
-    private static JFrame dummyFrame;
-    private static JFileChooser currentChooser;
+    private static JDialog dummyFrame;
+    private static SystemFileChooser currentChooser;
 
     public static FileNameExtensionFilter[] ALL_LBP_EXTENSIONS;
     public static FileNameExtensionFilter[] IMAGE_EXTENSIONS;
@@ -69,9 +70,12 @@ public class FilePicker {
 
     public static void init()
     {
-        dummyFrame = new JFrame();
+        dummyFrame = new JDialog();
         dummyFrame.setIconImages(Main.iconList);
-        dummyFrame.setVisible(false);
+        dummyFrame.setTitle("File Dialog");
+        dummyFrame.setUndecorated(true);
+        dummyFrame.setSize(1, 1);
+        dummyFrame.setVisible(true);
 
         ALL_LBP_EXTENSIONS = setupLBPExtensionFilter("All LBP File Formats", ResourceType.values());
         IMAGE_EXTENSIONS = new FileNameExtensionFilter[]
@@ -179,7 +183,10 @@ public class FilePicker {
             return;
 
         if(focused)
+        {
+            dummyFrame.setVisible(true);
             forceFocus();
+        }
     }
 
     private static void forceFocus()
@@ -191,9 +198,7 @@ public class FilePicker {
         dummyFrame.setAlwaysOnTop(true);
 
         CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-            while(!currentChooser.isShowing()){
-                try {Thread.sleep(50l);} catch (InterruptedException e) {print.stackTrace(e);}
-            }
+            try {Thread.sleep(50l);} catch (InterruptedException e) {print.stackTrace(e);}
             dummyFrame.setAlwaysOnTop(false);
         });
     }
@@ -211,11 +216,10 @@ public class FilePicker {
     public static File[] openFiles(String fileName, FileNameExtensionFilter[] extensions, boolean saveFile, boolean multiple)
     {
         dialogOpen = true;
-        JFileChooser fileChooser = new JFileChooser(getLastVisitedPath().toFile());
-
-        FileChooserBookmarksPanel panel = new FileChooserBookmarksPanel();
-        panel.setOwner(fileChooser);
-        fileChooser.setAccessory(panel);
+        SystemFileChooser fileChooser = new SystemFileChooser(getLastVisitedPath().toFile());
+//        FileChooserBookmarksPanel panel = new FileChooserBookmarksPanel();
+//        panel.setOwner(fileChooser);
+//        fileChooser.setAccessory(panel);
 
         if (fileName != null && !fileName.isEmpty())
             fileChooser.setSelectedFile(new File(fileName));
@@ -242,46 +246,52 @@ public class FilePicker {
 
         fileChooser.setMultiSelectionEnabled(multiple);
 
-        File[] selectedFiles = null;
-        try {
-            currentChooser = fileChooser;
+        final File[][] selectedFiles = {null};
 
-            //todo
-            forceFocus();
+        try
+        {
+            SwingUtilities.invokeAndWait(() -> {
+                try {
+                    currentChooser = fileChooser;
 
-            int dialogResult = saveFile ? fileChooser.showSaveDialog(dummyFrame) : fileChooser.showOpenDialog(dummyFrame);
+                    //todo
+                    forceFocus();
 
-            setLastVisitedPath(fileChooser.getCurrentDirectory().toPath());
+                    int dialogResult = saveFile ? fileChooser.showSaveDialog(dummyFrame) : fileChooser.showOpenDialog(dummyFrame);
 
-            if (dialogResult == JFileChooser.APPROVE_OPTION) {
-                if (multiple)
-                {
-                    selectedFiles = fileChooser.getSelectedFiles();
+                    setLastVisitedPath(fileChooser.getCurrentDirectory().toPath());
 
-                    for(int i = 0; i < selectedFiles.length; i++)
-                    {
-                        File selectedFile = selectedFiles[i];
+                    if (dialogResult == SystemFileChooser.APPROVE_OPTION) {
+                        if (multiple)
+                        {
+                            selectedFiles[0] = fileChooser.getSelectedFiles();
 
-                        if (selectedFile != null && selectedFile.getName().endsWith(".lnk"))
-                            selectedFiles[i] = ShortcutResolver.resolveShortcut(selectedFile);
+                            for(int i = 0; i < selectedFiles[0].length; i++)
+                            {
+                                File selectedFile = selectedFiles[0][i];
+
+                                if (selectedFile != null && selectedFile.getName().endsWith(".lnk"))
+                                    selectedFiles[0][i] = ShortcutResolver.resolveShortcut(selectedFile);
+                            }
+                        }
+                        else
+                        {
+                            File selectedFile = fileChooser.getSelectedFile();
+
+                            if (selectedFile != null && selectedFile.getName().endsWith(".lnk"))
+                                selectedFiles[0] = new File[]{ShortcutResolver.resolveShortcut(selectedFile)};
+                            else
+                                selectedFiles[0] = new File[]{selectedFile};
+                        }
                     }
-                }
-                else
-                {
-                    File selectedFile = fileChooser.getSelectedFile();
 
-                    if (selectedFile != null && selectedFile.getName().endsWith(".lnk"))
-                        selectedFiles = new File[]{ShortcutResolver.resolveShortcut(selectedFile)};
-                    else
-                        selectedFiles = new File[]{selectedFile};
-                }
-            }
-
+                }catch (Exception e){print.stackTrace(e);}
+            });
         }catch (Exception e){print.stackTrace(e);}
 
         dialogOpen = false;
         currentChooser = null;
-        return selectedFiles;
+        return selectedFiles[0];
     }
 
     public static File[] openFiles(FileNameExtensionFilter[] extensions, boolean saveFile, boolean multiple)
@@ -295,11 +305,11 @@ public class FilePicker {
 
     public static File saveFile(String fileName, FileNameExtensionFilter[] extensions) {
         dialogOpen = true;
-        JFileChooser fileChooser = new JFileChooser(getLastVisitedPath().toFile());
+        SystemFileChooser fileChooser = new SystemFileChooser(getLastVisitedPath().toFile());
 
-        FileChooserBookmarksPanel panel = new FileChooserBookmarksPanel();
-        panel.setOwner(fileChooser);
-        fileChooser.setAccessory(panel);
+//        FileChooserBookmarksPanel panel = new FileChooserBookmarksPanel();
+//        panel.setOwner(fileChooser);
+//        fileChooser.setAccessory(panel);
 
         if (fileName != null && !fileName.isEmpty()) {
             fileChooser.setSelectedFile(new File(fileName));
@@ -329,25 +339,31 @@ public class FilePicker {
 
         forceFocus();
 
-        File file = null;
+        final File[] file = {null};
 
-        int dialogResult = fileChooser.showSaveDialog(dummyFrame);
+        try
+        {
+            SwingUtilities.invokeAndWait(() ->
+            {
+                int dialogResult = fileChooser.showSaveDialog(dummyFrame);
 
-        setLastVisitedPath(fileChooser.getCurrentDirectory().toPath());
+                setLastVisitedPath(fileChooser.getCurrentDirectory().toPath());
 
-        if (dialogResult == JFileChooser.APPROVE_OPTION) {
+                if (dialogResult == SystemFileChooser.APPROVE_OPTION) {
 
-            File selectedFile = fileChooser.getSelectedFile();
+                    File selectedFile = fileChooser.getSelectedFile();
 
-            if (selectedFile != null && selectedFile.getName().endsWith(".lnk"))
-                file = ShortcutResolver.resolveShortcut(selectedFile);
-            else
-                file = selectedFile;
-        }
+                    if (selectedFile != null && selectedFile.getName().endsWith(".lnk"))
+                        file[0] = ShortcutResolver.resolveShortcut(selectedFile);
+                    else
+                        file[0] = selectedFile;
+                }
+            });
+        }catch (Exception e){print.stackTrace(e);}
 
         dialogOpen = false;
         currentChooser = null;
-        return file;
+        return file[0];
     }
 
     public static void loadingThread(View3D mainView)

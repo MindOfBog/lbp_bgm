@@ -14,6 +14,7 @@ import bog.lbpas.view3d.utils.Utils;
 import bog.lbpas.view3d.utils.print;
 import org.joml.Math;
 import org.joml.Vector2f;
+import org.joml.Vector2i;
 import org.joml.Vector4f;
 import org.lwjgl.opengl.*;
 
@@ -109,8 +110,8 @@ public class GuiRenderer {
                     guiShader.setUniform("hasCoords", element.hasTexCoords);
                     guiShader.setUniform("guiTexture", 0);
                     guiShader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(
-                            new Vector2f(element.pos.x / (window.width / 2f) - 1 + element.scale.x / window.width, (-element.pos.y) / (window.height / 2f) + 1 - element.scale.y / window.height),
-                            new Vector2f(element.scale.x / window.width, element.scale.y / window.height)));
+                            new Vector2f(element.pos.x / (window.getWidth() / 2f) - 1 + element.scale.x / window.getWidth(), (-element.pos.y) / (window.getHeight() / 2f) + 1 - element.scale.y / window.getHeight()),
+                            new Vector2f(element.scale.x / window.getWidth(), element.scale.y / window.getHeight())));
 
                     if (element.color != null)
                         guiShader.setUniform("color", new Vector4f(
@@ -159,8 +160,8 @@ public class GuiRenderer {
                     guiShader.setUniform("hasCoords", element.hasTexCoords);
                     guiShader.setUniform("guiTexture", 0);
                     guiShader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(
-                            new Vector2f(element.pos.x / (window.width / 2f) - 1 + element.scale.x / window.width, (-element.pos.y) / (window.height / 2f) + 1 - element.scale.y / window.height),
-                            new Vector2f(element.scale.x / window.width, element.scale.y / window.height)));
+                            new Vector2f(element.pos.x / (window.getWidth() / 2f) - 1 + element.scale.x / window.getWidth(), (-element.pos.y) / (window.getHeight() / 2f) + 1 - element.scale.y / window.getHeight()),
+                            new Vector2f(element.scale.x / window.getWidth(), element.scale.y / window.getHeight())));
 
                     if (element.color != null)
                         guiShader.setUniform("color", new Vector4f(
@@ -212,7 +213,7 @@ public class GuiRenderer {
                     guiShader.setUniform("color", element.invert ? new Vector4f(1f) : element.color);
                     guiShader.setUniform("hasCoords", false);
                     guiShader.setUniform("guiTexture", 0);
-                    guiShader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(new Vector2f(element.pos.x / (window.width / 2f) + 1 / window.width, (-element.pos.y) / (window.height / 2f) - 1 / window.height), new Vector2f(1, 1)));
+                    guiShader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(new Vector2f(element.pos.x / (window.getWidth() / 2f) + 1 / window.getWidth(), (-element.pos.y) / (window.getHeight() / 2f) - 1 / window.getHeight()), new Vector2f(1, 1)));
                     guiShader.setUniform("hasColor", 2);
 
                     if (!element.smooth)
@@ -254,7 +255,7 @@ public class GuiRenderer {
                     guiShader.setUniform("hasCoords", false);
                     guiShader.setUniform("guiTexture", 0);
                     guiShader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(
-                            new Vector2f(element.pos.x / (window.width / 2f), (-element.pos.y) / (window.height / 2f)), new Vector2f(1, 1)));
+                            new Vector2f(element.pos.x / (window.getWidth() / 2f), (-element.pos.y) / (window.getHeight() / 2f)), new Vector2f(1, 1)));
                     guiShader.setUniform("hasColor", 2);
 
                     if (!element.smooth)
@@ -314,9 +315,9 @@ public class GuiRenderer {
                             } else break;
                         } else {
                             minX = scissor.pos.x;
-                            minY = window.height - scissor.pos.y - scissor.size.y;
+                            minY = window.getHeight() - scissor.pos.y - scissor.size.y;
                             maxX = scissor.pos.x + scissor.size.x;
-                            maxY = window.height - scissor.pos.y;
+                            maxY = window.getHeight() - scissor.pos.y;
                         }
 
                         int temp;
@@ -395,8 +396,8 @@ public class GuiRenderer {
                     guiShader.setUniform("circle", ((Circle) drawable).circle);
                     guiShader.setUniform("guiTexture", 0);
                     guiShader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(
-                            new Vector2f(element.pos.x / (window.width / 2f) - 1 + element.scale.x / window.width, (-element.pos.y) / (window.height / 2f) + 1 - element.scale.y / window.height),
-                            new Vector2f(element.scale.x / window.width, element.scale.y / window.height)));
+                            new Vector2f(element.pos.x / (window.getWidth() / 2f) - 1 + element.scale.x / window.getWidth(), (-element.pos.y) / (window.getHeight() / 2f) + 1 - element.scale.y / window.getHeight()),
+                            new Vector2f(element.scale.x / window.getWidth(), element.scale.y / window.getHeight())));
 
                     if (element.color != null)
                         guiShader.setUniform("color", new Vector4f(
@@ -490,12 +491,12 @@ public class GuiRenderer {
 
                     if(element.italics)
                         guiShader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(
-                                new Vector2f(element.pos.x / (window.width / 2f) - 1 + element.scale.x / window.width, (-element.pos.y) / (window.height / 2f) + 1 - element.scale.y / window.height),
-                                new Vector2f(element.scale.x / window.width, element.scale.y / window.height), 0.15f));
+                                new Vector2f(element.pos.x / (window.getWidth() / 2f) - 1 + element.scale.x / window.getWidth(), (-element.pos.y) / (window.getHeight() / 2f) + 1 - element.scale.y / window.getHeight()),
+                                new Vector2f(element.scale.x / window.getWidth(), element.scale.y / window.getHeight()), 0.15f));
                     else
                         guiShader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(
-                                new Vector2f(element.pos.x / (window.width / 2f) - 1 + element.scale.x / window.width, (-element.pos.y) / (window.height / 2f) + 1 - element.scale.y / window.height),
-                                new Vector2f(element.scale.x / window.width, element.scale.y / window.height)));
+                                new Vector2f(element.pos.x / (window.getWidth() / 2f) - 1 + element.scale.x / window.getWidth(), (-element.pos.y) / (window.getHeight() / 2f) + 1 - element.scale.y / window.getHeight()),
+                                new Vector2f(element.scale.x / window.getWidth(), element.scale.y / window.getHeight())));
 
                     if (element.color != null)
                         guiShader.setUniform("color", new Vector4f(
@@ -528,6 +529,40 @@ public class GuiRenderer {
                         if (loader.textures.contains(element.texture))
                             loader.textures.remove((Object) element.texture);
                         GL11.glDeleteTextures(element.texture);
+                    }
+
+                    clearElement(element);
+                }
+                break;
+                case NODE_LINE:
+                {
+                    NodeLine element = (NodeLine) drawable;
+
+                    bindVAO(element.model);
+
+                    guiShader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(
+                            new Vector2f(element.pos.x / (window.getWidth() / 2f) - 1 + element.scale.x / window.getWidth(), (-element.pos.y) / (window.getHeight() / 2f) + 1 - element.scale.y / window.getHeight()),
+                            new Vector2f(element.scale.x / window.getWidth(), element.scale.y / window.getHeight())));
+
+                    if (element.color != null)
+                        guiShader.setUniform("color", new Vector4f(
+                                element.invert ? 1f : element.color.getRed() / 255f,
+                                element.invert ? 1f : element.color.getGreen() / 255f,
+                                element.invert ? 1f : element.color.getBlue() / 255f,
+                                element.invert ? 1f : element.color.getAlpha() / 255f));
+
+                    guiShader.setUniform("dimensions", new Vector2i(element.posStart.x, window.getHeight() - element.posStart.y), new Vector2i(element.posEnd.x, window.getHeight() - element.posEnd.y));
+
+                    if (element.invert) {
+                        GL11.glBlendFunc(GL11.GL_SRC_COLOR, GL11.GL_ONE);
+                        GL14.glBlendEquation(GL14.GL_FUNC_SUBTRACT);
+                    }
+
+                    GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, element.model.vertexCount);
+
+                    if (element.invert) {
+                        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+                        GL14.glBlendEquation(GL14.GL_FUNC_ADD);
                     }
 
                     clearElement(element);
@@ -585,7 +620,7 @@ public class GuiRenderer {
         guiShader.setUniform("guiTexture", 0);
         guiShader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(new Vector2f(), new Vector2f(1)));
 
-        guiShader.setUniform("blur", blur, 1.0f/window.height, true);
+        guiShader.setUniform("blur", blur, 1.0f/window.getHeight(), true);
 
         GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, GuiRenderer.defaultQuad.vertexCount);
 
@@ -602,7 +637,7 @@ public class GuiRenderer {
         guiShader.setUniform("guiTexture", 0);
         guiShader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(new Vector2f(), new Vector2f(1)));
 
-        guiShader.setUniform("blur", 1.0f/window.width, false);
+        guiShader.setUniform("blur", 1.0f/window.getWidth(), false);
 
         GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, GuiRenderer.defaultQuad.vertexCount);
     }

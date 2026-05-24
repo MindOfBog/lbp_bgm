@@ -110,6 +110,20 @@ public class Transformation3D{
         }
     }
 
+
+    public static Vector3f getPseudoRenderPos(View3D view, Vector3f pos)
+    {
+        float distance = view.camera.getPos().distance(pos);
+        Vector3f renderPos = new Vector3f(pos);
+        if(distance > 1000)
+        {
+            Vector3f toPos = new Vector3f(pos).sub(view.camera.getPos()).normalize();
+            renderPos = new Vector3f(view.camera.getPos()).add(toPos.mul(1000));
+        }
+
+        return  renderPos;
+    }
+
     public static class Tool
     {
         public ArrayList<Entity> tools;
@@ -177,17 +191,17 @@ public class Transformation3D{
                 tools.add(new Entity(posyz, new Vector3f(), new Vector3f(90, 0, 0), new Vector3f(50f), loader));
                 Model poszx = new Model(positionBiAxial);
                 poszx.material = new Material(green, 0f);
-                tools.add(new Entity(poszx, new Vector3f(), new Vector3f(0, 180, 90), new Vector3f(50f), loader));
+                tools.add(new Entity(poszx, new Vector3f(), new Vector3f(0, -90, -90), new Vector3f(50f), loader));
                 Model posxy = new Model(positionBiAxial);
                 posxy.material = new Material(blue, 0f);
                 tools.add(new Entity(posxy, new Vector3f(), new Vector3f(0, -90, 0), new Vector3f(50f), loader));
 
                 Model rotx = new Model(rotation);
                 rotx.material = new Material(red, 0f);
-                tools.add(new Entity(rotx, new Vector3f(), new Vector3f(180, 0, -90), new Vector3f(50f), loader));
+                tools.add(new Entity(rotx, new Vector3f(), new Vector3f(0, 0, 90), new Vector3f(50f), loader));
                 Model roty = new Model(rotation);
                 roty.material = new Material(green, 0f);
-                tools.add(new Entity(roty, new Vector3f(), new Vector3f(0, 180, 180), new Vector3f(50f), loader));
+                tools.add(new Entity(roty, new Vector3f(), new Vector3f(0, 0, 0), new Vector3f(50f), loader));
                 Model rotz = new Model(rotation);
                 rotz.material = new Material(blue, 0f);
                 tools.add(new Entity(rotz, new Vector3f(), new Vector3f(90, 0, 0), new Vector3f(50f), loader));
@@ -245,7 +259,7 @@ public class Transformation3D{
                 });
                 Model poszx = new Model(positionBiAxialThick);
                 poszx.material = new Material(green, 0f);
-                toolsMousePicking.add(new Entity(poszx, new Vector3f(), new Vector3f(0, 180, 90), new Vector3f(50f), loader){
+                toolsMousePicking.add(new Entity(poszx, new Vector3f(), new Vector3f(0, -90, -90), new Vector3f(50f), loader){
                     @Override
                     public void setHighlighted(boolean highlighted) {
                         tools.get(4).setHighlighted(highlighted);
@@ -264,7 +278,7 @@ public class Transformation3D{
 
                 Model rotx = new Model(rotationThick);
                 rotx.material = new Material(red, 0f);
-                toolsMousePicking.add(new Entity(rotx, new Vector3f(), new Vector3f(180, 0, -90), new Vector3f(50f), loader){
+                toolsMousePicking.add(new Entity(rotx, new Vector3f(), new Vector3f(0, 0, 90), new Vector3f(50f), loader){
                     @Override
                     public void setHighlighted(boolean highlighted) {
                         tools.get(6).setHighlighted(highlighted);
@@ -273,7 +287,7 @@ public class Transformation3D{
                 });
                 Model roty = new Model(rotationThick);
                 roty.material = new Material(green, 0f);
-                toolsMousePicking.add(new Entity(roty, new Vector3f(), new Vector3f(0, 180, 180), new Vector3f(50f), loader){
+                toolsMousePicking.add(new Entity(roty, new Vector3f(), new Vector3f(0, 0, 0), new Vector3f(50f), loader){
                     @Override
                     public void setHighlighted(boolean highlighted) {
                         tools.get(7).setHighlighted(highlighted);
@@ -360,7 +374,6 @@ public class Transformation3D{
                 Vector2i mouse = new Vector2i((int) mouseInput.currentPos.x, (int) mouseInput.currentPos.y);
 
                 renderer.processGuiElement(new Line(mouse, point, Color.black, loader, window, true));
-                renderer.processGuiElement(new Quad(ConstantTextures.getTexture(ConstantTextures.CROSSHAIR, 15, 15, loader).id, new Vector2f((int)(screenPos.x - 7.5f), (int)(screenPos.y - 7.5f)), new Vector2f(15, 15)).staticTexture());
             }
 
             if(hasSelection)
@@ -437,41 +450,42 @@ public class Transformation3D{
                                 (i == ToolType.ROTATION_X.value && rotateX) || (i == ToolType.ROTATION_Y.value && rotateY) || (i == ToolType.ROTATION_Z.value && rotateZ) ||
                                 (i == ToolType.SCALE_X.value && scaleX) || (i == ToolType.SCALE_Y.value && scaleY) || (i == ToolType.SCALE_Z.value && scaleZ) || (i == ToolType.SCALE_UNIFORM.value && scaleUniform))
                         {
+                            print.neutral(tools.get(i).model.get(0).material.diffuseColor);
                             renderer.processThroughWallEntity(tools.get(i));
                             renderer.processThroughWallEntityForMousePick(toolsMousePicking.get(i));
                         }
                 }
                 else
-                switch (ToolType.fromValue(selected))
-                {
-                    case POSITION_X:
-                    case ROTATION_X:
-                    case SCALE_X:
-                        renderer.processThroughWallEntity(LineX);
-                        break;
-                    case POSITION_Y:
-                    case ROTATION_Y:
-                    case SCALE_Y:
-                        renderer.processThroughWallEntity(LineY);
-                        break;
-                    case POSITION_Z:
-                    case ROTATION_Z:
-                    case SCALE_Z:
-                        renderer.processThroughWallEntity(LineZ);
-                        break;
-                    case POSITION_YZ:
-                        renderer.processThroughWallEntity(LineY);
-                        renderer.processThroughWallEntity(LineZ);
-                        break;
-                    case POSITION_ZX:
-                        renderer.processThroughWallEntity(LineZ);
-                        renderer.processThroughWallEntity(LineX);
-                        break;
-                    case POSITION_XY:
-                        renderer.processThroughWallEntity(LineX);
-                        renderer.processThroughWallEntity(LineY);
-                        break;
-                }
+                    switch (ToolType.fromValue(selected))
+                    {
+                        case POSITION_X:
+                        case ROTATION_X:
+                        case SCALE_X:
+                            renderer.processThroughWallEntity(LineX);
+                            break;
+                        case POSITION_Y:
+                        case ROTATION_Y:
+                        case SCALE_Y:
+                            renderer.processThroughWallEntity(LineY);
+                            break;
+                        case POSITION_Z:
+                        case ROTATION_Z:
+                        case SCALE_Z:
+                            renderer.processThroughWallEntity(LineZ);
+                            break;
+                        case POSITION_YZ:
+                            renderer.processThroughWallEntity(LineY);
+                            renderer.processThroughWallEntity(LineZ);
+                            break;
+                        case POSITION_ZX:
+                            renderer.processThroughWallEntity(LineZ);
+                            renderer.processThroughWallEntity(LineX);
+                            break;
+                        case POSITION_XY:
+                            renderer.processThroughWallEntity(LineX);
+                            renderer.processThroughWallEntity(LineY);
+                            break;
+                    }
 
                 if(Float.isNaN(tools.get(0).getTransformation().getScale(new Vector3f()).x))
                     setupToolModels(loader);
@@ -534,23 +548,27 @@ public class Transformation3D{
 
         public Vector3f currentPosition = new Vector3f();
         public Vector3f screenPos = new Vector3f();
+        public void updateModels(View3D view, Vector3f newPos)
+        {
+            updateModels(view, newPos, getPseudoRenderPos(view, newPos));
+        }
 
-        public void updateModels(View3D view, Vector3f currentPosition)
+        public void updateModels(View3D view, Vector3f newPos, Vector3f renderPos)
         {
             if(selected == -1)
             {
-                this.currentPosition = currentPosition;
+                this.currentPosition = new Vector3f(newPos);
 
-                LineX.setTransformation(LineX.getTransformation().setTranslation(0, currentPosition.y, currentPosition.z));
-                LineY.setTransformation(LineY.getTransformation().setTranslation(currentPosition.x, 0, currentPosition.z));
-                LineZ.setTransformation(LineZ.getTransformation().setTranslation(currentPosition.x, currentPosition.y, 0));
+                LineX.setTransformation(LineX.getTransformation().setTranslation(0, renderPos.y, renderPos.z));
+                LineY.setTransformation(LineY.getTransformation().setTranslation(renderPos.x, 0, renderPos.z));
+                LineZ.setTransformation(LineZ.getTransformation().setTranslation(renderPos.x, renderPos.y, 0));
 
                 float zoom = (java.lang.Math.max(view.camera.getPos().z / 1000f, 0.0f));
 
                 for (int i = 0; i < tools.size(); i++)
                 {
-                    tools.get(i).setTransformation(new Matrix4f().identity().setTranslation(currentPosition).rotate(tools.get(i).getTransformation().getRotation(new AxisAngle4f())).scale(Config.FRONT_VIEW ? 10f * zoom : 0.01f * view.camera.getPos().distance(currentPosition)));
-                    toolsMousePicking.get(i).setTransformation(new Matrix4f().identity().setTranslation(currentPosition).rotate(toolsMousePicking.get(i).getTransformation().getRotation(new AxisAngle4f())).scale(Config.FRONT_VIEW ? 10f * zoom : 0.01f * view.camera.getPos().distance(currentPosition)));
+                    tools.get(i).setTransformation(new Matrix4f().identity().setTranslation(renderPos).rotate(tools.get(i).getTransformation().getRotation(new AxisAngle4f())).scale(Config.FRONT_VIEW ? 10f * zoom : 0.01f * view.camera.getPos().distance(renderPos)));
+                    toolsMousePicking.get(i).setTransformation(new Matrix4f().identity().setTranslation(renderPos).rotate(toolsMousePicking.get(i).getTransformation().getRotation(new AxisAngle4f())).scale(Config.FRONT_VIEW ? 10f * zoom : 0.01f * view.camera.getPos().distance(renderPos)));
                 }
             }
         }

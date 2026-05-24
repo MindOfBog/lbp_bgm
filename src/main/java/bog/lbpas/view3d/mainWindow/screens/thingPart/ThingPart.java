@@ -26,7 +26,7 @@ public class ThingPart {
 
     ArrayList<iPart> parts;
 
-    public void addParts(ArrayList<Thing> things) {
+    public void addParts(ArrayList<Thing> things, View3D view) {
 
         lastThings = things;
 
@@ -49,7 +49,7 @@ public class ThingPart {
         {
             for(iPart part : parts)
             {
-                elementList.elements.remove(part.partPanel);
+                part.removeElements(elementList, view);
                 part.collapse();
             }
             return;
@@ -57,7 +57,7 @@ public class ThingPart {
 
         for(iPart part : parts)
         {
-            part.addElements(elementList);
+            part.addElements(elementList, view);
             part.addValues(selected, things);
         }
     }

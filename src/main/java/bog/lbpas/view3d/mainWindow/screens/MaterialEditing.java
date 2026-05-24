@@ -63,7 +63,7 @@ public class MaterialEditing extends GuiScreen {
         selectedVertices = new ArrayList<>();
         vertexTool = new Transformation3D.Tool(loader);
 
-        this.guiElements.add(new Button("backButton", "Back", new Vector2f(window.width - 110, window.height - 35), new Vector2f(100, 25), renderer, loader, window) {
+        this.guiElements.add(new Button("backButton", "Back", new Vector2f(window.getWidth() - 110, window.getHeight() - 35), new Vector2f(100, 25), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 mainView.setCurrentScreen(previousScreen);
@@ -71,7 +71,7 @@ public class MaterialEditing extends GuiScreen {
 
             @Override
             public void draw(MouseInput mouseInput, boolean overOther) {
-                this.pos = new Vector2f(window.width - 110, window.height - 35);
+                this.pos = new Vector2f(window.getWidth() - 110, window.getHeight() - 35);
                 super.draw(mouseInput, overOther);
             }
         });
@@ -208,7 +208,7 @@ public class MaterialEditing extends GuiScreen {
 
         this.guiElements.add(shapeDataTab);
 
-        frontView = new ButtonImage("frontView", new Vector2f(window.width - 40, 21 + 10), new Vector2f(30, 30), new Vector2f(26, 24), renderer, loader, window) {
+        frontView = new ButtonImage("frontView", new Vector2f(window.getWidth() - 40, 21 + 10), new Vector2f(30, 30), new Vector2f(26, 24), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if(action == GLFW.GLFW_PRESS)
@@ -221,14 +221,14 @@ public class MaterialEditing extends GuiScreen {
             public void secondThread() {
                 super.secondThread();
 
-                this.pos.x = window.width - 40;
+                this.pos.x = window.getWidth() - 40;
             }
 
             @Override
             public void resize() {
                 super.resize();
 
-                this.pos.x = window.width - 40;
+                this.pos.x = window.getWidth() - 40;
             }
 
             @Override
@@ -266,15 +266,15 @@ public class MaterialEditing extends GuiScreen {
             boolean currentFirstX = mouseInput.currentPos.x < selectionBoxStart.x;
             boolean currentFirstY = mouseInput.currentPos.y < selectionBoxStart.y;
             selectionBoxX = (int)(currentFirstX ? mouseInput.currentPos.x : selectionBoxStart.x);
-            selectionBoxX = Math.clamp(3, window.width - 3, selectionBoxX);
+            selectionBoxX = Math.clamp(3, window.getWidth() - 3, selectionBoxX);
             selectionBoxY = (int)(currentFirstY ? mouseInput.currentPos.y : selectionBoxStart.y);
-            selectionBoxY = Math.clamp(getFontHeightHeader() + 4 + 3, window.height - 3, selectionBoxY);
+            selectionBoxY = Math.clamp(getFontHeightHeader() + 4 + 3, window.getHeight() - 3, selectionBoxY);
             selectionBoxWidth = (int)(currentFirstX ?
-                    Math.clamp(3, window.width - 3, selectionBoxStart.x) - selectionBoxX :
-                    Math.clamp(3, window.width - 3, mouseInput.currentPos.x) - selectionBoxX);
+                    Math.clamp(3, window.getWidth() - 3, selectionBoxStart.x) - selectionBoxX :
+                    Math.clamp(3, window.getWidth() - 3, mouseInput.currentPos.x) - selectionBoxX);
             selectionBoxHeight = (int)(currentFirstY ?
-                    Math.clamp(getFontHeightHeader() + 4 + 3, window.height - 3, selectionBoxStart.y) - selectionBoxY :
-                    Math.clamp(getFontHeightHeader() + 4 + 3, window.height - 3, mouseInput.currentPos.y) - selectionBoxY);
+                    Math.clamp(getFontHeightHeader() + 4 + 3, window.getHeight() - 3, selectionBoxStart.y) - selectionBoxY :
+                    Math.clamp(getFontHeightHeader() + 4 + 3, window.getHeight() - 3, mouseInput.currentPos.y) - selectionBoxY);
             renderer.drawRect(selectionBoxX, selectionBoxY, selectionBoxWidth, selectionBoxHeight, new Color(0f, 0f, 0f, 0.35f));
         }
 
@@ -861,15 +861,15 @@ public class MaterialEditing extends GuiScreen {
                                 boolean currentFirstX = mouseInput.currentPos.x < selectionBoxStart.x;
                                 boolean currentFirstY = mouseInput.currentPos.y < selectionBoxStart.y;
                                 int x = (int)(currentFirstX ? mouseInput.currentPos.x : selectionBoxStart.x);
-                                x = Math.clamp(3, window.width - 3, x);
+                                x = Math.clamp(3, window.getWidth() - 3, x);
                                 int y = (int)(currentFirstY ? mouseInput.currentPos.y : selectionBoxStart.y);
-                                y = Math.clamp(getFontHeightHeader() + 4 + 3, window.height - 3, y);
+                                y = Math.clamp(getFontHeightHeader() + 4 + 3, window.getHeight() - 3, y);
                                 int width = (int)(currentFirstX ?
-                                        Math.clamp(3, window.width - 3, selectionBoxStart.x) - x :
-                                        Math.clamp(3, window.width - 3, mouseInput.currentPos.x) - x);
+                                        Math.clamp(3, window.getWidth() - 3, selectionBoxStart.x) - x :
+                                        Math.clamp(3, window.getWidth() - 3, mouseInput.currentPos.x) - x);
                                 int height = (int)(currentFirstY ?
-                                        Math.clamp(getFontHeightHeader() + 4 + 3, window.height - 3, selectionBoxStart.y) - y :
-                                        Math.clamp(getFontHeightHeader() + 4 + 3, window.height - 3, mouseInput.currentPos.y) - y);
+                                        Math.clamp(getFontHeightHeader() + 4 + 3, window.getHeight() - 3, selectionBoxStart.y) - y :
+                                        Math.clamp(getFontHeightHeader() + 4 + 3, window.getHeight() - 3, mouseInput.currentPos.y) - y);
 
                                 for(Vector3f sp : screenPositions.keySet())
                                     if(sp.z == 0)

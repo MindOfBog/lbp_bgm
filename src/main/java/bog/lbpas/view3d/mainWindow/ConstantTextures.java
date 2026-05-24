@@ -200,6 +200,11 @@ public class ConstantTextures {
 
     public static Texture getTexture(HashMap<String, Texture> texture, int width, int height, ObjectLoader loader)
     {
+        return getTexture(texture, width, height, GL11.GL_LINEAR_MIPMAP_LINEAR, GL11.GL_LINEAR, loader);
+    }
+
+    public static Texture getTexture(HashMap<String, Texture> texture, int width, int height, int minF, int magF, ObjectLoader loader)
+    {
         if(Thread.currentThread().getName().equals("main"))
         {
             String resKey = width + ":" + height;
@@ -209,9 +214,6 @@ public class ConstantTextures {
             }
             else
             {
-                int minF = GL11.GL_LINEAR_MIPMAP_NEAREST;
-                int magF = GL11.GL_LINEAR;
-
                 String path = "";
 
                 for (HashMap.Entry<String, Texture> entry : texture.entrySet())

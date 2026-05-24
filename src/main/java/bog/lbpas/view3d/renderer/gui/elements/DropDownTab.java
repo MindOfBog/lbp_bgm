@@ -210,6 +210,25 @@ public class DropDownTab extends Element{
             return (Checkbox) getElementByID(id);
     }
 
+    public Checkbox addCheckbox(String id, String text, boolean checked, Checkbox checkbox)
+    {
+        if(!containsElementByID(id))
+        {
+            checkbox.id = id;
+            checkbox.text = text;
+            checkbox.isChecked = checked;
+            checkbox.pos = new Vector2f(0);
+            checkbox.renderer = renderer;
+            checkbox.loader = loader;
+            checkbox.window = window;
+            checkbox.isChecked = checked;
+            tabElements.add(checkbox);
+            return checkbox;
+        }
+        else
+            return (Checkbox) getElementByID(id);
+    }
+
     public Slider addSlider(String id)
     {
         if(!containsElementByID(id))
@@ -404,10 +423,10 @@ public class DropDownTab extends Element{
             if (this.pos.y < getFontHeightHeader() + 8)
                 this.pos.y = getFontHeightHeader() + 8;
 
-            if (this.pos.x + this.size.x > renderer.window.width - 3)
-                this.pos.x = renderer.window.width - 3 - this.size.x;
-            if (this.pos.y + this.size.y > renderer.window.height - 3)
-                this.pos.y = renderer.window.height - 3 - this.size.y;
+            if (this.pos.x + this.size.x > renderer.window.getWidth() - 3)
+                this.pos.x = renderer.window.getWidth() - 3 - this.size.x;
+            if (this.pos.y + this.size.y > renderer.window.getHeight() - 3)
+                this.pos.y = renderer.window.getHeight() - 3 - this.size.y;
         }
 
         if(extended)

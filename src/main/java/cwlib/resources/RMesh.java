@@ -1,10 +1,12 @@
 package cwlib.resources;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 
+import bog.lbpas.view3d.utils.print;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
@@ -1582,8 +1584,7 @@ public class RMesh implements Resource
     public int[] getTriangles(int start, int count)
     {
         if (this.indices == null)
-            throw new IllegalStateException("Can't get triangles from mesh without index " +
-                                            "buffer!");
+            throw new IllegalStateException("Can't get triangles from mesh without index buffer!");
 
         int[] faces = new int[count];
         MemoryInputStream stream = new MemoryInputStream(this.indices);
@@ -1591,26 +1592,54 @@ public class RMesh implements Resource
         for (int i = 0; i < count; ++i)
             faces[i] = stream.u16();
 
-        if (!this.isStripped()) return faces;
+        //a negative root bone skin pose determinant seems to need a reverse winding order on all triangles to render correctly?
+        float det = this.getBones()[0].skinPoseMatrix.determinant();
+        boolean reverseWinding = det < 0;
 
-        ArrayList<Integer> triangles = new ArrayList<>(this.numVerts * 0x3);
-        Collections.addAll(triangles, faces[0], faces[1], faces[2]);
-        for (int i = 3, j = 1; i < faces.length; ++i, ++j)
+        if (!this.isStripped())
         {
-            if (faces[i] == 65535)
-            {
-                if (i + 3 >= count) break;
-                Collections.addAll(triangles, faces[i + 1], faces[i + 2], faces[i + 3]);
-                i += 3;
-                j = 0;
-                continue;
-            }
-            if ((j & 1) != 0)
-                Collections.addAll(triangles, faces[i - 2], faces[i], faces[i - 1]);
-            else Collections.addAll(triangles, faces[i - 2], faces[i - 1], faces[i]);
+
+            if(reverseWinding) //reverse winding normally for non triangle strip models
+                for (int i = 0; i < faces.length; i += 3)
+                {
+                    int temp = faces[i + 1];
+                    faces[i + 1] = faces[i + 2];
+                    faces[i + 2] = temp;
+                }
+
+            return faces;
         }
 
-        return triangles.stream().mapToInt(Integer::valueOf).toArray();
+        int restartIndex = 65535;
+        ArrayList<Integer> triangles = new ArrayList<>();
+        int parity = reverseWinding ? 1 : 0; //invert the parity, reverses winding order without extra work
+
+        for (int i = 0; i < faces.length - 2; i++) {
+            int i0 = faces[i];
+            int i1 = faces[i + 1];
+            int i2 = faces[i + 2];
+
+            if (i0 == restartIndex || i1 == restartIndex || i2 == restartIndex)
+            {
+                parity = reverseWinding ? 1 : 0;
+                continue;
+            }
+
+            if ((parity++ & 1) == 0)
+            {
+                triangles.add(i0);
+                triangles.add(i1);
+                triangles.add(i2);
+            }
+            else
+            {
+                triangles.add(i0);
+                triangles.add(i2);
+                triangles.add(i1);
+            }
+        }
+
+        return triangles.stream().mapToInt(Integer::intValue).toArray();
     }
 
     /**

@@ -59,6 +59,17 @@ vec3 hsv2rgb(vec3 c)
 	return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
 }
 
+vec2 bezier(float t, vec2 p0, vec2 p1, vec2 p2, vec2 p3) {
+	float invT = 1.0 - t;
+	return invT*invT*invT*p0 + 3.0*invT*invT*t*p1 + 3.0*invT*t*t*p2 + t*t*t*p3;
+}
+
+float sdSegment(vec2 p, vec2 a, vec2 b) {
+	vec2 pa = p - a, ba = b - a;
+	float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
+	return length(pa - ba * h);
+}
+
 void main(void){
 
 	switch(type)
@@ -138,6 +149,37 @@ void main(void){
 			}
 
 			out_Color = vec4(color.r, color.g, color.b, glyphAlpha);
+		}
+		break;
+		case NODE_LINE:
+		{
+			vec2 p0 = vec2(dimensions.position);
+			vec2 p3 = vec2(dimensions.size);
+			vec2 pixelPos = gl_FragCoord.xy;
+
+			float deltaX = abs(p3.x - p0.x);
+			float offset = max(deltaX * 0.5, 50.0);
+			vec2 p1 = p0 + vec2(offset, 0.0);
+			vec2 p2 = p3 - vec2(offset, 0.0);
+
+			float minDist = 1e10;
+			int samples = 32;
+			vec2 prevPoint = p0;
+
+			for (int i = 1; i <= samples; i++) {
+				float t = float(i) / float(samples);
+				vec2 currentPoint = bezier(t, p0, p1, p2, p3);
+				minDist = min(minDist, sdSegment(pixelPos, prevPoint, currentPoint));
+				prevPoint = currentPoint;
+			}
+
+			float thickness = guiScale / 24.0f;
+			float antialias = 1.5;
+			float edge = smoothstep(thickness + antialias, thickness, minDist);
+
+			out_Color = vec4(color.rgb, color.a * edge);
+
+			if (edge < 0.01) discard;
 		}
 		break;
 		default:

@@ -74,10 +74,10 @@ public class MousePicker {
     private Vector2f getNormalizedDeviceCoords(float mouseX, float mouseY)
     {
         float zoom = Config.FRONT_VIEW ? 1 : Math.max(camera.getPos().z / 1000f, 0.0f);
-        float orthoWidth = Config.FRONT_VIEW ? 1 : window.width == 0 ? zoom : (float) window.width * zoom;
-        float orthoHeight = Config.FRONT_VIEW ? 1 : window.height == 0 ? zoom : (float) window.height * zoom;
+        float orthoWidth = Config.FRONT_VIEW ? 1 : window.getWidth() == 0 ? zoom : (float) window.getWidth() * zoom;
+        float orthoHeight = Config.FRONT_VIEW ? 1 : window.getHeight() == 0 ? zoom : (float) window.getHeight() * zoom;
 
-        return new Vector2f(((2f * mouseX) / window.width - 1f) * (Config.FRONT_VIEW ? orthoWidth : 1), -((2f * mouseY) / window.height - 1f) * (Config.FRONT_VIEW ? orthoHeight : 1));
+        return new Vector2f(((2f * mouseX) / window.getWidth() - 1f) * (Config.FRONT_VIEW ? orthoWidth : 1), -((2f * mouseY) / window.getHeight() - 1f) * (Config.FRONT_VIEW ? orthoHeight : 1));
     }
     public Vector3f getPointOnRay(Vector3f ray, float distance) {
         Vector3f camPos = camera.getPos();
@@ -129,7 +129,7 @@ public class MousePicker {
         if(Config.FRONT_VIEW)
         {
             float zoom = Math.max(camera.getPos().z / 1000f, 0.0f);
-            Vector3f point = new Vector3f(camera.getPos()).add((float) ((mouse.currentPos.x - window.width/2) * zoom), (float) ((1 - mouse.currentPos.y + window.height/2)  * zoom),0);
+            Vector3f point = new Vector3f(camera.getPos()).add((float) ((mouse.currentPos.x - window.getWidth()/2) * zoom), (float) ((1 - mouse.currentPos.y + window.getHeight()/2)  * zoom),0);
 
             return new Vector3f(point.x, point.y, zPos);
         }

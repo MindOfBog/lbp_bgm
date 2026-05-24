@@ -30,4 +30,5 @@ public class Consts {
     public static float[] GAUSSIAN_KERNEL = Utils.gaussianKernel(4, GAUSSIAN_RADIUS);
     public static int GAUSSIAN_RADIUS_SSAO = 3;
     public static float[] GAUSSIAN_KERNEL_SSAO = Utils.gaussianKernel(1, GAUSSIAN_RADIUS_SSAO);
+    public static String OPERATING_SYSTEM = System.getProperty("os.name").toLowerCase();
 }

@@ -295,8 +295,6 @@ public abstract class ColorPicker extends ComboBox{
                 hsva.y = (float) Math.clamp(0f, 1f, (Math.clamp(pos.x, pos.x + size.x, mouseInput.currentPos.x) - pos.x) / size.x);
                 hsva.z = (float) Math.clamp(0f, 1f, (Math.clamp(pos.y, pos.y + size.y, mouseInput.currentPos.y) - pos.y) / size.y);
             }
-            else
-                renderer.drawImageStatic(ConstantTextures.getTexture(ConstantTextures.CROSSHAIR, 15, 15, loader), Math.round(hsva.y * size.x + pos.x - 7.5f), Math.round(hsva.z * size.y + pos.y - 7.5f), 15, 15, Color.white, loader);
         }
 
         public Vector2f getSaturationBrightness()

@@ -1,5 +1,6 @@
 package bog.lbpas.view3d.mainWindow.screens.thingPart.parts;
 
+import bog.lbpas.swing.CodeEditor;
 import bog.lbpas.view3d.core.Texture;
 import bog.lbpas.view3d.mainWindow.ConstantTextures;
 import bog.lbpas.view3d.mainWindow.View3D;
@@ -9,6 +10,8 @@ import bog.lbpas.view3d.utils.Consts;
 import cwlib.enums.Part;
 import cwlib.io.Serializable;
 import cwlib.structs.things.Thing;
+import cwlib.util.GsonUtils;
+import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.joml.Vector2d;
 import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
@@ -85,6 +88,28 @@ public abstract class iPart {
             }
         }, closeWidth));
 
+        partComboBox.addButton("Edit JSON of \"" + this.name + "\"(s)", new Button() {
+            @Override
+            public void clickedButton(int button, int action, int mods) {
+                if(action != GLFW.GLFW_PRESS)
+                    return;
+                for(bog.lbpas.view3d.core.types.Thing thing : view.things)
+                {
+                    if(!thing.selected)
+                        continue;
+
+                    new CodeEditor("Thing: \"" + thing.thing.name + "\" | Part: \"" + iPart.this.name + "\"", GsonUtils.toJSON(thing.thing.getPart(iPart.this.part)),  SyntaxConstants.SYNTAX_STYLE_JSON)
+                    {
+                        @Override
+                        public boolean onSaveChanges() {
+                            return true;
+                        }
+                    };
+                }
+            }
+        });
+        partComboBox.addSeparator("jsonSeparator").size.y = 5;
+
         init(view);
     }
 
@@ -102,17 +127,37 @@ public abstract class iPart {
         }
     }
 
-    public void removeElements(ArrayList<Element> list)
-    {
-        list.remove(partPanel);
-    }
-
-    public void addElements(ElementList list)
+    public void addElements(ElementList list, View3D view)
     {
         if(hasPart)
-            list.addPanel(partPanel);
+        {
+            if(!list.elements.contains(partPanel))
+            {
+                list.addPanel(partPanel);
+                onAddedUI(view);
+            }
+        }
         else
-            removeElements(list.elements);
+            removeElements(list, view);
+    }
+
+    public void removeElements(ElementList list, View3D view)
+    {
+        if(list.elements.contains(partPanel))
+        {
+            list.elements.remove(partPanel);
+            onRemovedUI(view);
+        }
+    }
+
+    public void onAddedUI(View3D view)
+    {
+
+    }
+
+    public void onRemovedUI(View3D view)
+    {
+
     }
 
     public <T extends Serializable> void addPart(ArrayList<bog.lbpas.view3d.core.types.Thing> things, bog.lbpas.view3d.core.types.Thing thing, Part part, T p)

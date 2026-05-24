@@ -10,6 +10,7 @@ import bog.lbpas.view3d.utils.CWLibUtils.LevelSettingsUtils;
 import bog.lbpas.view3d.utils.FilePicker;
 import bog.lbpas.view3d.utils.Utils;
 import bog.lbpas.view3d.utils.print;
+import com.formdev.flatlaf.util.SystemFileChooser;
 import cwlib.enums.Part;
 import cwlib.enums.ResourceType;
 import cwlib.io.Serializable;
@@ -48,6 +49,13 @@ public abstract class PartLevelSettings extends iPart {
             partComboBox.collapsed(true);
         }
         else multiple = true;
+    }
+
+    @Override
+    public void onAddedUI(View3D view) {
+        super.onAddedUI(view);
+        if(selectedPreset != null)
+            view.lighting = selectedPreset;
     }
 
     @Override
@@ -97,7 +105,7 @@ public abstract class PartLevelSettings extends iPart {
 
         Panel importPanel = partComboBox.addPanel("importPanel");
 
-        FileNameExtensionFilter[] planLevelExtensions = FilePicker.setupLBPExtensionFilter("Plans/Levels", new ResourceType[]{ResourceType.PLAN, ResourceType.LEVEL});
+        SystemFileChooser.FileNameExtensionFilter[] planLevelExtensions = FilePicker.setupLBPExtensionFilter("Plans/Levels", new ResourceType[]{ResourceType.PLAN, ResourceType.LEVEL});
 
         ImportPlanBin = new Button("ImportPlanBin", "Import", new Vector2f(), new Vector2f(), view.renderer, view.loader, view.window) {
             @Override
@@ -379,11 +387,8 @@ public abstract class PartLevelSettings extends iPart {
                 {
                     LevelSettings levelSettings = (LevelSettings) object;
                     selectedPreset = levelSettings;
-                    view.fogColor = new Vector4f(levelSettings.fogColor);
-                    view.fogNear = levelSettings.fogNear;
-                    view.fogFar = levelSettings.fogFar;
-                    view.rimColor = new Vector4f(levelSettings.rimColor);
-                    view.sunPos = new Vector3f(levelSettings.sunPosition).mul(levelSettings.sunPositionScale);
+                    if(selectedPreset != null)
+                        view.lighting = selectedPreset;
                 }
             }
 

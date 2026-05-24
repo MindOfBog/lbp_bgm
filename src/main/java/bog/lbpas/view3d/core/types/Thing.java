@@ -5,6 +5,7 @@ import bog.lbpas.view3d.core.Model;
 import bog.lbpas.view3d.mainWindow.LoadedData;
 import bog.lbpas.view3d.utils.CWLibUtils.SkeletonUtils;
 import bog.lbpas.view3d.utils.FilePicker;
+import com.formdev.flatlaf.util.SystemFileChooser;
 import cwlib.enums.LethalType;
 import cwlib.enums.Part;
 import cwlib.resources.RBevel;
@@ -311,7 +312,7 @@ public class Thing extends Entity{
     {
         File file = FilePicker.saveFile(
                 this.thing.name + ".obj",
-                new FileNameExtensionFilter[]{new FileNameExtensionFilter("OBJ (*.obj)", "obj")}
+                new SystemFileChooser.FileNameExtensionFilter[]{new SystemFileChooser.FileNameExtensionFilter("OBJ (*.obj)", "obj")}
         );
 
         if (file != null)

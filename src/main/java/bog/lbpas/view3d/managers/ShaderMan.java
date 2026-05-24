@@ -9,11 +9,10 @@ import cwlib.structs.mesh.Bone;
 import cwlib.structs.things.Thing;
 import cwlib.structs.things.parts.PPos;
 import org.joml.*;
-import org.lwjgl.opengl.GL20;
-import org.lwjgl.opengl.GL32;
-import org.lwjgl.opengl.GL45;
+import org.lwjgl.opengl.*;
 import org.lwjgl.system.MemoryStack;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,10 +22,14 @@ import java.util.Map;
  */
 public class ShaderMan {
 
+    public static ArrayList<ShaderMan> SHADER_LINKING_QUEUE = new ArrayList<>();
+
     public int programID, vertexShaderID, geometryShaderID, fragmentShaderID;
     public Map<String, Integer> uniforms;
 
     String shaderName = "null";
+
+    public boolean linked = false;
 
     public ShaderMan(String name) throws Exception
     {
@@ -37,33 +40,24 @@ public class ShaderMan {
 
         uniforms = new HashMap<>();
         this.shaderName = name;
+
     }
 
     public boolean createUniform(String uniformName) throws Exception
     {
-        int uniformLocation = GL20.glGetUniformLocation(programID, uniformName);
+        boolean created = false;
 
-        if(uniformLocation < 0)
-        {
-            if(Main.debug)
-                print.error("Could not find uniform " + uniformName + ".");
-            return false;
-        }
+            int uniformLocation = GL20.glGetUniformLocation(programID, uniformName);
 
-        uniforms.put(uniformName, uniformLocation);
-        return true;
-    }
+            if(uniformLocation < 0)
+            {
+                if(Main.debug)
+                    print.error("Could not find uniform " + uniformName + ".");
+                return false;
+            }
 
-    public boolean createUniform(String uniformName, int uniformLocation) throws Exception
-    {
-        if(uniformLocation < 0)
-        {
-            if(Main.debug)
-                print.error("Could not find uniform " + uniformName + ".");
-            return false;
-        }
+            uniforms.put(uniformName, uniformLocation);
 
-        uniforms.put(uniformName, uniformLocation);
         return true;
     }
 
@@ -195,7 +189,7 @@ public class ShaderMan {
         try(MemoryStack stack = MemoryStack.stackPush())
         {
             Integer uniform = uniforms.get(uniformName);
-            if(uniform != null)
+            if (uniform != null)
                 GL20.glUniformMatrix4fv(uniform, false, value.get(stack.mallocFloat(16)));
         }
     }
@@ -428,6 +422,11 @@ public class ShaderMan {
         return shaderID;
     }
 
+    public void lazyLink()
+    {
+        SHADER_LINKING_QUEUE.add(this);
+    }
+
     public void link() throws Exception
     {
         if(Main.debug)
@@ -455,6 +454,8 @@ public class ShaderMan {
             print.error("Unable to validate shader code.\nInfo: " + GL20.glGetProgramInfoLog(programID, 1024));
             return;
         }
+
+        linked = true;
     }
 
     public void bind()
@@ -473,6 +474,23 @@ public class ShaderMan {
 
         if(programID != 0)
             GL20.glDeleteProgram(programID);
+    }
+
+    public void update(ShaderMan tempShader)
+    {
+        Main.RunOnGraphicsThread(() ->
+        {
+            if(programID != 0)
+                GL20.glDeleteProgram(programID);
+
+            this.programID = tempShader.programID;
+            this.vertexShaderID = tempShader.vertexShaderID;
+            this.geometryShaderID = tempShader.geometryShaderID;
+            this.fragmentShaderID = tempShader.fragmentShaderID;
+            this.uniforms = tempShader.uniforms;
+            this.shaderName = tempShader.shaderName;
+            this.linked = tempShader.linked;
+        });
     }
 
     public void bindAttribute(int attribute, String name)

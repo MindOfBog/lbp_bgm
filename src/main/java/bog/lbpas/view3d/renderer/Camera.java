@@ -130,8 +130,8 @@ public class Camera {
             clipSpacePos.div(clipSpacePos.w);
         }
 
-        float x = ((clipSpacePos.x + 1.0f) / 2.0f) * window.width;
-        float y = ((1.0f - clipSpacePos.y) / 2.0f) * window.height;
+        float x = ((clipSpacePos.x + 1.0f) / 2.0f) * window.getWidth();
+        float y = ((1.0f - clipSpacePos.y) / 2.0f) * window.getHeight();
         float z = Config.FRONT_VIEW || (clipSpacePos.z >= 0 && clipSpacePos.z <= 1) ? 0 : -1;
 
         return new Vector3f(x, y, z);

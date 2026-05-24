@@ -29,7 +29,7 @@ public class Circle extends Triangle{
         Vector2f vertex2 = new Vector2f(center.x + lineHalfWidth, center.y + radius * 2f);
         Vector2f vertex3 = new Vector2f(center.x, center.y - (4f * radius));
 
-        return new Circle(loader, window, color, vertex1, vertex2, vertex3, new Vector4f(center.x, window.height - center.y, radius, outline ? 1 : -1));
+        return new Circle(loader, window, color, vertex1, vertex2, vertex3, new Vector4f(center.x, window.getHeight() - center.y, radius, outline ? 1 : -1));
     }
 
     @Override

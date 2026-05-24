@@ -1,5 +1,6 @@
 package bog.lbpas.view3d.managers;
 
+import bog.lbpas.Main;
 import bog.lbpas.view3d.renderer.ILogic;
 import bog.lbpas.view3d.utils.Config;
 import bog.lbpas.view3d.utils.Consts;
@@ -21,19 +22,23 @@ public class EngineMan {
     public boolean isRunning;
     public WindowMan window;
     public MouseInput mouseInput;
-    public GLFWErrorCallback errorCallback;
     public ILogic viewLogic;
 
     ArrayList<Integer> fpsBuffer = new ArrayList<>();
 
     public void init(WindowMan window, ILogic view) throws Exception
     {
-        GLFW.glfwSetErrorCallback(errorCallback = GLFWErrorCallback.createPrint(System.err));
         this.window = window;
         viewLogic = view;
         mouseInput = new MouseInput(viewLogic);
         viewLogic.init();
         mouseInput.init(window);
+        window.mouseInput = mouseInput;
+    }
+
+    public WindowMan initWindowMan(String title, int width, int height, int minWidth, int minHeight)
+    {
+        return new WindowMan(title, width, height, minWidth,minHeight);
     }
 
     public void start(WindowMan window, ILogic viewLogic) throws Exception
@@ -91,6 +96,8 @@ public class EngineMan {
 
                 update();
                 render();
+
+                Main.ExecuteGraphicsThreadQueue();
             }
 
             Cursors.updateCursor(window);
@@ -122,7 +129,6 @@ public class EngineMan {
     {
         window.cleanup();
         viewLogic.cleanup();
-        errorCallback.free();
         GLFW.glfwTerminate();
     }
 

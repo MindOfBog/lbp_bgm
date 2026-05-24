@@ -84,8 +84,8 @@ public class LineStrip extends Drawable{
             for(int i = 0; i < positions.length; i++)
             {
                 Vector2f pos = positions[i];
-                processed[i * 2] = pos.x / (window.width / 2f) - 1 + 1 / window.width;
-                processed[i * 2 + 1] = -pos.y / (window.height / 2f) + 1 - 1 / window.height;
+                processed[i * 2] = pos.x / (window.getWidth() / 2f) - 1 + 1 / window.getWidth();
+                processed[i * 2 + 1] = -pos.y / (window.getHeight() / 2f) + 1 - 1 / window.getHeight();
             }
 
             return loader.loadModel(processed);
@@ -102,8 +102,8 @@ public class LineStrip extends Drawable{
             for(int i = 0; i < positions.length; i++)
             {
                 Vector2f pos = new Vector2f(positions[i].x, positions[i].y);
-                processed[i * 2] = pos.x / (window.width / 2f) - 1 + 1 / window.width;
-                processed[i * 2 + 1] = -pos.y / (window.height / 2f) + 1 - 1 / window.height;
+                processed[i * 2] = pos.x / (window.getWidth() / 2f) - 1 + 1 / window.getWidth();
+                processed[i * 2 + 1] = -pos.y / (window.getHeight() / 2f) + 1 - 1 / window.getHeight();
             }
 
             return loader.loadModel(processed);

@@ -144,7 +144,7 @@ public class EntityRenderer implements IRenderer{
         thingShader.createUniform("fogFar");
         thingShader.createUniform("camPos");
         thingShader.createUniform("sunPos");
-        thingShader.createUniform("noCulling");
+        thingShader.createUniform("culling");
 
         thingShader.createUniform("transformationMatrix");
         thingShader.createUniform("projectionMatrix");
@@ -328,7 +328,6 @@ public class EntityRenderer implements IRenderer{
 
     public void resize()
     {
-        GL11.glViewport(0, 0, window.width, window.height);
         mouseBuffer.resize();
     }
 
@@ -343,7 +342,6 @@ public class EntityRenderer implements IRenderer{
 
     public void loaderThread()
     {
-
         if(LoadedData.shouldUpdateShader)
         {
             lastShaderAddedMillis = System.currentTimeMillis();
@@ -426,7 +424,13 @@ public class EntityRenderer implements IRenderer{
                                 "    }\n");
 
                 tempShader.createFragmentShader(shaderCode);
-                tempShader.link();
+                tempShader.lazyLink();
+
+                while(!tempShader.linked)
+                {
+                    Thread.sleep(100);
+                }
+
                 tempShader.createListUniform("textureSampler", samplerCount);
                 tempShader.createUniform("preview");
                 tempShader.createUniform("frontView");
@@ -451,7 +455,7 @@ public class EntityRenderer implements IRenderer{
                 tempShader.createUniform("fogFar");
                 tempShader.createUniform("camPos");
                 tempShader.createUniform("sunPos");
-                tempShader.createUniform("noCulling");
+                tempShader.createUniform("culling");
 
                 tempShader.createUniform("transformationMatrix");
                 tempShader.createUniform("projectionMatrix");
@@ -475,8 +479,7 @@ public class EntityRenderer implements IRenderer{
 
             if(success && tempShader != null)
             {
-                thingShader.cleanup();
-                thingShader = tempShader;
+                thingShader.update(tempShader);
             }
         }
     }
@@ -487,7 +490,7 @@ public class EntityRenderer implements IRenderer{
         drawnThingMeshes = 0;
 
         Camera camera = mainView.camera;
-        projection = window.updateProjectionMatrix(camera);
+        projection = window.updateProjectionMatrix(mainView.renderer, camera);
         mouseBuffer.bind();
         RenderMan.clear();
 
@@ -606,7 +609,7 @@ public class EntityRenderer implements IRenderer{
         {
             int[] buffer = new int[3];
 
-            GL30.glReadPixels((int)mouseInput.currentPos.x, (int)(window.height - mouseInput.currentPos.y), 1, 1, GL30.GL_RGB_INTEGER, GL30.GL_INT, buffer);
+            GL30.glReadPixels((int)mouseInput.currentPos.x, (int)(window.getHeight() - mouseInput.currentPos.y), 1, 1, GL30.GL_RGB_INTEGER, GL30.GL_INT, buffer);
 
             int outX = buffer[0] - 1;
             int outY = buffer[1];
@@ -660,13 +663,13 @@ public class EntityRenderer implements IRenderer{
         lastShader.setUniform("pointLightsSize", pointLights.size());
         lastShader.setUniform("spotLights", spotLights.toArray(SpotLight[]::new));
         lastShader.setUniform("spotLightsSize", spotLights.size());
-        lastShader.setUniform("rimColor", mainView.rimColor);
-        lastShader.setUniform("rimColor2", mainView.rimColor2);
-        lastShader.setUniform("fogNear", mainView.fogNear);
-        lastShader.setUniform("fogFar", mainView.fogFar);
+        lastShader.setUniform("rimColor", mainView.lighting.rimColor);
+        lastShader.setUniform("rimColor2", mainView.lighting.rimColor2);
+        lastShader.setUniform("fogNear", mainView.lighting.fogNear);
+        lastShader.setUniform("fogFar", mainView.lighting.fogFar);
         lastShader.setUniform("camPos", mainView.camera.getPos());
-        lastShader.setUniform("sunPos", mainView.sunPos);
-        lastShader.setUniform("noCulling", Config.NO_CULLING);
+        lastShader.setUniform("sunPos", new Vector3f(mainView.lighting.sunPosition).mul(mainView.lighting.sunPositionScale));
+        lastShader.setUniform("culling", Config.NO_CULLING ? 0 : 2);
         lastShader.setUniform("preview", Config.PREVIEW_MODE);
         lastShader.setUniform("frontView", Config.FRONT_VIEW);
 

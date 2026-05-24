@@ -43,21 +43,21 @@ public class InputMan {
         switch (key)
         {
             case 0:
-                return (mouse.leftButtonPress && this.mouse);
+                return mouse.leftButtonPress;
             case 1:
-                return (mouse.rightButtonPress && this.mouse);
+                return mouse.rightButtonPress;
             case 2:
-                return (mouse.middleButtonPress && this.mouse);
+                return mouse.middleButtonPress;
             case 3:
-                return (mouse.mouse4Press && this.mouse);
+                return mouse.mouse4Press;
             case 4:
-                return (mouse.mouse5Press && this.mouse);
+                return mouse.mouse5Press;
             case 5:
-                return (mouse.mouse6Press && this.mouse);
+                return mouse.mouse6Press;
             case 6:
-                return (mouse.mouse7Press && this.mouse);
+                return mouse.mouse7Press;
             case 7:
-                return (mouse.mouse8Press && this.mouse);
+                return mouse.mouse8Press;
         }
         return false;
     }

@@ -1,6 +1,7 @@
 package bog.lbpas.view3d.mainWindow;
 
 import bog.lbpas.Main;
+import bog.lbpas.swing.CodeEditor;
 import bog.lbpas.view3d.renderer.Camera;
 import bog.lbpas.view3d.renderer.ILogic;
 import bog.lbpas.view3d.managers.assetLoading.ObjectLoader;
@@ -23,17 +24,20 @@ import cwlib.enums.*;
 import cwlib.resources.RMesh;
 import cwlib.structs.mesh.Bone;
 import cwlib.structs.things.Thing;
+import cwlib.structs.things.components.LevelSettings;
 import cwlib.structs.things.parts.*;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.data.Revision;
 import cwlib.types.databases.FileDBRow;
 import cwlib.types.databases.FileEntry;
 import cwlib.util.GsonUtils;
+import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.joml.Math;
 import org.joml.*;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
@@ -86,26 +90,36 @@ public class View3D implements ILogic {
 
     @Override
     public void init() throws Exception {
-        windowFrame = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(window.width - 6, window.height - 6)), loader, window);
-        windowFrameOuter = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(window.width, window.height)), loader, window);
+
+        lighting = new PLevelSettings();
+        lighting.fogColor = new Vector4f(154f / 255f, 195f / 255f, 199f / 255f, 1f);
+        lighting.rimColor = new Vector4f(210f/255f, 178f/255f, 142f/255f, 1f);
+        lighting.rimColor2 = new Vector4f(89f/255f, 177f/255f, 232f/255f, 1f);
+        lighting.fogNear = 1000f;
+        lighting.fogFar = 15000f;
+        lighting.sunPosition = new Vector3f(25000, 75000, 55000);
+        lighting.sunPositionScale = 1f;
+
+        windowFrame = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(window.getWidth() - 6, window.getHeight() - 6)), loader, window);
+        windowFrameOuter = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(window.getWidth(), window.getHeight())), loader, window);
         renderer.init(this.loader);
         FontRenderer.init(this.loader);
         Transformation3D.init(this.loader);
         LoadedData.init(this);
         ConstantTextures.initTextures(this.loader);
 
-        topBarLine = Line.getLine(window, loader, new Vector2i(3, getFontHeightHeader() + 7), new Vector2i(window.width - 3, getFontHeightHeader() + 7));
+        topBarLine = Line.getLine(window, loader, new Vector2i(3, getFontHeightHeader() + 7), new Vector2i(window.getWidth() - 3, getFontHeightHeader() + 7));
 
         things = new ArrayList<>();
         BORDERS = new ArrayList<>();
         POD_EARTH = new ArrayList<>();
 
-        notificationFeed = new NotificationFeed(false, 12, new Vector2f(this.window.width - 248 - 400, this.window.height - 8), 350f * (getFontHeight() / 12f), renderer, loader, window)
+        notificationFeed = new NotificationFeed(false, 12, new Vector2f(this.window.getWidth() - 248 - 400, this.window.getHeight() - 8), 350f * (getFontHeight() / 12f), renderer, loader, window)
         {
             @Override
             public void draw(MouseInput mouseInput, boolean overElement) {
-                this.pos.x = this.window.width - (currentScreen instanceof ElementEditing ? Math.round(250f * (getFontHeight() / 12f)) : 0) - this.size.x - 8;
-                this.pos.y = this.window.height - 8;
+                this.pos.x = this.window.getWidth() - (currentScreen instanceof ElementEditing ? Math.round(250f * (getFontHeight() / 12f)) : 0) - this.size.x - 8;
+                this.pos.y = this.window.getHeight() - 8;
                 super.draw(mouseInput, overElement);
             }
 
@@ -294,6 +308,7 @@ public class View3D implements ILogic {
     @Override
     public void update(MouseInput mouseInput) {
 
+        mouseInput.update(window);
         ConstantTextures.mainThread();
         loader.primaryThread();
 
@@ -355,9 +370,9 @@ public class View3D implements ILogic {
                 topBarLine.cleanup(loader);
             if(windowFrame != null)
                 windowFrame.cleanup(loader);
-            topBarLine = Line.getLine(window, loader, new Vector2i(3, getFontHeightHeader() + 7), new Vector2i(window.width - 3, getFontHeightHeader() + 7));
-            windowFrame = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(window.width - 6, window.height - 6)), loader, window);
-            windowFrameOuter = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(window.width, window.height)), loader, window);
+            topBarLine = Line.getLine(window, loader, new Vector2i(3, getFontHeightHeader() + 7), new Vector2i(window.getWidth() - 3, getFontHeightHeader() + 7));
+            windowFrame = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(window.getWidth() - 6, window.getHeight() - 6)), loader, window);
+            windowFrameOuter = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(window.getWidth(), window.getHeight())), loader, window);
 
             int xCoord = Math.round(300f * (getFontHeight() / 12f));
             int w = Math.round(100f * (getFontHeight() / 12f));
@@ -375,15 +390,15 @@ public class View3D implements ILogic {
             settings.size = new Vector2f(w, getFontHeightHeader() + 5);
 
             float w2 = 60f * (getFontHeight() / 12f);
-            minimizeButton.pos = new Vector2f(window.width - 3 - (w2 * 3) + 2, yCoord);
+            minimizeButton.pos = new Vector2f(window.getWidth() - 3 - (w2 * 3) + 2, yCoord);
             minimizeButton.size = new Vector2f(w2, getFontHeightHeader() + 5);
             minimizeButton.imageSize = new Vector2f(getFontHeightHeader());
 
-            restMaxButton.pos = new Vector2f(window.width - 3 - (w2 * 2) + 1, yCoord);
+            restMaxButton.pos = new Vector2f(window.getWidth() - 3 - (w2 * 2) + 1, yCoord);
             restMaxButton.size = new Vector2f(w2, getFontHeightHeader() + 5);
             restMaxButton.imageSize = new Vector2f(getFontHeightHeader());
 
-            closeButton.pos = new Vector2f(window.width - 3 - (w2), yCoord);
+            closeButton.pos = new Vector2f(window.getWidth() - 3 - (w2), yCoord);
             closeButton.size = new Vector2f(w2, getFontHeightHeader() + 5);
             closeButton.imageSize = new Vector2f(getFontHeightHeader());
 
@@ -406,27 +421,20 @@ public class View3D implements ILogic {
                 selectedAmount++;
             }
 
-        try {
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
         mouseInput.mousePicker.update(camera);
 
         if(this.centerPicker == null)
             this.centerPicker = new MousePicker(null, window);
-        this.centerPicker.update(camera, window.width / 2, window.height / 2);
+        this.centerPicker.update(camera, window.getWidth() / 2, window.getHeight() / 2);
 
-        Vector3f screenPos = camera.worldToScreen(getSelectedPosition(), window);
+//        Vector3f screenPos = camera.worldToScreen(getSelectedPosition(), window);
 
         if(Config.CAMERA.isPressed(window, mouseInput) && !overElement && introPlayed)
         {
+            Cursors.setCursor(ECursor.grabbing);
+
             if(camera.getWrappedRotation().x > -90 && camera.getWrappedRotation().x < 90)
                 camera.moveRot(mouseInput.displayVec.x * Config.MOUSE_SENS, mouseInput.displayVec.y * Config.MOUSE_SENS, 0);
-
-            mouseInput.displayVec.set(0, 0);
-
-            Cursors.setCursor(ECursor.grabbing);
         }
 
         if(camera.getWrappedRotation().x <= -90)
@@ -468,14 +476,14 @@ public class View3D implements ILogic {
             bog.lbpas.view3d.core.types.Thing thing = things.get(ent);
 
             renderer.processEntity(thing);
-//               TODO if(entity.getType() == 0)
+//                if(thing.selected)
 //                {
-//                    Bone[] skeleton = ((Mesh)entity).skeleton;
-//                    if(skeleton != null)
-//                        for(Bone bone : skeleton)
+////                    Thing[] skeleton = thing.getBones();
+////                    if(skeleton != null)
+////                        for(Thing bone : skeleton)
 //                        {
-//                            Matrix4f transform = new Matrix4f().identity().translate(new Matrix4f(entity.transformation).mul(skeleton[0].invSkinPoseMatrix).mul(bone.skinPoseMatrix).mul(bone.offset).getTranslation(new Vector3f()));
-//                            this.renderer.processThroughWallEntity(new Entity(this.bone, transform, loader));
+//                            Matrix4f tr = thing.getTransformation();
+//                            this.renderer.processThroughWallEntity(new Entity(this.bone, new Matrix4f(tr).rotateAroundLocal(new Quaternionf().rotateLocalY(25).rotateLocalZ(25), tr.getTranslation(new Vector3f()).x, tr.getTranslation(new Vector3f()).y, tr.getTranslation(new Vector3f()).z, new Matrix4f()), loader));
 //                        }
 //                }
 //            TODO else if(entity.getType() == 3)
@@ -560,11 +568,6 @@ public class View3D implements ILogic {
     {
         if(!introPlayed)
             return;
-
-        if(key == GLFW.GLFW_KEY_O && action == GLFW.GLFW_PRESS)
-            for(bog.lbpas.view3d.core.types.Thing t : things)
-                if(t.selected)
-                    t.exportModelOBJ();
 
         boolean elementFocused = currentScreen.onKey(key, scancode, action, mods);
         if(!elementFocused)
@@ -654,20 +657,15 @@ public class View3D implements ILogic {
         }
     }
 
-    public Vector4f fogColor = new Vector4f(154f / 255f, 195f / 255f, 199f / 255f, 1f);
-    public Vector4f rimColor = new Vector4f(210f/255f, 178f/255f, 142f/255f, 1f);
-    public Vector4f rimColor2 = new Vector4f(89f/255f, 177f/255f, 232f/255f, 1f);
-    public float fogNear = 200f;
-    public float fogFar = 15000f;
-    public Vector3f sunPos = new Vector3f(25000, 75000, 55000);
+    public LevelSettings lighting;
 
     @Override
     public void render() {
-        fogColor.x = Math.clamp(0, 1, fogColor.x);
-        fogColor.y = Math.clamp(0, 1, fogColor.y);
-        fogColor.z = Math.clamp(0, 1, fogColor.z);
+        float fogR = Math.clamp(0, 1, lighting.fogColor.x);
+        float fogG = Math.clamp(0, 1, lighting.fogColor.y);
+        float fogB = Math.clamp(0, 1, lighting.fogColor.z);
 
-        GL11.glClearColor(fogColor.x, fogColor.y, fogColor.z, 0f);
+        GL11.glClearColor(fogR, fogG, fogB, 0f);
 
         renderer.render(mouseInput, this);
     }
@@ -745,7 +743,7 @@ public class View3D implements ILogic {
 
         float widthT = 60f * (getFontHeight() / 12f);
 
-        minimizeButton = new ButtonImage("minimizeButton", new Vector2f(window.width - 3 - (widthT * 3) + 2, yCoord), new Vector2f(widthT, getFontHeightHeader() + 5), new Vector2f(getFontHeightHeader()), renderer, loader, window) {
+        minimizeButton = new ButtonImage("minimizeButton", new Vector2f(window.getWidth() - 3 - (widthT * 3) + 2, yCoord), new Vector2f(widthT, getFontHeightHeader() + 5), new Vector2f(getFontHeightHeader()), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
@@ -758,7 +756,7 @@ public class View3D implements ILogic {
             }
         };
 
-        restMaxButton = new ButtonImage("restMaxButton", new Vector2f(window.width - 3 - (widthT * 2) + 1, yCoord), new Vector2f(widthT, getFontHeightHeader() + 5), new Vector2f(getFontHeightHeader()), renderer, loader, window) {
+        restMaxButton = new ButtonImage("restMaxButton", new Vector2f(window.getWidth() - 3 - (widthT * 2) + 1, yCoord), new Vector2f(widthT, getFontHeightHeader() + 5), new Vector2f(getFontHeightHeader()), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
@@ -781,7 +779,7 @@ public class View3D implements ILogic {
             }
         };
 
-        closeButton = new ButtonImage("closeButton", new Vector2f(window.width - 3 - widthT, yCoord), new Vector2f(widthT, getFontHeightHeader() + 5), new Vector2f(getFontHeightHeader()), renderer, loader, window) {
+        closeButton = new ButtonImage("closeButton", new Vector2f(window.getWidth() - 3 - widthT, yCoord), new Vector2f(widthT, getFontHeightHeader() + 5), new Vector2f(getFontHeightHeader()), renderer, loader, window) {
             @Override
             public void clickedButton(int button, int action, int mods) {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS)
@@ -794,12 +792,10 @@ public class View3D implements ILogic {
             }
         };
 
-        final long[] prevMs = {0};
-
         Element titleBar = new Element() {
             @Override
             public void secondThread() {
-                this.size.x = window.width - 6;
+                this.size.x = window.getWidth() - 6;
             }
 
             @Override
@@ -810,50 +806,7 @@ public class View3D implements ILogic {
                 {
                     if(pos.x > this.pos.x && pos.x < this.pos.x + this.size.x &&
                             pos.y > this.pos.y && pos.y < this.pos.y + this.size.y - 2)
-                    {
-                        if(action == GLFW.GLFW_PRESS)
-                        {
-                            long currentMs = System.currentTimeMillis();
-                            if(currentMs - prevMs[0] <= 500)
-                            {
-                                if(this.window.isMaximized)
-                                    this.window.restore();
-                                else
-                                    this.window.maximize();
-                                prevMs[0] = 0;
-                            }
-                            else
-                            {
-                                prevMs[0] = currentMs;
-                                this.window.isDragging = true;
-                                if(!this.window.isMaximized)
-                                    this.window.setOpacity(0.75f);
-                                Vector2i windowPos = this.window.getWindowPosition();
-                                Vector2d cursorPos = this.window.getCursorPosition();
-                                this.window.prevCursor = new Vector2d(cursorPos.x / this.window.width, cursorPos.y);
-                                this.window.prevWindow = windowPos;
-                            }
-                        }
-                    }
-
-                    if(action == GLFW.GLFW_PRESS)
-                    {
-                        boolean top = mouseInput.currentPos.y <= 3;
-                        boolean bottom = mouseInput.currentPos.y >= window.height - 3;
-                        boolean left = mouseInput.currentPos.x <= 3;
-                        boolean right = mouseInput.currentPos.x >= window.width - 3;
-
-                        this.window.resizing = Utils.setBitwiseBool(this.window.resizing, WindowMan.RESIZE_TOP, top);
-                        this.window.resizing = Utils.setBitwiseBool(this.window.resizing, WindowMan.RESIZE_BOTTOM, bottom);
-                        this.window.resizing = Utils.setBitwiseBool(this.window.resizing, WindowMan.RESIZE_LEFT, left);
-                        this.window.resizing = Utils.setBitwiseBool(this.window.resizing, WindowMan.RESIZE_RIGHT, right);
-
-                        this.window.prevX = this.window.getWindowPosition().x;
-                        this.window.prevY = this.window.getWindowPosition().y;
-                        this.window.prevWidth = this.window.width;
-                        this.window.prevHeight = this.window.height;
-                        this.window.prevMousePos = new Vector2d(pos);
-                    }
+                        this.window.onTitleBarClick(action);
                 }
             }
 
@@ -882,8 +835,17 @@ public class View3D implements ILogic {
         };
         titleBar.window = window;
         titleBar.pos = new Vector2f(3, 3);
-        titleBar.size = new Vector2f(window.width - 6, getFontHeightHeader() + 7);
+        titleBar.size = new Vector2f(window.getWidth() - 6, getFontHeightHeader() + 7);
         titleBar.id = "titleBar";
+
+        window.frameElements.add(titleBar);
+        window.frameElements.add(minimizeButton);
+        window.frameElements.add(restMaxButton);
+        window.frameElements.add(closeButton);
+        window.frameElements.add(elementEditing);
+        window.frameElements.add(archive);
+        window.frameElements.add(project);
+        window.frameElements.add(settings);
 
         ElementEditing = new ElementEditing(this);
 
@@ -1073,37 +1035,40 @@ public class View3D implements ILogic {
 
     private void drawUI(MouseInput mouseInput) {
 
-        boolean top = mouseInput.currentPos.y <= 3;
-        boolean bottom = mouseInput.currentPos.y >= window.height - 3;
-        boolean left = mouseInput.currentPos.x <= 3;
-        boolean right = mouseInput.currentPos.x >= window.width - 3;
+        if(!window.useNativeWindowHandler())
+        {
+            boolean top = mouseInput.currentPos.y <= 3;
+            boolean bottom = mouseInput.currentPos.y >= window.getHeight() - 3;
+            boolean left = mouseInput.currentPos.x <= 3;
+            boolean right = mouseInput.currentPos.x >= window.getWidth() - 3;
 
-        if((top && left) || (bottom && right))
-        {
-            Cursors.setCursor(ECursor.bd_double_arrow);
-        }
-        else if((top && right) || (bottom && left))
-        {
-            Cursors.setCursor(ECursor.fd_double_arrow);
-        }
-        else if(top || bottom)
-        {
-            Cursors.setCursor(ECursor.sb_v_double_arrow);
-        }
-        else if(left || right)
-        {
-            Cursors.setCursor(ECursor.sb_h_double_arrow);
+            if((top && left) || (bottom && right))
+            {
+                Cursors.setCursor(ECursor.bd_double_arrow);
+            }
+            else if((top && right) || (bottom && left))
+            {
+                Cursors.setCursor(ECursor.fd_double_arrow);
+            }
+            else if(top || bottom)
+            {
+                Cursors.setCursor(ECursor.sb_v_double_arrow);
+            }
+            else if(left || right)
+            {
+                Cursors.setCursor(ECursor.sb_h_double_arrow);
+            }
         }
 
         int fontHeightHeader = getFontHeightHeader();
 
-        renderer.doBlur(Consts.GAUSSIAN_RADIUS, Consts.GAUSSIAN_KERNEL, 3, 3, window.width, fontHeightHeader + 4);
-        renderer.drawRect(3, 3, window.width - 6, fontHeightHeader + 4, Config.PRIMARY_COLOR);
+        renderer.doBlur(Consts.GAUSSIAN_RADIUS, Consts.GAUSSIAN_KERNEL, 3, 3, window.getWidth(), fontHeightHeader + 4);
+        renderer.drawRect(3, 3, window.getWidth() - 6, fontHeightHeader + 4, Config.PRIMARY_COLOR);
 
-        renderer.drawRect(0, 3, 3, window.height - 6, Config.PRIMARY_COLOR);
-        renderer.drawRect(0, 0, window.width, 3, Config.PRIMARY_COLOR);
-        renderer.drawRect(0, window.height - 3, window.width, window.height, Config.PRIMARY_COLOR);
-        renderer.drawRect(window.width - 3, 3, window.width, window.height - 6, Config.PRIMARY_COLOR);
+        renderer.drawRect(0, 3, 3, window.getHeight() - 6, Config.PRIMARY_COLOR);
+        renderer.drawRect(0, 0, window.getWidth(), 3, Config.PRIMARY_COLOR);
+        renderer.drawRect(0, window.getHeight() - 3, window.getWidth(), window.getHeight(), Config.PRIMARY_COLOR);
+        renderer.drawRect(window.getWidth() - 3, 3, window.getWidth(), window.getHeight() - 6, Config.PRIMARY_COLOR);
 
         renderer.drawHeader(Consts.FONT_SET_BOLD + Consts.TITLE + " (v" + Consts.VERSION + ")" + (Config.SHOW_FPS ? " | FPS: " + EngineMan.avgFPS : ""), Config.FONT_COLOR, 7 + 3, 5);
 
@@ -1124,33 +1089,33 @@ public class View3D implements ILogic {
         if(Main.debug)
         {
             if(this.Settings.debugOverlayImage.isChecked && (this.Settings.overlayImage != null))
-                renderer.drawImageStatic(this.Settings.overlayImage.id, 0, 0, window.width, window.height, new Color(1f, 1f, 1f, 0.6f));
+                renderer.drawImageStatic(this.Settings.overlayImage.id, 0, 0, window.getWidth(), window.getHeight(), new Color(1f, 1f, 1f, 0.6f));
 
             if(this.Settings.debugScissorTest.isChecked) {
                 renderer.startScissor(20, 50, 120 - 20, 150 - 50);
-                renderer.drawRect(0, 0, window.width, window.height, Color.red);
+                renderer.drawRect(0, 0, window.getWidth(), window.getHeight(), Color.red);
                 renderer.startScissor(30, 60, 110 - 30, 140 - 60);
-                renderer.drawRect(0, 0, window.width, window.height, Color.green);
+                renderer.drawRect(0, 0, window.getWidth(), window.getHeight(), Color.green);
                 renderer.startScissor(40, 70, 100 - 40, 130 - 70);
-                renderer.drawRect(0, 0, window.width, window.height, Color.blue);
+                renderer.drawRect(0, 0, window.getWidth(), window.getHeight(), Color.blue);
 
                 renderer.startScissor(50, 80, 60 - 50, 90 - 80);
-                renderer.drawRect(0, 0, window.width, window.height, Color.cyan);
+                renderer.drawRect(0, 0, window.getWidth(), window.getHeight(), Color.cyan);
                 renderer.endScissor();
 
                 renderer.startScissor(65, 75, 90 - 70, 100 - 80);
                 renderer.startScissor(70, 80, 80 - 70, 90 - 80);
 
                 renderer.startScissorEscape();
-                renderer.drawRect(0, 0, window.width, window.height, Color.gray);
+                renderer.drawRect(0, 0, window.getWidth(), window.getHeight(), Color.gray);
                 renderer.endScissorEscape();
 
-                renderer.drawRect(0, 0, window.width, window.height, Color.orange);
+                renderer.drawRect(0, 0, window.getWidth(), window.getHeight(), Color.orange);
                 renderer.endScissor();
                 renderer.endScissor();
 
                 renderer.startScissor(50, 100, 80 - 70, 90 - 80);
-                renderer.drawRect(0, 0, window.width, window.height, Color.magenta);
+                renderer.drawRect(0, 0, window.getWidth(), window.getHeight(), Color.magenta);
                 renderer.endScissor();
 
                 renderer.endScissor();
@@ -1223,8 +1188,8 @@ public class View3D implements ILogic {
             out = Math.clamp(0f, 1f, out);
 
             if (out != 0) {
-                renderer.drawRect(0, 0, window.width, window.height, new Color(1f, 1f, 1f, out));
-                renderer.drawImageStatic(ConstantTextures.getTexture(ConstantTextures.ICON, 461, 461, loader), window.width / 2 - 461 / 2, window.height / 2 - 461 / 2, 461, 461, new Color(1f, 1f, 1f, 1f - in), loader);
+                renderer.drawRect(0, 0, window.getWidth(), window.getHeight(), new Color(1f, 1f, 1f, out));
+                renderer.drawImageStatic(ConstantTextures.getTexture(ConstantTextures.ICON, 461, 461, loader), window.getWidth() / 2 - 461 / 2, window.getHeight() / 2 - 461 / 2, 461, 461, new Color(1f, 1f, 1f, 1f - in), loader);
 
                 String splashText = "Welcome to LBP Asset Studio v" + Consts.VERSION;
                 StringBuilder target = new StringBuilder();
@@ -1262,9 +1227,9 @@ public class View3D implements ILogic {
 
                 String finalSplash = Consts.FONT_SET_BOLD + target.toString();
 
-                FontRenderer.drawString(renderer, finalSplash, window.width / 2 - getStringWidthHeader(splashText, 40) / 2, window.height / 2 + 461 / 2 + 10, 40, Config.OUTLINE_COLOR, 0, finalSplash.length(), FontRenderer.Fonts.get(FontRenderer.headerFont));
+                FontRenderer.drawString(renderer, finalSplash, window.getWidth() / 2 - getStringWidthHeader(splashText, 40) / 2, window.getHeight() / 2 + 461 / 2 + 10, 40, Config.OUTLINE_COLOR, 0, finalSplash.length(), FontRenderer.Fonts.get(FontRenderer.headerFont));
 
-                renderer.drawRect(0, 0, window.width, window.height, new Color(1f, 0f, 0f, 0f));
+                renderer.drawRect(0, 0, window.getWidth(), window.getHeight(), new Color(1f, 0f, 0f, 0f));
             } else introPlayed = true;
         }
 
@@ -1570,6 +1535,9 @@ public class View3D implements ILogic {
 
             for (int i : selected)
                 {
+                    if(!things.get(i).thing.hasPart(Part.POS))
+                        continue;
+
                     Vector3f curTransl = things.get(i).getTransformation().getTranslation(new Vector3f());
                     x += curTransl.x;
                     y += curTransl.y;
@@ -1583,335 +1551,6 @@ public class View3D implements ILogic {
 
         return new Vector3f(Consts.NaNf, Consts.NaNf, Consts.NaNf);
     }
-
-//    public String getSelectedMeshDescriptor()
-//    {
-//        boolean hasSelection = false;
-//        ArrayList<Integer> selected = new ArrayList<>();
-//
-//        for(int i = 0; i < entities.size(); i++)
-//            if(entities.get(i).selected)
-//            {
-//                hasSelection = true;
-//                selected.add(i);
-//            }
-//
-//        if(selected.size() > 0)
-//        {
-//            if(selected.size() == 1)
-//                return ((Mesh)entities.get(selected.get(0))).meshDescriptor.isGUID() ? ((Mesh)entities.get(selected.get(0))).meshDescriptor.getGUID().toString() : "h" + ((Mesh)entities.get(selected.get(0))).meshDescriptor.getSHA1().toString();
-//            else if(selected.size() > 1)
-//            {
-//                boolean isSame = true;
-//                String descriptor = ((Mesh)entities.get(selected.get(0))).meshDescriptor.isGUID() ? ((Mesh)entities.get(selected.get(0))).meshDescriptor.getGUID().toString() : "h" + ((Mesh)entities.get(selected.get(0))).meshDescriptor.getSHA1().toString();
-//                for(int i : selected)
-//                {
-//                    Mesh entity = (Mesh) entities.get(i);
-//                    String desc = entity.meshDescriptor.isGUID() ? entity.meshDescriptor.getGUID().toString() : "h" + entity.meshDescriptor.getSHA1().toString();
-//
-//                    if(!descriptor.equalsIgnoreCase(desc))
-//                        isSame = false;
-//                }
-//
-//                if(isSame)
-//                    return descriptor;
-//            }
-//        }
-//
-//        return "";
-//    }
-//
-//    public String getSelectedGfxMaterialDescriptor()
-//    {
-//        boolean hasSelection = false;
-//        ArrayList<Integer> selected = new ArrayList<>();
-//
-//        for(int i = 0; i < entities.size(); i++)
-//            if(entities.get(i).selected)
-//            {
-//                hasSelection = true;
-//                selected.add(i);
-//            }
-//
-//        if(selected.size() > 0 && ((MaterialPrimitive)entities.get(selected.get(0))).gmat != null)
-//        {
-//            if(selected.size() == 1)
-//                return ((MaterialPrimitive)entities.get(selected.get(0))).gmat.isGUID() ? ((MaterialPrimitive)entities.get(selected.get(0))).gmat.getGUID().toString() : "h" + ((MaterialPrimitive)entities.get(selected.get(0))).gmat.getSHA1().toString();
-//            else if(selected.size() > 1)
-//            {
-//                boolean isSame = true;
-//                String descriptor = ((MaterialPrimitive)entities.get(selected.get(0))).gmat.isGUID() ? ((MaterialPrimitive)entities.get(selected.get(0))).gmat.getGUID().toString() : "h" + ((MaterialPrimitive)entities.get(selected.get(0))).gmat.getSHA1().toString();
-//                for(int i : selected)
-//                {
-//                    MaterialPrimitive entity = (MaterialPrimitive) entities.get(i);
-//                    String desc = entity.gmat.isGUID() ? entity.gmat.getGUID().toString() : "h" + entity.gmat.getSHA1().toString();
-//
-//                    if(!descriptor.equalsIgnoreCase(desc))
-//                        isSame = false;
-//                }
-//
-//                if(isSame)
-//                    return descriptor;
-//            }
-//        }
-//
-//        return "";
-//    }
-//
-//    public String getSelectedMaterialDescriptor()
-//    {
-//        boolean hasSelection = false;
-//        ArrayList<Integer> selected = new ArrayList<>();
-//
-//        for(int i = 0; i < entities.size(); i++)
-//            if(entities.get(i).selected)
-//            {
-//                hasSelection = true;
-//                selected.add(i);
-//            }
-//
-//        if(selected.size() > 0 && ((MaterialPrimitive)entities.get(selected.get(0))).mat != null)
-//        {
-//            if(selected.size() == 1)
-//                return ((MaterialPrimitive)entities.get(selected.get(0))).mat.isGUID() ? ((MaterialPrimitive)entities.get(selected.get(0))).mat.getGUID().toString() : "h" + ((MaterialPrimitive)entities.get(selected.get(0))).mat.getSHA1().toString();
-//            else if(selected.size() > 1)
-//            {
-//                boolean isSame = true;
-//                String descriptor = ((MaterialPrimitive)entities.get(selected.get(0))).mat.isGUID() ? ((MaterialPrimitive)entities.get(selected.get(0))).mat.getGUID().toString() : "h" + ((MaterialPrimitive)entities.get(selected.get(0))).mat.getSHA1().toString();
-//                for(int i : selected)
-//                {
-//                    MaterialPrimitive entity = (MaterialPrimitive) entities.get(i);
-//                    String desc = entity.mat.isGUID() ? entity.mat.getGUID().toString() : "h" + entity.mat.getSHA1().toString();
-//
-//                    if(!descriptor.equalsIgnoreCase(desc))
-//                        isSame = false;
-//                }
-//
-//                if(isSame)
-//                    return descriptor;
-//            }
-//        }
-//
-//        return "";
-//    }
-//
-//    public String getSelectedBevelDescriptor()
-//    {
-//        boolean hasSelection = false;
-//        ArrayList<Integer> selected = new ArrayList<>();
-//
-//        for(int i = 0; i < entities.size(); i++)
-//            if(entities.get(i).selected)
-//            {
-//                hasSelection = true;
-//                selected.add(i);
-//            }
-//
-//        if(selected.size() > 0 && ((MaterialPrimitive)entities.get(selected.get(0))).bev != null)
-//        {
-//            if(selected.size() == 1)
-//                return ((MaterialPrimitive)entities.get(selected.get(0))).bev.isGUID() ? ((MaterialPrimitive)entities.get(selected.get(0))).bev.getGUID().toString() : "h" + ((MaterialPrimitive)entities.get(selected.get(0))).bev.getSHA1().toString();
-//            else if(selected.size() > 1)
-//            {
-//                boolean isSame = true;
-//
-//                String descriptor = ((MaterialPrimitive)entities.get(selected.get(0))).bev.isGUID() ? ((MaterialPrimitive)entities.get(selected.get(0))).bev.getGUID().toString() : "h" + ((MaterialPrimitive)entities.get(selected.get(0))).bev.getSHA1().toString();
-//                for(int i : selected)
-//                {
-//                    MaterialPrimitive entity = (MaterialPrimitive) entities.get(i);
-//                    String desc = entity.bev.isGUID() ? entity.bev.getGUID().toString() : "h" + entity.bev.getSHA1().toString();
-//
-//                    if(!descriptor.equalsIgnoreCase(desc))
-//                        isSame = false;
-//                }
-//
-//                if(isSame)
-//                    return descriptor;
-//            }
-//        }
-//
-//        return "";
-//    }
-//
-//    public float getSelectedMaterialThickness()
-//    {
-//        boolean hasSelection = false;
-//        ArrayList<Integer> selected = new ArrayList<>();
-//
-//        for(int i = 0; i < entities.size(); i++)
-//            if(entities.get(i).selected)
-//            {
-//                hasSelection = true;
-//                selected.add(i);
-//            }
-//
-//        if(selected.size() > 0)
-//        {
-//            if(selected.size() == 1)
-//                return ((MaterialPrimitive)entities.get(selected.get(0))).shape.thickness;
-//            else if(selected.size() > 1)
-//            {
-//                boolean isSame = true;
-//                float thickness = ((MaterialPrimitive)entities.get(selected.get(0))).shape.thickness;
-//                for(int i : selected)
-//                {
-//                    MaterialPrimitive entity = (MaterialPrimitive) entities.get(i);
-//
-//                    if(entity.shape.thickness != thickness)
-//                        isSame = false;
-//                }
-//
-//                if(isSame)
-//                    return thickness;
-//            }
-//        }
-//
-//        return Consts.NaNf;
-//    }
-//
-//    public float getSelectedBevelSize()
-//    {
-//        boolean hasSelection = false;
-//        ArrayList<Integer> selected = new ArrayList<>();
-//
-//        for(int i = 0; i < entities.size(); i++)
-//            if(entities.get(i).selected)
-//            {
-//                hasSelection = true;
-//                selected.add(i);
-//            }
-//
-//        if(selected.size() > 0)
-//        {
-//            if(selected.size() == 1)
-//                return ((MaterialPrimitive)entities.get(selected.get(0))).shape.bevelSize;
-//            else if(selected.size() > 1)
-//            {
-//                boolean isSame = true;
-//                float bevelSize = ((MaterialPrimitive)entities.get(selected.get(0))).shape.bevelSize;
-//                for(int i : selected)
-//                {
-//                    MaterialPrimitive entity = (MaterialPrimitive) entities.get(i);
-//
-//                    if(entity.shape.bevelSize != bevelSize)
-//                        isSame = false;
-//                }
-//
-//                if(isSame)
-//                    return bevelSize;
-//            }
-//        }
-//
-//        return Consts.NaNf;
-//    }
-//
-//    public String getSelectedSoundName()
-//    {
-//        boolean hasSelection = false;
-//        ArrayList<Integer> selected = new ArrayList<>();
-//
-//        for(int i = 0; i < entities.size(); i++)
-//            if(entities.get(i).selected)
-//            {
-//                hasSelection = true;
-//                selected.add(i);
-//            }
-//
-//        if(selected.size() > 0)
-//        {
-//            if(selected.size() == 1)
-//                return ((WorldAudio)entities.get(selected.get(0))).soundName;
-//            else if(selected.size() > 1)
-//            {
-//                boolean isSame = true;
-//                String soundName = ((WorldAudio)entities.get(selected.get(0))).soundName;
-//                for(int i : selected)
-//                {
-//                    WorldAudio entity = (WorldAudio) entities.get(i);
-//
-//                    if(entity.soundName != soundName)
-//                        isSame = false;
-//                }
-//
-//                if(isSame)
-//                    return soundName;
-//            }
-//        }
-//
-//        return "";
-//    }
-//
-//    public float getSelectedSoundVolume()
-//    {
-//        boolean hasSelection = false;
-//        ArrayList<Integer> selected = new ArrayList<>();
-//
-//        for(int i = 0; i < entities.size(); i++)
-//            if(entities.get(i).selected)
-//            {
-//                hasSelection = true;
-//                selected.add(i);
-//            }
-//
-//        if(selected.size() > 0)
-//        {
-//            if(selected.size() == 1)
-//                return ((WorldAudio)entities.get(selected.get(0))).initialVolume;
-//            else if(selected.size() > 1)
-//            {
-//                boolean isSame = true;
-//                float soundVolume = ((WorldAudio)entities.get(selected.get(0))).initialVolume;
-//                for(int i : selected)
-//                {
-//                    WorldAudio entity = (WorldAudio) entities.get(i);
-//
-//                    if(entity.initialVolume != soundVolume)
-//                        isSame = false;
-//                }
-//
-//                if(isSame)
-//                    return soundVolume;
-//            }
-//        }
-//
-//        return Consts.NaNf;
-//    }
-//
-//    public float getSelectedSoundPitch()
-//    {
-//        boolean hasSelection = false;
-//        ArrayList<Integer> selected = new ArrayList<>();
-//
-//        for(int i = 0; i < entities.size(); i++)
-//            if(entities.get(i).selected)
-//            {
-//                hasSelection = true;
-//                selected.add(i);
-//            }
-//
-//        if(selected.size() > 0)
-//        {
-//            if(selected.size() == 1)
-//                return ((WorldAudio)entities.get(selected.get(0))).initialPitch;
-//            else if(selected.size() > 1)
-//            {
-//                boolean isSame = true;
-//                float soundVolume = ((WorldAudio)entities.get(selected.get(0))).initialPitch;
-//                for(int i : selected)
-//                {
-//                    WorldAudio entity = (WorldAudio) entities.get(i);
-//
-//                    if(entity.initialPitch != soundVolume)
-//                        isSame = false;
-//                }
-//
-//                if(isSame)
-//                    return soundVolume;
-//            }
-//        }
-//
-//        return Consts.NaNf;
-//    }
 
     public String getSelectedName()
     {
