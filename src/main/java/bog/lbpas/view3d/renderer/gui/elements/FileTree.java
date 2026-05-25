@@ -472,7 +472,7 @@ public abstract class FileTree extends Element{
                             renderer.drawRectInvert(Math.round(x - 1), Math.round(pos1[1] - 1), Math.round(width + 1), getFontHeight() + 2);
                         }
                     }
-                    renderer.drawRectOutline(new Vector2f(Math.round(pos.x), Math.round(pos.y)), outlineRect, isMouseOverElement(mouseInput) && !overOther || this.isFocused() ? Config.INTERFACE_SECONDARY_COLOR2 : Config.INTERFACE_PRIMARY_COLOR2, false);
+                    renderer.drawRectOutline(Math.round(pos.x), Math.round(pos.y), Math.round(size.x), Math.round(size.y), isMouseOverElement(mouseInput) && !overOther || this.isFocused() ? Config.INTERFACE_SECONDARY_COLOR2 : Config.INTERFACE_PRIMARY_COLOR2);
                     renderer.endScissor();
                 }
 

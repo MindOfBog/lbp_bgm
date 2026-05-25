@@ -28,8 +28,6 @@ public class ElementList extends Element{
     boolean scrolling = false;
 
     Vector2f prevSize = new Vector2f();
-    Model outlineSelection;
-    public Model outlineScrollbar;
     public Model listLine;
     public int lineOffset;
 
@@ -189,7 +187,6 @@ public class ElementList extends Element{
             cb.window = window;
             cb.size = new Vector2f(getStringWidth(cb.text) + (getFontHeight() * 0.85f) * 1.25f, getFontHeight());
             cb.prevSize = cb.size;
-            cb.outlineRect = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(cb.size.y * 0.85f, cb.size.y * 0.85f)), cb.loader, cb.window);
             elements.add(cb);
             return cb;
         }
@@ -374,7 +371,7 @@ public class ElementList extends Element{
         }
 
         renderer.drawRect((int) scrollX, (int) scrollY, 3, (int) scrollHeight, Config.INTERFACE_PRIMARY_COLOR);
-        renderer.drawRectOutline(new Vector2f((int) scrollX, (int) scrollY), outlineScrollbar, Config.INTERFACE_PRIMARY_COLOR2, false);
+        renderer.drawRectOutline((int) scrollX, (int) scrollY, 3, (int) scrollHeight, Config.INTERFACE_PRIMARY_COLOR2);
         renderer.drawRect((int) scrollX, (int) (scrollY + (((yScroll * -1 + 3) / (maxScroll - size.y + 3)) * (scrollHeight - (int) frac))), 3, (int) frac, Config.FONT_COLOR);
 
         renderer.drawLine(listLine, new Vector2f((int) this.pos.x + 2 + lineOffset, (int) this.pos.y + 2), Config.INTERFACE_PRIMARY_COLOR2, false);
@@ -411,14 +408,8 @@ public class ElementList extends Element{
 
     public void refreshOutline(float yOffset)
     {
-        if(outlineScrollbar != null)
-            this.outlineScrollbar.cleanup(loader);
-        if(outlineSelection != null)
-            this.outlineSelection.cleanup(loader);
         if(listLine != null)
             this.listLine.cleanup(loader);
-        this.outlineScrollbar = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(3, size.y - 6)), loader, window);
-        this.outlineSelection = LineStrip.processVerts(LineStrip.getRectangle(size), loader, window);
         this.listLine = Line.getLine(window, loader, new Vector2i(0), new Vector2i((int) (size.x - 2.0f - size.x * 0.05f), 0));
     }
 

@@ -116,8 +116,6 @@ public abstract class ColorPicker extends ComboBox{
         hexPanel.elements.add(new Panel.PanelElement(new DropDownTab.StringElement("percStr", "%", renderer), string3));
     }
 
-    Model outlineColor;
-
     @Override
     public void draw(MouseInput mouseInput, boolean overOther)
     {
@@ -137,18 +135,17 @@ public abstract class ColorPicker extends ComboBox{
 
         if(size.y != prevSize.y || prevYOff != yOffset)
         {
-            refreshOutline(yOffset);
             prevSize.x = size.x;
             prevSize.y = size.y;
             prevYOff = yOffset;
         }
 
         renderer.drawRect(Math.round(pos.x), Math.round(pos.y), Math.round(size.x), Math.round(size.y), ((mouseInput.rightButtonPress || mouseInput.leftButtonPress) && hovering) ? Config.INTERFACE_TERTIARY_COLOR : (hovering ? Config.INTERFACE_SECONDARY_COLOR : Config.INTERFACE_PRIMARY_COLOR));
-        renderer.drawRectOutline(new Vector2f(pos.x, pos.y), outlineSelection, ((mouseInput.rightButtonPress || mouseInput.leftButtonPress) && hovering) ? Config.INTERFACE_TERTIARY_COLOR2 : (hovering ? Config.INTERFACE_SECONDARY_COLOR2 : Config.INTERFACE_PRIMARY_COLOR2), false);
+        renderer.drawRectOutline(Math.round(pos.x), Math.round(pos.y), Math.round(size.x), Math.round(size.y), ((mouseInput.rightButtonPress || mouseInput.leftButtonPress) && hovering) ? Config.INTERFACE_TERTIARY_COLOR2 : (hovering ? Config.INTERFACE_SECONDARY_COLOR2 : Config.INTERFACE_PRIMARY_COLOR2));
 
         renderer.drawTransparencyCheckerBoard(new Vector2f(Math.round(pos.x + 4), Math.round(pos.y + 4)), new Vector2f(Math.round(size.x - 8), Math.round(size.y - 8)));
         renderer.drawRect(Math.round(pos.x + 3), Math.round(pos.y + 3), Math.round(size.x - 6), Math.round(size.y - 6), color);
-        renderer.drawRectOutline(new Vector2f(pos.x + 3, pos.y + 3), outlineColor, extended ? Config.FONT_COLOR : Config.INTERFACE_PRIMARY_COLOR2, false);
+        renderer.drawRectOutline(Math.round(pos.x + 3), Math.round(pos.y + 3), Math.round(size.x - 6), Math.round(size.y - 6), extended ? Config.FONT_COLOR : Config.INTERFACE_PRIMARY_COLOR2);
 
         renderer.startScissor(Math.round(pos.x), Math.round(pos.y), Math.round(size.x - size.y), Math.round(size.y));
         renderer.drawString(tabTitle == null ? "" : tabTitle, Config.FONT_COLOR, Math.round(pos.x + (size.y + fontHeight) / 8f), Math.round(pos.y + size.y / 2f - fontHeight / 2f));
@@ -180,15 +177,6 @@ public abstract class ColorPicker extends ComboBox{
         saturationLuminancePicker.hsva = new Vector4f(hsv.x, hsv.y, 1 - hsv.z, c.getAlpha() / 255f);
         hueRamp.setHue(hsv.x);
         alphaRamp.setSliderValue(c.getAlpha() / 255f);
-    }
-
-    @Override
-    public void refreshOutline(float yOffset)
-    {
-        super.refreshOutline(yOffset);
-        if(outlineColor != null)
-            this.outlineColor.cleanup(loader);
-        this.outlineColor = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(size).sub(6, 6)), loader, window);
     }
 
     @Override
@@ -261,7 +249,6 @@ public abstract class ColorPicker extends ComboBox{
 
     private static class SaturationLuminancePicker extends Element
     {
-        Model outlineRect;
         boolean isPicking = false;
 
         public SaturationLuminancePicker(String id, Vector2f pos, Vector2f size, RenderMan renderer, ObjectLoader loader, WindowMan window) {
@@ -287,7 +274,7 @@ public abstract class ColorPicker extends ComboBox{
                 c = Config.INTERFACE_SECONDARY_COLOR2;
 
             renderer.drawSaturationLuminancePicker(new Vector2f(pos.x + 1, pos.y + 1), new Vector2f(size.x - 2, size.y - 2), Utils.hsv2rgbVec(new Vector3f(hsva.x, 1f, 1f), 1f));
-            renderer.drawRectOutline(new Vector2f(Math.round(pos.x), Math.round(pos.y)), outlineRect, c, false);
+            renderer.drawRectOutline(Math.round(pos.x + 1), Math.round(pos.y + 1), Math.round(size.x - 2), Math.round(size.y - 2), c);
 
             if(isPicking)
             {
@@ -305,9 +292,6 @@ public abstract class ColorPicker extends ComboBox{
         @Override
         public void resize() {
             super.resize();
-            if(this.outlineRect != null)
-                this.outlineRect.cleanup(loader);
-            this.outlineRect = LineStrip.processVerts(LineStrip.getRectangle(size), loader, window);
         }
 
         @Override
@@ -374,7 +358,7 @@ public abstract class ColorPicker extends ComboBox{
                 c = Config.INTERFACE_SECONDARY_COLOR2;
 
             renderer.drawHUERamp(Math.round(pos.x), Math.round(pos.y + size.y/2f - size.y * 0.3f), Math.round(size.x), Math.round(size.y * 0.6f));
-            renderer.drawRectOutline(new Vector2f(Math.round(pos.x), Math.round(pos.y + size.y/2f - size.y * 0.3f)), outlineRect, c, false);
+            renderer.drawRectOutline(Math.round(pos.x), Math.round(pos.y + size.y/2f - size.y * 0.3f), Math.round(size.x), Math.round(size.y * 0.6f), c);
             if(!Float.isNaN(sliderPosition))
                 renderer.drawRect(Math.round(pos.x + (sliderPosition * ((size.x - size.y * 0.1f)/100))), Math.round(pos.y), Math.round(size.y * 0.15f), Math.round(size.y), Config.FONT_COLOR);
 
@@ -383,9 +367,6 @@ public abstract class ColorPicker extends ComboBox{
         @Override
         public void refreshOutline()
         {
-            if(this.outlineRect != null)
-                this.outlineRect.cleanup(loader);
-            this.outlineRect = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(Math.round(size.x), Math.round(size.y * 0.6f))), loader, window);
         }
 
         @Override
@@ -434,7 +415,7 @@ public abstract class ColorPicker extends ComboBox{
 
             renderer.drawTransparencyCheckerBoard(new Vector2f(Math.round(pos.x), Math.round(pos.y + size.y/2f - size.y * 0.3f)), new Vector2f(Math.round(size.x), Math.round(size.y * 0.6f)));
             renderer.drawAlphaRamp(Math.round(pos.x), Math.round(pos.y + size.y/2f - size.y * 0.3f), Math.round(size.x), Math.round(size.y * 0.6f), getColor());
-            renderer.drawRectOutline(new Vector2f(Math.round(pos.x), Math.round(pos.y + size.y/2f - size.y * 0.3f)), outlineRect, c, false);
+            renderer.drawRectOutline(Math.round(pos.x), Math.round(pos.y + size.y/2f - size.y * 0.3f), Math.round(size.x), Math.round(size.y * 0.6f), c);
             if(!Float.isNaN(sliderPosition))
                 renderer.drawRect(Math.round(pos.x + (sliderPosition * ((size.x - size.y * 0.1f)/100))), Math.round(pos.y), Math.round(size.y * 0.15f), Math.round(size.y), Config.FONT_COLOR);
 
@@ -443,9 +424,6 @@ public abstract class ColorPicker extends ComboBox{
         @Override
         public void refreshOutline()
         {
-            if(this.outlineRect != null)
-                this.outlineRect.cleanup(loader);
-            this.outlineRect = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(Math.round(size.x), Math.round(size.y * 0.6f))), loader, window);
         }
 
         @Override

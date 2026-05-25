@@ -70,10 +70,10 @@ public class LineStrip extends Drawable{
         return new LineStrip(pos, getRectangle(size, openSide), loader, window, smooth);
     }
 
-    public static int UP = 0;
-    public static int DOWN = 1;
-    public static int LEFT = 2;
-    public static int RIGHT = 3;
+    public final static int UP = 0;
+    public final static int DOWN = 1;
+    public final static int LEFT = 2;
+    public final static int RIGHT = 3;
 
     public static Model processVerts(Vector2f[] positions, ObjectLoader loader, WindowMan window)
     {
@@ -132,13 +132,13 @@ public class LineStrip extends Drawable{
         switch (openSide)
         {
             default:
-            case 0:
+            case UP:
                 return new Vector2f[]{new Vector2f(x1, y1), new Vector2f(x1, y2), new Vector2f(x2, y2), new Vector2f(x2, y1 - 1)};
-            case 1:
+            case DOWN:
                 return new Vector2f[]{new Vector2f(x2, y2), new Vector2f(x2, y1), new Vector2f(x1, y1), new Vector2f(x1, y2)};
-            case 2:
+            case LEFT:
                 return new Vector2f[]{new Vector2f(x1, y2), new Vector2f(x2, y2), new Vector2f(x2, y1), new Vector2f(x1, y1)};
-            case 3:
+            case RIGHT:
                 return new Vector2f[]{new Vector2f(x2, y1), new Vector2f(x1, y1), new Vector2f(x1, y2), new Vector2f(x2, y2)};
         }
     }

@@ -20,7 +20,6 @@ import java.awt.datatransfer.StringSelection;
 
 public abstract class Notification extends Element{
 
-    private Model outlineRect;
     private float prevHeight = 0;
     private ButtonImage closeButton;
     private ButtonImage copyButton;
@@ -150,9 +149,6 @@ public abstract class Notification extends Element{
     public void draw(MouseInput mouseInput, boolean overElement) {
         super.draw(mouseInput, overElement);
 
-        if(this.outlineRect == null)
-            this.outlineRect = LineStrip.processVerts(LineStrip.getRectangle(size), loader, window);
-
         if (time != -1 && System.currentTimeMillis() > time) {
             closeNotification();
             return;
@@ -200,7 +196,7 @@ public abstract class Notification extends Element{
             copyButton.draw(mouseInput, overElement);
 
         renderer.endScissor();
-        renderer.drawRectOutline(pos, outlineRect, outlineColor(), false);
+        renderer.drawRectOutline((int) pos.x, (int) pos.y, (int) size.x, (int) size.y, outlineColor());
     }
 
     @Override
@@ -219,9 +215,6 @@ public abstract class Notification extends Element{
 
     public void refreshOutline()
     {
-        if(this.outlineRect != null)
-            this.outlineRect.cleanup(loader);
-        this.outlineRect = LineStrip.processVerts(LineStrip.getRectangle(size), loader, window);
     }
 
     public abstract String getTitle();

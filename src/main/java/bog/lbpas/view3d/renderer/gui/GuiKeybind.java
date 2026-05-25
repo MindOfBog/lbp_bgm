@@ -20,16 +20,12 @@ import org.lwjgl.glfw.GLFW;
 public abstract class GuiKeybind extends GuiScreen{
 
     InputMan currentKey;
-    Model outlineRect;
-    Model outlineRect1;
 
     Element backHitbox;
 
     public GuiKeybind(InputMan key, RenderMan renderer, ObjectLoader loader, WindowMan window1)
     {
         super(renderer, loader, window1);
-        outlineRect = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(200, (getFontHeight() / 2 + 33) * 2)), loader, window1);
-        outlineRect1 = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(190, 20)), loader, window1);
 
         backHitbox = new Element() {
 
@@ -88,8 +84,8 @@ public abstract class GuiKeybind extends GuiScreen{
 
         renderer.drawRect(window.getWidth()/2 - 100, window.getHeight()/2 + (getFontHeight() / 2 - 10 - 45), 200, (getFontHeight() / 2 + 33) * 2, Config.PRIMARY_COLOR);
         renderer.drawRect(window.getWidth() / 2 - 95, window.getHeight() / 2 - getFontHeight() / 2 - 10, 190, 20, Config.INTERFACE_PRIMARY_COLOR);
-        renderer.drawRectOutline(new Vector2f(window.getWidth()/2 - 100, window.getHeight()/2 + (getFontHeight() / 2 - 10 - 45)), outlineRect, Config.SECONDARY_COLOR, false);
-        renderer.drawRectOutline(new Vector2f(window.getWidth() / 2 - 95, window.getHeight() / 2 - getFontHeight() / 2 - 10), outlineRect1, Config.INTERFACE_PRIMARY_COLOR2, false);
+        renderer.drawRectOutline(window.getWidth()/2 - 100, window.getHeight()/2 + (getFontHeight() / 2 - 10 - 45), 200, (getFontHeight() / 2 + 33) * 2, Config.SECONDARY_COLOR);
+        renderer.drawRectOutline(window.getWidth() / 2 - 95, window.getHeight() / 2 - getFontHeight() / 2 - 10, 190, 20, Config.INTERFACE_PRIMARY_COLOR2);
         renderer.drawString(currentKey.inputName(), Config.FONT_COLOR, window.getWidth() / 2 - getStringWidth(currentKey.inputName()) / 2, window.getHeight() / 2 - getFontHeight());
         renderer.drawString("Select any key:", Config.FONT_COLOR, window.getWidth() / 2 - 94, window.getHeight() / 2 + (getFontHeight() / 2 - 5 - 42));
 
@@ -134,12 +130,6 @@ public abstract class GuiKeybind extends GuiScreen{
     @Override
     public void resize()
     {
-        if(outlineRect != null)
-            outlineRect.cleanup(loader);
-        if(outlineRect1 != null)
-            outlineRect1.cleanup(loader);
-        outlineRect = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(200, (getFontHeight() / 2 + 33) * 2)), loader, window);
-        outlineRect1 = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(190, 20)), loader, window);
     }
 
     public abstract void keybind(InputMan currentKey);

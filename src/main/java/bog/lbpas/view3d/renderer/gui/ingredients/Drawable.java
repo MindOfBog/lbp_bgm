@@ -32,7 +32,8 @@ public abstract class Drawable {
         BLUR(6),
         COLOR_PICKER(7),
         GLYPH(8),
-        NODE_LINE(9);
+        NODE_LINE(9),
+        QUAD_OUTLINE(10);
 
         public final int value;
 

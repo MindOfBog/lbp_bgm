@@ -1259,20 +1259,9 @@ public class ElementEditing extends GuiScreen {
 
             public void refreshOutline(int height)
             {
-                if(outlineScrollbar != null)
-                    this.outlineScrollbar.cleanup(loader);
-                if(outlineButton != null)
-                    this.outlineButton.cleanup(loader);
-                if(outlineButtonExtra != null)
-                    this.outlineButtonExtra.cleanup(loader);
                 if(listLine != null)
                     this.listLine.cleanup(loader);
-                this.outlineScrollbar = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(3, size.y - 6)), loader, window);
                 this.listLine = Line.getLine(window, loader, new Vector2i(-(height + 2), 0), new Vector2i((int) (size.x - 1.0f - size.x * 0.05f), 0));
-                this.outlineButton = getOutlineButton(height);
-
-                if(deletable || draggable)
-                    this.outlineButtonExtra = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(height)), loader, window);
             }
 
             @Override
@@ -1341,7 +1330,7 @@ public class ElementEditing extends GuiScreen {
                                                                                                                                         entity.thing.hasPart(Part.GROUP) ? ConstantTextures.getTexture(ConstantTextures.ICON_GROUP, height, height, loader) :
                                                                                                                                                 ConstantTextures.getTexture(ConstantTextures.ICON_UNKNOWN, height, height, loader)
                         , posX, posY, height, height, loader);
-                renderer.drawRectOutline(new Vector2f(posX, posY), this.outlineButtonExtra, buttonColor2(object, i), false);
+                renderer.drawRectOutline(posX, posY, height, height, buttonColor2(object, i));
             }
 
             @Override

@@ -27,7 +27,6 @@ public class Slider extends Element{
     float max = 100;
 
     Vector2f prevSize;
-    Model outlineRect;
 
     public Slider(String id, Vector2f pos, Vector2f size, RenderMan renderer, ObjectLoader loader, WindowMan window)
     {
@@ -35,7 +34,6 @@ public class Slider extends Element{
         this.pos = pos;
         this.size = size;
         this.prevSize = size;
-        this.outlineRect = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(size.x, size.y * 0.2f)), loader, window);
         this.renderer = renderer;
         this.loader = loader;
         this.window = window;
@@ -47,7 +45,6 @@ public class Slider extends Element{
         this.pos = pos;
         this.size = size;
         this.prevSize = size;
-        this.outlineRect = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(size.x, size.y * 0.2f)), loader, window);
         this.renderer = renderer;
         this.loader = loader;
         this.window = window;
@@ -82,7 +79,7 @@ public class Slider extends Element{
         }
 
         renderer.drawRect(Math.round(pos.x), Math.round(pos.y + size.y/2f - size.y * 0.1f), Math.round(size.x), Math.round(size.y * 0.2f), c);
-        renderer.drawRectOutline(new Vector2f(Math.round(pos.x), Math.round(pos.y + size.y/2f - size.y * 0.1f)), outlineRect, c2, false);
+        renderer.drawRectOutline(Math.round(pos.x), Math.round(pos.y + size.y/2f - size.y * 0.1f), Math.round(size.x), Math.round(size.y * 0.2f), c2);
         if(!Float.isNaN(sliderPosition))
             renderer.drawRect(Math.round(pos.x + (sliderPosition * ((size.x - size.y * 0.1f)/100))), Math.round(pos.y), Math.round(size.y * 0.15f), Math.round(size.y), Config.FONT_COLOR);
 
@@ -92,11 +89,9 @@ public class Slider extends Element{
         super.resize();
         refreshOutline();
     }
+
     public void refreshOutline()
     {
-        if(this.outlineRect != null)
-            this.outlineRect.cleanup(loader);
-        this.outlineRect = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(Math.round(size.x), Math.round(size.y * 0.2f))), loader, window);
     }
     @Override
     public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement, boolean focusedOther) {

@@ -24,7 +24,6 @@ public abstract class Button extends Element{
     public boolean isClicked = false;
 
     Vector2f prevSize;
-    Model outlineRect;
 
     public Button()
     {
@@ -55,7 +54,6 @@ public abstract class Button extends Element{
         this.pos = pos;
         this.size = size;
         this.prevSize = size;
-        this.outlineRect = LineStrip.processVerts(LineStrip.getRectangle(size), loader, window);
         this.renderer = renderer;
         this.loader = loader;
         this.window = window;
@@ -68,7 +66,6 @@ public abstract class Button extends Element{
         this.pos = pos;
         this.size = size;
         this.prevSize = size;
-        this.outlineRect = LineStrip.processVerts(LineStrip.getRectangle(size), loader, window);
         this.renderer = renderer;
         this.loader = loader;
         this.window = window;
@@ -81,7 +78,6 @@ public abstract class Button extends Element{
 
         if(size.x != prevSize.x || size.y != prevSize.y)
         {
-            refreshOutline();
             prevSize = size;
         }
 
@@ -106,8 +102,8 @@ public abstract class Button extends Element{
         renderer.startScissor(Math.round(pos.x), Math.round(pos.y), Math.round(size.x), Math.round(size.y));
         renderer.drawRect(Math.round(pos.x), Math.round(pos.y), Math.round(size.x), Math.round(size.y), c);
         renderer.drawString(buttonText, Config.FONT_COLOR, Math.round(pos.x + size.x / 2 - getStringWidth(buttonText) / 2), Math.round(pos.y + size.y / 2 - getFontHeight() / 2));
+        renderer.drawRectOutline(Math.round(pos.x), Math.round(pos.y), Math.round(size.x), Math.round(size.y), c2);
         renderer.endScissor();
-        renderer.drawRectOutline(new Vector2f(Math.round(pos.x), Math.round(pos.y)), outlineRect, c2, false);
     }
 
     public void setClicked(boolean clicked) {
@@ -135,17 +131,9 @@ public abstract class Button extends Element{
     @Override
     public void resize() {
         super.resize();
-        refreshOutline();
     }
 
     public abstract void clickedButton(int button, int action, int mods);
-
-    public void refreshOutline()
-    {
-        if(outlineRect != null)
-            this.outlineRect.cleanup(loader);
-        this.outlineRect = LineStrip.processVerts(LineStrip.getRectangle(size), loader, window);
-    }
 
     @Override
     public void hoverCursor() {

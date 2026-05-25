@@ -27,7 +27,6 @@ public abstract class ButtonImage extends Element{
     public boolean isClicked = false;
 
     Vector2f prevSize;
-    Model outlineRect;
 
     public Vector2f imageSize;
 
@@ -82,12 +81,8 @@ public abstract class ButtonImage extends Element{
         int width = Math.round(size.x);
         int height = Math.round(size.y);
 
-        if(this.outlineRect == null)
-            this.outlineRect = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(x, y)), loader, window);
-
         if(size.x != prevSize.x || size.y != prevSize.y)
         {
-            refreshOutline();
             prevSize = size;
         }
 
@@ -100,12 +95,11 @@ public abstract class ButtonImage extends Element{
         Texture image = getImage();
         if(image.id != -1)
             renderer.drawImageStatic(image, Math.round(pos.x + (size.x / 2f) - (this.imageSize.x / 2f)), Math.round(pos.y + (size.y / 2f) - (this.imageSize.y / 2f)), Math.round(this.imageSize.x), Math.round(this.imageSize.y), loader);
-        renderer.drawRectOutline(new Vector2f(x, y), outlineRect, colors[1], false);
+        renderer.drawRectOutline(x, y, width, height, colors[1]);
     }
     @Override
     public void resize() {
         super.resize();
-        refreshOutline();
     }
     public void setClicked(boolean clicked) {
         isClicked = clicked;
@@ -130,13 +124,6 @@ public abstract class ButtonImage extends Element{
     }
 
     public abstract void clickedButton(int button, int action, int mods);
-
-    public void refreshOutline()
-    {
-        if(this.outlineRect != null)
-            this.outlineRect.cleanup(loader);
-        this.outlineRect = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(Math.round(size.x), Math.round(size.y))), loader, window);
-    }
 
     @Override
     public void hoverCursor() {

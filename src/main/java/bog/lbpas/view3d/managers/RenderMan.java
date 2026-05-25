@@ -666,10 +666,19 @@ public class RenderMan {
         this.processGuiElement(new Quad(new Vector4f(1f), new Vector2f(x, y), new Vector2f(width, height)).invert());
     }
 
-    public void drawRectOutline(Vector2f pos, Model outline, Color color, boolean smooth)
+    public void drawRectOutline(int x, int y, int width, int height, Color color)
     {
-        this.processGuiElement(new LineStrip(pos, outline, color, smooth));
+        this.processGuiElement(new QuadOutline(color, x, y, width, height, window));
     }
+
+    public void drawRectOutline(int x, int y, int width, int height, Color color, int openSide)
+    {
+        this.processGuiElement(new QuadOutline(color, x, y, width, height, openSide, window));
+    }
+//    public void drawRectOutline(Vector2f pos, Model outline, Color color, boolean smooth)
+//    {
+//        this.processGuiElement(new LineStrip(pos, outline, color, smooth));
+//    }
 
     public void drawTriangle(ObjectLoader loader, Vector2f p1, Vector2f p2, Vector2f p3, Color color)
     {

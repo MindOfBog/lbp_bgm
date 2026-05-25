@@ -414,8 +414,8 @@ public class View3D implements ILogic {
         boolean hasSelection = false;
         int selectedAmount = 0;
 
-        for(bog.lbpas.view3d.core.types.Thing thing : things)
-            if(thing.selected)
+        for(int i = 0; i < things.size(); i++)
+            if(things.get(i).selected)
             {
                 hasSelection = true;
                 selectedAmount++;
@@ -1174,6 +1174,8 @@ public class View3D implements ILogic {
         renderer.drawLine(topBarLine, Config.SECONDARY_COLOR,false);
         renderer.drawLineStrip(windowFrame, new Vector2f(3, 3), Color.black, false);
         renderer.drawLineStrip(windowFrameOuter, new Vector2f(0), Color.black, false);
+
+//        renderer.drawNodeLine(new Vector2i(50, 100), new Vector2i(500, 350));
 
         if(!introPlayed)
         {

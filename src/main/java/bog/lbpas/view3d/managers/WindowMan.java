@@ -288,10 +288,8 @@ public class WindowMan {
         GLFW.glfwMakeContextCurrent(window);
         glCapabilities = GL.createCapabilities();
 
-        print.warning(glCapabilities.GL_ARB_parallel_shader_compile);
-        if (glCapabilities.GL_ARB_parallel_shader_compile) {
+        if (glCapabilities.GL_ARB_parallel_shader_compile)
             ARBParallelShaderCompile.glMaxShaderCompilerThreadsARB(4);
-        }
 
         if(Main.debug)
             GLUtil.setupDebugMessageCallback(System.out);

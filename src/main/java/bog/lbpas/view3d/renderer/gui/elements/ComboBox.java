@@ -31,9 +31,6 @@ public abstract class ComboBox extends Element{
 
     Vector2f prevSize = new Vector2f();
 
-    Model outlineSelection;
-    Model outlineElement;
-
     public ComboBox()
     {
         comboElements = new ArrayList<>();
@@ -89,7 +86,6 @@ public abstract class ComboBox extends Element{
 
         if(tabWidth() != prevSize.x || size.y != prevSize.y || prevYOff != yOffset)
         {
-            refreshOutline(yOffset);
             prevSize.x = size.x;
             prevSize.y = size.y;
             prevYOff = yOffset;
@@ -97,7 +93,7 @@ public abstract class ComboBox extends Element{
 
 
         renderer.drawRect(Math.round(pos.x), Math.round(pos.y), Math.round(size.x), Math.round(size.y), ((mouseInput.rightButtonPress || mouseInput.leftButtonPress) && hovering) ? Config.INTERFACE_TERTIARY_COLOR : (hovering || extended ? Config.INTERFACE_SECONDARY_COLOR : Config.INTERFACE_PRIMARY_COLOR));
-        renderer.drawRectOutline(new Vector2f(pos.x, pos.y), outlineSelection, ((mouseInput.rightButtonPress || mouseInput.leftButtonPress) && hovering) ? Config.INTERFACE_TERTIARY_COLOR2 : (hovering || extended ? Config.INTERFACE_SECONDARY_COLOR2 : Config.INTERFACE_PRIMARY_COLOR2), false);
+        renderer.drawRectOutline(Math.round(pos.x), Math.round(pos.y), Math.round(size.x), Math.round(size.y), ((mouseInput.rightButtonPress || mouseInput.leftButtonPress) && hovering) ? Config.INTERFACE_TERTIARY_COLOR2 : (hovering || extended ? Config.INTERFACE_SECONDARY_COLOR2 : Config.INTERFACE_PRIMARY_COLOR2));
 
         drawComboTab(fontHeight);
 
@@ -307,7 +303,6 @@ public abstract class ComboBox extends Element{
             cb.window = window;
             cb.size = new Vector2f(getStringWidth(cb.text) + (getFontHeight() * 0.85f) * 1.25f, getFontHeight());
             cb.prevSize = cb.size;
-            cb.outlineRect = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(cb.size.y * 0.85f, cb.size.y * 0.85f)), cb.loader, cb.window);
             comboElements.add(cb);
             return cb;
         }
@@ -510,17 +505,6 @@ public abstract class ComboBox extends Element{
         float yOffset = 0;
         if (extended)
             yOffset = updateElements(yOffset);
-        refreshOutline(yOffset);
-    }
-
-    public void refreshOutline(float yOffset)
-    {
-        if(outlineSelection != null)
-            this.outlineSelection.cleanup(loader);
-        if(outlineElement != null)
-            this.outlineElement.cleanup(loader);
-        this.outlineSelection = LineStrip.processVerts(LineStrip.getRectangle(size), loader, window);
-        this.outlineElement = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(tabWidth(), Math.round(2f + yOffset))), loader, window);
     }
 
     public void drawBackdrop(float yOffset)
@@ -541,7 +525,7 @@ public abstract class ComboBox extends Element{
         renderer.doBlur(Consts.GAUSSIAN_RADIUS, Consts.GAUSSIAN_KERNEL, x, y, xSize, ySize);
 
         renderer.drawRect(x, y, xSize, Math.round(2f + yOffset), Config.PRIMARY_COLOR);
-        renderer.drawRectOutline(new Vector2f(x, y), outlineElement, Config.SECONDARY_COLOR, false);
+        renderer.drawRectOutline(x, y, xSize, Math.round(2f + yOffset), Config.SECONDARY_COLOR);
     }
 
     public int[] getTabPosWidth()
@@ -839,7 +823,6 @@ public abstract class ComboBox extends Element{
                     float yOffset = 0;
                     if (extended)
                         yOffset = updateElements(yOffset);
-                    refreshOutline(yOffset);
                 }
             }
         }

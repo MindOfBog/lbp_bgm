@@ -27,14 +27,12 @@ public class Textarea extends Element{
 
     private String text = "";
     Vector2f prevSize;
-    Model outlineRect;
     public Textarea(String id, Vector2f pos, Vector2f size, RenderMan renderer, ObjectLoader loader, WindowMan window)
     {
         this.id = id;
         this.pos = pos;
         this.size = size;
         this.prevSize = size;
-        this.outlineRect = LineStrip.processVerts(LineStrip.getRectangle(size), loader, window);
         this.renderer = renderer;
         this.loader = loader;
         this.window = window;
@@ -154,7 +152,7 @@ public class Textarea extends Element{
             currentLength += line.length() + 1;
         }
         renderer.endScissor();
-        renderer.drawRectOutline(pos, outlineRect, isMouseOverElement(mouseInput) && !overOther || this.isFocused() ? Config.INTERFACE_SECONDARY_COLOR2 : Config.INTERFACE_PRIMARY_COLOR2, false);
+        renderer.drawRectOutline((int)pos.x, (int)pos.y, (int)size.x, (int)size.y, isMouseOverElement(mouseInput) && !overOther || this.isFocused() ? Config.INTERFACE_SECONDARY_COLOR2 : Config.INTERFACE_PRIMARY_COLOR2);
 
     }
     @Override
@@ -165,9 +163,6 @@ public class Textarea extends Element{
 
     public void refreshOutline()
     {
-        if(this.outlineRect != null)
-            this.outlineRect.cleanup(loader);
-        this.outlineRect = LineStrip.processVerts(LineStrip.getRectangle(size), loader, window);
     }
 
     @Override

@@ -23,7 +23,6 @@ public class Checkbox extends Element{
     public boolean isChecked = false;
 
     Vector2f prevSize;
-    Model outlineRect;
 
     public Checkbox(){}
 
@@ -37,7 +36,6 @@ public class Checkbox extends Element{
         this.text = text;
         this.size = new Vector2f(getStringWidth(text) + (getFontHeight() * 0.85f) * 1.25f, getFontHeight());
         this.prevSize = size;
-        this.outlineRect = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(size.y * 0.85f, size.y * 0.85f)), loader, window);
     }
 
     public Checkbox(String id, String text, RenderMan renderer, ObjectLoader loader, WindowMan window)
@@ -49,7 +47,6 @@ public class Checkbox extends Element{
         this.text = text;
         this.size = new Vector2f(getStringWidth(text) + (getFontHeight() * 0.85f) * 1.25f, getFontHeight());
         this.prevSize = size;
-        this.outlineRect = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(size.y * 0.85f, size.y * 0.85f)), loader, window);
     }
 
     public Checkbox(String id, String text)
@@ -76,7 +73,6 @@ public class Checkbox extends Element{
 
         if(size.x != prevSize.x || size.y != prevSize.y)
         {
-            refreshOutline();
             prevSize = size;
         }
 
@@ -85,7 +81,7 @@ public class Checkbox extends Element{
         int radius = Math.round(size.y * 0.85f);
 
         renderer.drawRect(posX, posY, radius, radius, isMouseOverElement(mouseInput) && !overElement ? Config.INTERFACE_SECONDARY_COLOR : Config.INTERFACE_PRIMARY_COLOR);
-        renderer.drawRectOutline(new Vector2f(posX, posY), outlineRect, isMouseOverElement(mouseInput) && !overElement ? Config.INTERFACE_SECONDARY_COLOR2 : Config.INTERFACE_PRIMARY_COLOR2, false);
+        renderer.drawRectOutline(posX, posY, radius, radius, isMouseOverElement(mouseInput) && !overElement ? Config.INTERFACE_SECONDARY_COLOR2 : Config.INTERFACE_PRIMARY_COLOR2);
 
         if(isChecked)
         {
@@ -100,7 +96,6 @@ public class Checkbox extends Element{
     @Override
     public void resize() {
         super.resize();
-        refreshOutline();
     }
     @Override
     public void onClick(MouseInput mouseInput, Vector2d pos, int button, int action, int mods, boolean overElement, boolean focusedOther) {
@@ -108,14 +103,6 @@ public class Checkbox extends Element{
 
         if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && isMouseOverElement(pos) && !overElement)
             this.isChecked = !this.isChecked;
-    }
-
-    public void refreshOutline()
-    {
-        if(this.outlineRect != null)
-            this.outlineRect.cleanup(loader);
-        if(size != null)
-            this.outlineRect = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(Math.round(size.y * 0.85f), Math.round(size.y * 0.85f))), loader, window);
     }
 
     @Override

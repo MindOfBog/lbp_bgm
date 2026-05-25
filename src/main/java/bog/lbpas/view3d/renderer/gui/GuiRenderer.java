@@ -568,6 +568,39 @@ public class GuiRenderer {
                     clearElement(element);
                 }
                 break;
+                case QUAD_OUTLINE:
+                {
+                    QuadOutline element = (QuadOutline) drawable;
+
+                    bindVAO(defaultQuad);
+
+                    guiShader.setUniform("transformationMatrix", Transformation.createTransformationMatrix(new Vector2f(), new Vector2f(1)));
+
+                    if (element.color != null)
+                        guiShader.setUniform("color", new Vector4f(
+                                element.invert ? 1f : element.color.getRed() / 255f,
+                                element.invert ? 1f : element.color.getGreen() / 255f,
+                                element.invert ? 1f : element.color.getBlue() / 255f,
+                                element.invert ? 1f : element.color.getAlpha() / 255f));
+
+                    guiShader.setUniform("dimensions", element.pos, element.size);
+                    guiShader.setUniform("abstractInt", element.openSide);
+
+                    if (element.invert) {
+                        GL11.glBlendFunc(GL11.GL_SRC_COLOR, GL11.GL_ONE);
+                        GL14.glBlendEquation(GL14.GL_FUNC_SUBTRACT);
+                    }
+
+                    GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, defaultQuad.vertexCount);
+
+                    if (element.invert) {
+                        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+                        GL14.glBlendEquation(GL14.GL_FUNC_ADD);
+                    }
+
+                    clearElement(element);
+                }
+                break;
             }
         }
 

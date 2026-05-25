@@ -33,8 +33,6 @@ public class DropDownTab extends Element{
     public boolean resizeY = false;
 
     Vector2f prevSize = new Vector2f();
-    Model outlineSelection;
-    Model outlineElement;
 
     public DropDownTab(String id, String tabTitle, Vector2f pos, Vector2f size, RenderMan renderer, ObjectLoader loader, WindowMan window)
     {
@@ -442,7 +440,7 @@ public class DropDownTab extends Element{
 
         drawBackdrop(yOffset);
         renderer.drawRect(Math.round(pos.x), Math.round(pos.y), Math.round(size.x), Math.round(size.y), (dragging || (mouseInput.rightButtonPress && isMouseOverTab(mouseInput))) && !overOther ? Config.INTERFACE_TERTIARY_COLOR : (isMouseOverTab(mouseInput) && !overOther ? Config.INTERFACE_SECONDARY_COLOR : Config.INTERFACE_PRIMARY_COLOR));
-        renderer.drawRectOutline(new Vector2f(Math.round(pos.x), Math.round(pos.y)), outlineSelection, (dragging || (mouseInput.rightButtonPress && isMouseOverTab(mouseInput))) && !overOther ? Config.INTERFACE_TERTIARY_COLOR2 : (isMouseOverTab(mouseInput) && !overOther ? Config.INTERFACE_SECONDARY_COLOR2 : Config.INTERFACE_PRIMARY_COLOR2), false);
+        renderer.drawRectOutline(Math.round(pos.x), Math.round(pos.y), Math.round(size.x), Math.round(size.y), (dragging || (mouseInput.rightButtonPress && isMouseOverTab(mouseInput))) && !overOther ? Config.INTERFACE_TERTIARY_COLOR2 : (isMouseOverTab(mouseInput) && !overOther ? Config.INTERFACE_SECONDARY_COLOR2 : Config.INTERFACE_PRIMARY_COLOR2));
 
         if(extended && (resizeX || resizeY))
         {
@@ -501,13 +499,6 @@ public class DropDownTab extends Element{
 
     public void refreshOutline(float yOffset)
     {
-        if(outlineSelection != null)
-            this.outlineSelection.cleanup(loader);
-        if(outlineElement != null)
-            this.outlineElement.cleanup(loader);
-
-        this.outlineSelection = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(Math.round(size.x), Math.round(size.y))), loader, window);
-        this.outlineElement = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(Math.round(size.x), Math.round(2f + yOffset)), LineStrip.UP), loader, window);
     }
 
     public void drawBackdrop(float yOffset)
@@ -529,7 +520,7 @@ public class DropDownTab extends Element{
             int yE = Math.round(pos.y + size.y);
 
             renderer.drawRect(x, yE, xSize, Math.round(2f + yOffset), Config.PRIMARY_COLOR);
-            renderer.drawRectOutline(new Vector2f(x, yE), outlineElement, Config.SECONDARY_COLOR, false);
+            renderer.drawRectOutline(x, yE, xSize, Math.round(2f + yOffset), Config.SECONDARY_COLOR, 0);
         }
     }
 

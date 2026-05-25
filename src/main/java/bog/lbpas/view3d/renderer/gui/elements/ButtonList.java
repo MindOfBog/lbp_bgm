@@ -32,11 +32,8 @@ public abstract class ButtonList<T> extends Element{
 
     Vector2f prevSize;
     int prevButtonHeight;
-    public Model outlineScrollbar;
     public Model listLine;
     public int lineOffset;
-    public Model outlineButton;
-    public Model outlineButtonExtra;
 
     public boolean deletable;
     public boolean draggable;
@@ -128,7 +125,7 @@ public abstract class ButtonList<T> extends Element{
 
         int height = buttonHeight();
 
-        if(outlineButton == null || ((deletable || draggable) && outlineButtonExtra == null) || size.x != prevSize.x || size.y != prevSize.y || prevButtonHeight != height)
+        if(deletable || draggable || size.x != prevSize.x || size.y != prevSize.y || prevButtonHeight != height)
         {
             refreshOutline(height);
             prevSize = size;
@@ -156,7 +153,7 @@ public abstract class ButtonList<T> extends Element{
             yScroll = 0;
 
         renderer.drawRect((int) scrollX, (int) scrollY, 3, (int) scrollHeight, buttonColor(null, -1));
-        renderer.drawRectOutline(new Vector2f((int) scrollX, (int) scrollY), outlineScrollbar, buttonColor2(null, -1), false);
+        renderer.drawRectOutline((int) scrollX, (int) scrollY, 3, (int) scrollHeight, buttonColor2(null, -1));
         renderer.drawRect((int) scrollX, (int) (scrollY + ((Math.abs(yScroll) / maxScroll) * (scrollHeight - (int) frac))), 3, (int) frac, textColor(null, -1));
 
         renderer.drawLine(listLine, new Vector2f((int) this.pos.x + 2 + lineOffset, (int) this.pos.y + 2), buttonColor2(null, -1), false);
@@ -368,7 +365,7 @@ public abstract class ButtonList<T> extends Element{
         renderer.startScissor(Math.round(pos.x + 4), Math.round(posY), newWidth, newHeight);
         renderer.drawRect(Math.round(pos.x + 4), Math.round(posY), newWidth, newHeight, !hoveringMain ? buttonColor(object, i) : (isSelected(object, i) ? buttonColorSelected(object, i) : buttonColorHighlighted(object, i)));
         renderer.drawString(buttonText(object, i), textColor(object, i), Math.round(pos.x + 6f + ((newWidthF / 2f) - (getStringWidth(buttonText(object, i)) / 2f))), Math.round(posY + height / 2 - getFontHeight() / 2));
-        renderer.drawRectOutline(new Vector2f(Math.round(pos.x + 4), Math.round(posY)), outlineButton, !hoveringMain ? buttonColor2(object, i) : (isSelected(object, i) ? buttonColorSelected2(object, i) : buttonColorHighlighted2(object, i)), false);
+        renderer.drawRectOutline(Math.round(pos.x + 4), Math.round(posY), newWidth, newHeight, !hoveringMain ? buttonColor2(object, i) : (isSelected(object, i) ? buttonColorSelected2(object, i) : buttonColorHighlighted2(object, i)));
         renderer.endScissor();
 
         if(deletable)
@@ -391,7 +388,7 @@ public abstract class ButtonList<T> extends Element{
 
             renderer.drawRect(x, Math.round(posY), newHeight, newHeight, !hovering ? buttonColor(object, i) : buttonColorHighlighted(object, i));
             renderer.drawImageStatic(ConstantTextures.getTexture(ConstantTextures.WINDOW_CLOSE, newHeight, newHeight, loader), x, Math.round(posY), newHeight, newHeight, loader);
-            renderer.drawRectOutline(new Vector2f(x, Math.round(posY)), outlineButtonExtra, !hovering ? buttonColor2(object, i) : buttonColorHighlighted2(object, i), false);
+            renderer.drawRectOutline(x, Math.round(posY), newHeight, newHeight, !hovering ? buttonColor2(object, i) : buttonColorHighlighted2(object, i));
         }
         if(draggable)
         {
@@ -415,7 +412,7 @@ public abstract class ButtonList<T> extends Element{
 
             renderer.drawRect(Math.round(pos.x + 4) + newWidth + 2, Math.round(posY), newHeight, newHeight, !hovering ? buttonColor(object, i) : buttonColorHighlighted(object, i));
             renderer.drawImageStatic(ConstantTextures.getTexture(ConstantTextures.DRAG, newHeight, newHeight, loader), Math.round(pos.x + 4) + newWidth + 2, Math.round(posY), newHeight, newHeight, loader);
-            renderer.drawRectOutline(new Vector2f(Math.round(pos.x + 4) + newWidth + 2, Math.round(posY)), outlineButtonExtra, !hovering ? buttonColor2(object, i) : buttonColorHighlighted2(object, i), false);
+            renderer.drawRectOutline(Math.round(pos.x + 4) + newWidth + 2, Math.round(posY), newHeight, newHeight, !hovering ? buttonColor2(object, i) : buttonColorHighlighted2(object, i));
         }
     }
     public int buttonHeight()
@@ -433,20 +430,9 @@ public abstract class ButtonList<T> extends Element{
     }
     public void refreshOutline(int height)
     {
-        if(outlineScrollbar != null)
-            this.outlineScrollbar.cleanup(loader);
-        if(outlineButton != null)
-            this.outlineButton.cleanup(loader);
-        if(outlineButtonExtra != null)
-            this.outlineButtonExtra.cleanup(loader);
         if(listLine != null)
             this.listLine.cleanup(loader);
-        this.outlineScrollbar = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(3, size.y - 6)), loader, window);
         this.listLine = Line.getLine(window, loader, new Vector2i(0), new Vector2i((int) (size.x - 1.0f - size.x * 0.05f), 0));
-        this.outlineButton = getOutlineButton(height);
-
-        if(deletable || draggable)
-            this.outlineButtonExtra = LineStrip.processVerts(LineStrip.getRectangle(new Vector2f(height)), loader, window);
     }
     public abstract void clickedButton(T object, int index, int button, int action, int mods);
     public abstract void hoveringButton(T object, int index);

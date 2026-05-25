@@ -1051,7 +1051,6 @@ public class ProjectManager extends GuiScreen {
             public void clickedButton(int button, int action, int mods) {
                 if(button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && creatorHistoryAddPlan.getText() != null)
                     creatorHistoryListPlan.add(creatorHistoryAddPlan.getText());
-                print.warning(creatorHistoryListPlan.size());
             }
         }, 0.19f));
 
