@@ -5,7 +5,7 @@ package bog.lbpas.view3d.utils;
  */
 public class Consts {
     public static String TITLE = "LBP Asset Studio";
-    public static String VERSION = "1.8";
+    public static String VERSION = "1.9";
     public static long NANOSECOND = 1000000000L;
     public static float NaNf = Float.intBitsToFloat(0x7fc00000);
     public static double NaNd = Double.longBitsToDouble(0x7ff8000000000000L);
