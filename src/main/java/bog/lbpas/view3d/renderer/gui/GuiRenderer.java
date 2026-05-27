@@ -79,6 +79,7 @@ public class GuiRenderer {
     public void render(FBO screenBuffer, FBO blurBuffer)
     {
         guiShader.bind();
+        lastVAO = -1;
         lastTexture = -1;
 
         GL11.glEnable(GL11.GL_BLEND);
@@ -675,9 +676,15 @@ public class GuiRenderer {
         GL11.glDrawArrays(GL11.GL_TRIANGLE_STRIP, 0, GuiRenderer.defaultQuad.vertexCount);
     }
 
+    int lastVAO = -1;
     private void bindVAO(Model model)
     {
-        GL30.glBindVertexArray(model.vao);
+        if(lastVAO != model.vao)
+        {
+            GL30.glBindVertexArray(model.vao);
+            lastVAO = model.vao;
+        }
+
         GL20.glEnableVertexAttribArray(0);
         for(int attrib : model.attribs)
             if(attrib > 0)

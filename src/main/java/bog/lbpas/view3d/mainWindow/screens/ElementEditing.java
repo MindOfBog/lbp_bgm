@@ -16,18 +16,20 @@ import bog.lbpas.view3d.renderer.gui.elements.*;
 import bog.lbpas.view3d.renderer.gui.elements.Checkbox;
 import bog.lbpas.view3d.renderer.gui.elements.Panel;
 import bog.lbpas.view3d.renderer.gui.ingredients.Line;
-import bog.lbpas.view3d.renderer.gui.ingredients.LineStrip;
 import bog.lbpas.view3d.utils.*;
 import bog.lbpas.view3d.utils.CWLibUtils.SkeletonUtils;
 import com.formdev.flatlaf.util.SystemFileChooser;
+import com.google.gson.*;
 import cwlib.enums.Part;
 import cwlib.enums.ResourceType;
+import cwlib.io.Serializable;
 import cwlib.resources.*;
 import cwlib.structs.slot.Pack;
 import cwlib.structs.slot.Slot;
 import cwlib.structs.things.Thing;
 import cwlib.structs.things.parts.*;
 import cwlib.types.SerializedResource;
+import cwlib.types.data.GUID;
 import cwlib.types.data.ResourceDescriptor;
 import cwlib.types.databases.FileDBRow;
 import cwlib.types.databases.FileEntry;
@@ -37,13 +39,10 @@ import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.joml.Math;
 import org.joml.*;
 import org.lwjgl.glfw.GLFW;
-import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
@@ -892,13 +891,87 @@ public class ElementEditing extends GuiScreen {
                     if(!thing.selected)
                         continue;
 
-                    new CodeEditor("Thing: \"" + thing.thing.name + "\"", GsonUtils.toJSON(thing.thing),  SyntaxConstants.SYNTAX_STYLE_JSON)
+                    Gson gson = GsonUtils.GetGsonForCodeEditor();
+
+                    JsonObject object = new JsonObject();
+                    object.addProperty("createdBy", thing.thing.createdBy);
+                    object.addProperty("changedBy", thing.thing.changedBy);
+                    object.addProperty("isStamping", thing.thing.isStamping);
+                    object.addProperty("planGUID", thing.thing.planGUID != null ? thing.thing.planGUID.getValue() : null);
+                    object.addProperty("hidden", thing.thing.hidden);
+                    object.addProperty("flags", thing.thing.flags);
+                    object.addProperty("extraFlags", thing.thing.extraFlags);
+
+                    for (Part part : Part.values())
+                    {
+                        Object component = thing.thing.getPart(part);
+                        if (component != null)
+                            object.add(part.getNameForReflection(), gson.toJsonTree(component));
+                    }
+
+                    CodeEditor thingEditor = new CodeEditor("Thing: \"" + thing.thing.name + "\"", gson.toJson(object),  SyntaxConstants.SYNTAX_STYLE_JSON)
                     {
                         @Override
-                        public boolean onSaveChanges() {
-                            return true;
+                        public boolean onSaveChanges(String json) {
+
+                            try
+                            {
+                                JsonObject object = JsonParser.parseString(json).getAsJsonObject();
+
+                                if (object.has("createdBy"))
+                                    thing.thing.createdBy = object.get("createdBy").getAsShort();
+                                if (object.has("changedBy"))
+                                    thing.thing.changedBy = object.get("changedBy").getAsShort();
+                                if (object.has("isStamping"))
+                                    thing.thing.isStamping = object.get("isStamping").getAsBoolean();
+                                if (object.has("planGUID"))
+                                    thing.thing.planGUID = object.get("planGUID").isJsonNull() ? null : new GUID(object.get("planGUID").getAsLong());
+                                if (object.has("hidden"))
+                                    thing.thing.hidden = object.get("hidden").getAsBoolean();
+                                if (object.has("flags"))
+                                    thing.thing.flags = object.get("flags").getAsShort();
+                                if (object.has("extraFlags"))
+                                    thing.thing.extraFlags = object.get("extraFlags").getAsByte();
+
+                                for (Part part : Part.values())
+                                {
+                                    JsonElement element = object.get(part.getNameForReflection());
+
+                                    if (element != null)
+                                    {
+                                        Object original = thing.thing.getPart(part);
+
+                                        if(original != null)
+                                            GsonUtils.CodeEditorUtil.mergeExcluding(fromJSON(element, part.getSerializable()), original, Thing.class);
+                                        else
+                                            thing.thing.setPart(part, fromJSON(element, part.getSerializable()));
+                                    }
+                                    else if(thing.thing.hasPart(part))
+                                        thing.thing.setPart(part, null);
+                                }
+
+                                return true;
+                            }catch (Exception e)
+                            {
+                                print.stackTrace(e);
+                            }
+
+                            return false;
+                        }
+
+                        private <T extends Serializable> T fromJSON(JsonElement element, Class<?> clazz)
+                        {
+                            return gson.fromJson(element, (Class<T>) clazz);
+                        }
+
+                        @Override
+                        public void closeWindow() {
+                            super.closeWindow();
+                            thing.openEditors.remove(this);
                         }
                     };
+
+                    thing.openEditors.add(thingEditor);
                 }
             }
         });
@@ -1598,16 +1671,16 @@ public class ElementEditing extends GuiScreen {
         boolean hasPPos = false;
         int hasPLevelSettings = 0;
 
-        for(Entity entity : mainView.things)
-            if(entity.selected)
+        for(int i = 0; i < mainView.things.size(); i++)
+            if(mainView.things.get(i).selected)
             {
                 hasSelection = true;
                 selectedAmount++;
-                if(((bog.lbpas.view3d.core.types.Thing)entity).thing.hasPart(Part.POS))
+                if(((bog.lbpas.view3d.core.types.Thing)mainView.things.get(i)).thing.hasPart(Part.POS))
                     hasPPos = true;
-                if(((bog.lbpas.view3d.core.types.Thing)entity).thing.hasPart(Part.LEVEL_SETTINGS) == hasPLevelSettings >= 0)
+                if(((bog.lbpas.view3d.core.types.Thing)mainView.things.get(i)).thing.hasPart(Part.LEVEL_SETTINGS) == hasPLevelSettings >= 0)
                     hasPLevelSettings++;
-                if(!((bog.lbpas.view3d.core.types.Thing)entity).thing.hasPart(Part.LEVEL_SETTINGS))
+                if(!((bog.lbpas.view3d.core.types.Thing)mainView.things.get(i)).thing.hasPart(Part.LEVEL_SETTINGS))
                     hasPLevelSettings = -1;
             }
 
@@ -1624,8 +1697,8 @@ public class ElementEditing extends GuiScreen {
 
         if(mouseInput.inWindow)
         {
-            for(Entity entity : mainView.things)
-                entity.highlighted = false;
+            for(int i = 0; i < mainView.things.size(); i++)
+                mainView.things.get(i).highlighted = false;
 
             transformTool.testForMouse(hasSelection && hasPPos, mainView.camera, mouseInput.mousePicker,
                     move.isClicked,

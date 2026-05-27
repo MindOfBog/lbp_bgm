@@ -1417,6 +1417,10 @@ public class View3D implements ILogic {
                     if(boneThings[bt] == thing.thing)
                         boneThings[bt] = null;
             }
+            for(CodeEditor e : things.get(i).openEditors)
+                e.forceCloseWindow();
+
+            things.get(i).openEditors.clear();
         }
 
         things.remove(index);

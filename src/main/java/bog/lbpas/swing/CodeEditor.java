@@ -375,11 +375,15 @@ public abstract class CodeEditor {
             window.dispose();
     }
 
+    public void forceCloseWindow() {
+            window.dispose();
+    }
+
     private void saveChanges()
     {
-        if(onSaveChanges())
+        if(onSaveChanges(codeArea.getText()))
             setDirty(false);
     }
 
-    public abstract boolean onSaveChanges();
+    public abstract boolean onSaveChanges(String content);
 }

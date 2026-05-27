@@ -1,5 +1,6 @@
 package bog.lbpas.view3d.core.types;
 
+import bog.lbpas.swing.CodeEditor;
 import bog.lbpas.view3d.managers.assetLoading.ObjectLoader;
 import bog.lbpas.view3d.core.Model;
 import bog.lbpas.view3d.mainWindow.LoadedData;
@@ -44,6 +45,9 @@ public class Thing extends Entity{
     public RBevel bevelData;
 
     public boolean failedLoadingRMesh = false;
+
+    public ArrayList<CodeEditor> openEditors = new ArrayList<>();
+
 
     public Thing(cwlib.structs.things.Thing thing, ObjectLoader loader)
     {

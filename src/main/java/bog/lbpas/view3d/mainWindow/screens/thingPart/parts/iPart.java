@@ -7,6 +7,8 @@ import bog.lbpas.view3d.mainWindow.View3D;
 import bog.lbpas.view3d.managers.MouseInput;
 import bog.lbpas.view3d.renderer.gui.elements.*;
 import bog.lbpas.view3d.utils.Consts;
+import bog.lbpas.view3d.utils.print;
+import com.google.gson.*;
 import cwlib.enums.Part;
 import cwlib.io.Serializable;
 import cwlib.structs.things.Thing;
@@ -17,6 +19,9 @@ import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author Bog
@@ -29,7 +34,8 @@ public abstract class iPart {
     String id;
     String name;
 
-    public cwlib.enums.Part part;
+    public Part part;
+
 
     public iPart(Part part, String id, String name, int tabWidth, float comboWidth, float panelHeight, float closeWidth, float finalGap, Element tab, View3D view) {
         this.part = part;
@@ -98,13 +104,49 @@ public abstract class iPart {
                     if(!thing.selected)
                         continue;
 
-                    new CodeEditor("Thing: \"" + thing.thing.name + "\" | Part: \"" + iPart.this.name + "\"", GsonUtils.toJSON(thing.thing.getPart(iPart.this.part)),  SyntaxConstants.SYNTAX_STYLE_JSON)
+                    CodeEditor partEditor = new CodeEditor("Thing: \"" + thing.thing.name + "\" | Part: \"" + iPart.this.name + "\"", GsonUtils.toJSONCodeEditor(thing.thing.getPart(iPart.this.part)), SyntaxConstants.SYNTAX_STYLE_JSON)
                     {
                         @Override
-                        public boolean onSaveChanges() {
-                            return true;
+                        public boolean onSaveChanges(String json) {
+
+                            try
+                            {
+                                Serializable edited = fromJSON(json);
+
+                                if (edited != null)
+                                {
+                                    Object original = thing.thing.getPart(part);
+
+                                    if(original != null)
+                                        GsonUtils.CodeEditorUtil.mergeExcluding(edited, original, Thing.class);
+                                    else
+                                        thing.thing.setPart(part, edited);
+                                }
+                                else if(thing.thing.hasPart(part))
+                                    thing.thing.setPart(part, null);
+
+                                return true;
+                            }catch (Exception e)
+                            {
+                                print.stackTrace(e);
+                            }
+
+                            return false;
+                        }
+
+                        private <T extends Serializable> T fromJSON(String json)
+                        {
+                            return GsonUtils.fromJSONCodeEditor(json, (Class<T>) iPart.this.part.getSerializable());
+                        }
+
+                        @Override
+                        public void closeWindow() {
+                            super.closeWindow();
+                            thing.openEditors.remove(this);
                         }
                     };
+
+                    thing.openEditors.add(partEditor);
                 }
             }
         });
