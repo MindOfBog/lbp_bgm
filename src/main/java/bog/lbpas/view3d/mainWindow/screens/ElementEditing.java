@@ -1245,7 +1245,7 @@ public class ElementEditing extends GuiScreen {
                 ArrayList<Integer> selected = new ArrayList<>();
 
                 for (int i = 0; i < mainView.things.size(); i++)
-                    if (mainView.things.get(i).selected) {
+                    if (mainView.things.get(i) != null && mainView.things.get(i).selected) {
                         hasSelection = true;
                         selected.add(i);
                     }
@@ -1267,7 +1267,7 @@ public class ElementEditing extends GuiScreen {
                         }
 
                         for(int i = min; i <= max; i++)
-                            if(searchFilter(mainView.things.get(i), i))
+                            if(mainView.things.get(i) != null && searchFilter(mainView.things.get(i), i))
                             {
                                 mainView.things.get(i).selected = true;
                                 currentSelectionParts.selectionChange();
@@ -1289,7 +1289,7 @@ public class ElementEditing extends GuiScreen {
                         }
 
                         for(int i = min; i <= max; i++)
-                            if(searchFilter(mainView.things.get(i), i))
+                            if(mainView.things.get(i) != null && searchFilter(mainView.things.get(i), i))
                             {
                                 mainView.things.get(i).selected = true;
                                 currentSelectionParts.selectionChange();
@@ -1297,7 +1297,7 @@ public class ElementEditing extends GuiScreen {
                     }
                     else {
                         for (Entity ent : mainView.things)
-                            if (ent != entity)
+                            if (ent != null && ent != entity)
                             {
                                 ent.selected = false;
                             }
@@ -1672,7 +1672,7 @@ public class ElementEditing extends GuiScreen {
         int hasPLevelSettings = 0;
 
         for(int i = 0; i < mainView.things.size(); i++)
-            if(mainView.things.get(i).selected)
+            if(mainView.things.get(i) != null && mainView.things.get(i).selected)
             {
                 hasSelection = true;
                 selectedAmount++;
@@ -1698,7 +1698,8 @@ public class ElementEditing extends GuiScreen {
         if(mouseInput.inWindow)
         {
             for(int i = 0; i < mainView.things.size(); i++)
-                mainView.things.get(i).highlighted = false;
+                if(mainView.things.get(i) != null)
+                    mainView.things.get(i).highlighted = false;
 
             transformTool.testForMouse(hasSelection && hasPPos, mainView.camera, mouseInput.mousePicker,
                     move.isClicked,
@@ -1733,7 +1734,8 @@ public class ElementEditing extends GuiScreen {
 
         if(!mouseInput.inWindow || overElement)
             for(int i = 0; i < mainView.things.size(); i++)
-                mainView.things.get(i).highlighted = false;
+                if(mainView.things.get(i) != null)
+                    mainView.things.get(i).highlighted = false;
 
         if(transformTool.isSelected() && hasPPos)
         {
@@ -2238,7 +2240,8 @@ public class ElementEditing extends GuiScreen {
         if(!overElement && button == GLFW.GLFW_MOUSE_BUTTON_1 && action == GLFW.GLFW_PRESS && !transformTool.isSelected() && !sunTool.isSelected())
         {
             for (int i = 0; i < mainView.things.size(); i++)
-                mainView.things.get(i).testForMouse = true;
+                if(mainView.things.get(i) != null)
+                    mainView.things.get(i).testForMouse = true;
             renderer.entityRenderer.triggerMousePick = true;
         }
 

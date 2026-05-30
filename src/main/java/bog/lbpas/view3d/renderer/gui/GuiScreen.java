@@ -344,8 +344,8 @@ public class GuiScreen {
     {
         boolean elementFocused = false;
 
-        for(Element element : guiElements)
-            if(element.isFocused())
+        for(int i = 0; i < guiElements.size(); i++)
+            if(guiElements.get(i).isFocused())
                 elementFocused = true;
 
         return elementFocused;

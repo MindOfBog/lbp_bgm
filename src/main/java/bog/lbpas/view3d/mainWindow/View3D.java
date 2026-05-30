@@ -1033,6 +1033,8 @@ public class View3D implements ILogic {
         });
     }
 
+    Random random = new Random();
+
     private void drawUI(MouseInput mouseInput) {
 
         if(!window.useNativeWindowHandler())
@@ -1202,8 +1204,6 @@ public class View3D implements ILogic {
 
                 int frameCount = (int) (DURATION / FRAME_DELAY);
                 int totalFrames = splashText.length() * frameCount;
-
-                Random random = new Random();
 
                 for (int i = 0; i < totalFrames; i++) {
                     int charIndex = (i / frameCount);
