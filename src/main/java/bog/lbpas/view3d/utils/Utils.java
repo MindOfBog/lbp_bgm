@@ -22,6 +22,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.RescaleOp;
 import java.io.*;
 import java.lang.reflect.Array;
+import java.lang.reflect.Field;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -1100,5 +1101,14 @@ public class Utils {
         int ratio = getRatio(width, height);
 
         return new Vector2i(width/ratio, height/ratio);
+    }
+
+    public static String getFieldNameFromValue(Class clazz, Object value)
+    {
+        for(Field field : clazz.getFields())
+            if(field.equals(value))
+                return field.getName();
+
+        return "Field not found for value \"" + value + "\"";
     }
 }

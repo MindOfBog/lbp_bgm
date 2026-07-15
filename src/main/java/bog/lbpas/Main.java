@@ -817,14 +817,14 @@ public class Main {
 
     public static void RunOnGLFWThread(Runnable runnable)
     {
-        toRunGL.add(runnable);
+        toRunGLFW.add(runnable);
     }
 
     public static void ExecuteGLFWThreadQueue()
     {
         ArrayList<Runnable> toRun = new ArrayList<>();
-        toRun.addAll(toRunGL);
-        toRunGL.clear();
+        toRun.addAll(toRunGLFW);
+        toRunGLFW.clear();
 
         try {
             for(Runnable r : toRun)

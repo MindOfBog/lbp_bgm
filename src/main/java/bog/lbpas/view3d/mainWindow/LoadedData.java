@@ -435,8 +435,12 @@ public class LoadedData {
             for(FileDB map : MAPs)
                 for(FileDBRow entry : map.entries)
                 {
-                    for(FileArchive farc : FARCs)
+                    for(int o = 0; o < FARCs.size(); o++)
                     {
+                        if(FARCs.size() <= o)
+                            break;
+
+                        FileArchive farc = FARCs.get(o);
                         if(farc.exists(entry.getSHA1()))
                         {
                             ResourceDescriptor descriptor = new ResourceDescriptor(entry, farc);
@@ -840,7 +844,7 @@ public class LoadedData {
                     textures.add(tex);
 
                 if(box.type != BoxType.TEXTURE_SAMPLE)
-                    print.warning("MISSING BOX TYPE: " + box.type);
+                    print.warning("MISSING BOX TYPE: " + Utils.getFieldNameFromValue(BoxType.class, box.type) + " (" + box.type + ")");
 
                 boolean UV0 = box.type != BoxType.TEXTURE_SAMPLE || box.getParameters()[4] != 1;
 

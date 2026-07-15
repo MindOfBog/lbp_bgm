@@ -871,7 +871,7 @@ public class DropDownTab extends Element{
 
     public static class SeparatorElement extends Element
     {
-        Model line;
+//        Model line;
         public SeparatorElement(String id, Vector2f pos, float width, RenderMan renderer, ObjectLoader loader, WindowMan window) {
             this.id = id;
             this.pos = pos;
@@ -880,7 +880,7 @@ public class DropDownTab extends Element{
             this.loader = loader;
             this.window = window;
 
-            line = Line.getLine(window, loader, new Vector2i(0), new Vector2i(Math.round(pos.x + width), 0));
+//            line = Line.getLine(window, loader, new Vector2i(0), new Vector2i(Math.round(pos.x + width), 0));
 
             this.scalesWithGui = false;
         }
@@ -888,12 +888,13 @@ public class DropDownTab extends Element{
         @Override
         public void resize() {
             super.resize();
-            line = Line.getLine(window, loader, new Vector2i(0), new Vector2i(Math.round(size.x), 0));
+//            line = Line.getLine(window, loader, new Vector2i(0), new Vector2i(Math.round(size.x), 0));
         }
 
         @Override
         public void draw(MouseInput mouseInput, boolean overOther) {
-            renderer.drawLine(line, new Vector2f(this.pos.x, this.pos.y + (this.size.y / 2f)), Config.INTERFACE_PRIMARY_COLOR2,false);
+            renderer.drawRect((int) this.pos.x, (int) (this.pos.y + (this.size.y / 2f)), (int) this.size.x, 1, Color.BLACK);
+//            renderer.drawLine(line, new Vector2f(this.pos.x, this.pos.y + (this.size.y / 2f)), Config.INTERFACE_PRIMARY_COLOR2,false);
         }
     }
 }

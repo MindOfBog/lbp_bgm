@@ -156,35 +156,33 @@ vec3 reinhardToneMapping(vec3 color, float exposure) {
     return color * (exposure / (color + vec3(1.0)));
 }
 
+bool fulltransparent = false;
+
 void setupColors()
 {
     bool custom = false;
 
     //%&AMBIENTC
 
+    float minAlpha = 0.25;
+
+    fulltransparent = diffuseC.a < minAlpha;
+
     ambientC.r = min(ambientC.r, 1.0);
     ambientC.g = min(ambientC.g, 1.0);
     ambientC.b = min(ambientC.b, 1.0);
     ambientC.a = min(ambientC.a, 1.0);
 
-    float minAlpha = 0.25;
-
-    if(ambientC.a < minAlpha)
+    if(fulltransparent)
     {
         ambientC.a = preview ? 0 : minAlpha;
         ambientC.r = 0;
         ambientC.g = 0;
         ambientC.b = 0;
-    }
-    if(diffuseC.a < minAlpha)
-    {
         diffuseC.a = preview ? 0 : minAlpha;
         diffuseC.r = 0;
         diffuseC.g = 0;
         diffuseC.b = 0;
-    }
-    if(specularC.a < minAlpha)
-    {
         specularC.a = preview ? 0 : minAlpha;
         specularC.r = 0;
         specularC.g = 0;
@@ -248,9 +246,14 @@ void main()
     vec3 rimFinal2 = clamp(vec3(rimColor2.rgb * rim2 * rimColor2.a), 0.0, 1.0);
 
     fragmentColor = ambientC * vec4(ambientLight, 1.0f) + diffuseSpecularComp;
-    fragmentColor.r = fragmentColor.r + rimFinal1.r + rimFinal2.r;
-    fragmentColor.g = fragmentColor.g + rimFinal1.g + rimFinal2.g;
-    fragmentColor.b = fragmentColor.b + rimFinal1.b + rimFinal2.b;
+
+    if(!fulltransparent)
+    {
+        fragmentColor.r = fragmentColor.r + rimFinal1.r + rimFinal2.r;
+        fragmentColor.g = fragmentColor.g + rimFinal1.g + rimFinal2.g;
+        fragmentColor.b = fragmentColor.b + rimFinal1.b + rimFinal2.b;
+    }
+
     fragmentColor.a = (fogFar == -1 && fogNear == -1) || !preview || frontView ? 1.0f : fogFactor;
 
     fragmentColor = clamp(fragmentColor, 0.0, 1.0);

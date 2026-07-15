@@ -850,6 +850,10 @@ public abstract class PartMetadata extends iPart {
         float second = Float.POSITIVE_INFINITY;
 
         for(int i : selected) {
+
+            if(i >= things.size())
+                continue;
+
             Thing thing = things.get(i);
             PMetadata metadata = thing.thing.getPart(Part.METADATA);
 
@@ -1037,6 +1041,9 @@ public abstract class PartMetadata extends iPart {
         Vector2f cSecond = dateCreatedSecond.setTextboxValueFloat(Float.isInfinite(second) || Float.isNaN(second) ? currentDate.getSeconds() : second);
 
         for(int i : selected) {
+            if(i >= things.size())
+                continue;
+
             Thing thing = things.get(i);
             PMetadata metadata = thing.thing.getPart(Part.METADATA);
 

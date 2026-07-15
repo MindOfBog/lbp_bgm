@@ -47,6 +47,7 @@ import java.lang.management.ThreadMXBean;
 import java.util.List;
 import java.util.*;
 import java.util.Random;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * @author Bog
@@ -107,6 +108,20 @@ public class View3D implements ILogic {
         Transformation3D.init(this.loader);
         LoadedData.init(this);
         ConstantTextures.initTextures(this.loader);
+
+        CompletableFuture.runAsync(new Runnable() {
+            @Override
+            public void run() {
+                while(!introPlayed)
+                {
+                    String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+                    randomChar = CHARACTERS.charAt(random.nextInt(CHARACTERS.length()));
+                    try {
+                        Thread.sleep(Math.round(EngineMan.ms * 1000d));
+                    } catch (InterruptedException e) {}
+                }
+            }
+        });
 
         topBarLine = Line.getLine(window, loader, new Vector2i(3, getFontHeightHeader() + 7), new Vector2i(window.getWidth() - 3, getFontHeightHeader() + 7));
 
@@ -415,7 +430,7 @@ public class View3D implements ILogic {
         int selectedAmount = 0;
 
         for(int i = 0; i < things.size(); i++)
-            if(things.get(i).selected)
+            if(things.get(i) != null && things.get(i).selected)
             {
                 hasSelection = true;
                 selectedAmount++;
@@ -1034,6 +1049,8 @@ public class View3D implements ILogic {
     }
 
     Random random = new Random();
+    int introDuration = 1300;
+    char randomChar = 'A';
 
     private void drawUI(MouseInput mouseInput) {
 
@@ -1181,9 +1198,22 @@ public class View3D implements ILogic {
 
         if(!introPlayed)
         {
+
             long msPassed = System.currentTimeMillis() - initMillis;
 
-            int introDuration = 1300;
+            String splashText = "Welcome to LBP Asset Studio v" + Consts.VERSION;
+            String target = "";
+
+            int DURATION = (int) (introDuration * 1.5f);
+            double FRAME_DELAY = EngineMan.ms;
+
+            int currentTime = (int) Math.min(msPassed, DURATION);
+            int charIndex = currentTime / (DURATION / splashText.length());
+
+            int frameCount = (int) (DURATION / FRAME_DELAY);
+            int totalFrames = splashText.length() * frameCount;
+
+            target = splashText.substring(0, charIndex) + (charIndex < splashText.length() ? randomChar : "");
 
             Cursors.setCursor(ECursor.left_ptr_watch);
             mouseInput.currentPos = prev;
@@ -1195,39 +1225,7 @@ public class View3D implements ILogic {
                 renderer.drawRect(0, 0, window.getWidth(), window.getHeight(), new Color(1f, 1f, 1f, out));
                 renderer.drawImageStatic(ConstantTextures.getTexture(ConstantTextures.ICON, 461, 461, loader), window.getWidth() / 2 - 461 / 2, window.getHeight() / 2 - 461 / 2, 461, 461, new Color(1f, 1f, 1f, 1f - in), loader);
 
-                String splashText = "Welcome to LBP Asset Studio v" + Consts.VERSION;
-                StringBuilder target = new StringBuilder();
-
-                String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-                int DURATION = (int) (introDuration * 1.5f);
-                double FRAME_DELAY = EngineMan.ms;
-
-                int frameCount = (int) (DURATION / FRAME_DELAY);
-                int totalFrames = splashText.length() * frameCount;
-
-                for (int i = 0; i < totalFrames; i++) {
-                    int charIndex = (i / frameCount);
-                    int currentTime = (int) Math.min(msPassed, DURATION);
-                    char randomChar = CHARACTERS.charAt(random.nextInt(CHARACTERS.length()));
-
-                    if (currentTime > (DURATION / splashText.length()) * charIndex) {
-
-                        if(target.length() <= charIndex)
-                            target.append(splashText.charAt(charIndex));
-                        else
-                            target.setCharAt(charIndex, splashText.charAt(charIndex));
-                    }
-                    else if (i % frameCount == 0 && charIndex < splashText.length()) {
-                        target.append(randomChar);
-                        break;
-                    }
-
-                    if (charIndex >= splashText.length()) {
-                        break;
-                    }
-                }
-
-                String finalSplash = Consts.FONT_SET_BOLD + target.toString();
+                String finalSplash = Consts.FONT_SET_BOLD + target;
 
                 FontRenderer.drawString(renderer, finalSplash, window.getWidth() / 2 - getStringWidthHeader(splashText, 40) / 2, window.getHeight() / 2 + 461 / 2 + 10, 40, Config.OUTLINE_COLOR, 0, finalSplash.length(), FontRenderer.Fonts.get(FontRenderer.headerFont));
 
@@ -1541,7 +1539,7 @@ public class View3D implements ILogic {
 
             for (int i : selected)
                 {
-                    if(!things.get(i).thing.hasPart(Part.POS))
+                    if(things.size() < i || things.get(i) == null || !things.get(i).thing.hasPart(Part.POS))
                         continue;
 
                     Vector3f curTransl = things.get(i).getTransformation().getTranslation(new Vector3f());
@@ -1551,7 +1549,12 @@ public class View3D implements ILogic {
                     amount++;
                 }
 
-            return new Vector3f(x/amount, y/amount, z/amount);
+            if(amount == 0)
+                return new Vector3f();
+
+            Vector3f pos = new Vector3f(x/amount, y/amount, z/amount);
+
+            return pos;
 
         }
 
@@ -1578,6 +1581,9 @@ public class View3D implements ILogic {
             String name = things.get(selected.get(0)).thing.name;
             for(int i : selected)
             {
+                if(things.size() > i || things.get(i) == null)
+                    continue;
+
                 String n = things.get(i).thing.name;
 
                 if(name != null && !name.equalsIgnoreCase(n))

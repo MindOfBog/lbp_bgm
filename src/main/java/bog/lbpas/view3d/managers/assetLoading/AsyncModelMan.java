@@ -119,6 +119,13 @@ public class AsyncModelMan {
             {
                 ModelDataShape shapeData = toDigestShape.get(i);
 
+                if(shapeData == null)
+                {
+                    toDigestShape.remove(i);
+                    totalDigestionCount++;
+                    continue;
+                }
+
                 extrudeShape(
                         shapeData.model,
                         shapeData.generatedMesh,
@@ -728,414 +735,36 @@ public class AsyncModelMan {
 
     public static void extrudeShape(Model model, PGeneratedMesh generatedMesh, PShape shape, RBevel bevel, Matrix4f transformation, ObjectLoader loader, View3D view) {
 
-        Polygon polygon = shape.polygon;
-        float thickness = shape.thickness;
-        int[] loops = polygon.loops;
-        Vector3f[] polygonVertices = polygon.vertices;
+        ShapeUtil.ExtrusionResult extrusion = ShapeUtil.extrudePolygon(transformation, shape, generatedMesh, bevel);
 
-        if(!view.MaterialEditing.vertexTool.isSelected())
-            ensureWindingOrder(polygonVertices, loops, transformation);
-
-        BevelVertex offset = bevel.vertices.get(bevel.vertices.size() - 1);
-        float bevelSize = bevel.fixedBevelSize;
-        if(bevelSize == -1)
-            bevelSize = shape.bevelSize;
-
-        bevelSize *= 2;
-
-        float offZ = zQuadratic(offset.z, bevelSize, thickness, false, 0, bevel.smoothWithFront);
-        boolean stretchBevel = Math.abs(offZ - thickness) > 0.1f;
-        float offZS = zQuadratic(offset.z, bevelSize, thickness, stretchBevel, offZ, bevel.smoothWithFront);
-
-        int material = 0;
-
+        int[] gmats = new int[extrusion.materialSlots.length];
+        Texture[] textures = new Texture[32];
         Vector2i[] gmatMAP = new Vector2i[100];
         for(int i = 0; i < gmatMAP.length; i++)
             gmatMAP[i] = new Vector2i(-1);
 
-        Texture[] textures = new Texture[32];
+        int[] bevelMaterials = new int[bevel.vertices.size()];
+        int baseMaterial = 0;
 
         try
         {
+            for(int i = 0; i < bevel.vertices.size(); i++)
+            {
+                ResourceDescriptor gmat = bevel.getMaterial(bevel.vertices.get(i).gmatSlot);
+                bevelMaterials[i] =  LoadedData.getMaterial(gmat, loader, textures, gmatMAP);
+            }
+
             if(generatedMesh == null)
             {
-                ResourceDescriptor gmat = bevel.getMaterial(bevel.vertices.get(0).gmatSlot);
-                material =  LoadedData.getMaterial(gmat, loader, textures, gmatMAP);
+                baseMaterial =  bevelMaterials[0];
             }
-            else material = LoadedData.getMaterial(generatedMesh.gfxMaterial, loader, textures, gmatMAP);
+            else baseMaterial = LoadedData.getMaterial(generatedMesh.gfxMaterial, loader, textures, gmatMAP);
         }catch (Exception e){print.stackTrace(e);}
 
-        int count = polygonVertices.length + (polygonVertices.length * (bevel.vertices.size() - 1) * 4);
-
-        float[] vertices = new float[count * 3],
-                texCoords = new float[count * 4],
-                normals = new float[vertices.length],
-                tangents = new float[vertices.length];
-        int[] gmats = new int[count];
-
-        Matrix4f invTransform = transformation.invert(new Matrix4f());
-        float uvScale = 0.002f;
-        Vector2f uvOffset0 = generatedMesh == null || generatedMesh.uvOffset == null ? new Vector2f(0) : new Vector2f(generatedMesh.uvOffset.x, generatedMesh.uvOffset.y);
-        Vector2f uvOffset1 = generatedMesh == null || generatedMesh.uvOffset == null ? new Vector2f(0) : new Vector2f(generatedMesh.uvOffset.z, generatedMesh.uvOffset.w);
-        Vector3f scale = (transformation.getScale(new Vector3f()));
-        Vector3f translation = transformation.getTranslation(new Vector3f());
-
-        ArrayList<Vector4f> offsetLines = new ArrayList<>();
-
-        //subdivision
-        int l = 0;
-
-        if(bevel.relaxStrength > 0.0f)
-            for (int loop : loops)
-            {
-                for (int i = 0; i < loop; i++)
-                {
-                    Vector3f curVert = new Vector3f(polygonVertices[l]);
-                    curVert.mulProject(transformation, curVert);
-                    int p = (l - i) + (((i - 1) % loop + loop) % loop);
-                    Vector3f prevVert = new Vector3f(polygonVertices[p]);
-                    prevVert.mulProject(transformation, prevVert);
-                    int n =  (l - i) + (((i + 1) % loop + loop) % loop);
-                    Vector3f nextVert = new Vector3f(polygonVertices[n]);
-                    nextVert.mulProject(transformation, nextVert);
-
-                    l++;
-                }
-            }
-
-        //push in verts
-        l = 0;
-        for (int loop : loops)
+        for(int i = 0; i < gmats.length; i++)
         {
-            for (int i = 0; i < loop; i++)
-            {
-                Vector3f curVert = new Vector3f(polygonVertices[l]);
-                curVert.mulProject(transformation, curVert);
-                int p = (l - i) + (((i - 1) % loop + loop) % loop);
-                Vector3f prevVert = new Vector3f(polygonVertices[p]);
-                prevVert.mulProject(transformation, prevVert);
-                int k = (l - i) + (((i - 2) % loop + loop) % loop);
-                Vector3f prevPrevVert = new Vector3f(polygonVertices[k]);
-                prevPrevVert.mulProject(transformation, prevPrevVert);
-                int n =  (l - i) + (((i + 1) % loop + loop) % loop);
-                Vector3f nextVert = new Vector3f(polygonVertices[n]);
-                nextVert.mulProject(transformation, nextVert);
-                int n2 = (l - i) + (((i + 2) % loop + loop) % loop);
-                Vector3f nextNextVert = new Vector3f(polygonVertices[n2]);
-                nextNextVert.mulProject(transformation, nextNextVert);
-
-                Vector2f newPos = Utils.offsetAndFindIntersection(
-                        new Vector2f(prevVert.x, prevVert.y),
-                        new Vector2f(curVert.x, curVert.y),
-                        new Vector2f(nextVert.x, nextVert.y), offset.y * bevelSize);
-
-                Vector2f newPosPrev = Utils.offsetAndFindIntersection(
-                        new Vector2f(prevPrevVert.x, prevPrevVert.y),
-                        new Vector2f(prevVert.x, prevVert.y),
-                        new Vector2f(curVert.x, curVert.y), offset.y * bevelSize);
-
-                for(int o = 0; o < offsetLines.size(); o++)
-                {
-                    Vector4f line = offsetLines.get(o);
-
-                    float s1_x = line.z - line.x;
-                    float s1_y = line.w - line.y;
-
-                    float s2_x = curVert.x - newPos.x;
-                    float s2_y = curVert.y - newPos.y;
-
-                    if(-s2_x * s1_y + s1_x * s2_y == 0)
-                        continue;
-
-                    float s = (-s1_y * (line.x - newPos.x) + s1_x * (line.y - newPos.y)) / (-s2_x * s1_y + s1_x * s2_y);
-                    float t = ( s2_x * (line.y - newPos.y) - s2_y * (line.x - newPos.x)) / (-s2_x * s1_y + s1_x * s2_y);
-
-                    if(s >= 0 && s <= 1 && t >= 0 && t <= 1)
-                    {
-                        Vector2f from = new Vector2f(line.x + (t * s1_x), line.y + (t * s1_y));
-                        Vector2f direc = new Vector2f(curVert.x, curVert.y).sub(from).normalize();
-                        newPos = from.add(direc.mul(0.1f));
-                    }
-                }
-
-                if(i != 0)
-                {
-                    Vector3f prev = new Vector3f(vertices[(l - 1) * 3], vertices[(l - 1) * 3 + 1], vertices[(l - 1) * 3 + 2]).mulProject(transformation);
-                    offsetLines.add(new Vector4f(newPos.x, newPos.y, prev.x, prev.y));
-
-                    if(i == loop - 1)
-                    {
-                        Vector3f first = new Vector3f(vertices[(l - (loop - 1)) * 3], vertices[(l - (loop - 1)) * 3 + 1], vertices[(l - (loop - 1)) * 3 + 2]).mulProject(transformation);
-                        offsetLines.add(new Vector4f(newPos.x, newPos.y, first.x, first.y));
-                    }
-                }
-
-                Vector3f newVertex = new Vector3f(newPos.x, newPos.y, transformation.getTranslation(new Vector3f()).z + offZS + shape.zBias).mulProject(invTransform);
-
-                vertices[l * 3] = newVertex.x;
-                vertices[l * 3 + 1] = newVertex.y;
-                vertices[l * 3 + 2] = newVertex.z;
-
-                texCoords[l * 4] = newVertex.x * uvScale * scale.x + uvOffset0.x;
-                texCoords[l * 4 + 1] = 1 - (newVertex.y * uvScale * scale.y + uvOffset0.y);
-                texCoords[l * 4 + 2] = newVertex.x * uvScale * scale.x + uvOffset1.x;
-                texCoords[l * 4 + 3] = 1 - (newVertex.y * uvScale * scale.y + uvOffset1.y);
-
-                normals[l * 3] = 0.0f;
-                normals[l * 3 + 1] = 0.0f;
-                normals[l * 3 + 2] = 1.0f;
-
-                gmats[l] = material;
-                l++;
-            }
-        }
-
-        double[] flat = new double[polygonVertices.length * 2];
-        for (int i = 0; i < polygonVertices.length; i++) {
-            flat[i * 2] = vertices[i * 3];
-            flat[i * 2 + 1] = vertices[i * 3 + 1];
-        }
-
-        int[] holes = new int[loops.length - 1];
-        int index = loops[0];
-        for (int i = 0; i < holes.length; ++i) {
-            holes[i] = index;
-            index += loops[i + 1];
-        }
-
-        //triangulate front
-        List<Integer> ind = Earcut.earcut(flat, holes, 2);
-
-        Model[] bevels = new Model[bevel.vertices.size() - 1];
-
-        //extrude bevel
-        for (int i = bevels.length - 1; i >= 0; i--) {
-            BevelVertex current = bevel.vertices.get(i);
-            BevelVertex next = bevel.vertices.get(i + 1);
-
-            Vector2f curPos = new Vector2f((current.y - offset.y) * bevelSize, current.z);
-            Vector2f nextPos = new Vector2f((next.y - offset.y) * bevelSize, next.z);
-
-            int c = polygonVertices.length * 4;
-
-            float[] vertis = new float[c * 3];
-            float[] textureCoords = new float[c * 4];
-            float[] normas = new float[vertis.length];
-            float[] tanges = new float[vertis.length];
-            int[] indices = new int[vertis.length / 2];
-
-            l = 0;
-            for (int loop : loops) {
-                for (int i3 = 0; i3 < loop; i3++) {
-
-                    Vector3f curVert = new Vector3f(vertices[l * 3], vertices[l * 3 + 1], vertices[l * 3 + 2]);
-                    curVert.mulProject(transformation, curVert);
-
-                    Vector3f origVert = new Vector3f(polygonVertices[l]);
-                    origVert.mulProject(transformation, origVert);
-
-                    Vector2f originalVert = new Vector2f(origVert.x, origVert.y);
-                    Vector2f currentVert = new Vector2f(curVert.x, curVert.y);
-                    Vector2f dir = new Vector2f(originalVert).sub(currentVert).normalize();
-
-                    Vector2f firstVert1 = new Vector2f(currentVert).add(new Vector2f(dir).mul(current.y * bevelSize - offset.y * bevelSize));
-                    Vector3f firstVert = new Vector3f(firstVert1.x, firstVert1.y, curVert.z + zQuadratic(curPos.y, bevelSize, thickness, stretchBevel, offZ, bevel.smoothWithFront) - offZS);
-
-                    firstVert.mulProject(invTransform, firstVert);
-                    vertis[l * 12 + 0] = firstVert.x;
-                    vertis[l * 12 + 1] = firstVert.y;
-                    vertis[l * 12 + 2] = firstVert.z;
-
-                    Vector2f secondVert1 = new Vector2f(currentVert).add(new Vector2f(dir).mul(next.y * bevelSize - offset.y * bevelSize));
-                    Vector3f secondVert = new Vector3f(secondVert1.x, secondVert1.y, curVert.z + zQuadratic(nextPos.y, bevelSize, thickness, stretchBevel, offZ, bevel.smoothWithFront) - offZS);
-
-                    secondVert.mulProject(invTransform, secondVert);
-                    vertis[l * 12 + 3] = secondVert.x;
-                    vertis[l * 12 + 4] = secondVert.y;
-                    vertis[l * 12 + 5] = secondVert.z;
-
-                    int i4 = (l - i3) + (((i3 - 1) % loop + loop) % loop);
-
-                    vertis[i4 * 12 + 6] = vertis[l * 12 + 0];
-                    vertis[i4 * 12 + 7] = vertis[l * 12 + 1];
-                    vertis[i4 * 12 + 8] = vertis[l * 12 + 2];
-
-                    vertis[i4 * 12 + 9] = vertis[l * 12 + 3];
-                    vertis[i4 * 12 + 10] = vertis[l * 12 + 4];
-                    vertis[i4 * 12 + 11] = vertis[l * 12 + 5];
-
-                    if(transformation.determinant() < 0)
-                    {
-                        indices[l * 6 + 0] = l * 4 + 0;
-                        indices[l * 6 + 1] = l * 4 + 2;
-                        indices[l * 6 + 2] = l * 4 + 3;
-
-                        indices[l * 6 + 3] = l * 4 + 3;
-                        indices[l * 6 + 4] = l * 4 + 1;
-                        indices[l * 6 + 5] = l * 4 + 0;
-                    }
-                    else
-                    {
-                        indices[l * 6 + 0] = l * 4 + 3;
-                        indices[l * 6 + 1] = l * 4 + 2;
-                        indices[l * 6 + 2] = l * 4 + 0;
-
-                        indices[l * 6 + 3] = l * 4 + 0;
-                        indices[l * 6 + 4] = l * 4 + 1;
-                        indices[l * 6 + 5] = l * 4 + 3;
-                    }
-
-                    Vector2f newFirst = new Vector2f(firstVert.x, firstVert.y).mul(uvScale).mul(scale.x, scale.y);
-                    Vector2f newSecond = new Vector2f(secondVert.x, secondVert.y).mul(uvScale).mul(scale.x, scale.y);
-
-                    Vector2f DaveUV0v1 = new Vector2f(newFirst.x + uvOffset0.x, 1 - (newFirst.y + uvOffset0.y));
-                    Vector2f DaveUV0v2 = new Vector2f(newSecond.x + uvOffset0.x, 1 - (newSecond.y + uvOffset0.y));
-
-                    Vector2f DaveUV1v1 = new Vector2f(newFirst.x + uvOffset1.x, 1 - (newFirst.y + uvOffset1.y));
-                    Vector2f DaveUV1v2 = new Vector2f(newSecond.x + uvOffset1.x, 1 - (newSecond.y + uvOffset1.y));
-
-                    switch(current.mappingMode)//todo
-                    {
-                        case CYLINDER:
-                        {
-                            Vector2f UV0v1 = DaveUV0v1;
-                            Vector2f UV0v2 = DaveUV0v2;
-
-                            textureCoords[l * 16] = UV0v1.x;
-                            textureCoords[l * 16 + 1] = UV0v1.y;
-                            textureCoords[l * 16 + 4] = UV0v2.x;
-                            textureCoords[l * 16 + 5] = UV0v2.y;
-
-                            textureCoords[i4 * 16 + 8] = UV0v1.x;
-                            textureCoords[i4 * 16 + 9] = UV0v1.y;
-                            textureCoords[i4 * 16 + 12] = UV0v2.x;
-                            textureCoords[i4 * 16 + 13] = UV0v2.y;
-                        }
-                        break;
-                        case DAVE:
-                        default:
-                        {
-                            Vector2f UV0v1 = DaveUV0v1;
-                            Vector2f UV0v2 = DaveUV0v2;
-
-                            textureCoords[l * 16] = UV0v1.x;
-                            textureCoords[l * 16 + 1] = UV0v1.y;
-                            textureCoords[l * 16 + 4] = UV0v2.x;
-                            textureCoords[l * 16 + 5] = UV0v2.y;
-
-                            textureCoords[i4 * 16 + 8] = UV0v1.x;
-                            textureCoords[i4 * 16 + 9] = UV0v1.y;
-                            textureCoords[i4 * 16 + 12] = UV0v2.x;
-                            textureCoords[i4 * 16 + 13] = UV0v2.y;
-                        }
-                        break;
-                    }
-
-                    textureCoords[l * 16 + 2] = DaveUV1v1.x;
-                    textureCoords[l * 16 + 3] = DaveUV1v1.y;
-                    textureCoords[l * 16 + 6] = DaveUV1v2.x;
-                    textureCoords[l * 16 + 7] = DaveUV1v2.y;
-
-                    textureCoords[i4 * 16 + 10] = DaveUV1v1.x;
-                    textureCoords[i4 * 16 + 11] = DaveUV1v1.y;
-                    textureCoords[i4 * 16 + 14] = DaveUV1v2.x;
-                    textureCoords[i4 * 16 + 15] = DaveUV1v2.y;
-
-                    Vector3f deltaPos1 = (new Vector3f(vertis[indices[l * 6 + 1] * 3], vertis[indices[l * 6 + 1] * 3 + 1], vertis[indices[l * 6 + 1] * 3 + 2])).sub(new Vector3f(vertis[indices[l * 6] * 3], vertis[indices[l * 6] * 3 + 1], vertis[indices[l * 6] * 3 + 2]), new Vector3f());
-                    Vector3f deltaPos2 = (new Vector3f(vertis[indices[l * 6 + 2] * 3], vertis[indices[l * 6 + 2] * 3 + 1], vertis[indices[l * 6 + 2] * 3 + 2])).sub(new Vector3f(vertis[indices[l * 6] * 3], vertis[indices[l * 6] * 3 + 1], vertis[indices[l * 6] * 3 + 2]), new Vector3f());
-                    Vector4f uv0 = new Vector4f(textureCoords[indices[l * 6] * 2], textureCoords[indices[l * 6] * 2 + 1], textureCoords[indices[l * 6] * 2], textureCoords[indices[l * 6] * 2 + 1]);
-                    Vector4f uv1 = new Vector4f(textureCoords[indices[l * 6 + 1] * 2], textureCoords[indices[l * 6 + 1] * 2 + 1], textureCoords[indices[l * 6 + 1] * 2], textureCoords[indices[l * 6 + 1] * 2 + 1]);
-                    Vector4f uv2 = new Vector4f(textureCoords[indices[l * 6 + 2] * 2], textureCoords[indices[l * 6 + 2] * 2 + 1], textureCoords[indices[l * 6 + 2] * 2], textureCoords[indices[l * 6 + 2] * 2 + 1]);
-                    Vector4f deltaUv1 = (new Vector4f(uv1)).sub(uv0, new Vector4f());
-                    Vector4f deltaUv2 = (new Vector4f(uv2)).sub(uv0, new Vector4f());
-                    float r = 1.0F / (deltaUv1.x * deltaUv2.y - deltaUv1.y * deltaUv2.x);
-                    deltaPos1.mul(deltaUv2.y);
-                    deltaPos2.mul(deltaUv1.y);
-
-                    Vector3f tangent = (new Vector3f(deltaPos1)).sub(deltaPos2, new Vector3f());
-                    tangent.mul(r).normalize();
-                    tanges[indices[l * 6] * 3] = tangent.x;
-                    tanges[indices[l * 6] * 3 + 1] = tangent.y;
-                    tanges[indices[l * 6] * 3 + 2] = tangent.z;
-                    tanges[indices[l * 6 + 1] * 3] = tangent.x;
-                    tanges[indices[l * 6 + 1] * 3 + 1] = tangent.y;
-                    tanges[indices[l * 6 + 1] * 3 + 2] = tangent.z;
-                    tanges[indices[l * 6 + 2] * 3] = tangent.x;
-                    tanges[indices[l * 6 + 2] * 3 + 1] = tangent.y;
-                    tanges[indices[l * 6 + 2] * 3 + 2] = tangent.z;
-                    l++;
-                }
-            }
-
-            for(int in = 0; in < indices.length / 3; in++)
-            {
-                int triInd = in * 3;
-
-                int triIndA = indices[triInd] * 3;
-                int triIndB = indices[triInd + 1] * 3;
-                int triIndC = indices[triInd + 2] * 3;
-
-                Vector3f normal = normalFromIndices(
-                        new Vector3f(vertis[triIndA], vertis[triIndA + 1], vertis[triIndA + 2]),
-                        new Vector3f(vertis[triIndB], vertis[triIndB + 1], vertis[triIndB + 2]),
-                        new Vector3f(vertis[triIndC], vertis[triIndC + 1], vertis[triIndC + 2]));
-
-                Vector3f normalA = new Vector3f(normas[triIndA], normas[triIndA + 1], normas[triIndA + 2]).add(normal);
-                Vector3f normalB = new Vector3f(normas[triIndB], normas[triIndB + 1], normas[triIndB + 2]).add(normal);
-                Vector3f normalC = new Vector3f(normas[triIndC], normas[triIndC + 1], normas[triIndC + 2]).add(normal);
-
-                normas[triIndA] = normalA.x;
-                normas[triIndA + 1] = normalA.y;
-                normas[triIndA + 2] = normalA.z;
-
-                normas[triIndB] = normalB.x;
-                normas[triIndB + 1] = normalB.y;
-                normas[triIndB + 2] = normalB.z;
-
-                normas[triIndC] = normalC.x;
-                normas[triIndC + 1] = normalC.y;
-                normas[triIndC + 2] = normalC.z;
-            }
-
-            bevels[i] = new Model(0, null, 0, null);
-            bevels[i].vertices = vertis;
-            bevels[i].textureCoords = textureCoords;
-            bevels[i].normals = normas;
-            bevels[i].indices = indices;
-            bevels[i].tangents = tanges;
-
-            try {
-                ResourceDescriptor gmat = bevel.getMaterial(current.gmatSlot);
-                int mat = gmat == null ? material : LoadedData.getMaterial(gmat, loader, textures, gmatMAP);
-
-                int[] gmts = new int[vertis.length/3];
-                for(int g = 0; g < gmts.length; g++)
-                    gmts[g] = current.mappingMode == MappingMode.HIDDEN ? 0 : mat;
-                bevels[i].gmats = gmts;
-            } catch (Exception e) {
-                print.stackTrace(e);
-            }
-        }
-
-        int offs = polygonVertices.length;
-
-        for(Model bevelSegment : bevels)
-        {
-            for(int v = 0; v < bevelSegment.vertices.length; v++)
-                vertices[offs * 3 + v] = bevelSegment.vertices[v];
-            for(int tc = 0; tc < bevelSegment.textureCoords.length; tc++)
-                texCoords[offs * 4 + tc] = bevelSegment.textureCoords[tc];
-            for(int n = 0; n < bevelSegment.normals.length; n++)
-                normals[offs * 3 + n] = bevelSegment.normals[n];
-            for(int t = 0; t < bevelSegment.tangents.length; t++)
-                tangents[offs * 3 + t] = bevelSegment.tangents[t];
-            for(int g = 0; g < bevelSegment.gmats.length; g++)
-                gmats[offs + g] = bevelSegment.gmats[g];
-
-            for(int indi : bevelSegment.indices)
-                ind.add(offs + indi);
-
-            offs += bevelSegment.vertices.length/3;
+            int slot = extrusion.materialSlots[i];
+            gmats[i] = slot == -1 || slot == 0 ? baseMaterial : bevelMaterials[slot];
         }
 
         int texCount = 0;
@@ -1148,67 +777,500 @@ public class AsyncModelMan {
             if(v.x != -1)
                 gmatCount++;
 
-        //smooth normals
-        for(int i = 0; i < vertices.length/3; i++)
-        {
-            float x = vertices[i * 3];
-            float y = vertices[i * 3 + 1];
-            float z = vertices[i * 3 + 2];
-            Vector3f vertex = new Vector3f(x, y, z);
-
-            float dx = normals[i * 3];
-            float dy = normals[i * 3 + 1];
-            float dz = normals[i * 3 + 2];
-
-            Vector3f newDir = new Vector3f(dx, dy, dz);
-
-            ArrayList<Vector3i> closeVerts = new ArrayList<>();
-
-            for(int o = i + 1; o < vertices.length/3; o++)
-            {
-                float x2 = vertices[o * 3];
-                float y2 = vertices[o * 3 + 1];
-                float z2 = vertices[o * 3 + 2];
-                Vector3f vertex2 = new Vector3f(x2, y2, z2);
-
-                float dist = vertex.distance(vertex2);
-
-                if(dist < 0.01)
-                {
-                    float dx2 = normals[o * 3];
-                    float dy2 = normals[o * 3 + 1];
-                    float dz2 = normals[o * 3 + 2];
-
-                    closeVerts.add(new Vector3i(o * 3, o * 3 + 1, o * 3 + 2));
-                    newDir.add(new Vector3f(dx2, dy2, dz2));
-                }
-            }
-
-            newDir.div(closeVerts.size() + 1);
-
-            normals[i * 3] = newDir.x;
-            normals[i * 3 + 1] = newDir.y;
-            normals[i * 3 + 2] = newDir.z;
-
-            for(Vector3i indexNormal : closeVerts)
-            {
-                normals[indexNormal.x] = newDir.x;
-                normals[indexNormal.y] = newDir.y;
-                normals[indexNormal.z] = newDir.z;
-            }
-        }
-
-        model.vertices = vertices;
-        model.textureCoords = texCoords;
-        model.normals = normals;
-        model.indices = ind.stream().mapToInt(Integer::valueOf).toArray();
-        model.tangents = tangents;
+        model.vertices = extrusion.positions;
+        model.textureCoords = extrusion.uvs;
+        model.normals = extrusion.normals;
+        model.indices = extrusion.indices;
+//        model.tangents = tangents;
         model.gmats = gmats;
         model.hasBones = false;
         model.material.textures = textures;
         model.material.texCount = texCount;
         model.material.gmatMAP = gmatMAP;
         model.material.gmatCount = gmatCount;
+
+//
+//        Polygon polygon = shape.polygon;
+//        float thickness = shape.thickness;
+//        int[] loops = polygon.loops;
+//        Vector3f[] polygonVertices = polygon.vertices;
+//
+//        if(!view.MaterialEditing.vertexTool.isSelected())
+//            ensureWindingOrder(polygonVertices, loops, transformation);
+//
+//        BevelVertex offset = bevel.vertices.get(bevel.vertices.size() - 1);
+//        float bevelSize = bevel.fixedBevelSize;
+//        if(bevelSize == -1)
+//            bevelSize = shape.bevelSize;
+//
+//        bevelSize *= 2;
+//
+//        float offZ = zQuadratic(offset.z, bevelSize, thickness, false, 0, bevel.smoothWithFront);
+//        boolean stretchBevel = Math.abs(offZ - thickness) > 0.1f;
+//        float offZS = zQuadratic(offset.z, bevelSize, thickness, stretchBevel, offZ, bevel.smoothWithFront);
+//
+//        int material = 0;w
+//
+//        Vector2i[] gmatMAP = new Vector2i[100];
+//        for(int i = 0; i < gmatMAP.length; i++)
+//            gmatMAP[i] = new Vector2i(-1);
+//
+//        Texture[] textures = new Texture[32];
+//
+//        try
+//        {
+//            if(generatedMesh == null)
+//            {
+//                ResourceDescriptor gmat = bevel.getMaterial(bevel.vertices.get(0).gmatSlot);
+//                material =  LoadedData.getMaterial(gmat, loader, textures, gmatMAP);
+//            }
+//            else material = LoadedData.getMaterial(generatedMesh.gfxMaterial, loader, textures, gmatMAP);
+//        }catch (Exception e){print.stackTrace(e);}
+//
+//        int count = polygonVertices.length + (polygonVertices.length * (bevel.vertices.size() - 1) * 4);
+//
+//        float[] vertices = new float[count * 3],
+//                texCoords = new float[count * 4],
+//                normals = new float[vertices.length],
+//                tangents = new float[vertices.length];
+//        int[] gmats = new int[count];
+//
+//        Matrix4f invTransform = transformation.invert(new Matrix4f());
+//        float uvScale = 0.002f;
+//        Vector2f uvOffset0 = generatedMesh == null || generatedMesh.uvOffset == null ? new Vector2f(0) : new Vector2f(generatedMesh.uvOffset.x, generatedMesh.uvOffset.y);
+//        Vector2f uvOffset1 = generatedMesh == null || generatedMesh.uvOffset == null ? new Vector2f(0) : new Vector2f(generatedMesh.uvOffset.z, generatedMesh.uvOffset.w);
+//        Vector3f scale = (transformation.getScale(new Vector3f()));
+//        Vector3f translation = transformation.getTranslation(new Vector3f());
+//
+//        ArrayList<Vector4f> offsetLines = new ArrayList<>();
+//
+//        //subdivision
+//        int l = 0;
+//
+//        if(bevel.relaxStrength > 0.0f)
+//            for (int loop : loops)
+//            {
+//                for (int i = 0; i < loop; i++)
+//                {
+//                    Vector3f curVert = new Vector3f(polygonVertices[l]);
+//                    curVert.mulProject(transformation, curVert);
+//                    int p = (l - i) + (((i - 1) % loop + loop) % loop);
+//                    Vector3f prevVert = new Vector3f(polygonVertices[p]);
+//                    prevVert.mulProject(transformation, prevVert);
+//                    int n =  (l - i) + (((i + 1) % loop + loop) % loop);
+//                    Vector3f nextVert = new Vector3f(polygonVertices[n]);
+//                    nextVert.mulProject(transformation, nextVert);
+//
+//                    l++;
+//                }
+//            }
+//
+//        //push in verts
+//        l = 0;
+//        for (int loop : loops)
+//        {
+//            for (int i = 0; i < loop; i++)
+//            {
+//                Vector3f curVert = new Vector3f(polygonVertices[l]);
+//                curVert.mulProject(transformation, curVert);
+//                int p = (l - i) + (((i - 1) % loop + loop) % loop);
+//                Vector3f prevVert = new Vector3f(polygonVertices[p]);
+//                prevVert.mulProject(transformation, prevVert);
+//                int k = (l - i) + (((i - 2) % loop + loop) % loop);
+//                Vector3f prevPrevVert = new Vector3f(polygonVertices[k]);
+//                prevPrevVert.mulProject(transformation, prevPrevVert);
+//                int n =  (l - i) + (((i + 1) % loop + loop) % loop);
+//                Vector3f nextVert = new Vector3f(polygonVertices[n]);
+//                nextVert.mulProject(transformation, nextVert);
+//                int n2 = (l - i) + (((i + 2) % loop + loop) % loop);
+//                Vector3f nextNextVert = new Vector3f(polygonVertices[n2]);
+//                nextNextVert.mulProject(transformation, nextNextVert);
+//
+//                Vector2f newPos = Utils.offsetAndFindIntersection(
+//                        new Vector2f(prevVert.x, prevVert.y),
+//                        new Vector2f(curVert.x, curVert.y),
+//                        new Vector2f(nextVert.x, nextVert.y), offset.y * bevelSize);
+//
+//                Vector2f newPosPrev = Utils.offsetAndFindIntersection(
+//                        new Vector2f(prevPrevVert.x, prevPrevVert.y),
+//                        new Vector2f(prevVert.x, prevVert.y),
+//                        new Vector2f(curVert.x, curVert.y), offset.y * bevelSize);
+//
+//                for(int o = 0; o < offsetLines.size(); o++)
+//                {
+//                    Vector4f line = offsetLines.get(o);
+//
+//                    float s1_x = line.z - line.x;
+//                    float s1_y = line.w - line.y;
+//
+//                    float s2_x = curVert.x - newPos.x;
+//                    float s2_y = curVert.y - newPos.y;
+//
+//                    if(-s2_x * s1_y + s1_x * s2_y == 0)
+//                        continue;
+//
+//                    float s = (-s1_y * (line.x - newPos.x) + s1_x * (line.y - newPos.y)) / (-s2_x * s1_y + s1_x * s2_y);
+//                    float t = ( s2_x * (line.y - newPos.y) - s2_y * (line.x - newPos.x)) / (-s2_x * s1_y + s1_x * s2_y);
+//
+//                    if(s >= 0 && s <= 1 && t >= 0 && t <= 1)
+//                    {
+//                        Vector2f from = new Vector2f(line.x + (t * s1_x), line.y + (t * s1_y));
+//                        Vector2f direc = new Vector2f(curVert.x, curVert.y).sub(from).normalize();
+//                        newPos = from.add(direc.mul(0.1f));
+//                    }
+//                }
+//
+//                if(i != 0)
+//                {
+//                    Vector3f prev = new Vector3f(vertices[(l - 1) * 3], vertices[(l - 1) * 3 + 1], vertices[(l - 1) * 3 + 2]).mulProject(transformation);
+//                    offsetLines.add(new Vector4f(newPos.x, newPos.y, prev.x, prev.y));
+//
+//                    if(i == loop - 1)
+//                    {
+//                        Vector3f first = new Vector3f(vertices[(l - (loop - 1)) * 3], vertices[(l - (loop - 1)) * 3 + 1], vertices[(l - (loop - 1)) * 3 + 2]).mulProject(transformation);
+//                        offsetLines.add(new Vector4f(newPos.x, newPos.y, first.x, first.y));
+//                    }
+//                }
+//
+//                Vector3f newVertex = new Vector3f(newPos.x, newPos.y, transformation.getTranslation(new Vector3f()).z + offZS + shape.zBias).mulProject(invTransform);
+//
+//                vertices[l * 3] = newVertex.x;
+//                vertices[l * 3 + 1] = newVertex.y;
+//                vertices[l * 3 + 2] = newVertex.z;
+//
+//                texCoords[l * 4] = newVertex.x * uvScale * scale.x + uvOffset0.x;
+//                texCoords[l * 4 + 1] = 1 - (newVertex.y * uvScale * scale.y + uvOffset0.y);
+//                texCoords[l * 4 + 2] = newVertex.x * uvScale * scale.x + uvOffset1.x;
+//                texCoords[l * 4 + 3] = 1 - (newVertex.y * uvScale * scale.y + uvOffset1.y);
+//
+//                normals[l * 3] = 0.0f;
+//                normals[l * 3 + 1] = 0.0f;
+//                normals[l * 3 + 2] = 1.0f;
+//
+//                gmats[l] = material;
+//                l++;
+//            }
+//        }
+//
+//        double[] flat = new double[polygonVertices.length * 2];
+//        for (int i = 0; i < polygonVertices.length; i++) {
+//            flat[i * 2] = vertices[i * 3];
+//            flat[i * 2 + 1] = vertices[i * 3 + 1];
+//        }
+//
+//        int[] holes = new int[loops.length - 1];
+//        int index = loops[0];
+//        for (int i = 0; i < holes.length; ++i) {
+//            holes[i] = index;
+//            index += loops[i + 1];
+//        }
+//
+//        //triangulate front
+//        List<Integer> ind = Earcut.earcut(flat, holes, 2);
+//
+//        Model[] bevels = new Model[bevel.vertices.size() - 1];
+//
+//        //extrude bevel
+//        for (int i = bevels.length - 1; i >= 0; i--) {
+//            BevelVertex current = bevel.vertices.get(i);
+//            BevelVertex next = bevel.vertices.get(i + 1);
+//
+//            Vector2f curPos = new Vector2f((current.y - offset.y) * bevelSize, current.z);
+//            Vector2f nextPos = new Vector2f((next.y - offset.y) * bevelSize, next.z);
+//
+//            int c = polygonVertices.length * 4;
+//
+//            float[] vertis = new float[c * 3];
+//            float[] textureCoords = new float[c * 4];
+//            float[] normas = new float[vertis.length];
+//            float[] tanges = new float[vertis.length];
+//            int[] indices = new int[vertis.length / 2];
+//
+//            l = 0;
+//            for (int loop : loops) {
+//                for (int i3 = 0; i3 < loop; i3++) {
+//
+//                    Vector3f curVert = new Vector3f(vertices[l * 3], vertices[l * 3 + 1], vertices[l * 3 + 2]);
+//                    curVert.mulProject(transformation, curVert);
+//
+//                    Vector3f origVert = new Vector3f(polygonVertices[l]);
+//                    origVert.mulProject(transformation, origVert);
+//
+//                    Vector2f originalVert = new Vector2f(origVert.x, origVert.y);
+//                    Vector2f currentVert = new Vector2f(curVert.x, curVert.y);
+//                    Vector2f dir = new Vector2f(originalVert).sub(currentVert).normalize();
+//
+//                    Vector2f firstVert1 = new Vector2f(currentVert).add(new Vector2f(dir).mul(current.y * bevelSize - offset.y * bevelSize));
+//                    Vector3f firstVert = new Vector3f(firstVert1.x, firstVert1.y, curVert.z + zQuadratic(curPos.y, bevelSize, thickness, stretchBevel, offZ, bevel.smoothWithFront) - offZS);
+//
+//                    firstVert.mulProject(invTransform, firstVert);
+//                    vertis[l * 12 + 0] = firstVert.x;
+//                    vertis[l * 12 + 1] = firstVert.y;
+//                    vertis[l * 12 + 2] = firstVert.z;
+//
+//                    Vector2f secondVert1 = new Vector2f(currentVert).add(new Vector2f(dir).mul(next.y * bevelSize - offset.y * bevelSize));
+//                    Vector3f secondVert = new Vector3f(secondVert1.x, secondVert1.y, curVert.z + zQuadratic(nextPos.y, bevelSize, thickness, stretchBevel, offZ, bevel.smoothWithFront) - offZS);
+//
+//                    secondVert.mulProject(invTransform, secondVert);
+//                    vertis[l * 12 + 3] = secondVert.x;
+//                    vertis[l * 12 + 4] = secondVert.y;
+//                    vertis[l * 12 + 5] = secondVert.z;
+//
+//                    int i4 = (l - i3) + (((i3 - 1) % loop + loop) % loop);
+//
+//                    vertis[i4 * 12 + 6] = vertis[l * 12 + 0];
+//                    vertis[i4 * 12 + 7] = vertis[l * 12 + 1];
+//                    vertis[i4 * 12 + 8] = vertis[l * 12 + 2];
+//
+//                    vertis[i4 * 12 + 9] = vertis[l * 12 + 3];
+//                    vertis[i4 * 12 + 10] = vertis[l * 12 + 4];
+//                    vertis[i4 * 12 + 11] = vertis[l * 12 + 5];
+//
+//                    if(transformation.determinant() < 0)
+//                    {
+//                        indices[l * 6 + 0] = l * 4 + 0;
+//                        indices[l * 6 + 1] = l * 4 + 2;
+//                        indices[l * 6 + 2] = l * 4 + 3;
+//
+//                        indices[l * 6 + 3] = l * 4 + 3;
+//                        indices[l * 6 + 4] = l * 4 + 1;
+//                        indices[l * 6 + 5] = l * 4 + 0;
+//                    }
+//                    else
+//                    {
+//                        indices[l * 6 + 0] = l * 4 + 3;
+//                        indices[l * 6 + 1] = l * 4 + 2;
+//                        indices[l * 6 + 2] = l * 4 + 0;
+//
+//                        indices[l * 6 + 3] = l * 4 + 0;
+//                        indices[l * 6 + 4] = l * 4 + 1;
+//                        indices[l * 6 + 5] = l * 4 + 3;
+//                    }
+//
+//                    Vector2f newFirst = new Vector2f(firstVert.x, firstVert.y).mul(uvScale).mul(scale.x, scale.y);
+//                    Vector2f newSecond = new Vector2f(secondVert.x, secondVert.y).mul(uvScale).mul(scale.x, scale.y);
+//
+//                    Vector2f DaveUV0v1 = new Vector2f(newFirst.x + uvOffset0.x, 1 - (newFirst.y + uvOffset0.y));
+//                    Vector2f DaveUV0v2 = new Vector2f(newSecond.x + uvOffset0.x, 1 - (newSecond.y + uvOffset0.y));
+//
+//                    Vector2f DaveUV1v1 = new Vector2f(newFirst.x + uvOffset1.x, 1 - (newFirst.y + uvOffset1.y));
+//                    Vector2f DaveUV1v2 = new Vector2f(newSecond.x + uvOffset1.x, 1 - (newSecond.y + uvOffset1.y));
+//
+//                    switch(current.mappingMode)//todo
+//                    {
+//                        case CYLINDER:
+//                        {
+//                            Vector2f UV0v1 = DaveUV0v1;
+//                            Vector2f UV0v2 = DaveUV0v2;
+//
+//                            textureCoords[l * 16] = UV0v1.x;
+//                            textureCoords[l * 16 + 1] = UV0v1.y;
+//                            textureCoords[l * 16 + 4] = UV0v2.x;
+//                            textureCoords[l * 16 + 5] = UV0v2.y;
+//
+//                            textureCoords[i4 * 16 + 8] = UV0v1.x;
+//                            textureCoords[i4 * 16 + 9] = UV0v1.y;
+//                            textureCoords[i4 * 16 + 12] = UV0v2.x;
+//                            textureCoords[i4 * 16 + 13] = UV0v2.y;
+//                        }
+//                        break;
+//                        case DAVE:
+//                        default:
+//                        {
+//                            Vector2f UV0v1 = DaveUV0v1;
+//                            Vector2f UV0v2 = DaveUV0v2;
+//
+//                            textureCoords[l * 16] = UV0v1.x;
+//                            textureCoords[l * 16 + 1] = UV0v1.y;
+//                            textureCoords[l * 16 + 4] = UV0v2.x;
+//                            textureCoords[l * 16 + 5] = UV0v2.y;
+//
+//                            textureCoords[i4 * 16 + 8] = UV0v1.x;
+//                            textureCoords[i4 * 16 + 9] = UV0v1.y;
+//                            textureCoords[i4 * 16 + 12] = UV0v2.x;
+//                            textureCoords[i4 * 16 + 13] = UV0v2.y;
+//                        }
+//                        break;
+//                    }
+//
+//                    textureCoords[l * 16 + 2] = DaveUV1v1.x;
+//                    textureCoords[l * 16 + 3] = DaveUV1v1.y;
+//                    textureCoords[l * 16 + 6] = DaveUV1v2.x;
+//                    textureCoords[l * 16 + 7] = DaveUV1v2.y;
+//
+//                    textureCoords[i4 * 16 + 10] = DaveUV1v1.x;
+//                    textureCoords[i4 * 16 + 11] = DaveUV1v1.y;
+//                    textureCoords[i4 * 16 + 14] = DaveUV1v2.x;
+//                    textureCoords[i4 * 16 + 15] = DaveUV1v2.y;
+//
+//                    Vector3f deltaPos1 = (new Vector3f(vertis[indices[l * 6 + 1] * 3], vertis[indices[l * 6 + 1] * 3 + 1], vertis[indices[l * 6 + 1] * 3 + 2])).sub(new Vector3f(vertis[indices[l * 6] * 3], vertis[indices[l * 6] * 3 + 1], vertis[indices[l * 6] * 3 + 2]), new Vector3f());
+//                    Vector3f deltaPos2 = (new Vector3f(vertis[indices[l * 6 + 2] * 3], vertis[indices[l * 6 + 2] * 3 + 1], vertis[indices[l * 6 + 2] * 3 + 2])).sub(new Vector3f(vertis[indices[l * 6] * 3], vertis[indices[l * 6] * 3 + 1], vertis[indices[l * 6] * 3 + 2]), new Vector3f());
+//                    Vector4f uv0 = new Vector4f(textureCoords[indices[l * 6] * 2], textureCoords[indices[l * 6] * 2 + 1], textureCoords[indices[l * 6] * 2], textureCoords[indices[l * 6] * 2 + 1]);
+//                    Vector4f uv1 = new Vector4f(textureCoords[indices[l * 6 + 1] * 2], textureCoords[indices[l * 6 + 1] * 2 + 1], textureCoords[indices[l * 6 + 1] * 2], textureCoords[indices[l * 6 + 1] * 2 + 1]);
+//                    Vector4f uv2 = new Vector4f(textureCoords[indices[l * 6 + 2] * 2], textureCoords[indices[l * 6 + 2] * 2 + 1], textureCoords[indices[l * 6 + 2] * 2], textureCoords[indices[l * 6 + 2] * 2 + 1]);
+//                    Vector4f deltaUv1 = (new Vector4f(uv1)).sub(uv0, new Vector4f());
+//                    Vector4f deltaUv2 = (new Vector4f(uv2)).sub(uv0, new Vector4f());
+//                    float r = 1.0F / (deltaUv1.x * deltaUv2.y - deltaUv1.y * deltaUv2.x);
+//                    deltaPos1.mul(deltaUv2.y);
+//                    deltaPos2.mul(deltaUv1.y);
+//
+//                    Vector3f tangent = (new Vector3f(deltaPos1)).sub(deltaPos2, new Vector3f());
+//                    tangent.mul(r).normalize();
+//                    tanges[indices[l * 6] * 3] = tangent.x;
+//                    tanges[indices[l * 6] * 3 + 1] = tangent.y;
+//                    tanges[indices[l * 6] * 3 + 2] = tangent.z;
+//                    tanges[indices[l * 6 + 1] * 3] = tangent.x;
+//                    tanges[indices[l * 6 + 1] * 3 + 1] = tangent.y;
+//                    tanges[indices[l * 6 + 1] * 3 + 2] = tangent.z;
+//                    tanges[indices[l * 6 + 2] * 3] = tangent.x;
+//                    tanges[indices[l * 6 + 2] * 3 + 1] = tangent.y;
+//                    tanges[indices[l * 6 + 2] * 3 + 2] = tangent.z;
+//                    l++;
+//                }
+//            }
+//
+//            for(int in = 0; in < indices.length / 3; in++)
+//            {
+//                int triInd = in * 3;
+//
+//                int triIndA = indices[triInd] * 3;
+//                int triIndB = indices[triInd + 1] * 3;
+//                int triIndC = indices[triInd + 2] * 3;
+//
+//                Vector3f normal = normalFromIndices(
+//                        new Vector3f(vertis[triIndA], vertis[triIndA + 1], vertis[triIndA + 2]),
+//                        new Vector3f(vertis[triIndB], vertis[triIndB + 1], vertis[triIndB + 2]),
+//                        new Vector3f(vertis[triIndC], vertis[triIndC + 1], vertis[triIndC + 2]));
+//
+//                Vector3f normalA = new Vector3f(normas[triIndA], normas[triIndA + 1], normas[triIndA + 2]).add(normal);
+//                Vector3f normalB = new Vector3f(normas[triIndB], normas[triIndB + 1], normas[triIndB + 2]).add(normal);
+//                Vector3f normalC = new Vector3f(normas[triIndC], normas[triIndC + 1], normas[triIndC + 2]).add(normal);
+//
+//                normas[triIndA] = normalA.x;
+//                normas[triIndA + 1] = normalA.y;
+//                normas[triIndA + 2] = normalA.z;
+//
+//                normas[triIndB] = normalB.x;
+//                normas[triIndB + 1] = normalB.y;
+//                normas[triIndB + 2] = normalB.z;
+//
+//                normas[triIndC] = normalC.x;
+//                normas[triIndC + 1] = normalC.y;
+//                normas[triIndC + 2] = normalC.z;
+//            }
+//
+//            bevels[i] = new Model(0, null, 0, null);
+//            bevels[i].vertices = vertis;
+//            bevels[i].textureCoords = textureCoords;
+//            bevels[i].normals = normas;
+//            bevels[i].indices = indices;
+//            bevels[i].tangents = tanges;
+//
+//            try {
+//                ResourceDescriptor gmat = bevel.getMaterial(current.gmatSlot);
+//                int mat = gmat == null ? material : LoadedData.getMaterial(gmat, loader, textures, gmatMAP);
+//
+//                int[] gmts = new int[vertis.length/3];
+//                for(int g = 0; g < gmts.length; g++)
+//                    gmts[g] = current.mappingMode == MappingMode.HIDDEN ? 0 : mat;
+//                bevels[i].gmats = gmts;
+//            } catch (Exception e) {
+//                print.stackTrace(e);
+//            }
+//        }
+//
+//        int offs = polygonVertices.length;
+//
+//        for(Model bevelSegment : bevels)
+//        {
+//            for(int v = 0; v < bevelSegment.vertices.length; v++)
+//                vertices[offs * 3 + v] = bevelSegment.vertices[v];
+//            for(int tc = 0; tc < bevelSegment.textureCoords.length; tc++)
+//                texCoords[offs * 4 + tc] = bevelSegment.textureCoords[tc];
+//            for(int n = 0; n < bevelSegment.normals.length; n++)
+//                normals[offs * 3 + n] = bevelSegment.normals[n];
+//            for(int t = 0; t < bevelSegment.tangents.length; t++)
+//                tangents[offs * 3 + t] = bevelSegment.tangents[t];
+//            for(int g = 0; g < bevelSegment.gmats.length; g++)
+//                gmats[offs + g] = bevelSegment.gmats[g];
+//
+//            for(int indi : bevelSegment.indices)
+//                ind.add(offs + indi);
+//
+//            offs += bevelSegment.vertices.length/3;
+//        }
+//
+//        int texCount = 0;
+//        for(Texture t : textures)
+//            if(t != null)
+//                texCount++;
+//
+//        int gmatCount = 0;
+//        for(Vector2i v : gmatMAP)
+//            if(v.x != -1)
+//                gmatCount++;
+//
+//        //smooth normals
+//        for(int i = 0; i < vertices.length/3; i++)
+//        {
+//            float x = vertices[i * 3];
+//            float y = vertices[i * 3 + 1];
+//            float z = vertices[i * 3 + 2];
+//            Vector3f vertex = new Vector3f(x, y, z);
+//
+//            float dx = normals[i * 3];
+//            float dy = normals[i * 3 + 1];
+//            float dz = normals[i * 3 + 2];
+//
+//            Vector3f newDir = new Vector3f(dx, dy, dz);
+//
+//            ArrayList<Vector3i> closeVerts = new ArrayList<>();
+//
+//            for(int o = i + 1; o < vertices.length/3; o++)
+//            {
+//                float x2 = vertices[o * 3];
+//                float y2 = vertices[o * 3 + 1];
+//                float z2 = vertices[o * 3 + 2];
+//                Vector3f vertex2 = new Vector3f(x2, y2, z2);
+//
+//                float dist = vertex.distance(vertex2);
+//
+//                if(dist < 0.01)
+//                {
+//                    float dx2 = normals[o * 3];
+//                    float dy2 = normals[o * 3 + 1];
+//                    float dz2 = normals[o * 3 + 2];
+//
+//                    closeVerts.add(new Vector3i(o * 3, o * 3 + 1, o * 3 + 2));
+//                    newDir.add(new Vector3f(dx2, dy2, dz2));
+//                }
+//            }
+//
+//            newDir.div(closeVerts.size() + 1);
+//
+//            normals[i * 3] = newDir.x;
+//            normals[i * 3 + 1] = newDir.y;
+//            normals[i * 3 + 2] = newDir.z;
+//
+//            for(Vector3i indexNormal : closeVerts)
+//            {
+//                normals[indexNormal.x] = newDir.x;
+//                normals[indexNormal.y] = newDir.y;
+//                normals[indexNormal.z] = newDir.z;
+//            }
+//        }
+//
+//        model.vertices = vertices;
+//        model.textureCoords = texCoords;
+//        model.normals = normals;
+//        model.indices = ind.stream().mapToInt(Integer::valueOf).toArray();
+//        model.tangents = tangents;
+//        model.gmats = gmats;
+//        model.hasBones = false;
+//        model.material.textures = textures;
+//        model.material.texCount = texCount;
+//        model.material.gmatMAP = gmatMAP;
+//        model.material.gmatCount = gmatCount;
     }
 
     private static float zQuadratic(float value, float bevelSize, float thickness, boolean stretch, float zOffset, boolean smoothWithFront)

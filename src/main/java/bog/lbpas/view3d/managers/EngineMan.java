@@ -5,6 +5,7 @@ import bog.lbpas.view3d.renderer.ILogic;
 import bog.lbpas.view3d.utils.Config;
 import bog.lbpas.view3d.utils.Consts;
 import bog.lbpas.view3d.utils.Cursors;
+import bog.lbpas.view3d.utils.print;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 
@@ -57,6 +58,12 @@ public class EngineMan {
 
         while(isRunning)
         {
+            if(!Main.loaderThread.isAlive())
+            {
+                Main.loaderThread.stop();
+                Main.loaderThread.start();
+            }
+
             boolean render = false;
             double currentTime  = GLFW.glfwGetTime();
             long startTime = System.nanoTime();

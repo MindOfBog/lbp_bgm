@@ -6,6 +6,7 @@ import bog.lbpas.view3d.mainWindow.View3D;
 import bog.lbpas.view3d.utils.Consts;
 import bog.lbpas.view3d.utils.FilePicker;
 import bog.lbpas.view3d.utils.MousePicker;
+import bog.lbpas.view3d.utils.print;
 import org.joml.Vector2d;
 import org.joml.Vector2f;
 import org.lwjgl.glfw.GLFW;
@@ -92,27 +93,28 @@ public class MouseInput {
 
     public void update(WindowMan windowMan)
     {
-        Main.RunOnGLFWThread(() ->
+        displayVec.set(0, 0);
+
+        double[] xBuffer = new double[1];
+        double[] yBuffer = new double[1];
+        GLFW.glfwGetCursorPos(windowMan.window, xBuffer, yBuffer);
+
+        if(currentPos.x >= 0 && currentPos.y >= 0 && currentPos.x <= window.getWidth() && currentPos.y <= window.getHeight() && inWindow)
         {
-            displayVec.set(0, 0);
+            double x = xBuffer[0] - currentPos.x;
+            double y = yBuffer[0] - currentPos.y;
 
-            double[] xBuffer = new double[1];
-            double[] yBuffer = new double[1];
-            GLFW.glfwGetCursorPos(windowMan.window, xBuffer, yBuffer);
+            if(x != 0)
+                displayVec.y = (float) x;
+            if(y != 0)
+                displayVec.x = (float) y;
+        }
 
-            if(currentPos.x >= 0 && currentPos.y >= 0 && currentPos.x <= window.getWidth() && currentPos.y <= window.getHeight() && inWindow)
-            {
-                double x = xBuffer[0] - currentPos.x;
-                double y = yBuffer[0] - currentPos.y;
+        currentPos.set(xBuffer[0], yBuffer[0]);
+    }
 
-                if(x != 0)
-                    displayVec.y = (float) x;
-                if(y != 0)
-                    displayVec.x = (float) y;
-            }
-
-            currentPos.set(xBuffer[0], yBuffer[0]);
-        });
+    public void updateGLFW(WindowMan windowMan)
+    {
     }
 
 }

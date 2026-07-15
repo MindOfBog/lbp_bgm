@@ -663,8 +663,8 @@ public class EntityRenderer implements IRenderer{
         lastShader.setUniform("pointLightsSize", pointLights.size());
         lastShader.setUniform("spotLights", spotLights.toArray(SpotLight[]::new));
         lastShader.setUniform("spotLightsSize", spotLights.size());
-        lastShader.setUniform("rimColor", mainView.lighting.rimColor);
-        lastShader.setUniform("rimColor2", mainView.lighting.rimColor2);
+        lastShader.setUniform("rimColor", Config.VIEWER_SHADING == 0 ? mainView.lighting.rimColor : new Vector4f());
+        lastShader.setUniform("rimColor2", Config.VIEWER_SHADING == 0 ? mainView.lighting.rimColor2 : new Vector4f());
         lastShader.setUniform("fogNear", mainView.lighting.fogNear);
         lastShader.setUniform("fogFar", mainView.lighting.fogFar);
         lastShader.setUniform("camPos", mainView.camera.getPos());

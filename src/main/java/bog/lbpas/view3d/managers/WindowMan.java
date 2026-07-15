@@ -7,11 +7,9 @@ import bog.lbpas.view3d.renderer.gui.cursor.ECursor;
 import bog.lbpas.view3d.renderer.gui.elements.Element;
 import bog.lbpas.view3d.utils.*;
 import com.sun.jna.*;
-import com.sun.jna.platform.win32.User32Util;
 import com.sun.jna.platform.win32.WinDef;
 import com.sun.jna.platform.win32.WinUser;
 import com.sun.jna.win32.StdCallLibrary;
-import com.sun.jna.win32.W32APIOptions;
 import org.joml.*;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.PointerBuffer;
@@ -25,7 +23,6 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.lang.Math;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -111,9 +108,12 @@ public class WindowMan {
     private int lastWidth, lastHeight;
 
     private Thread glfwThread;
+
+    boolean windowFinishedInit = false;
     public void init()
     {
         CountDownLatch windowReady = new CountDownLatch(1);
+
         glfwThread = new Thread()
         {
             @Override
@@ -269,8 +269,14 @@ public class WindowMan {
                 windowReady.countDown();
 
                 while (!GLFW.glfwWindowShouldClose(window)) {
-                    Main.ExecuteGLFWThreadQueue();
                     GLFW.glfwPollEvents();
+
+                    if(windowFinishedInit)
+                    {
+                        Main.ExecuteGLFWThreadQueue();
+                        mouseInput.updateGLFW(WindowMan.this);
+                    }
+
                     Thread.yield();
                 }
             }
@@ -366,6 +372,8 @@ public class WindowMan {
     public int newHeight = 0;
 
     public void update() {
+
+        windowFinishedInit = true;
         GLFW.glfwSwapBuffers(window);
         for(ShaderMan shader : ShaderMan.SHADER_LINKING_QUEUE)
         {
@@ -699,7 +707,8 @@ public class WindowMan {
 
     public void onMouseScroll(double xOffset, double yOffset)
     {
-        Main.view.onMouseScroll(xOffset, yOffset);
+        if(Main.view != null)
+            Main.view.onMouseScroll(xOffset, yOffset);
     }
 
     public boolean windowShouldClose()

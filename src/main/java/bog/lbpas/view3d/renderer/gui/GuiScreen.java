@@ -68,17 +68,17 @@ public class GuiScreen {
 
     public Element getElementByID(String id)
     {
-        for(Element element : guiElements)
-            if(element.id != null && element.id.equalsIgnoreCase(id))
-                return element;
+        for(int i = 0; i < guiElements.size(); i++)
+            if(guiElements.get(i).id != null && guiElements.get(i).id.equalsIgnoreCase(id))
+                return guiElements.get(i);
         return null;
     }
 
     public boolean isMouseOverElement(MouseInput mouseInput)
     {
         boolean overElement = false;
-        for(Element element : guiElements)
-            if(element.isMouseOverElement(mouseInput.currentPos))
+        for(int i = 0; i < guiElements.size(); i++)
+            if(guiElements.get(i).isMouseOverElement(mouseInput.currentPos))
                 overElement = true;
         return overElement;
     }
@@ -86,17 +86,17 @@ public class GuiScreen {
     public boolean isElementFocused()
     {
         boolean focused = false;
-        for(Element element : guiElements)
-            if(element.isFocused())
+        for(int i = 0; i < guiElements.size(); i++)
+            if(guiElements.get(i).isFocused())
                 focused = true;
         return focused;
     }
 
     public void onChar(int codePoint, int modifiers)
     {
-        for(Element element : guiElements)
+        for(int i = 0; i < guiElements.size(); i++)
         {
-            element.onChar(codePoint, modifiers);
+            guiElements.get(i).onChar(codePoint, modifiers);
         }
     }
 

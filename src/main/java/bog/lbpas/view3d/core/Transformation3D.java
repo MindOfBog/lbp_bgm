@@ -450,7 +450,6 @@ public class Transformation3D{
                                 (i == ToolType.ROTATION_X.value && rotateX) || (i == ToolType.ROTATION_Y.value && rotateY) || (i == ToolType.ROTATION_Z.value && rotateZ) ||
                                 (i == ToolType.SCALE_X.value && scaleX) || (i == ToolType.SCALE_Y.value && scaleY) || (i == ToolType.SCALE_Z.value && scaleZ) || (i == ToolType.SCALE_UNIFORM.value && scaleUniform))
                         {
-                            print.neutral(tools.get(i).model.get(0).material.diffuseColor);
                             renderer.processThroughWallEntity(tools.get(i));
                             renderer.processThroughWallEntityForMousePick(toolsMousePicking.get(i));
                         }

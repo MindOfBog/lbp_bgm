@@ -164,7 +164,8 @@ public class Thing extends Entity{
     public void setTransformation(Matrix4f transformation) {
         PPos pos = this.thing.getPart(Part.POS);
         if(pos == null)
-            pos = new PPos();
+            return;
+//            pos = new PPos();
         pos.worldPosition = transformation;
         pos.recomputeLocalPos(this.thing);
         this.thing.setPart(Part.POS, pos);

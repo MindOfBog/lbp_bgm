@@ -32,7 +32,6 @@ public abstract class ButtonList<T> extends Element{
 
     Vector2f prevSize;
     int prevButtonHeight;
-    public Model listLine;
     public int lineOffset;
 
     public boolean deletable;
@@ -156,8 +155,8 @@ public abstract class ButtonList<T> extends Element{
         renderer.drawRectOutline((int) scrollX, (int) scrollY, 3, (int) scrollHeight, buttonColor2(null, -1));
         renderer.drawRect((int) scrollX, (int) (scrollY + ((Math.abs(yScroll) / maxScroll) * (scrollHeight - (int) frac))), 3, (int) frac, textColor(null, -1));
 
-        renderer.drawLine(listLine, new Vector2f((int) this.pos.x + 2 + lineOffset, (int) this.pos.y + 2), buttonColor2(null, -1), false);
-        renderer.drawLine(listLine, new Vector2f((int) this.pos.x + 2 + lineOffset, (int) (this.pos.y + this.size.y - 3)), buttonColor2(null, -1), false);
+        renderer.drawRect((int) this.pos.x + 2 + lineOffset, (int) this.pos.y + 2, (int) (size.x - 1.0f - size.x * 0.05f), 1, buttonColor2(null, -1));
+        renderer.drawRect((int) this.pos.x + 2 + lineOffset, (int) (this.pos.y + this.size.y - 3), (int) (size.x - 1.0f - size.x * 0.05f), 1, buttonColor2(null, -1));
 
         renderer.startScissor((int) pos.x, (int) scrollY, (int) size.x, (int) Math.ceil(scrollHeight));
         int ind = 0;
@@ -430,9 +429,7 @@ public abstract class ButtonList<T> extends Element{
     }
     public void refreshOutline(int height)
     {
-        if(listLine != null)
-            this.listLine.cleanup(loader);
-        this.listLine = Line.getLine(window, loader, new Vector2i(0), new Vector2i((int) (size.x - 1.0f - size.x * 0.05f), 0));
+
     }
     public abstract void clickedButton(T object, int index, int button, int action, int mods);
     public abstract void hoveringButton(T object, int index);

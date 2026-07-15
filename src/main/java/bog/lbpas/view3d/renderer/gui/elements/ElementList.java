@@ -28,7 +28,6 @@ public class ElementList extends Element{
     boolean scrolling = false;
 
     Vector2f prevSize = new Vector2f();
-    public Model listLine;
     public int lineOffset;
 
     public ElementList(String id, Vector2f pos, Vector2f size, RenderMan renderer, ObjectLoader loader, WindowMan window)
@@ -374,8 +373,8 @@ public class ElementList extends Element{
         renderer.drawRectOutline((int) scrollX, (int) scrollY, 3, (int) scrollHeight, Config.INTERFACE_PRIMARY_COLOR2);
         renderer.drawRect((int) scrollX, (int) (scrollY + (((yScroll * -1 + 3) / (maxScroll - size.y + 3)) * (scrollHeight - (int) frac))), 3, (int) frac, Config.FONT_COLOR);
 
-        renderer.drawLine(listLine, new Vector2f((int) this.pos.x + 2 + lineOffset, (int) this.pos.y + 2), Config.INTERFACE_PRIMARY_COLOR2, false);
-        renderer.drawLine(listLine, new Vector2f((int) this.pos.x + 2 + lineOffset, (int) (this.pos.y + this.size.y - 3)), Config.INTERFACE_PRIMARY_COLOR2, false);
+        renderer.drawRect((int) this.pos.x + 2 + lineOffset, (int) this.pos.y + 2, (int) (size.x - 2.0f - size.x * 0.05f), 1, Config.INTERFACE_PRIMARY_COLOR2);
+        renderer.drawRect((int) this.pos.x + 2 + lineOffset, (int) (this.pos.y + this.size.y - 3), (int) (size.x - 2.0f - size.x * 0.05f), 1, Config.INTERFACE_PRIMARY_COLOR2);
 
         renderer.startScissor((int) pos.x, (int) scrollY, (int) size.x, (int) Math.ceil(scrollHeight));
         drawElements(mouseInput, overOther);
@@ -408,9 +407,7 @@ public class ElementList extends Element{
 
     public void refreshOutline(float yOffset)
     {
-        if(listLine != null)
-            this.listLine.cleanup(loader);
-        this.listLine = Line.getLine(window, loader, new Vector2i(0), new Vector2i((int) (size.x - 2.0f - size.x * 0.05f), 0));
+
     }
 
     public void drawElements(MouseInput mouseInput, boolean overOther)

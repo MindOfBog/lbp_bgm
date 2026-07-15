@@ -275,7 +275,8 @@ public class MaterialEditing extends GuiScreen {
             selectionBoxHeight = (int)(currentFirstY ?
                     Math.clamp(getFontHeightHeader() + 4 + 3, window.getHeight() - 3, selectionBoxStart.y) - selectionBoxY :
                     Math.clamp(getFontHeightHeader() + 4 + 3, window.getHeight() - 3, mouseInput.currentPos.y) - selectionBoxY);
-            renderer.drawRect(selectionBoxX, selectionBoxY, selectionBoxWidth, selectionBoxHeight, new Color(0f, 0f, 0f, 0.35f));
+            renderer.drawRect(selectionBoxX, selectionBoxY, selectionBoxWidth, selectionBoxHeight, new Color(Config.OUTLINE_COLOR.getRed(), Config.OUTLINE_COLOR.getGreen(), Config.OUTLINE_COLOR.getBlue(), Config.OUTLINE_COLOR.getAlpha() / 6));
+            renderer.drawRectOutline(selectionBoxX, selectionBoxY, selectionBoxWidth, selectionBoxHeight, Config.OUTLINE_COLOR);
         }
 
         for(Entity entity : mainView.things)

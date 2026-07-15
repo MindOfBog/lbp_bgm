@@ -81,7 +81,7 @@ public abstract class PartBody extends iPart {
         int frozen = -1;
 
         for(int i : selected)
-            if(things.get(i).thing.hasPart(part))
+            if(things.size() < i && things.get(i) != null && things.get(i).thing.hasPart(part))
             {
                 PBody body = things.get(i).thing.getPart(part);
 
@@ -127,7 +127,7 @@ public abstract class PartBody extends iPart {
         this.frozen.isChecked = frozen == 1;
 
         for(int i : selected)
-            if(things.get(i).thing.hasPart(part))
+            if(things.size() < i && things.get(i) != null && things.get(i).thing.hasPart(part))
             {
                 PBody body = things.get(i).thing.getPart(part);
 

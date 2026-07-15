@@ -1332,9 +1332,6 @@ public class ElementEditing extends GuiScreen {
 
             public void refreshOutline(int height)
             {
-                if(listLine != null)
-                    this.listLine.cleanup(loader);
-                this.listLine = Line.getLine(window, loader, new Vector2i(-(height + 2), 0), new Vector2i((int) (size.x - 1.0f - size.x * 0.05f), 0));
             }
 
             @Override
@@ -1664,8 +1661,8 @@ public class ElementEditing extends GuiScreen {
         boolean hasSelection = false;
         int selectedAmount = 0;
 
-        for(Element element : guiElements)
-            if (element.isMouseOverElement(mouseInput))
+        for(int i = 0; i < guiElements.size(); i++)
+            if (guiElements.get(i).isMouseOverElement(mouseInput))
                 overElement = true;
 
         boolean hasPPos = false;
